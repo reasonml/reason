@@ -1,4 +1,4 @@
-opam-version: "1.2"
+opam-version: "2.0"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "MIT"
@@ -9,14 +9,20 @@ dev-repo: "git://github.com/facebook/reason.git"
 tags: [ "syntax" ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
-build-test: [["dune" "runtest" "-p" name "-j" jobs]]
 depends: [
-  "dune"                    {build}
-  "ocamlfind"               {build}
-  "menhir"                  {>= "20170418"}
-  "merlin-extend"           {>= "0.3"}
+  "ocaml"         {>= "4.02" & < "4.10"}
+  "dune"          {>= "1.4"}
+  "ocamlfind"     {build}
+  "menhir"        {>= "20170418"}
+  "merlin-extend" {>= "0.4"}
+  "fix"
   "result"
   "ocaml-migrate-parsetree"
 ]
-available: [ ocaml-version >= "4.02" & ocaml-version < "4.07" ]
+synopsis: "Reason: Syntax & Toolchain for OCaml"
+description: """
+Reason gives OCaml a new syntax that is remniscient of languages like
+JavaScript. It's also the umbrella project for a set of tools for the OCaml &
+JavaScript ecosystem."""

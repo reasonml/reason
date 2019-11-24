@@ -997,3 +997,17 @@ let predicate =
 let (>...) = (a, b) => a + b;
 
 a >... b;
+
+/* https://github.com/facebook/reason/issues/2169 */
+let not = (x) => !x;
+
+let other = (x) => not(x);
+
+let derefInsideArray = [|a^|];
+
+/* https://github.com/facebook/reason/issues/126 */
+foo^^;
+
+let x = foo^^;
+
+foo^^bar;

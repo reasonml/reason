@@ -9,6 +9,35 @@ module Test = {
   let y = 34;
 };
 
+/** recursive let bindings */
+
+/* see below */
+
+let foo = "abc"
+and bar = "def"
+and baz = "ghi";
+
+/* with whitespace */
+
+let foo = "abc"
+
+and bar = "def"
+
+and baz = "ghi";
+
+/** with whitespace and attrs */
+
+/* -> */
+
+[@foo]
+let foo = "abc"
+
+[@bar]
+and bar = "def"
+
+[@baz]
+and baz = "ghi";
+
 module Comments = {
   let z = 1;
   /* comment *without* whitespace interleaved*/
@@ -172,6 +201,85 @@ module PatternMatching = {
     };
 };
 
+/** recursive modules without whitespace */
+module rec A: {
+  type t;
+  let a_fn: t => B.t;
+  let of_float: float => t;
+} = {
+  type t = int;
+  let a_fn = x => B.of_int(x);
+  let of_float = x => int_of_float(x);
+}
+/* no whitespace */
+and B: {
+  type t;
+  let another_fn: t => A.t;
+  let of_int: int => t;
+} = {
+  type t = float;
+  let another_fn = x => A.of_float(x);
+  let of_int = x => float_of_int(x);
+};
+
+/** recursive modules with whitespace */
+
+/* -> below */
+
+module rec A: {
+  type t;
+  let a_fn: t => B.t;
+  let of_float: float => t;
+} = {
+  type t = int;
+  let a_fn = x => B.of_int(x);
+  let of_float = x => int_of_float(x);
+}
+
+/** okok */
+
+/* lala */
+
+and B: {
+  type t;
+  let another_fn: t => A.t;
+  let of_int: int => t;
+} = {
+  type t = float;
+  let another_fn = x => A.of_float(x);
+  let of_int = x => float_of_int(x);
+};
+
+/** recursive modules with attrs */
+
+/* -> below */
+
+[@foo1]
+module rec A: {
+  type t;
+  let a_fn: t => B.t;
+  let of_float: float => t;
+} = {
+  type t = int;
+  let a_fn = x => B.of_int(x);
+  let of_float = x => int_of_float(x);
+}
+
+/** okok */
+
+/* lala */
+
+[@foo2]
+and B: {
+  type t;
+  let another_fn: t => A.t;
+  let of_int: int => t;
+} = {
+  type t = float;
+  let another_fn = x => A.of_float(x);
+  let of_int = x => float_of_int(x);
+};
+
 module EdgeCase = {
   let x = 1; /* a */
 
@@ -181,6 +289,203 @@ module EdgeCase = {
 
   let x = 1;
 };
+
+/** Record-like expressions */
+let r = {
+  a: 1,
+
+  b: 2,
+  c: 3,
+};
+
+/* with punning */
+let r = {
+  a,
+
+  b,
+  c,
+};
+
+/* with spread */
+let r = {
+  ...x,
+
+  a: 1,
+
+  b: 2,
+  c: 3,
+};
+
+/* comments */
+let r = {
+  ...x,
+
+  /* a */
+  a: 1,
+
+  /* b */
+  /* c */
+
+  /* d */
+  b: 2,
+  /* e */
+
+  c: 3,
+
+  /* f */
+  d,
+
+  e,
+};
+
+/* string keys */
+let x = {
+  "a": 1,
+
+  "b": 2,
+  "c": 3,
+};
+
+/* string keys punning */
+let x = {
+  "a": a,
+
+  "b": b,
+  "c": c,
+};
+
+/* string keys with spread */
+let x = {
+  ...x,
+
+  "a": 1,
+
+  "b": 2,
+  "c": 3,
+};
+
+/* string keys with comments */
+let x = {
+  ...x,
+
+  /* a */
+  "a": 1,
+
+  /* b */
+  /* c */
+
+  /* d */
+  "b": 2,
+  /* e */
+
+  "c": 3,
+
+  /* f */
+  "d": d,
+
+  "e": e,
+};
+
+let make = _children => {
+  ...component,
+
+  initialState: () => {
+    posts: [],
+    activeRoute:
+      urlToRoute(
+        ReasonReact.Router.dangerouslyGetInitialUrl(),
+      ),
+  },
+
+  didMount: self => {
+    let watcherID =
+      ReasonReact.Router.watchUrl(url =>
+        self.send(
+          ChangeRoute(urlToRoute(url)),
+        )
+      );
+    self.onUnmount(() =>
+      ReasonReact.Router.unwatchUrl(watcherID)
+    );
+  },
+
+  reducer: (action, state) =>
+    switch (action) {
+    | ChangeRoute(activeRoute) =>
+      ReasonReact.Update({
+        ...state,
+        activeRoute,
+      })
+    | FetchCats => ReasonReact.NoUpdate
+    },
+
+  render: ({state: {posts, activeRoute}}) =>
+    <div>
+      <h1>
+        <a href="/">
+          {ReasonReact.string("Instagram")}
+        </a>
+      </h1>
+      {switch (activeRoute) {
+       | Default => <Grid posts />
+       | Detail(postId) =>
+         <Single posts postId />
+       }}
+    </div>,
+};
+
+// Recursive types
+// Also create another form for splicing in nodes into otherwise fixed length sets.
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+// Also create another form for splicing in nodes into otherwise fixed length sets.
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+// trailing comment
+
+// leading comment
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+// trailing comment
+
+// in between
+
+// leading comment
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+// with attrs
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+[@attr]
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
+
+// with attrs
+type elem('t) =
+  | Empty: elem(empty)
+constraint 't = ('st, 'a) => 'subtree
+
+[@attr]
+and subtree('t) =
+  | EmptyInstance: subtree(empty);
 
 let f = (a, b) => a + b;
 /* this comment sticks at the end */

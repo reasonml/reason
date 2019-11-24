@@ -94,8 +94,9 @@ let myFunction = /* First arg */
       withFirstArg,
       /* Second Arg */
       andSecondArg,
-    ) =>
-  withFirstArg + andSecondArg; /* After Semi */
+    ) => {
+  withFirstArg + andSecondArg;
+}; /* After Semi */
 
 type point = {
   x: string, /* x field */
@@ -300,7 +301,11 @@ type intPair2 = (
   int,
 );
 
-let result = /**/ (2 + 3);
+let result =
+  /**/
+  {
+    2 + 3;
+  };
 
 /* This is not yet idempotent */
 /* { */
@@ -333,7 +338,9 @@ let blahCurriedX = x =>
   | Black(x) => 0 /* After black */
   | Green(x) => 0; /* After second green */ /* On next line after blahCurriedX def */
 
-let name_equal = (x, y) => x == y;
+let name_equal = (x, y) => {
+  x == y;
+};
 
 let equal = (i1, i2) =>
   i1.contents === i2.contents && true; /* most unlikely first */

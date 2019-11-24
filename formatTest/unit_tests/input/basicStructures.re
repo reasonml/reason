@@ -134,7 +134,7 @@ let x = arr^[0] = 1;
  *============================================================================
  */;
 
-let (//) = (+); /* // is not a comment */
+let (/++) = (+); /* // indicates the start of a comment, not an infix op */
 
 let something = if (self.ext.logSuccess) {
                             print_string("Did tap");
@@ -684,3 +684,15 @@ it("should remove parens", (a) => {
 
 /* https://github.com/facebook/reason/issues/1554 */
 (curNode^)##childNodes;
+
+foo(preserveBraces => {
+  inCallback
+});
+
+foo(preserveBraces => {
+  inFirstPos
+}, secondArg);
+
+foo(oneArg, preserveBraces => {
+  inFirstPos
+}, secondArg);

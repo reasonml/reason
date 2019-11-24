@@ -1,3 +1,5 @@
+open Migrate_parsetree
+
 let is_punned_labelled_expression e lbl =
   let open Ast_404.Parsetree in
   match e.pexp_desc with
@@ -96,23 +98,11 @@ let isUnderscoreIdent expr =
   | Pexp_ident ({txt = Lident "_"}) -> true
   | _ -> false
 
-let isFastPipe e = match Ast_404.Parsetree.(e.pexp_desc) with
+let isPipeFirst e = match Ast_404.Parsetree.(e.pexp_desc) with
   | Pexp_ident({txt = Longident.Lident("|.")}) -> true
   | Pexp_apply(
     {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
       _
-    ) -> true
-  | _ -> false
-
-
-(* <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
- * An application with fast pipe inside jsx children requires special treatment.
- * Jsx children don't allow expression application, hence we need the braces
- * preserved in this case. *)
-let isFastPipeWithApplicationJSXChild e = match Ast_404.Parsetree.(e.pexp_desc) with
-  | Pexp_apply(
-    {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
-      [Nolabel, {pexp_desc = Pexp_apply(_)}; _]
     ) -> true
   | _ -> false
 
@@ -129,4 +119,22 @@ let isUnderscoreApplication expr =
         _
       )
     } -> true
+  | _ -> false
+
+(* <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
+ * An application with pipe first inside jsx children requires special treatment.
+ * Jsx children don't allow expression application, hence we need the braces
+ * preserved in this case. *)
+let isPipeFirstWithNonSimpleJSXChild e = match Ast_404.Parsetree.(e.pexp_desc) with
+  | Pexp_apply(
+    {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+      [Nolabel, {pexp_desc = Pexp_apply(_)}; _]
+    ) -> true
+
+  (* Handle <div> {url->a(b, _)} </div>;
+   * underscore sugar needs protection *)
+  | Pexp_apply(
+    {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
+      [_; Nolabel, fe]
+    ) when isUnderscoreApplication fe -> true
   | _ -> false

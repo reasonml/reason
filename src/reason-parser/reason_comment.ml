@@ -37,7 +37,23 @@ let dump_list ppf list =
 let wrap t =
   match t.text with
   | "" | "*" -> "/***/"
-  | txt when txt.[0] = '*' && txt.[1] <> '*' -> "/**" ^ txt ^ "*/"
+  | txt when Reason_syntax_util.isLineComment txt ->
+    "//"
+    (* single line comments of the form `// comment` have a `\n` at the end *)
+    ^ (String.sub txt 0 (String.length txt - 1))
+    ^ Reason_syntax_util.EOLMarker.string
+  | txt when txt.[0] = '*' && txt.[1] <> '*' ->
+    (*CHECK: this comment printing seems fishy.
+      It apply to invalid docstrings.
+      In this case, it will add a spurious '*'.
+      E.g. /**
+            * bla */
+      In an invalid context is turned into
+           /***
+            * bla */
+      I think this case should be removed.
+    *)
+    "/**" ^ txt ^ "*/"
   | txt -> "/*" ^ txt ^ "*/"
 
 let is_doc t =
@@ -45,3 +61,7 @@ let is_doc t =
 
 let make ~location category text =
   { text; category; location }
+
+let isLineComment {category; text} = match category with
+  | SingleLine -> Reason_syntax_util.isLineComment text
+  | EndOfLine | Regular -> false

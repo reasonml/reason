@@ -13,7 +13,7 @@ switch (
 | _ => ()
 };
 
-try (
+try(
   while (true) {
     ();
   }
@@ -29,7 +29,7 @@ switch (
 | _ => ()
 };
 
-try (
+try(
   for (i in 0 to 10) {
     ();
   }
@@ -47,7 +47,7 @@ switch (
 | _ => ()
 };
 
-try (
+try(
   for (i in 0 to 10) {
     ();
   }
@@ -61,12 +61,12 @@ let result =
       ();
     }
   )
-  == () ?
-    false : true;
+  == ()
+    ? false : true;
 
 switch (
-  try (
-    try () {
+  try(
+    try() {
     | _ => ()
     }
   ) {

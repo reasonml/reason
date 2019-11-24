@@ -99,7 +99,11 @@ let x = [@attrEverything] (true && false);
 /**
  * How attribute parsings respond to other syntactic constructs.
  */
-let add = a => [@onRet] a;
+let add = a =>
+  [@onRet]
+  {
+    a;
+  };
 let add = a => [@onRet] a;
 let add = [@onEntireFunction] (a => a);
 
@@ -247,7 +251,7 @@ class tupleClass ('a, 'b) (init: ('a, 'b)) = {
   let one = [@exprAttr ten] 10;
   let two = [@exprAttr twenty] 20
   and three = [@exprAttr thirty] 30;
-  pub pr = one + two + three;
+  [@pr prMember] pub pr = one + two + three;
 };
 
 [@structureItem]
@@ -342,8 +346,18 @@ type classAttributesOnKeys = {
   .
   [@bs.set] key1: string,
   /* The follow two are the same */
-  [@bs.get null] key2: [@onType2] Js.t(int),
-  [@bs.get null] key3: [@onType2] Js.t(int),
+  [@bs.get
+    {
+      null;
+    }
+  ]
+  key2: [@onType2] Js.t(int),
+  [@bs.get
+    {
+      null;
+    }
+  ]
+  key3: [@onType2] Js.t(int),
   key4: Js.t([@justOnInt] int),
 };
 
@@ -616,3 +630,15 @@ type editorConfiguration = {
   [@bs.optional]
   rtlMoveVisually: bool,
 };
+
+module Fmt = {
+  let barBaz = () => ();
+
+  type record = {x: int};
+};
+
+Fmt.([@foo] barBaz());
+Fmt.([@foo] {x: 1});
+Fmt.([@foo] [1, 2, 3]);
+Fmt.([@foo] (1, 2, 3));
+Fmt.([@foo] {val x = 10});

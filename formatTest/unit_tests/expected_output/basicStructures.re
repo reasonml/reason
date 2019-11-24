@@ -1,7 +1,8 @@
 /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
 
-let run = () =>
+let run = () => {
   TestUtils.printSection("Basic Structures");
+};
 
 while (something) {
   print_string("You're in a while loop");
@@ -146,7 +147,7 @@ let x = arr^[0] = 1;
  *============================================================================
  */;
 
-let (/\/) = (+); /* // is not a comment */
+let (/++) = (+); /* // indicates the start of a comment, not an infix op */
 
 let something =
   if (self.ext.logSuccess) {
@@ -233,12 +234,14 @@ let result =
       } else {
         print_string("b >= a");
       };
-  } else if ((a, b) =>
-               if (a > b) {
-                 print_string("b < a");
-               } else {
-                 print_string("a <= b");
-               }) {
+  } else if ({
+               (a, b) =>
+                 if (a > b) {
+                   print_string("b < a");
+                 } else {
+                   print_string("a <= b");
+                 };
+             }) {
     print_string(
       "That could never possibly type check",
     );
@@ -528,9 +531,13 @@ let myTuple: myTupleType = myTuple;
 let myTuple: myTupleType = (one: int, two: int);
 
 /* Now functions that accept a single argument being a tuple look familiar */
-let addValues = (a: int, b: int) => a + b;
+let addValues = (a: int, b: int) => {
+  a + b;
+};
 
-let addValues = (a: int, b: int) => a + b;
+let addValues = (a: int, b: int) => {
+  a + b;
+};
 
 let myFunction = (a: int, b: int): int => a + b;
 
@@ -833,3 +840,13 @@ it("should remove parens", a => {
 
 /* https://github.com/facebook/reason/issues/1554 */
 (curNode^)##childNodes;
+
+foo(preserveBraces => {inCallback});
+
+foo(preserveBraces => {inFirstPos}, secondArg);
+
+foo(
+  oneArg,
+  preserveBraces => {inFirstPos},
+  secondArg,
+);

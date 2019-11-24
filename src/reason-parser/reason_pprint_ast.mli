@@ -1,4 +1,4 @@
-open Ast_404.Parsetree
+open Migrate_parsetree.Ast_404.Parsetree
 
 val configure :
   width:int ->

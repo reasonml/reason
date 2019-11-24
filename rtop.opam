@@ -1,4 +1,4 @@
-opam-version: "1.2"
+opam-version: "2.0"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "MIT"
@@ -9,11 +9,15 @@ dev-repo: "git://github.com/facebook/reason.git"
 tags: [ "syntax" ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
-build-test: [["dune" "runtest" "-p" name "-j" jobs]]
 depends: [
-  "dune"   {build}
+  "ocaml"  {>= "4.02" & < "4.10"}
+  "dune"   {>= "1.4"}
   "reason"
   "utop"   {>= "1.17"}
 ]
-available: [ ocaml-version >= "4.02" & ocaml-version < "4.07" ]
+synopsis: "Reason toplevel"
+description:
+  "rtop is the toplevel (or REPL) for Reason, based on utop (https://github.com/diml/utop)."
+

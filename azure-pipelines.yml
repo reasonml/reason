@@ -1,0 +1,66 @@
+# Adapted from hello-reason CI: https://github.com/esy-ocaml/hello-reason
+name: $(Build.SourceVersion)
+
+trigger:
+  - master
+  - global
+  - release-*
+  - releases-*
+  - feature-*
+
+stages:
+- stage: Build_opam
+  displayName: Build with opam
+  dependsOn: []
+  jobs:
+  - job: Mac
+    strategy:
+      matrix: {
+        "opam_4090": { OCAML_VERSION: 4.09.0 },
+        "opam_4080": { OCAML_VERSION: 4.08.0 },
+        "opam_4071": { OCAML_VERSION: 4.07.1 },
+        "opam_4061": { OCAML_VERSION: 4.06.1 },
+        "opam_4023": { OCAML_VERSION: 4.02.3 }
+      }
+    timeoutInMinutes: 0
+    pool:
+      vmImage: 'macOS-latest'
+
+    steps:
+    - template: .ci/opam-build-steps.yml
+
+- stage: Build_esy
+  displayName: Build with esy
+  dependsOn: []
+  jobs:
+    - template: .ci/build-platform.yml
+      parameters:
+        platform: Linux
+        vmImage: ubuntu-16.04
+
+    - template: .ci/build-platform.yml
+      parameters:
+        platform: macOS
+        vmImage: macOS-10.13
+
+    # Need windows-2019 to do esy import/export-dependencies
+    # which assumes you have bsdtar (tar.exe) in your system
+    # otherwise it will end up using the esy-bash tar which doesn't
+    # understand drives like D:/ (thinks it's an scp path).
+    - template: .ci/build-platform.yml
+      parameters:
+        platform: Windows
+        vmImage: windows-2019
+
+    # This job is kept here as we want to have the platform names in the same file
+    - job: Release
+      displayName: Release
+      dependsOn:
+        - Linux
+        - macOS
+        - Windows
+      pool:
+        vmImage: macOS-10.13
+        demands: node.js
+      steps:
+        - template: .ci/cross-release.yml

@@ -21,3 +21,7 @@ let (lazy (Box(i)), x) = (lazy (Box(200)), 100);
 let tmp: int = i;
 
 let myComputation = lazy (200);
+
+let reallyLoooooooooooooongIdentifierThatSpansMoreThan50Cols = 200;
+
+let foo = lazy(reallyLoooooooooooooongIdentifierThatSpansMoreThan50Cols)

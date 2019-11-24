@@ -306,6 +306,16 @@ env version=x.y.z make release
 
 - Use [opam-publish](https://github.com/ocaml/opam-publish) to publish the latest version to opam.
 
+#### Releasing to OPAM manually
+
+Typically Reason will be released to NPM first (through Esy). To manually release
+to OPAM, simply:
+
+1. Copy the `.opam` file(s) in this repo
+2. Add a `url` clause ([example](https://github.com/ocaml/opam-repository/blob/a55812366d555a5d2ba45cba01fbdab49e459515/packages/reason/reason.3.2.0/opam#L28-L31)) with the place where to find the release tarball.
+3. Submit a PR to the [OPAM repository](https://github.com/ocaml/opam-repository) under e.g.
+`packages/reason/reason.X.Y.Z/opam`.
+
 ### Esy Releases
 
 Cutting a release of esy versions is a good way to get packages out there for

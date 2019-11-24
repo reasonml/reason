@@ -1,0 +1,5 @@
+(library
+ (name ReasonEasyFormat)
+ (public_name reason.easy_format)
+  (wrapped false)
+  (flags (:standard -w -9-27-32-50)))

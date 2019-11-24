@@ -1,0 +1,37 @@
+# Steps for publishing project cache
+
+steps:
+  - bash: 'mkdir -p $(Build.StagingDirectory)'
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
+    displayName: '[Cache][Publish] Create cache directory'
+
+  # continueOnError because on windows it has a permission denied error but the
+  # export succeeds.
+  - script: "esy export-dependencies"
+    continueOnError: true
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
+    displayName: "esy export-dependencies"
+
+  - bash: pwd && ls _export/* && mv _export '$(Build.StagingDirectory)' && ls '$(Build.StagingDirectory)/_export/'
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
+    displayName: '[Cache][Publish] move export to staging dir'
+
+  # - bash: cd $ESY__CACHE_INSTALL_PATH && tar -czf $(Build.StagingDirectory)/esy-cache.tar .
+  #   workingDirectory: ''
+  #   condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
+  #   displayName: '[Cache][Publish] Tar esy cache directory'
+
+  # - bash: 'cd $(ESY__NPM_ROOT) && tar -czf $(Build.StagingDirectory)/npm-cache.tar .'
+  #   condition: and(succeeded(), eq(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))
+  #   displayName: '[Cache][Publish] Tar npm cache directory'
+
+  - task: PublishBuildArtifacts@1
+    displayName: '[Cache][Publish] Upload tarball'
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'IndividualCI'))
+    # TODO: The CI Build caches are pulled down by the last successful buildID
+    # for the target branch.
+    inputs:
+        pathToPublish: '$(Build.StagingDirectory)'
+        artifactName: 'cache-$(Agent.OS)-install'
+        parallel: true
+        parallelCount: 8

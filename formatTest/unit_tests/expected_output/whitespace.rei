@@ -244,6 +244,28 @@ and X2: Y2;
 module rec X1: Y1
 and X2: Y2;
 
+/** rec modules with whitespace */
+
+/* -> */
+
+module rec X1: Y1
+
+and X2: Y2;
+
+/** rec modules with whitespace and attrs */
+
+/* -> */
+
+[@foo]
+module rec X1: Y1
+
+/** another one below */
+
+/* random comment */
+
+[@bar]
+and X2: Y2;
+
 /* notice the whitespace after the last signature item */
 
 /* this one has whitespace interleaved */

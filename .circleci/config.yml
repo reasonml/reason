@@ -1,11 +1,11 @@
 common_cache_key: &common_cache_key
-  key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rebuild.opam" }}-{{ checksum "rtop.opam" }}
+  key: dependency-cache-{{ checksum "../ocaml-version" }}-{{ checksum ".circleci/config.yml" }}-{{ checksum "reason.opam" }}-{{ checksum "rtop.opam" }}
 
 esy_cache_key: &esy_cache_key
-  key: esy-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock" }}-{{ checksum ".circleci/config.yml" }}
+  key: esy-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock/index.json" }}-{{ checksum ".circleci/config.yml" }}
 
 esy_post_build_cache_key: &esy_post_build_cache_key
-  key: esy-post-build-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock" }}-{{ checksum ".circleci/config.yml" }}
+  key: esy-post-build-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock/index.json" }}-{{ checksum ".circleci/config.yml" }}
 
 common_steps: &common_steps
   steps:
@@ -25,28 +25,31 @@ common_steps: &common_steps
     - run:
         name: "Initialize opam"
         command: |
+          sudo apt-get install -y m4
           opam init --auto-setup --dot-profile=~/.bash_profile
-          opam remote add ocamlorg https://opam.ocaml.org -p 0 || true
+          opam remote add ocamlorg https://opam.ocaml.org || true
           opam remote remove default || true
     - run:
         name: "Install deps"
         command: |
+          sudo apt-get install -y pkg-config libncurses5-dev
           opam update
-          opam install -y jbuilder
-          opam install -y menhir.20170712
+          opam install -y dune
+          opam install -y menhir
+          opam install -y utop
     - run:
         name: 'Clean'
         command: make clean-for-ci
-    - run:
-        name: 'opam pin'
-        command: |
-          opam pin add -y reason .
-          opam pin add -y rtop .
     - save_cache:
         <<: *common_cache_key
         paths:
           - ~/.opam
           - ~/.npm-global
+    - run:
+        name: 'opam pin'
+        command: |
+          opam pin add -y reason .
+          opam pin add -y rtop .
     - run:
         name: 'Test'
         command: |
@@ -61,7 +64,7 @@ version: 2
 jobs:
   4.02.3:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.02.3
+      - image: ocaml/opam2:debian-9-ocaml-4.02.3
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.02.3"
@@ -69,7 +72,7 @@ jobs:
     <<: *common_steps
   4.03.0:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.03.0
+      - image: ocaml/opam2:debian-9-ocaml-4.03
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.03.0"
@@ -77,23 +80,47 @@ jobs:
     <<: *common_steps
   4.04.0:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.04.0
+      - image: ocaml/opam2:debian-9-ocaml-4.04
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.04.0"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
-  4.06.0:
+  4.06.1:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.06.0
+      - image: ocaml/opam2:debian-9-ocaml-4.06
     environment:
       - TERM: dumb
-      - OCAML_VERSION: "4.06.0"
+      - OCAML_VERSION: "4.06.1"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
+  4.07.0:
+    docker:
+      - image: ocaml/opam2:debian-9-ocaml-4.07
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.07.x"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
+  4.08.0:
+    docker:
+      - image: ocaml/opam2:debian-9-ocaml-4.08
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.08.x"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
+  4.09.0:
+    docker:
+      - image: ocaml/opam2:debian-9-ocaml-4.09
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.09.x"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
   esy_build:
     docker:
-      - image: ocaml/opam:debian-9_ocaml-4.06.0
+      - image: ocaml/opam2:debian-9-ocaml-4.06
     environment:
       - TERM: dumb
       - NPM_CONFIG_PREFIX: "~/.npm-global"
@@ -106,13 +133,17 @@ jobs:
             sudo apt-get install -y nodejs
             mkdir -p ~/.npm-global
             npm config set prefix $NPM_CONFIG_PREFIX
+      - run:
+          name: "Install m4"
+          command: |
+            sudo apt-get install -y m4
       - restore_cache:
           <<: *esy_cache_key
       - restore_cache:
           <<: *esy_post_build_cache_key
       - run:
           name: "Install esy"
-          command: npm install -g esy@preview
+          command: npm install -g esy@latest
       - run:
           name: 'Clean'
           command: make clean-for-ci
@@ -128,7 +159,7 @@ jobs:
           name: 'esy build'
           command: |
             ~/.npm-global/bin/esy build
-            _build/install/default/bin/refmt --version
+            ~/.npm-global/bin/esy x refmt --version
       # Use both pre and post build caches so that we're more likely
       # to have dependencies cached. `esy build` is more likely to fail,
       # so this will make the push that fixes the build faster
@@ -144,5 +175,8 @@ workflows:
       - 4.02.3
       - 4.03.0
       - 4.04.0
-      - 4.06.0
+      - 4.06.1
+      - 4.07.0
+      - 4.08.0
+      - 4.09.0
       - esy_build
