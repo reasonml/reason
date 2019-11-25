@@ -60,6 +60,7 @@ get_ppx_derivers () {
   ppxDeriversSource=`esy show-ppx_derivers-dir`/_build/default/src
 
   cp $ppxDeriversSource/*.ml $ppxDeriversTargetDir
+  cp $ppxDeriversSource/*.mli $ppxDeriversTargetDir
 }
 
 # Get OMP source from esy
@@ -113,6 +114,9 @@ build_js_api () {
     -bs-MD \
     -o "$REFMT_API.ml"
 
+  # This hack is required since the emitted code by bspack somehow adds 	
+	sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
+  
   # the `-no-alias-deps` flag is important. Not sure why...
   # remove warning 40 caused by ocaml-migrate-parsetree
   esy ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
@@ -169,6 +173,9 @@ build_refmt () {
     -bs-MD \
     -o "$REFMT_BINARY.ml"
 
+	# This hack is required since the emitted code by bspack somehow adds 	
+	sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
+  
   echo "👉 compiling refmt"
   # build REFMT_BINARY into an actual binary too. For testing purposes at the end
   esy ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_BINARY.ml" -o "$REFMT_BINARY.byte"
