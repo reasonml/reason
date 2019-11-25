@@ -29,6 +29,7 @@ REFMT_PRE_CLOSURE="$buildDir/refmt_pre_closure"
 
 REFMT_CLOSURE="$reasonTargetDir/refmt"
 
+ppxDeriversTargetDir=$THIS_SCRIPT_DIR/build/ppx_derivers
 ocamlMigrateParseTreeTargetDir=$THIS_SCRIPT_DIR/build/omp
 
 # clean some artifacts
@@ -53,13 +54,22 @@ build_reason_402 () {
   cd -
 }
 
+# Get ppx_derivers source from esy
+get_ppx_derivers () {
+  mkdir $ppxDeriversTargetDir
+
+  ppxDeriversSource=`esy show-ppx_derivers-dir`/_build/default/src
+
+  cp $ppxDeriversSource/*.ml $ppxDeriversTargetDir
+}
+
 # Get OMP source from esy
 get_omp () {
   mkdir $ocamlMigrateParseTreeTargetDir
 
   ompSource=`esy show-omp-dir`/_build/default/src
 
-  cp $ompSource/*.ml $THIS_SCRIPT_DIR/build/omp
+  cp $ompSource/*.ml $ocamlMigrateParseTreeTargetDir
   for i in $(ls build/omp/*.pp.ml); do
   newname=$(basename $i | sed 's/\.pp\././')
   target=${THIS_SCRIPT_DIR}/build/omp/${newname}
@@ -154,6 +164,7 @@ build_refmt () {
     -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
     -I "$reasonTargetDir/_build/default/src/refmt/"                             \
     -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
+    -I "$ppxDeriversTargetDir" \
     -I "$ocamlMigrateParseTreeTargetDir" \
     -bs-MD \
     -o "$REFMT_BINARY.ml"
@@ -172,6 +183,7 @@ build_refmt () {
 
 build_reason_402
 build_bspack
+get_ppx_derivers
 get_omp
 build_refmt
 build_js_api
