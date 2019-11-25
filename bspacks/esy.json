@@ -1,6 +1,6 @@
 {
-  "name": "get-js-of-ocaml",
-  "notes": "This is to get js_of_ocaml",
+  "name": "get-bspacks-deps",
+  "notes": "This is to get all bspacks dependencies",
   "private": true,
   "version": "0.0.0",
   "dependencies": {

@@ -9,16 +9,15 @@ THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
 
 cd $THIS_SCRIPT_DIR
 
-# Install & build menhir, omp
-esy i
-esy b
+# Install & build all bspacks deps: jsoo, menhir, omp, ppx_derivers
+esy
 
 # Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out.
 resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
 menhirSuggestedLib=`esy menhir --suggest-menhirLib`
 
-reasonTargetDir="$THIS_SCRIPT_DIR/.."
+reasonRootDir="$THIS_SCRIPT_DIR/.."
 buildDir="$THIS_SCRIPT_DIR/build"
 
 REFMT_BINARY="$buildDir/refmt_binary"
@@ -27,7 +26,7 @@ REFMT_API_ENTRY="$buildDir/refmt_api_entry"
 REFMT_API_FINAL="$buildDir/refmt_api_final"
 REFMT_PRE_CLOSURE="$buildDir/refmt_pre_closure"
 
-REFMT_CLOSURE="$reasonTargetDir/refmt"
+REFMT_CLOSURE="$reasonRootDir/refmt"
 
 ppxDeriversTargetDir=$THIS_SCRIPT_DIR/build/ppx_derivers
 ocamlMigrateParseTreeTargetDir=$THIS_SCRIPT_DIR/build/omp
@@ -48,8 +47,8 @@ build_reason_402 () {
     export version=$(grep version ./esy.json | sed -E 's/.+([0-9]\.[0-9]\.[0-9]).+/\1/')-$(date +%Y.%m.%d)
   fi
   make pre_release
-  esy install
-  esy build
+  esy
+  reasonEsyTargetDir=`esy echo '#{self.target_dir}'`
   git checkout esy.json esy.lock
   cd -
 }
@@ -102,13 +101,14 @@ build_js_api () {
     -bs-main Reason_toolchain \
     -prelude-str "$resultStub" \
     -I "$menhirSuggestedLib" \
-    -I "$reasonTargetDir/_build/default/src/ppx/"                               \
-    -I "$reasonTargetDir/_build/default/src/reason-merlin/"                     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/"                     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
-    -I "$reasonTargetDir/_build/default/src/refmt/"                             \
-    -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
+    -I "$reasonEsyTargetDir/default/src/ppx/"                               \
+    -I "$reasonEsyTargetDir/default/src/reason-merlin/"                     \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/"                     \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/easy_format/"  \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/cmdliner/"     \
+    -I "$reasonEsyTargetDir/default/src/refmt/"                             \
+    -I "$reasonEsyTargetDir/default/src/refmttype/"                         \
+    -I "$ppxDeriversTargetDir" \
     -I "$ocamlMigrateParseTreeTargetDir" \
     -bs-MD \
     -o "$REFMT_API.ml"
@@ -156,14 +156,14 @@ build_refmt () {
     -main-export Refmt_impl \
     -prelude-str "$resultStub" \
     -I "$menhirSuggestedLib" \
-    -I "$reasonTargetDir" \
-    -I "$reasonTargetDir/_build/default/src/ppx/"                               \
-    -I "$reasonTargetDir/_build/default/src/reason-merlin/"                     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/"                     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
-    -I "$reasonTargetDir/_build/default/src/refmt/"                             \
-    -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
+    -I "$reasonEsyTargetDir" \
+    -I "$reasonEsyTargetDir/default/src/ppx/"                               \
+    -I "$reasonEsyTargetDir/default/src/reason-merlin/"                     \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/"                     \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/easy_format/"  \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/cmdliner/"     \
+    -I "$reasonEsyTargetDir/default/src/refmt/"                             \
+    -I "$reasonEsyTargetDir/default/src/refmttype/"                         \
     -I "$ppxDeriversTargetDir" \
     -I "$ocamlMigrateParseTreeTargetDir" \
     -bs-MD \
