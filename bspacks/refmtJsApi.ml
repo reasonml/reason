@@ -1,6 +1,8 @@
 module RE = Refmt_api.Reason_toolchain.RE
 module ML = Refmt_api.Reason_toolchain.ML
 
+module Js = Js_of_ocaml.Js
+
 let locationToJsObj (loc: Location.t) =
   let (file, start_line, start_char) = Location.get_pos_info loc.loc_start in
   let (_, end_line, end_char) = Location.get_pos_info loc.loc_end in
@@ -61,18 +63,9 @@ let parseWith f code =
     in
     Js.Unsafe.fun_call throwAnything [|Js.Unsafe.inject jsError|]
   (* from reason *)
-  | Refmt_api.Reason_syntax_util.Error (location, Syntax_error err) ->
-    let jsLocation = locationToJsObj location in
-    let jsError =
-      Js.Unsafe.obj [|
-        ("message", Js.Unsafe.inject (Js.string err));
-        ("location", Js.Unsafe.inject jsLocation);
-      |]
-    in
-    Js.Unsafe.fun_call throwAnything [|Js.Unsafe.inject jsError|]
-  | Refmt_api.Reason_lexer.Error (err, loc) ->
+  | Refmt_api.Reason_errors.Reason_error (err, loc) ->
     let reportedError =
-      Location.error_of_printer loc Refmt_api.Reason_lexer.report_error err
+      Location.error_of_printer loc (Refmt_api.Reason_errors.report_error ~loc) err
     in
     let jsLocation = locationToJsObj reportedError.loc in
     let jsError =
