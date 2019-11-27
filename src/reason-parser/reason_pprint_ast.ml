@@ -468,6 +468,9 @@ let unary_minus_prefix_symbols  = [ "~-"; "~-."] ;;
 let unary_plus_prefix_symbols  = ["~+"; "~+." ] ;;
 let infix_symbols = [ '='; '<'; '>'; '@'; '^'; '|'; '&'; '+'; '-'; '*'; '/';
                       '$'; '%'; '\\'; '#' ]
+(* this should match "kwdopchar" from reason_declarative_lexer.mll *)
+let let_monad_symbols = [ '$'; '&'; '*'; '+'; '-'; '/'; '<'; '='; '>'; '@';
+                          '^'; '|'; '.'; '!']
 
 let special_infix_strings =
   ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; ":="; "!="; "!=="]
@@ -484,14 +487,14 @@ let letop s =
   && s.[0] = 'l'
   && s.[1] = 'e'
   && s.[2] = 't'
-  && List.mem s.[3] infix_symbols
+  && List.mem s.[3] let_monad_symbols
 
 let andop s =
   String.length s > 3
   && s.[0] = 'a'
   && s.[1] = 'n'
   && s.[2] = 'd'
-  && List.mem s.[3] infix_symbols
+  && List.mem s.[3] let_monad_symbols
 
 let requireNoSpaceFor tok =
   tok = pipeFirstToken || (tok.[0] = '#' && tok <> "#=")
