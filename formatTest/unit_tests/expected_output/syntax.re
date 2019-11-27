@@ -384,8 +384,12 @@ let onlyDoingThisTopLevelLetToBypassTopLevelSequence = {
 type hasA = {a: int};
 let a = 10;
 let returnsASequenceExpressionWithASingleIdentifier =
-    () => a;
-let thisReturnsA = () => a;
+    () => {
+  a;
+};
+let thisReturnsA = () => {
+  a;
+};
 let thisReturnsAAsWell = () => a;
 
 let recordVal: int = thisReturnsARecord().a;
@@ -992,8 +996,9 @@ let match = "match";
 let method = "method";
 
 let foo =
-    (x, ~x as bar, ~z, ~foo as bar, ~foo as z) =>
+    (x, ~x as bar, ~z, ~foo as bar, ~foo as z) => {
   bar + 2;
+};
 
 let zzz = myFunc(1, 2, [||]);
 
@@ -1119,17 +1124,17 @@ test(~desc=?[@attr] "my test", ~f=?[@attr] () => {
   x + y;
 });
 
-describe("App", () =>
-  test("math", () =>
+describe("App", () => {
+  test("math", () => {
     Expect.expect(1 + 2) |> toBe(3)
-  )
-);
+  })
+});
 
-describe([@attr] "App", [@attr] () =>
-  test([@attr] "math", [@attr] () =>
+describe([@attr] "App", [@attr] () => {
+  test([@attr] "math", [@attr] () => {
     Expect.expect(1 + 2) |> toBe(3)
-  )
-);
+  })
+});
 
 describe(~text="App", ~f=() =>
   test(~text="math", ~f=() =>
@@ -1279,10 +1284,10 @@ Thing.map(
   foo,
   bar,
   baz,
-  [@attr]
-  ((abc, z) => MyModuleBlah.toList(argument)),
-  [@attr]
-  ((abc, z) => MyModuleBlah.toList(argument)),
+  [@attr] (abc, z) =>
+    MyModuleBlah.toList(argument),
+  [@attr] (abc, z) =>
+    MyModuleBlah.toList(argument),
 );
 
 Js.Option.andThen((. w) => w#getThing());
@@ -1360,20 +1365,20 @@ f(~commit=!build);
 
 /* https://github.com/facebook/reason/issues/2032 */
 let predicate =
-  predicate === Functions.alwaysTrue1 ?
-    defaultPredicate :
-    fun
-    | None => false
-    | Some(exn) => predicate(exn);
+  predicate === Functions.alwaysTrue1
+    ? defaultPredicate
+    : fun
+      | None => false
+      | Some(exn) => predicate(exn);
 
 let predicate =
-  predicate === Functions.alwaysTrue1 ?
-    fun
-    | None => false
-    | Some(exn) => predicate(exn) :
-    fun
-    | None => false
-    | Some(exn) => predicate(exn);
+  predicate === Functions.alwaysTrue1
+    ? fun
+      | None => false
+      | Some(exn) => predicate(exn)
+    : fun
+      | None => false
+      | Some(exn) => predicate(exn);
 
 /* https://github.com/facebook/reason/issues/2125 */
 foo(~a);
@@ -1389,3 +1394,54 @@ foo(~(a :> int));
 foo(~a=?Foo.a);
 
 foo(~a=Foo.a);
+
+/* https://github.com/facebook/reason/issues/2155#issuecomment-422077648 */
+true ? (Update({...a, b: 1}), None) : x;
+true ? {...a, b: 1} : a;
+true ? (a, {...a, b: 1}) : a;
+
+true ? ([x, ...xs]) => f(x, xs) : a;
+
+/* https://github.com/facebook/reason/issues/2200 */
+foo(~x=(-1) + 2);
+
+foo(~x=(-1) + 2: int);
+
+foo(~not);
+
+let foo = (~not) => ();
+
+let foo = (~not: string) => ();
+
+foo(~not: string);
+
+/* https://github.com/facebook/reason/issues/2141 */
+let testCallNamedArgs =
+    (foo: (~a: int, ~b: int) => int, a, b) =>
+  foo(~a, ~b);
+
+let testCallNamedArgs =
+    (foo: (~a: int, ~b: int=?) => int, a, b) =>
+  foo(~a, ~b);
+
+let Foo.{name} = bar;
+let Foo.Bar.{name} = bar;
+
+let Foo.[name] = bar;
+let Foo.Bar.[name] = bar;
+
+let Foo.Bar.[] = bar;
+let Foo.Bar.[||] = bar;
+let Foo.() = foo;
+
+/* let Foo.(bar, baz) = foo; */
+
+let Foo.(exception bar) = baz;
+
+try({
+  let this = try_exp;
+  let has = hugged;
+  parens;
+}) {
+| _ => ()
+};

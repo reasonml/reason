@@ -1,0 +1,38 @@
+# Shared steps for building OPAM projects
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '8.9'
+  - script: brew install gpatch
+    displayName: 'brew install gpatch'
+  - script: brew install opam
+    displayName: 'brew install opam'
+  - script: opam --version
+    displayName: 'Check opam version'
+  - script: opam init --auto-setup --dot-profile=~/.bash_profile
+    displayName: 'opam init'
+  - script: opam remote add ocamlorg https://opam.ocaml.org || true
+    displayName: 'opam remote add ocamlorg'
+  - script: opam remove default || true
+    displayName: 'opam remove default'
+  - script: opam update
+    displayName: 'opam update'
+  - script: opam switch create $(OCAML_VERSION)
+    displayName: 'Use OCaml version: $(OCAML_VERSION)'
+  - script: opam install -y dune
+    displayName: 'opam install -y dune'
+  - script: opam install -y menhir
+    displayName: 'opam install -y menhir'
+  - script: opam install -y utop
+    displayName: 'opam install -y utop'
+  - script: make clean-for-ci
+    displayName: 'make clean-for-ci'
+  - script: opam pin add -y reason .
+    displayName: "opam pin add -y reason ."
+  - script: opam pin add -y rtop .
+    displayName: "opam pin add -y rtop ."
+  - script: eval $(opam env); make test-ci
+    displayName: "make test-ci"
+  - script: git diff --exit-code
+    displayName: "Check git is clean"

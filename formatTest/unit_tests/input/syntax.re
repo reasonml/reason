@@ -1215,3 +1215,52 @@ foo(~a :> int);
 foo(~Foo.a?);
 
 foo(~Foo.a);
+
+/* https://github.com/facebook/reason/issues/2155#issuecomment-422077648 */
+true ? (Update({...a, b: 1}), None) : x;
+true ? ({...a, b: 1}) : a;
+true ? (a, {...a, b: 1}) : a;
+
+true ? ([x, ...xs]) => f(x, xs) : a;
+
+/* https://github.com/facebook/reason/issues/2200 */
+foo(~x=-1 + 2);
+
+foo(~x=-1 + 2: int);
+
+foo(~not);
+
+let foo = (~not) => ();
+
+let foo = (~not: string) => ();
+
+foo(~not: string);
+
+/* https://github.com/facebook/reason/issues/2141 */
+let testCallNamedArgs = (foo: ((~a: int, ~b: int) => int), a, b) =>
+  foo(~a, ~b);
+
+let testCallNamedArgs = (foo: ((~a: int, ~b: int=?) => int), a, b) =>
+  foo(~a, ~b);
+
+let Foo.{name} = bar;
+let Foo.Bar.{name} = bar;
+
+let Foo.[ name ] = bar;
+let Foo.Bar.[ name ] = bar;
+
+let Foo.Bar.[] = bar;
+let Foo.Bar.[||] = bar;
+let Foo.() = foo;
+
+/* let Foo.(bar, baz) = foo; */
+
+let Foo.(exception bar) = baz;
+
+try({
+  let this = try_exp;
+  let has = hugged;
+  parens;
+}) {
+  | _ => ()
+};

@@ -1,15 +1,17 @@
 {
-  "name": "get-js-of-ocaml",
-  "notes": "This is to get js_of_ocaml",
+  "name": "get-bspacks-deps",
+  "notes": "This is to get all bspacks dependencies",
   "private": true,
   "version": "0.0.0",
   "dependencies": {
     "@opam/js_of_ocaml": "*",
-    "@opam/menhir": "20171013",
-    "@opam/ocaml-migrate-parsetree": "*"
+    "@opam/menhir": "20190924",
+    "@opam/ocaml-migrate-parsetree": "*",
+    "@opam/ppx_derivers": "*"
   },
   "scripts": {
-    "show-omp-dir": "echo #{@opam/ocaml-migrate-parsetree.target_dir}"
+    "show-omp-dir": "echo #{@opam/ocaml-migrate-parsetree.target_dir}",
+    "show-ppx_derivers-dir": "echo #{@opam/ppx_derivers.target_dir}"
   },
   "devDependencies": {
     "ocaml": "~4.2.3004"

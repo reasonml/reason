@@ -239,3 +239,330 @@ switch(foo) {
 };
 
 <div>...c</div>;
+
+<div onClick={(event) => handleChange(event)} />;
+<div onClick={(eventWithLongIdent) => handleChange(eventWithLongIdent)} />;
+<div
+  onClick={(event) => {
+    Js.log(event);
+    handleChange(event);
+  }}
+/>;
+
+<UncurriedDiv
+  onClick={(. event) => {
+    Js.logU(. event);
+    handleChange(. event);
+  }}
+/>;
+
+<UncurriedDiv
+  onClick={(. eventUncurried) =>
+    handleChange(. eventUncurried)
+  }
+/>;
+
+<StaticDiv
+  onClick={(foo, bar, baz, lineBreak, identifier) => {
+    doStuff(foo, bar, baz);
+    bar(lineBreak, identifier);
+  }}
+/>;
+
+<StaticDiv
+  onClick={(foo, bar, baz, lineBreak, identifier) => {
+    bar(lineBreak, identifier)
+  }}
+/>;
+
+<AttrDiv onClick={[@bar] (event) => handleChange(event)} />;
+<AttrDiv onClick={[@bar] (eventLongIdentifier) => handleChange(eventLongIdentifier)} />;
+
+<StaticDivNamed
+  onClick={(
+    ~foo,
+    ~bar,
+    ~baz,
+    ~lineBreak,
+    ~identifier,
+    ()
+  ) =>
+    bar(lineBreak, identifier)
+  }
+/>;
+
+<div
+  onClick={(e): event => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(e, e2): event => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): event => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): (
+    event,
+    event2,
+    event3,
+    event4,
+    event5,
+  ) => {
+    doStuff();
+    bar(foo);
+  }}
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): event =>
+    doStuff()
+  }
+/>;
+
+<div
+  onClick={(
+    foo,
+    bar,
+    baz,
+    superLongIdent,
+    breakLine,
+  ): (
+    event,
+    event2,
+    event3,
+    event4,
+    event5,
+  ) =>
+    doStuff()
+  }
+/>;
+
+<div>
+  {switch(color) {
+    | Black => ReasonReact.string("black")
+    | Red => ReasonReact.string("red")
+    }}
+</div>;
+
+ReasonReact.(<> {string("Test")} </>);
+
+<div
+ style={
+   [@foo]
+   ReactDOMRe.Style.make(
+     ~width="20px",
+     ~height="20px",
+     ~borderRadius="100%",
+     ~backgroundColor="red",
+   )
+ }
+/>;
+
+<Animated initialValue=0.0 value>
+  ...{
+       ReactDOMRe.Style.make(
+         ~width="20px",
+         ~height="20px",
+         ~borderRadius="100%",
+         ~backgroundColor="red",
+       )
+     }
+</Animated>;
+
+<Animated initialValue=0.0 value>
+  ...{
+       value =>
+         <div
+           style={
+             ReactDOMRe.Style.make(
+               ~width="20px",
+               ~height="20px",
+               ~borderRadius="100%",
+               ~backgroundColor="red",
+             )
+           }
+         />
+     }
+</Animated>;
+
+<Animated initialValue=0.0 value>
+  ...{
+     (value) :ReasonReact.element =>
+         <div
+           style={
+             ReactDOMRe.Style.make(
+               ~width="20px",
+               ~height="20px",
+               ~borderRadius="100%",
+               ~backgroundColor="red",
+             )
+           }
+         />
+     }
+</Animated>;
+
+
+<Animated initialValue=0.0 value>
+  ...{
+    [@foo] value => {
+         <div
+           style={
+             ReactDOMRe.Style.make(
+               ~width="20px",
+               ~height="20px",
+               ~borderRadius="100%",
+               ~backgroundColor="red",
+             )
+           }
+         />
+     }
+  }
+</Animated>;
+
+<Animated initialValue=0.0 value>
+  ...{value => {
+       let width = "20px";
+       let height = "20px";
+
+       <div
+         style={
+           ReactDOMRe.Style.make(
+             ~width,
+             ~height,
+             ~borderRadius="100%",
+             ~backgroundColor="red",
+           )
+         }
+       />
+     }
+  }
+</Animated>;
+
+<div callback={reduce(() => !state)} />;
+
+<button ?id className={Cn.make(["button", "is-fullwidth"])} onClick>
+  {"Submit" |> ste}
+</button>;
+
+<button ?id className={Cn.make([|"button", "is-fullwidth"|])} onClick>
+  {"Submit" |> ste}
+</button>;
+
+<button ?id className={Cn.make(("button", "is-fullwidth"))} onClick>
+  {"Submit" |> ste}
+</button>;
+
+<button ?id className={Cn.make({a: b})} onClick>
+  {"Submit" |> ste}
+</button>;
+
+<button ?id className={Cn.make({"a": b})} onClick>
+  {"Submit" |> ste}
+</button>;
+
+// shouldn't result in a stack overflow
+<X y={z->Belt.Option.getWithDefault("")} />;
+
+<div style={getStyle()}> {ReasonReact.string("BugTest")} </div>;
+
+<div>
+  {
+    let left = limit->Int.toString;
+    {j|$left characters left|j}->React.string;
+  }
+</div>;
+
+<View style=styles##backgroundImageWrapper>
+  {
+    let uri = "/images/header-background.png";
+    <Image
+      resizeMode=`contain
+      style=styles##backgroundImage
+      uri
+    />
+  }
+</View>;
+
+<div>
+  {true
+    ? {let foo = "foo"; // don't remove semi
+      <span> {ReasonReact.string(foo)} </span>}
+    : <span> {ReasonReact.string("bar")} </span>}
+</div>;
+
+let v =
+  <A>
+    <B>
+      ...{_ => {
+        let renderX = x => {
+          let y = x ++ x;
+          <div key=y />;
+        };
+        renderX("foo");
+      }}
+    </B>
+  </A>;
+
+<Component
+  prop={
+    x->Option.map(x => {let y = x; y ++ y})
+  }
+/>;
+
+<Component
+  prop={{
+    name: x->Option.map(x => {let y = x; y ++ y})
+  }}
+/>;
+
+<Component
+  prop={{
+    name: x ++ Option.map(x => {let y = x; y ++ y})
+  }}
+/>;
+
+<Component
+  prop={{
+    name: x##Option.map(x => {let y = x; y ++ y})
+  }}
+/>;
+
+<Component
+  prop={{
+    name: x |> Option.map(x => {let y = x; y ++ y})
+  }}
+/>;
+
+<A someProp={ <> {React.string("Hello")} </> } />;
+
+<A someProp=?{ <> {React.string("Hi")} </> } />;

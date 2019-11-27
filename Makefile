@@ -14,7 +14,7 @@ install:
 test-ci: install test
 
 test: build clean-tests
-	node ./formatTest/testOprint.js
+	dune build src/reason-parser-tests/testOprint.exe
 	# ./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
 	cd formatTest; ./test.sh
@@ -28,6 +28,8 @@ coverage:
 
 clean-tests:
 	rm -rf ./formatTest/**/actual_output
+	rm -rf ./formatTest/**/intf_output
+	rm -rf ./formatTest/**/**/TestTest.cmi
 	rm -f ./formatTest/failed_tests
 	rm -f ./miscTests/reactjs_jsx_ppx_tests/*.cm*
 
@@ -40,13 +42,9 @@ all_errors:
 	@ echo "---"
 	menhir --explain --strict --unused-tokens src/reason-parser/reason_parser.mly --list-errors > src/reason-parser/reason_parser.messages.checked-in
 
-# Not all versions of jbuilder have the clean command.
-# jbuilder clean
 clean: clean-tests
 	dune clean
 
-# The jbuilder that gets installed on CI doesn't have the make clean
-# command yet.
 clean-for-ci: clean-tests
 	rm -rf ./_build
 

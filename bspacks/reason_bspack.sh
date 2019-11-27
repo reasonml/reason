@@ -9,16 +9,15 @@ THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
 
 cd $THIS_SCRIPT_DIR
 
-# Install & build menhir, omp
-esy i
-esy b
+# Install & build all bspacks deps: jsoo, menhir, omp, ppx_derivers
+esy
 
 # Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out.
 resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
 menhirSuggestedLib=`esy menhir --suggest-menhirLib`
 
-reasonTargetDir="$THIS_SCRIPT_DIR/.."
+reasonRootDir="$THIS_SCRIPT_DIR/.."
 buildDir="$THIS_SCRIPT_DIR/build"
 
 REFMT_BINARY="$buildDir/refmt_binary"
@@ -27,8 +26,9 @@ REFMT_API_ENTRY="$buildDir/refmt_api_entry"
 REFMT_API_FINAL="$buildDir/refmt_api_final"
 REFMT_PRE_CLOSURE="$buildDir/refmt_pre_closure"
 
-REFMT_CLOSURE="$reasonTargetDir/refmt"
+REFMT_CLOSURE="$reasonRootDir/refmt"
 
+ppxDeriversTargetDir=$THIS_SCRIPT_DIR/build/ppx_derivers
 ocamlMigrateParseTreeTargetDir=$THIS_SCRIPT_DIR/build/omp
 
 # clean some artifacts
@@ -47,10 +47,20 @@ build_reason_402 () {
     export version=$(grep version ./esy.json | sed -E 's/.+([0-9]\.[0-9]\.[0-9]).+/\1/')-$(date +%Y.%m.%d)
   fi
   make pre_release
-  esy install
-  esy build
+  esy
+  reasonEsyTargetDir=`esy echo '#{self.target_dir}'`
   git checkout esy.json esy.lock
   cd -
+}
+
+# Get ppx_derivers source from esy
+get_ppx_derivers () {
+  mkdir $ppxDeriversTargetDir
+
+  ppxDeriversSource=`esy show-ppx_derivers-dir`/_build/default/src
+
+  cp $ppxDeriversSource/*.ml $ppxDeriversTargetDir
+  cp $ppxDeriversSource/*.mli $ppxDeriversTargetDir
 }
 
 # Get OMP source from esy
@@ -59,7 +69,7 @@ get_omp () {
 
   ompSource=`esy show-omp-dir`/_build/default/src
 
-  cp $ompSource/*.ml $THIS_SCRIPT_DIR/build/omp
+  cp $ompSource/*.ml $ocamlMigrateParseTreeTargetDir
   for i in $(ls build/omp/*.pp.ml); do
   newname=$(basename $i | sed 's/\.pp\././')
   target=${THIS_SCRIPT_DIR}/build/omp/${newname}
@@ -92,18 +102,21 @@ build_js_api () {
     -bs-main Reason_toolchain \
     -prelude-str "$resultStub" \
     -I "$menhirSuggestedLib" \
-    -I "$reasonTargetDir/_build/default/src/ppx/"                               \
-    -I "$reasonTargetDir/_build/default/src/reason-merlin/"                     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/"                     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser-tests/"               \
-    -I "$reasonTargetDir/_build/default/src/refmt/"                             \
-    -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
+    -I "$reasonEsyTargetDir/default/src/ppx/"                               \
+    -I "$reasonEsyTargetDir/default/src/reason-merlin/"                     \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/"                     \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/easy_format/"  \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/cmdliner/"     \
+    -I "$reasonEsyTargetDir/default/src/refmt/"                             \
+    -I "$reasonEsyTargetDir/default/src/refmttype/"                         \
+    -I "$ppxDeriversTargetDir" \
     -I "$ocamlMigrateParseTreeTargetDir" \
     -bs-MD \
     -o "$REFMT_API.ml"
 
+  # This hack is required since the emitted code by bspack somehow adds 	
+	sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
+  
   # the `-no-alias-deps` flag is important. Not sure why...
   # remove warning 40 caused by ocaml-migrate-parsetree
   esy ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
@@ -147,19 +160,22 @@ build_refmt () {
     -main-export Refmt_impl \
     -prelude-str "$resultStub" \
     -I "$menhirSuggestedLib" \
-    -I "$reasonTargetDir" \
-    -I "$reasonTargetDir/_build/default/src/ppx/"                               \
-    -I "$reasonTargetDir/_build/default/src/reason-merlin/"                     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/"                     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/easy_format/"  \
-    -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
-    -I "$reasonTargetDir/_build/default/src/reason-parser-tests/"               \
-    -I "$reasonTargetDir/_build/default/src/refmt/"                             \
-    -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
+    -I "$reasonEsyTargetDir" \
+    -I "$reasonEsyTargetDir/default/src/ppx/"                               \
+    -I "$reasonEsyTargetDir/default/src/reason-merlin/"                     \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/"                     \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/easy_format/"  \
+    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/cmdliner/"     \
+    -I "$reasonEsyTargetDir/default/src/refmt/"                             \
+    -I "$reasonEsyTargetDir/default/src/refmttype/"                         \
+    -I "$ppxDeriversTargetDir" \
     -I "$ocamlMigrateParseTreeTargetDir" \
     -bs-MD \
     -o "$REFMT_BINARY.ml"
 
+	# This hack is required since the emitted code by bspack somehow adds 	
+	sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
+  
   echo "👉 compiling refmt"
   # build REFMT_BINARY into an actual binary too. For testing purposes at the end
   esy ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_BINARY.ml" -o "$REFMT_BINARY.byte"
@@ -174,6 +190,7 @@ build_refmt () {
 
 build_reason_402
 build_bspack
+get_ppx_derivers
 get_omp
 build_refmt
 build_js_api

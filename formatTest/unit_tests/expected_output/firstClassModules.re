@@ -95,3 +95,6 @@ type tWithAttr = (
 );
 
 type t = {m: (module M)};
+
+/* https://github.com/facebook/reason/issues/2150 */
+type t('a) = (module Test with type a = 'a);

@@ -1,6 +1,87 @@
+## 3.5.3
+- 🎉 MUCH better parsing error locations - more reliable autocomplete 🎉 (@let-def)[https://github.com/let-def] ([#2439](https://github.com/facebook/reason/pull/2439))
+- Rebased the better error recovery diff onto 4.09 OCaml [@anmonteiro](https://github.com/anmonteiro) ([#2480](https://github.com/facebook/reason/pull/2480))
+- Fix printing of fragments inside JSX props [@anmonteiro](https://github.com/anmonteiro) ([#2463](https://github.com/facebook/reason/pull/2463))
+- Modernize CI based on latest hello-reason CI [@jordwalke](https://github.com/jordwalke) ([#2479](https://github.com/facebook/reason/pull/2479))
+- Fix bug that caused necessary braces to be removed [@anmonteiro](https://github.com/anmonteiro) ([#2481](https://github.com/facebook/reason/pull/2481))
+- Make prepublish script auto-generate opam files [@jordwalke](https://github.com/jordwalke) ([#2468](https://github.com/facebook/reason/pull/2468))
+- Fix brace removal with pipe-first in JSX attributes [@bloodyowl](https://github.com/bloodyowl) ([#2474](https://github.com/facebook/reason/pull/2474))
+- CI Improvements [@ulrikstrid](https://github.com/ulrikstrid) ([#2459](https://github.com/facebook/reason/pull/2459))
+- Make sure you can still include rtop from inside utop [@sync ](https://github.com/sync ) ([#2466](https://github.com/facebook/reason/pull/2466))
+
+## 3.5.2
+- Support OCaml 4.09 ([2450](https://github.com/facebook/reason/pull/2450)).
+- Improve opam packaging config ([2431](https://github.com/facebook/reason/pull/2431)).
+- Improve repo to support esy resolutions to master branch ([31225fc0](https://github.co(https://github.com/facebook/reason/commit/31225fc066731075b6fa695e555f65ffcc172bcf))
+
+## 3.5.0
+Improvements:
+- Support OCaml 4.08 ([2426](https://github.com/facebook/reason/pull/2426)).
+
+Fixes:
+- Print attributes in class fields [2414](https://github.com/facebook/reason/pull/2414).
+- Preserve function body braces when Pexp_fun is an argument to a function [commit](https://github.com/facebook/reason/commit/f8eb7b1c1f3bc93883b663bb6b7fc0552e7b1791)
+- Prettify try to hug braces [2378](https://github.com/facebook/reason/pull/2378)
+- Fix operator swap for type declarations [commit](https://github.com/facebook/reason/commit/d4516beaceb1fa1fa53b9d1c30565c7e7cacd39b)
+- Fix JSX removing semicolons [commit](https://github.com/facebook/reason/commit/ab4bf53ab1a76d7ead7e634489a2a1fcbb7cf817)
+- Better formatting of Pexp_lazy [commit](https://github.com/facebook/reason/commit/46bffd1590a4f19a72a9c6e8d754bb47fb63fa4b)
+
+## 3.4.2
+
+Not released to @esy-ocaml/reason - would have required a major version bump.
+These features will be released in 3.5.0.
+
+Improvements:
+- Parse and print parentheses around inline record declarations ([2363](https://github.com/facebook/reason/pull/2363))
+- Proper outcome printing (for editor and build) of inline records ([2336](https://github.com/facebook/reason/pull/2336))
+- Proper outcome printing of types with inline records (parentheses) ([2370](https://github.com/facebook/reason/pull/2370))
+
+## 3.4.1
+
+Fixes:
+- Don't remove semis in blocks inside ternary expressions as jsx children ([2352](https://github.com/facebook/reason/pull/2352)).
+- Handle single line comments ending with end-of-file ([2353](https://github.com/facebook/reason/pull/2353)).
+
+## 3.4.0
+
+Fixes:
+- Don't pun record types if they contain attributes ([2316](https://github.com/facebook/reason/pull/2316)).
+
+Improvements:
+
+- `// line comments`! ([2268](https://github.com/facebook/reason/pull/2146)). Make sure that your constraints on `refmt` versions for native projects. Specify a version >= `3.4.0` if you use `//` comments in your Reason code. Specifiy ranges like `3.4.0-3.5.0`.
+- Better whitespace interleaving ([1990](https://github.com/facebook/reason/pull/1990)).
+- Allow Reason to be used with Merlin Natively on Windows ([2256](https://github.com/facebook/reason/pull/2256)).
+- Improved Ternary Formatting ([2294](https://github.com/facebook/reason/pull/2294)).
+
+## 3.3.4
+
+Fixes:
+
+- Pipe first braces ([2133](https://github.com/facebook/reason/pull/2133), [2148](https://github.com/facebook/reason/pull/2148)).
+- Better rtop `use` directives ([2146](https://github.com/facebook/reason/pull/2146), [2147](https://github.com/facebook/reason/pull/2147)).
+- `foo(~Foo.a)` becoming `foo(~Fooa=Foo.a)` ([2136](https://github.com/facebook/reason/pull/2136)).
+- Parse `<div> ...c</div>` correctly ([2137](https://github.com/facebook/reason/pull/2137)).
+- Invalid formatting of first-class module with type constraint ([2151](https://github.com/facebook/reason/pull/2151)).
+- Precedence printing of pipe first with underscore sugar as JSX child ([2159](https://github.com/facebook/reason/pull/2159)).
+- Correct location for JSX name & extension expression ([2166](https://github.com/facebook/reason/pull/2166), [2162](https://github.com/facebook/reason/pull/2162)).
+- Lack of space after `module type of` ([2175](https://github.com/facebook/reason/pull/2175)).
+- Outcome printer (editor & interface generator) function signature ([2185](https://github.com/facebook/reason/pull/2185)).
+- Precedence issue with unary operators and labeled arguments ([2201](https://github.com/facebook/reason/pull/2201)).
+- Type printing of polymorphic variants row fields ([2191](https://github.com/facebook/reason/pull/2191)).
+- Pattern parsing inside ternary expressions ([2188](https://github.com/facebook/reason/pull/2188)).
+
+Improvements:
+
+- Preserve empty lines in records and bs objects ([2152](https://github.com/facebook/reason/pull/2152)).
+- Make `let not = blabla` work (not is a keyword) ([2197](https://github.com/facebook/reason/pull/2197)).
+- Format doc comments on variant leafs with consistency ([2194](https://github.com/facebook/reason/pull/2194))
+- Single pipe first printing layout ([2193](https://github.com/facebook/reason/pull/2193)).
+- Performance. One case where the printer took exponential time ([2195](https://github.com/facebook/reason/pull/2195)).
+
 ## 3.3.3
 
-- More fixes for fast pipe ([2120](https://github.com/facebook/reason/pull/2120), [2119](https://github.com/facebook/reason/pull/2119), [2111](https://github.com/facebook/reason/pull/2111)).
+- More fixes for pipe first ([2120](https://github.com/facebook/reason/pull/2120), [2119](https://github.com/facebook/reason/pull/2119), [2111](https://github.com/facebook/reason/pull/2111)).
 - Fix regressed printing of first-class module ([2124](https://github.com/facebook/reason/pull/2124)).
 - Fix local open printing for `bs.obj` ([2123](https://github.com/facebook/reason/pull/2123)).
 - fix printing of `foo[(bar + 1)]` to `foo[bar + 1]` ([2110](https://github.com/facebook/reason/pull/2110)).
@@ -13,7 +94,7 @@
 Big release! No breaking change. Big shout out to [@anmonteiro](https://twitter.com/anmonteiro90) and [@iwanKaramazow](https://twitter.com/_iwan_refmt)!
 
 Major:
-- Fast pipe `|.` now got a Reason sugar, `->`, with better precedence support than the former ([1999](https://github.com/facebook/reason/pull/1999), [2078](https://github.com/facebook/reason/pull/2078), [2092](https://github.com/facebook/reason/pull/2092), [2082](https://github.com/facebook/reason/pull/2082), [2087](https://github.com/facebook/reason/pull/2087), [2055](https://github.com/facebook/reason/pull/2055)).
+- Pipe first `|.` now got a Reason sugar, `->`, with better precedence support than the former ([1999](https://github.com/facebook/reason/pull/1999), [2078](https://github.com/facebook/reason/pull/2078), [2092](https://github.com/facebook/reason/pull/2092), [2082](https://github.com/facebook/reason/pull/2082), [2087](https://github.com/facebook/reason/pull/2087), [2055](https://github.com/facebook/reason/pull/2055)).
 - ReasonReact JSX PPX DOM children spread ([2095](https://github.com/facebook/reason/pull/2095)).
 - ReasonReact JSX PPX fragment ([2091](https://github.com/facebook/reason/pull/2091)).
 - Other ReasonReact JSX PPX fixes ([2088](https://github.com/facebook/reason/pull/2088), [2060](https://github.com/facebook/reason/pull/2060), [2027](https://github.com/facebook/reason/pull/2027), [2024](https://github.com/facebook/reason/pull/2024), [2007](https://github.com/facebook/reason/pull/2007), [2021](https://github.com/facebook/reason/pull/2021), [1963](https://github.com/facebook/reason/pull/1963)).

@@ -3,13 +3,15 @@ type elt =
   | Group(list(elt));
 
 module X = {
-  let createElement = (~children=[], ()) =>
+  let createElement = (~children=[], ()) => {
     Text("x");
+  };
 };
 
 module Y = {
-  let createElement = (~children=[], ()) =>
+  let createElement = (~children=[], ()) => {
     Text("y");
+  };
 };
 
 module M =
@@ -18,7 +20,7 @@ module M =
          Y: (module type of Y),
        ) => {
   let createElement =
-      (~name="M", ~id=0, ~children=[], ()) =>
+      (~name="M", ~id=0, ~children=[], ()) => {
     Group(
       [
         Text(name),
@@ -28,6 +30,7 @@ module M =
       ]
       @ children,
     );
+  };
 };
 
 let _ =

@@ -1,0 +1,27 @@
+{
+  "name": "@esy-ocaml/rtop",
+  "version": "3.3.3",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/facebook/reason.git"
+  },
+  "dependencies": {
+    "@esy-ocaml/substs": "^0.0.1",
+    "@opam/ocamlfind": "*",
+    "@opam/result": "*",
+    "@opam/dune": "*",
+    "@esy-ocaml/reason": "^3.2.0",
+    "@opam/utop": " >= 1.17.0",
+    "ocaml": ">= 4.2.0  < 4.10.0"
+  },
+  "devDependencies": {
+    "@esy-ocaml/merlin": "*",
+    "ocaml": "~4.6.0"
+  },
+  "esy": {
+    "build": [
+      [ "dune", "build", "-p", "rtop"]
+    ]
+  }
+}

@@ -15,10 +15,10 @@ type attr =
 type attr +=
   | Point(int, int);
 type attr +=
-  | PointA{
+  | PointA({
       a: int,
       b: int,
-    };
+    });
 
 type notTupleVariantExtraParens =
   | NotActuallyATuple2(int, int);
@@ -352,7 +352,7 @@ let myTuple = OneTuple(20, 30);
 let res =
   switch (myTuple) {
   | Two(x, y) =>
-    try (Two(x, y)) {
+    try(Two(x, y)) {
     | One => "hi"
     | Two => "bye"
     }
@@ -674,3 +674,12 @@ Delete({
 });
 
 let x: t = `Poly;
+
+/* Format doc attrs consistent: https://github.com/facebook/reason/issues/2187 */
+type t =
+  | /** This is some documentation that might be fairly long and grant a line break */
+    A
+  | /** Shorter docs */
+    B
+  | /** Some more longer docs over here that make sense to break lines on too */
+    C;

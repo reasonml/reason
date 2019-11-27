@@ -1,25 +1,22 @@
 {
-  "name": "reason-dev",
-  "notes": "This is just the dev package config. See ./scripts/esy/ for release package configs",
+  "name": "reason-cli",
+  "notes": "This is just the dev package config (also built as globally installable reason-cli). See ./refmt.json ./rtop.json for individual release package configs.",
   "license": "MIT",
-  "version": "3.3.3",
+  "version": "3.5.1",
   "dependencies": {
-    "@esy-ocaml/substs": "^0.0.1",
-    "@esy-ocaml/esy-installer": "^0.0.0",
-    "@opam/ocamlfind": "",
-    "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
-    "@opam/utop": " >= 1.17.0",
-    "@opam/merlin-extend": " >= 0.3.0",
+    "ocaml": " >= 4.2.0 < 4.10.0",
+    "@opam/fix": "*",
+    "@opam/ocamlfind": "*",
+    "@opam/menhir": " >= 20170418.0.0",
+    "@opam/utop": " >= 1.17.0 < 2.3.0",
+    "@opam/merlin-extend": " >= 0.4",
     "@opam/result": "*",
     "@opam/ocaml-migrate-parsetree": "*",
-    "@opam/ocamlbuild": "*",
     "@opam/dune": "*"
   },
-  "peerDependencies": {
-    "ocaml": " >= 4.2.0  < 4.7.0"
-  },
   "devDependencies": {
-    "@esy-ocaml/merlin": "^3.0.5005",
+    "@opam/merlin": "*",
+    "@opam/odoc": "*",
     "ocaml": "~4.6.0"
   },
   "notes-ctd": [
@@ -31,25 +28,50 @@
     "5. Copy ./scripts/esy-prepublish.js in to your repo and change packages= to your set of packages."
   ],
   "esy": {
-    "build": [
-      [ "dune", "build", "-p", "reason,rtop"]
-    ],
+    "build": [["dune", "build", "-p", "reason,rtop"]],
     "install": [
       ["esy-installer", "reason.install"],
       ["esy-installer", "rtop.install"]
     ],
-    "buildsInSource": "_build",
-    "_dependenciesForNewEsyInstaller": {
-      "@esy-ocaml/substs": "^0.0.1",
-      "@esy-ocaml/esy-installer": "^0.0.0",
-      "@opam/ocamlfind": "",
-      "@opam/menhir": " >= 20170418.0.0  <= 20171013.0.0",
-      "@opam/utop": " >= 1.17",
-      "@opam/merlin-extend": " >= 0.3",
-      "@opam/result": "*",
-      "@opam/ocaml-migrate-parsetree": "*",
-      "@opam/ocamlbuild": "*",
-      "@opam/dune": "*"
+    "release": {
+      "bin": {
+        "rtop": "rtop",
+        "refmt": "refmt"
+      },
+      "includePackages": [
+        "root",
+        "@opam/base-bytes",
+        "@opam/base-threads",
+        "@opam/base-unix",
+        "@opam/camomile",
+        "@opam/lambda-term",
+        "@opam/lwt",
+        "@opam/lwt_log",
+        "@opam/lwt_react",
+        "@opam/menhir",
+        "@opam/mmap",
+        "@opam/ocplib-endian",
+        "@opam/ocaml-migrate-parsetree",
+        "@opam/ocamlfind",
+        "@opam/ppx_derivers",
+        "@opam/react",
+        "@opam/result",
+        "@opam/seq",
+        "@opam/utop",
+        "@opam/zed",
+        "ocaml"
+      ],
+      "rewritePrefix": true
     }
+  },
+  "scripts": {
+    "//": "sanity test. Expected by ci.",
+    "test": "esy x refmt --version",
+
+    "//": "Actual test.",
+    "tests": "esy x make test",
+
+    "//": "Required by CI",
+    "doc": "esy dune build @doc"
   }
 }
