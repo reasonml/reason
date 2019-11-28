@@ -78,19 +78,25 @@ get_omp () {
 }
 
 build_bspack () {
-  # Get bspack source first if not there yet
-  # (TODO: remove once the package is in opam)
-  bspack_src="./bspack.ml"
+  cd $THIS_SCRIPT_DIR/bin
+
+  bspack_src="bspack.ml"
+  bspack_url="https://raw.githubusercontent.com/BuckleScript/bucklescript/975bb776c2bda1e870522718b50463c8d4f58576/lib/4.02.3/unstable/bspack.ml"
+
+  # Get bspack source first, if not there yet
+  # (TODO: remove once bspack package is in opam)
   if ! [ -f "$bspack_src" ]; then
-    curl -o "$bspack_src" "https://raw.githubusercontent.com/BuckleScript/bucklescript/975bb776c2bda1e870522718b50463c8d4f58576/lib/4.02.3/unstable/bspack.ml"
+    echo "👉 downloading bspack from BuckleScript repo"
+    curl -o "$bspack_src" "$bspack_url"
   fi
+
   # Build ourselves a bspack.exe if we haven't yet
   if [ ! -f $THIS_SCRIPT_DIR/bspack.exe ]; then
     echo "👉 building bspack.exe"
-    cd $THIS_SCRIPT_DIR/bin
-    esy ocamlopt -g -w -40-30-3 ./ext_basic_hash_stubs.c unix.cmxa $bspack_src -o ../bspack.exe
-    cd -
+    esy ocamlopt -g -w -40-30-3 ./ext_basic_hash_stubs.c unix.cmxa "$bspack_src" -o ../bspack.exe
   fi
+
+  cd -
 }
 
 build_js_api () {
