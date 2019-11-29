@@ -580,6 +580,18 @@ let remove_stylistic_attrs_mapper_maker super =
 let remove_stylistic_attrs_mapper =
   remove_stylistic_attrs_mapper_maker Ast_mapper.default_mapper
 
+#if OCAML_VERSION >= (4, 8, 0)
+let noop_mapper =
+  let noop = fun _mapper x -> x in
+  { Ast_mapper.default_mapper with
+    expr = noop;
+    structure = noop;
+    structure_item = noop;
+    signature = noop;
+    signature_item = noop; }
+(* Don't need to backport past 4.08 *)
+let backport_letopt_mapper = noop_mapper
+#else
 (** This will convert Pexp_letop into a series of `apply`s to simulate 4.08's behavior.
  *
  * For example,
@@ -601,22 +613,22 @@ let backport_letopt_mapper_maker super =
   expr = fun mapper expr ->
     match expr.pexp_desc with
     | Pexp_letop { let_; ands; body } ->
-      (** coalesce the initial 'let' and any subsequent 'and's into a final
-          Pattern (for the argument of the continuation function) and
-          Expression (the first arg ot the let function)
+      (* coalesce the initial 'let' and any subsequent 'and's into a final
+         Pattern (for the argument of the continuation function) and
+         Expression (the first arg ot the let function)
 
           let+ a = b
           and+ c = d
           and+ e = f
           and+ g = h
 
-          produces the pattern (a, (c, (e, g)))
-          and the expression (and+)(b, (and+)(d, (and+)(f, h)))
-          *)
+         produces the pattern (a, (c, (e, g)))
+         and the expression (and+)(b, (and+)(d, (and+)(f, h)))
+      *)
       let rec loop = function
         | [] -> assert false
         | {pbop_op; pbop_pat; pbop_exp}::[] -> (pbop_pat, pbop_exp, pbop_op)
-        | {pbop_op; pbop_pat; pbop_exp; pbop_loc}::rest -> 
+        | {pbop_op; pbop_pat; pbop_exp; pbop_loc}::rest ->
           let (pattern, expr, op) = loop rest in
           let and_op_ident = Ast_helper.Exp.ident
             ~loc:op.loc
@@ -641,18 +653,6 @@ let backport_letopt_mapper_maker super =
     | _ -> super.expr mapper expr
 }
 
-#if OCAML_VERSION >= (4, 8, 0)
-let noop_mapper =
-  let noop = fun mapper x -> x in
-  { Ast_mapper.default_mapper with
-    expr = noop;
-    structure = noop;
-    structure_item = noop;
-    signature = noop;
-    signature_item = noop; }
-(** Don't need to backport past 4.08 *)
-let backport_letopt_mapper = noop_mapper
-#else
 let backport_letopt_mapper =
   backport_letopt_mapper_maker Ast_mapper.default_mapper
 #endif
