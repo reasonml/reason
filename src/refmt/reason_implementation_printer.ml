@@ -60,6 +60,9 @@ let print printtype filename parsedAsML output_chan output_formatter =
       (Ast_io.Impl ((module OCaml_current),
                     Reason_toolchain.To_current.copy_structure ast))
   | `AST -> fun (ast, _) -> (
+    let ast =
+      Reason_syntax_util.(apply_mapper_to_structure ast backport_letopt_mapper)
+    in
     Printast.implementation output_formatter
       (Reason_toolchain.To_current.copy_structure ast)
   )

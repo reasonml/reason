@@ -138,6 +138,9 @@ let format_implementation_with_comments (structure, _) formatter =
   let structure =
     Reason_syntax_util.(apply_mapper_to_structure structure remove_stylistic_attrs_mapper)
   in
+  let structure =
+    Reason_syntax_util.(apply_mapper_to_structure structure backport_letopt_mapper)
+  in
   Pprintast.structure formatter
     (To_current.copy_structure structure)
 
