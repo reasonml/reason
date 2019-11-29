@@ -17,6 +17,7 @@ test: build clean-tests
 	dune build src/reason-parser-tests/testOprint.exe
 	# ./miscTests/rtopIntegrationTest.sh
 	./miscTests/jsxPpxTest.sh
+	./miscTests/backportSyntaxTests.sh
 	cd formatTest; ./test.sh
 
 .PHONY: coverage

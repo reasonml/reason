@@ -28,6 +28,7 @@
     "5. Copy ./scripts/esy-prepublish.js in to your repo and change packages= to your set of packages."
   ],
   "esy": {
+    "buildsInSource": "_build",
     "build": [["dune", "build", "-p", "reason,rtop"]],
     "install": [
       ["esy-installer", "reason.install"],
