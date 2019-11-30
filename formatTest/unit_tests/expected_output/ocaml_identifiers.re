@@ -65,3 +65,7 @@ module type pub_ = {};
 module P = {
   type t = [ | `pub_];
 };
+
+type method = string;
+
+type foo = {method};

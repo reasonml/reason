@@ -368,6 +368,39 @@ let map_class_type f class_type =
   | x -> x
   }
 
+let rec map_core_type f typ =
+  { typ with ptyp_desc =
+    match typ.ptyp_desc with
+    | Ptyp_var var -> Ptyp_var (f var)
+    | Ptyp_arrow (lbl, t1, t2) ->
+      let lbl' = match lbl with
+        | Labelled s -> Labelled (f s)
+        | Optional s -> Optional (f s)
+        | lbl -> lbl
+      in
+      Ptyp_arrow (lbl', map_core_type f t1, map_core_type f t2)
+    | Ptyp_tuple typs ->
+      Ptyp_tuple (List.map (map_core_type f) typs)
+    | Ptyp_constr (lid, typs) ->
+      Ptyp_constr (map_lident f lid, List.map (map_core_type f) typs)
+    | Ptyp_object (fields, closed_flag) ->
+      Ptyp_object (List.map (fun (s, attrs, typ) -> f s, attrs, map_core_type f typ) fields, closed_flag)
+    | Ptyp_class (lid, typs) ->
+      Ptyp_class (map_lident f lid, List.map (map_core_type f) typs)
+    | Ptyp_alias (typ, s) ->
+      Ptyp_alias (map_core_type f typ, f s)
+    | Ptyp_variant (rfs, closed, lbls) ->
+      Ptyp_variant (List.map (function
+        | Rtag (lbl, attrs, b, cts) ->
+          Rtag (f lbl, attrs, b, cts)
+        | t -> t) rfs, closed, lbls)
+    | Ptyp_poly (vars, typ) ->
+      Ptyp_poly (List.map f vars, map_core_type f typ)
+    | Ptyp_package (lid, typs) ->
+      Ptyp_package (map_lident f lid, List.map (fun (lid, typ) -> (map_lident f lid, map_core_type f typ)) typs)
+    | other -> other
+  }
+
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   this is used by swap_operator_mapper right below, to traverse the whole AST
   and swapping the symbols listed above.
@@ -433,20 +466,12 @@ let identifier_mapper f super =
             { lbl.pld_name
             with txt = f lbl.pld_name.txt } })
         lst) }
-    | Ptype_abstract ->
-      begin match type_decl'.ptype_manifest with
-      | Some ({ ptyp_desc = Ptyp_variant (rfs, closed, lbls) } as m) ->
-        { type_decl'
-        with ptype_manifest = Some { m with ptyp_desc =
-          Ptyp_variant (List.map (function
-             | Rtag (lbl, attrs, b, cts) ->
-               Rtag (f lbl, attrs, b, cts)
-             | t -> t) rfs, closed, lbls) } }
-      | _ -> type_decl'
-      end
     | _ -> type_decl'
     in
     super.type_declaration mapper type_decl''
+  end;
+  typ = begin fun mapper typ ->
+    super.typ mapper (map_core_type f typ)
   end;
   class_declaration = begin fun mapper class_decl ->
     let class_decl' =

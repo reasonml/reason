@@ -60,3 +60,7 @@ end
 module P = struct
   type t = [ `pub ]
 end
+
+type method_ = string
+
+type foo = {method_: method_}
