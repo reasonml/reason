@@ -64,3 +64,5 @@ end
 type method_ = string
 
 type foo = {method_: method_}
+[@@some_attr: type_]
+[@@other_attr: method_]

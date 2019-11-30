@@ -433,23 +433,12 @@ let identifier_mapper f super =
     in
     super.pat mapper pat
   end;
-  signature_item = begin fun mapper signatureItem ->
-    let signatureItem =
-      match signatureItem with
-        | {psig_desc=Psig_value ({pval_name} as name)} ->
-            {signatureItem with psig_desc=Psig_value ({name with pval_name=({pval_name with txt=(f name.pval_name.txt)})})}
-        | _ -> signatureItem
-    in
-    super.signature_item mapper signatureItem
-  end;
   value_description = begin fun mapper desc ->
-    let desc =
-      match desc with
-        | {pval_name = ({txt} as id); pval_prim } when pval_prim != [] ->
-          {desc with pval_name = { id with txt = f txt }}
-        | _ -> desc
+    let desc' =
+      { desc with
+        pval_name = { desc.pval_name with txt = f desc.pval_name.txt }}
     in
-    super.value_description mapper desc
+    super.value_description mapper desc'
   end;
   type_declaration = begin fun mapper type_decl ->
     let type_decl' =

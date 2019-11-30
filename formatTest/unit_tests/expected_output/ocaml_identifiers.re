@@ -68,4 +68,6 @@ module P = {
 
 type method = string;
 
+[@some_attr: type_]
+[@other_attr: method]
 type foo = {method};
