@@ -5,14 +5,14 @@ module T = {
 
 /* Value names (already supported) */
 module V = {
-  let pub_ = ();
+  let method = ();
 };
 
 /* Record fields */
 module R = {
-  type r = {pub_: int};
+  type r = {method: int};
 
-  let foo = {pub_: 4};
+  let foo = {method: 4};
 };
 
 /* Class names and instance variables */
@@ -24,46 +24,46 @@ module C = {
   class c = {
     as _;
     val pub_ = 0;
-    pub pub_ = () => ();
+    pub method = () => ();
   };
 
   class c' = {
     as _;
-    inherit class pub_;
+    inherit class method;
     val! pub_ = 1;
   };
 };
 
 /* Class types */
 module Ct = {
-  class type pub_ = {
-    val pub_: unit => unit;
+  class type method = {
+    val method: unit => unit;
   };
 };
 
 /* Virtual */
 module Cv = {
-  class virtual pub_ = {
+  class virtual method = {
     as _;
   };
 };
 
 /* Object methods */
 module O = {
-  let o = {as _; pub pub_ = ()};
+  let o = {as _; pub method = ()};
 };
 
 /* Function parameter labels */
 module L = {
-  let f = (~pub_) => ignore(pub_);
+  let f = (~method) => ignore(method);
 };
 
 /* Module types */
-module type pub_ = {};
+module type method = {};
 
 /* Polymorphic variants (probably ok as-is?) */
 module P = {
-  type t = [ | `pub_];
+  type t = [ | `pub_ | `method];
 };
 
 type method = string;
