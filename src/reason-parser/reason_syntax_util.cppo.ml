@@ -657,18 +657,17 @@ let backport_letopt_mapper =
   backport_letopt_mapper_maker Ast_mapper.default_mapper
 #endif
 
+let escape_stars_slashes str =
+  if String.contains str '/' then
+    replace_string "/*" "/\\*" @@
+    replace_string "*/" "*\\/" @@
+    replace_string "//" "/\\/" @@
+    str
+  else
+    str
+
 (** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
-let escape_stars_slashes_mapper =
-  let escape_stars_slashes str =
-    if String.contains str '/' then
-      replace_string "/*" "/\\*" @@
-      replace_string "*/" "*\\/" @@
-      replace_string "//" "/\\/" @@
-      str
-    else
-      str
-  in
-  identifier_mapper escape_stars_slashes
+let escape_stars_slashes_mapper = identifier_mapper escape_stars_slashes
 
 (* To be used in parser, transform a token into an ast node with different identifier
  *)

@@ -1,3 +1,7 @@
+open {
+       type t = string;
+     };
+
 let (let+) = (x, f) => List.map(f, x);
 
 let (and+) = List.map2((x, y) => (x, y));

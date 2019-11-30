@@ -1,3 +1,7 @@
+open struct
+  type t = string
+end
+
 let (let+) x f = List.map f x
 
 let (and+) = List.map2 (fun x y -> x,y)

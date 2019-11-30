@@ -40,6 +40,8 @@ val remove_stylistic_attrs_mapper : Ast_mapper.mapper
 
 val backport_letopt_mapper : Ast_mapper.mapper
 
+val escape_stars_slashes : string -> string
+
 val escape_stars_slashes_mapper :
   Ast_mapper.mapper -> Ast_mapper.mapper
 

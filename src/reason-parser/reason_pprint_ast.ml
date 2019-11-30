@@ -5204,7 +5204,7 @@ let printer = object(self:'self)
     self#binding prefixText ~attrs:pvb_attributes ~loc:pvb_loc ~pat:pvb_pat pvb_expr
 
   method binding_op prefixText { pbop_pat; pbop_loc; pbop_exp } =
-    self#binding prefixText ~loc:pbop_loc ~pat:pbop_pat pbop_exp
+    self#binding (escape_stars_slashes prefixText) ~loc:pbop_loc ~pat:pbop_pat pbop_exp
 
   method binding prefixText ?(attrs=[]) ~loc ~pat expr = (* TODO: print attributes *)
     let body = match pat.ppat_desc with
