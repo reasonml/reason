@@ -10,7 +10,7 @@
 # For BuckleScript v6 and above (based on 4.06),
 # we want to be able to build the `refmt_api` and `refmt_binary` build
 # artifacts by leveraging an up to date bspack version.
-# 
+#
 # bspack itself is not vendored in bs-platform anymore, so the user of this
 # script has to provide the bspack binary themselves (most likely as a local
 # build from the bucklescript repo)
@@ -23,7 +23,7 @@
 # BSPACK_EXE=~/Projects/bucklescript/jscomp/bin/bspack.exe bash reason_bspack406.sh
 
 # exit if anything goes wrong
-set -e
+set -xeo pipefail
 
 # this script does 2 independent things:
 # - pack the whole repo into a single refmt file for vendoring into bucklescript
@@ -58,7 +58,7 @@ resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b
 menhirSuggestedLib=`menhir --suggest-menhirLib`
 
 # generated from the script ./downloadSomeDependencies.sh
-ocamlMigrateParseTreeTargetDir="$THIS_SCRIPT_DIR/ocaml-migrate-parsetree/_build/default/src"
+ocamlMigrateParseTreeTargetDir="$THIS_SCRIPT_DIR/ocaml-migrate-parsetree/_build/default"
 reasonTargetDir="$THIS_SCRIPT_DIR/.."
 buildDir="$THIS_SCRIPT_DIR/build"
 
@@ -99,7 +99,8 @@ $BSPACK_EXE \
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
   -I "$reasonTargetDir/_build/default/src/refmt/"                             \
   -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
-  -I "$ocamlMigrateParseTreeTargetDir" \
+  -I "$ocamlMigrateParseTreeTargetDir/src" \
+  -I "$ocamlMigrateParseTreeTargetDir/ppx_derivers/src" \
   -bs-MD \
   -o "$REFMT_BINARY.ml"
 
@@ -123,12 +124,13 @@ $BSPACK_EXE \
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
   -I "$reasonTargetDir/_build/default/src/refmt/"                             \
   -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
-  -I "$ocamlMigrateParseTreeTargetDir" \
+  -I "$ocamlMigrateParseTreeTargetDir/src" \
+  -I "$ocamlMigrateParseTreeTargetDir/ppx_derivers/src" \
   -bs-MD \
   -o "$REFMT_API.ml"
 
 
-# This hack is required since the emitted code by bspack somehow adds 
+# This hack is required since the emitted code by bspack somehow adds
 sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
 
 # the `-no-alias-deps` flag is important. Not sure why...
