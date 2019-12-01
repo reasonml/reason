@@ -4416,6 +4416,7 @@ let printer = object(self:'self)
 
           </tag>           *)
   method formatJSXComponent componentName ?closeComponentName args =
+    let self = self#inline_braces in
     let rec processArguments arguments processedAttrs children =
       match arguments with
       | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
@@ -4448,7 +4449,7 @@ let printer = object(self:'self)
            | Pexp_construct _ when value_has_jsx ->
                label
                 (makeList ~break:Layout.Never [atom lbl; atom "=?"])
-                (self#inline_braces#simplifyUnparseExpr ~wrap:("{","}") expression)
+                (self#simplifyUnparseExpr ~wrap:("{","}") expression)
           | _ ->
               label
                 (makeList ~break:Layout.Never [atom lbl; atom "=?"])
@@ -4496,7 +4497,7 @@ let printer = object(self:'self)
            | Pexp_construct _ when value_has_jsx ->
                label
                 (makeList [atom lbl; atom "="])
-                (self#inline_braces#simplifyUnparseExpr ~wrap:("{","}") expression)
+                (self#simplifyUnparseExpr ~wrap:("{","}") expression)
            | Pexp_record _
            | Pexp_construct _
            | Pexp_array _

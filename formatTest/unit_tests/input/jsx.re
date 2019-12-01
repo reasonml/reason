@@ -566,3 +566,11 @@ let v =
 <A someProp={ <> {React.string("Hello")} </> } />;
 
 <A someProp=?{ <> {React.string("Hi")} </> } />;
+
+<ActionButton
+  one={!validated}
+  two={
+    msg##errorText;
+  }>
+  <InactionText three={msg##prop} four={msg##errorText} />
+</ActionButton>;
