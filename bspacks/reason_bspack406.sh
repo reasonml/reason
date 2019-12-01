@@ -1,11 +1,29 @@
-# Legacy Note:
-# This script is used for older 4.02 based bspacking processes.
+# NOTE:
+# --------
+# This script is derived from the original `./reason_bspack.sh`
+# which is based on the 4.02 based BuckleScript bspack version. The script also
+# does way more than this file, such as creating an closure-optimized refmt.js
+# file.
 #
-# Use reason_bspack406.sh for bspacking refmt_api and refmt_binary for
-# BuckleScript v6 and above (OCaml 4.06 based)!
+# What this file is about:
+# -----
+# For BuckleScript v6 and above (based on 4.06),
+# we want to be able to build the `refmt_api` and `refmt_binary` build
+# artifacts by leveraging an up to date bspack version.
+#
+# bspack itself is not vendored in bs-platform anymore, so the user of this
+# script has to provide the bspack binary themselves (most likely as a local
+# build from the bucklescript repo)
+#
+# We use the env variable BSPACK_EXE to populate the bspack path.
+#
+# Example Usage:
+# -------
+# cd bspacks/
+# BSPACK_EXE=~/Projects/bucklescript/jscomp/bin/bspack.exe bash reason_bspack406.sh
 
 # exit if anything goes wrong
-set -e
+set -xeo pipefail
 
 # this script does 2 independent things:
 # - pack the whole repo into a single refmt file for vendoring into bucklescript
@@ -13,17 +31,34 @@ set -e
 
 THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
 
-echo "**This script is switching you to ocaml 4.02.3 for the subsequent bspacking. Please switch back to your own version afterward. Thanks!**\n"
-opam switch 4.02.3
+# Automatically read the version from reason.json, so that dune builds the right Package.ml file (version, git_version, etc.)
+export version=$(cat ../reason.json \
+  | grep version \
+  | head -1 \
+  | awk -F: '{ print $2 }' \
+  | sed 's/[",]//g')
+
+echo "**This script is switching you to ocaml 4.06.1 for the subsequent bspacking. Please switch back to your own version afterward. Thanks!**\n"
+opam switch 4.06.1
 eval $(opam config env)
 
-# Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out.
+
+if [ -z ${BSPACK_EXE+x} ]; then
+  echo "Missing env variable 'BSPACK_EXE'"
+  echo "Example Usage:"
+  echo "BSPACK_EXE=~/bucklescript/jscomp/bin/bspack.exe bash reason_bspack406.sh"
+  exit 1
+fi
+
+echo "Using bspack located at '${BSPACK_EXE}'..."
+
+# Because OCaml 4.06 doesn't come with the `Result` module, it also needed stubbing out.
 resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
 
 menhirSuggestedLib=`menhir --suggest-menhirLib`
 
 # generated from the script ./downloadSomeDependencies.sh
-ocamlMigrateParseTreeTargetDir="$THIS_SCRIPT_DIR/ocaml-migrate-parsetree/_build/default/src"
+ocamlMigrateParseTreeTargetDir="$THIS_SCRIPT_DIR/ocaml-migrate-parsetree/_build/default"
 reasonTargetDir="$THIS_SCRIPT_DIR/.."
 buildDir="$THIS_SCRIPT_DIR/build"
 
@@ -52,7 +87,7 @@ make build -C ../
 # to turn this into a binary, like in
 # https://github.com/BuckleScript/bucklescript/blob/2ad2310f18567aa13030cdf32adb007d297ee717/jscomp/bin/Makefile#L29
 # =============
-../node_modules/bs-platform/bin/bspack.exe \
+$BSPACK_EXE \
   -main-export Refmt_impl \
   -prelude-str "$resultStub" \
   -I "$menhirSuggestedLib" \
@@ -64,7 +99,8 @@ make build -C ../
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
   -I "$reasonTargetDir/_build/default/src/refmt/"                             \
   -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
-  -I "$ocamlMigrateParseTreeTargetDir" \
+  -I "$ocamlMigrateParseTreeTargetDir/src" \
+  -I "$ocamlMigrateParseTreeTargetDir/ppx_derivers/src" \
   -bs-MD \
   -o "$REFMT_BINARY.ml"
 
@@ -76,9 +112,10 @@ make build -C ../
 # this one is left here as an intermediate file for the subsequent steps. We
 # disregard the usual entry point that is refmt_impl above (which takes care of
 # terminal flags parsing, etc.) and swap it with a new entry point, refmtJsApi (see below)
-../node_modules/bs-platform/bin/bspack.exe \
+$BSPACK_EXE \
   -bs-main Reason_toolchain \
   -prelude-str "$resultStub" \
+  -prelude "$reasonTargetDir/_build/default/src/refmt/package.ml" \
   -I "$menhirSuggestedLib" \
   -I "$reasonTargetDir/_build/default/src/ppx/"                               \
   -I "$reasonTargetDir/_build/default/src/reason-merlin/"                     \
@@ -87,27 +124,18 @@ make build -C ../
   -I "$reasonTargetDir/_build/default/src/reason-parser/vendor/cmdliner/"     \
   -I "$reasonTargetDir/_build/default/src/refmt/"                             \
   -I "$reasonTargetDir/_build/default/src/refmttype/"                         \
-  -I "$ocamlMigrateParseTreeTargetDir" \
+  -I "$ocamlMigrateParseTreeTargetDir/src" \
+  -I "$ocamlMigrateParseTreeTargetDir/ppx_derivers/src" \
   -bs-MD \
   -o "$REFMT_API.ml"
+
+
+# This hack is required since the emitted code by bspack somehow adds
+sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
 
 # the `-no-alias-deps` flag is important. Not sure why...
 # remove warning 40 caused by ocaml-migrate-parsetree
 ocamlc -g -no-alias-deps -w -40 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
+
 # build REFMT_BINARY into an actual binary too. For testing purposes at the end
 ocamlc -g -no-alias-deps -w -40 -I +compiler-libs ocamlcommon.cma "$REFMT_BINARY.ml" -o "$REFMT_BINARY.byte"
-
-# compile refmtJsApi as the final entry file
-ocamlfind ocamlc -bin-annot -g -w -30 -w -40 -package js_of_ocaml,ocaml-migrate-parsetree -o "$REFMT_API_ENTRY" -I $buildDir -c -impl ./refmtJsApi.ml
-# link them together into the final bytecode
-ocamlfind ocamlc -linkpkg -package js_of_ocaml,ocaml-migrate-parsetree -g -o "$REFMT_API_FINAL.byte" "$REFMT_API.cmo" "$REFMT_API_ENTRY.cmo"
-# # use js_of_ocaml to take the compiled bytecode and turn it into a js file
-js_of_ocaml --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
-# # use closure compiler to minify the final file!
-java -jar ./closure-compiler/closure-compiler-v20170910.jar --create_source_map "$REFMT_CLOSURE.map" --language_in ECMASCRIPT6 --compilation_level SIMPLE "$REFMT_PRE_CLOSURE.js" > "$REFMT_CLOSURE.js"
-
-# small integration test to check that the process went well
-# for the native binary
-echo "let f = (a) => 1" | "$REFMT_BINARY.byte" --parse re --print ml
-# for the js bundle
-node ./testRefmtJs.js

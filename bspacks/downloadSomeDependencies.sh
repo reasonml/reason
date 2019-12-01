@@ -1,8 +1,16 @@
+set -xeo pipefail
+
 THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
 
-echo "**This script is switching you to ocaml 4.02.3 for the subsequent bspacking. Please switch back to your own version afterward. Thanks!**\n"
-# switch to 4.02.3. Bspacking means we're sending the final bundle to BuckleScript, which is still on 4.02
-opam switch 4.02.3
+if [ -z ${OCAML_VERSION+x} ]; then
+  echo "OCAML_VERSION not defined, defaulting to '4.06.1'..."
+  OCAML_VERSION=4.06.1
+fi
+
+echo "**This script is switching you to ocaml ${OCAML_VERSION} for the subsequent bspacking. Please switch back to your own version afterward. Thanks!**\n"
+
+# switch to 4.06.1. Bspacking means we're sending the final bundle to BuckleScript, which is still on 4.02
+opam switch $OCAML_VERSION
 
 # =============
 # first step, build ocaml-migrate-parsetree
@@ -20,12 +28,20 @@ TEMP_DIR_FOR_OMP=`mktemp -d`
 echo "cloning ocaml-migrate-parsetree into $TEMP_DIR_FOR_OMP"
 git clone https://github.com/ocaml-ppx/ocaml-migrate-parsetree.git $TEMP_DIR_FOR_OMP
 
+git clone https://github.com/ocaml-ppx/ppx_derivers $TEMP_DIR_FOR_OMP/ppx_derivers
+
 pushd $TEMP_DIR_FOR_OMP
 
-# pin it at a certain commit
-git checkout 013a39f4c672cbd349bae56d6cf74a64135b92b7
+# pin it at a certain tag
+git checkout v1.5.0
 # if there's any error, check if you have everything installed. You should
 # already from opam pin-ing the reason repo (which depends on ocaml-migrate-parsetree)
+
+pushd ppx_derivers
+git checkout 1.2.1
+make
+popd
+
 make
 
 pushd ./_build/default/src
