@@ -1,3 +1,9 @@
+# Legacy Note:
+# This script is used for older 4.02 based bspacking processes.
+#
+# Use reason_bspack406.sh for bspacking refmt_api and refmt_binary for
+# BuckleScript v6 and above (OCaml 4.06 based)!
+
 # exit if anything goes wrong
 set -e
 

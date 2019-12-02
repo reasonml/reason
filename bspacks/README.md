@@ -1,12 +1,56 @@
-This subdirectory is used for packing up the entire Reason `refmt` into a single file through BuckleScript's [bspack](https://github.com/bloomberg/bucklescript/blob/master/jscomp/core/bspack_main.ml), thus discarding all intermediate steps needed to build Reason, except for the final `refmt` binary compilation.
+This subdirectory is used for packing up the entire Reason `refmt` into a
+single file through BuckleScript's
+[bspack](https://github.com/bloomberg/bucklescript/blob/master/jscomp/core/bspack_main.ml),
+thus discarding all intermediate steps needed to build Reason, except for the
+final `refmt` binary compilation.
 
-This makes our installation much friendlier to e.g. Windows. BuckleScript currently includes the three bundles in its own repo, thus making Reason first-class (Btw, BS also uses a few other pieces of code from Reason, in its vendor/reason folder and jscomp/reason_outcome_printer).
+This makes our installation much friendlier to e.g. Windows. BuckleScript
+currently includes the three bundles in its own repo, thus making Reason
+first-class (Btw, BS also uses a few other pieces of code from Reason, in its
+vendor/reason folder and jscomp/reason_outcome_printer).
 
-## Build
+## Build (4.06 / BuckleScript v6 and above)
 
-This whole process needs to happen with OCaml 4.02.3, so make sure you switch to that version first:
+We use this workflow for building `build/refmt_api.ml` and
+`build/refmt_binary.ml` so we can easily vendor Reason for newer BuckleScript
+releases.  More details on that are in the [BuckleScript
+CONTRIBUTING](https://github.com/BuckleScript/CONTRIBUTING.md) file.
+
+For inlining the right version number in the bundle, the script uses
+`../reason.json` as the source of truth.
+
+**Note:** Currently you will need to build BuckleScript yourself to get access
+to the `bspack.exe` executable. Also we skip the building of the `refmt.js`
+artifact entirely here. Will maybe added back later as soon as we need it!
+
+**Instructions:**
+
+```
+cd bspacks
+
+opam switch 4.06.1
+
+./downloadSomeDependencies.sh
+
+# Point to your locally built bspack.exe
+BSPACK_EXE=~/Projects/bucklescript/jscomp/bin/bspack.exe ./reason_bspack406.sh
+```
+
+The bspacked files are also compiled to make sure that the bundle actually
+compiles. You should then find all the relevant `.ml` files in the `./build`
+directory, ready to be copied over to BuckleScript.
+
+## Legacy Build (4.02 / BuckleScript v5 and below)
+
+> This is an old workflow which also seem to be broken since `reerror` was
+> merged. We discourage the use, unless you really need to build bspacked
+> bundles for 4.02 based BuckleScript versions
+
+This whole process needs to happen with OCaml 4.02.3, so make sure you switch
+to that version first:
 
 ```sh
+# Then switch to the right ocaml version and install all deps
 opam switch 4.02.3
 ```
 
