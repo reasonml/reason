@@ -3,6 +3,8 @@
  * Reason_syntax_util.Error in favor of Reerror's `Printexc.to_string e`
 *)
 
+open Js_of_ocaml
+
 module RE = Reason_toolchain.RE
 module ML = Reason_toolchain.ML
 
@@ -61,28 +63,6 @@ let parseWith f code =
     let jsError =
       Js.Unsafe.obj [|
         ("message", Js.Unsafe.inject (Js.string errorString));
-        ("location", Js.Unsafe.inject jsLocation);
-      |]
-    in
-    Js.Unsafe.fun_call throwAnything [|Js.Unsafe.inject jsError|]
-  (* from reason *)
-  | Reason_syntax_util.Error (location, Syntax_error err) ->
-    let jsLocation = locationToJsObj location in
-    let jsError =
-      Js.Unsafe.obj [|
-        ("message", Js.Unsafe.inject (Js.string err));
-        ("location", Js.Unsafe.inject jsLocation);
-      |]
-    in
-    Js.Unsafe.fun_call throwAnything [|Js.Unsafe.inject jsError|]
-  | Reason_lexer.Error (err, loc) ->
-    let reportedError =
-      Location.error_of_printer loc Reason_lexer.report_error err
-    in
-    let jsLocation = locationToJsObj reportedError.loc in
-    let jsError =
-      Js.Unsafe.obj [|
-        ("message", Js.Unsafe.inject (Js.string reportedError.msg));
         ("location", Js.Unsafe.inject jsLocation);
       |]
     in
