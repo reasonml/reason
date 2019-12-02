@@ -1,0 +1,12 @@
+{
+  "source": "./esy.json",
+  "scripts": {
+    "show-omp-dir": "echo #{@opam/ocaml-migrate-parsetree.target_dir}",
+    "show-ppx_derivers-dir": "echo #{@opam/ppx_derivers.target_dir}"
+  },
+  "override": {
+    "devDependencies": {
+      "ocaml": "4.06.1"
+    }
+  }
+}

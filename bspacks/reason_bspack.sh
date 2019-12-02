@@ -1,8 +1,4 @@
-# Legacy Note:
-# This script is used for older 4.02 based bspacking processes.
-#
-# Use reason_bspack406.sh for bspacking refmt_api and refmt_binary for
-# BuckleScript v6 and above (OCaml 4.06 based)!
+#!/bin/bash
 
 # exit if anything goes wrong
 set -e
@@ -15,55 +11,58 @@ THIS_SCRIPT_DIR="$(cd "$( dirname "$0" )" && pwd)"
 
 cd $THIS_SCRIPT_DIR
 
-# Install & build all bspacks deps: jsoo, menhir, omp, ppx_derivers
-esy
-
-# Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out.
-resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
-
-menhirSuggestedLib=`esy menhir --suggest-menhirLib`
-
 reasonRootDir="$THIS_SCRIPT_DIR/.."
-buildDir="$THIS_SCRIPT_DIR/build"
-
-REFMT_BINARY="$buildDir/refmt_binary"
-REFMT_API="$buildDir/refmt_api"
-REFMT_API_ENTRY="$buildDir/refmt_api_entry"
-REFMT_API_FINAL="$buildDir/refmt_api_final"
-REFMT_PRE_CLOSURE="$buildDir/refmt_pre_closure"
-
-REFMT_CLOSURE="$reasonRootDir/refmt"
-
-ppxDeriversTargetDir=$THIS_SCRIPT_DIR/build/ppx_derivers
-ocamlMigrateParseTreeTargetDir=$THIS_SCRIPT_DIR/build/omp
-
-# clean some artifacts
-rm -f "$REFMT_CLOSURE.*"
-rm -rf $buildDir
-mkdir $buildDir
 
 pushd $THIS_SCRIPT_DIR
 
-build_reason_402 () {
-  # rebuild the project in case it was stale
+setup_env () {
+  export buildDir="$THIS_SCRIPT_DIR/build/$SANDBOX"
+  # for native
+  export REFMT_BINARY="$buildDir/refmt_binary"
+  export REFMT_API="$buildDir/refmt_api"
+  # for js
+  export REFMT_CLOSURE="$buildDir/refmt"
+  export REFMT_API_ENTRY="$buildDir/refmt_api_entry"
+  export REFMT_API_FINAL="$buildDir/refmt_api_final"
+  export REFMT_PRE_CLOSURE="$buildDir/refmt_pre_closure"
+
+  export ppxDeriversTargetDir="$buildDir/ppx_derivers"
+  export ocamlMigrateParseTreeTargetDir="$buildDir/omp"
+  export outputDir="$THIS_SCRIPT_DIR/output/$SANDBOX"
+  export ESY="esy @$SANDBOX"
+
+  # clean some artifacts
+  rm -rf $buildDir
+  mkdir -p $buildDir
+
+  rm -rf $outputDir
+  mkdir -p $outputDir
+
+  # Install & build all bspacks deps: jsoo, menhir, omp, ppx_derivers
+  $ESY
+
+  # Because OCaml 4.02 doesn't come with the `Result` module, it also needed stubbing out.
+  export resultStub="module Result = struct type ('a, 'b) result = Ok of 'a | Error of 'b end open Result"
+
+  export menhirSuggestedLib=`$ESY menhir --suggest-menhirLib`
+}
+
+build_reason () {
   cd ..
-  # We need 4.02 for js_of_ocaml (it has a stack overflow otherwise :/)
-  sed -i 's/"ocaml": "~4.6.0"/"ocaml": "~4.2.3004"/' ./esy.json
   if [ -z "$version" ];then
-    export version=$(grep version ./esy.json | sed -E 's/.+([0-9]\.[0-9]\.[0-9]).+/\1/')-$(date +%Y.%m.%d)
+    export version=$(grep version -m i ./esy.json | sed -E 's/.+([0-9]\.[0-9]\.[0-9]).+/\1/')-$(date +%Y.%m.%d)
   fi
   make pre_release
-  esy
-  reasonEsyTargetDir=`esy echo '#{self.target_dir}'`
-  git checkout esy.json esy.lock
+  $ESY
+  reasonEsyTargetDir=`$ESY echo '#{self.target_dir}'`
   cd -
 }
 
 # Get ppx_derivers source from esy
 get_ppx_derivers () {
-  mkdir $ppxDeriversTargetDir
+  mkdir -p $ppxDeriversTargetDir
 
-  ppxDeriversSource=`esy show-ppx_derivers-dir`/_build/default/src
+  ppxDeriversSource=`$ESY show-ppx_derivers-dir`/_build/default/src
 
   cp $ppxDeriversSource/*.ml $ppxDeriversTargetDir
   cp $ppxDeriversSource/*.mli $ppxDeriversTargetDir
@@ -71,14 +70,14 @@ get_ppx_derivers () {
 
 # Get OMP source from esy
 get_omp () {
-  mkdir $ocamlMigrateParseTreeTargetDir
+  mkdir -p $ocamlMigrateParseTreeTargetDir
 
-  ompSource=`esy show-omp-dir`/_build/default/src
+  ompSource=`$ESY show-omp-dir`/_build/default/src
 
   cp $ompSource/*.ml $ocamlMigrateParseTreeTargetDir
-  for i in $(ls build/omp/*.pp.ml); do
+  for i in $(ls $ocamlMigrateParseTreeTargetDir/*.pp.ml); do
   newname=$(basename $i | sed 's/\.pp\././')
-  target=${THIS_SCRIPT_DIR}/build/omp/${newname}
+  target=$ocamlMigrateParseTreeTargetDir/${newname}
   mv $i ${target}
   done;
 }
@@ -99,7 +98,7 @@ build_bspack () {
   # Build ourselves a bspack.exe if we haven't yet
   if [ ! -f $THIS_SCRIPT_DIR/bspack.exe ]; then
     echo "👉 building bspack.exe"
-    esy ocamlopt -g -w -40-30-3 ./ext_basic_hash_stubs.c unix.cmxa "$bspack_src" -o ../bspack.exe
+    $ESY ocamlopt -g -w -40-30-3 ./ext_basic_hash_stubs.c unix.cmxa "$bspack_src" -o ../bspack.exe
   fi
 
   cd -
@@ -133,18 +132,19 @@ build_js_api () {
     -o "$REFMT_API.ml"
 
   # This hack is required since the emitted code by bspack somehow adds 	
-	sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
+	sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' $REFMT_API.ml
   
   # the `-no-alias-deps` flag is important. Not sure why...
   # remove warning 40 caused by ocaml-migrate-parsetree
-  esy ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
+  $ESY ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
 
   # compile refmtJsApi as the final entry file
-  esy ocamlfind ocamlc -bin-annot -g -w -30-3-40 -package js_of_ocaml,ocaml-migrate-parsetree -o "$REFMT_API_ENTRY" -I $buildDir -c -impl ./refmtJsApi.ml
+  $ESY ocamlfind ocamlc -bin-annot -g -w -30-3-40 -package js_of_ocaml,ocaml-migrate-parsetree -o "$REFMT_API_ENTRY" -I $buildDir -c -impl ./refmtJsApi.ml
   # link them together into the final bytecode
-  esy ocamlfind ocamlc -linkpkg -package js_of_ocaml,ocaml-migrate-parsetree -g -o "$REFMT_API_FINAL.byte" "$REFMT_API.cmo" "$REFMT_API_ENTRY.cmo"
+  $ESY ocamlfind ocamlc -linkpkg -package js_of_ocaml,ocaml-migrate-parsetree -g -o "$REFMT_API_FINAL.byte" "$REFMT_API.cmo" "$REFMT_API_ENTRY.cmo"
+  cp $REFMT_API_FINAL.byte $outputDir
   # # use js_of_ocaml to take the compiled bytecode and turn it into a js file
-  esy js_of_ocaml --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
+  $ESY js_of_ocaml --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
 
   # Grab the closure compiler if needed
   CLOSURE_COMPILER_DIR="$THIS_SCRIPT_DIR/closure-compiler"
@@ -158,6 +158,8 @@ build_js_api () {
 
   # use closure compiler to minify the final file!
   java -jar ./closure-compiler/closure-compiler-v20170910.jar --create_source_map "$REFMT_CLOSURE.map" --language_in ECMASCRIPT6 --compilation_level SIMPLE "$REFMT_PRE_CLOSURE.js" > "$REFMT_CLOSURE.js"
+
+  cp $REFMT_CLOSURE.js $outputDir
 
   # for the js bundle
   node ./testRefmtJs.js
@@ -192,13 +194,17 @@ build_refmt () {
     -o "$REFMT_BINARY.ml"
 
 	# This hack is required since the emitted code by bspack somehow adds 	
-	sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
+	sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' $REFMT_BINARY.ml
+  cp $REFMT_BINARY.ml $outputDir
   
   echo "👉 compiling refmt"
   # build REFMT_BINARY into an actual binary too. For testing purposes at the end
-  esy ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_BINARY.ml" -o "$REFMT_BINARY.byte"
+  $ESY ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_BINARY.ml" -o "$REFMT_BINARY.byte"
+  cp $REFMT_BINARY.byte $outputDir
+
   echo "👉 opt compiling refmt"
-  esy ocamlopt -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cmxa "$REFMT_BINARY.ml" -o "$REFMT_BINARY.exe"
+  $ESY ocamlopt -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cmxa "$REFMT_BINARY.ml" -o "$REFMT_BINARY.exe"
+  cp $REFMT_BINARY.exe $outputDir
 
   # small integration test to check that the process went well
   # for the native binary
@@ -206,9 +212,20 @@ build_refmt () {
   echo "✅ finished building refmt binary"
 }
 
-build_reason_402
-build_bspack
-get_ppx_derivers
-get_omp
-build_refmt
-build_js_api
+run() {
+  setup_env
+  build_reason
+  build_bspack
+  get_ppx_derivers
+  get_omp
+  build_refmt
+  # js_of_ocaml has a stack overflow error if we're on 4.06, no idea why
+  if [ $SANDBOX = "4023" ]; then
+    build_js_api
+  fi
+}
+
+SANDBOX="4023"
+run
+SANDBOX="4061"
+run
