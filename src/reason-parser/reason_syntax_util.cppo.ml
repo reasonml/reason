@@ -368,7 +368,7 @@ let map_class_type f class_type =
   | x -> x
   }
 
-let rec map_core_type f typ =
+let map_core_type f typ =
   { typ with ptyp_desc =
     match typ.ptyp_desc with
     | Ptyp_var var -> Ptyp_var (f var)
@@ -378,26 +378,24 @@ let rec map_core_type f typ =
         | Optional s -> Optional (f s)
         | lbl -> lbl
       in
-      Ptyp_arrow (lbl', map_core_type f t1, map_core_type f t2)
-    | Ptyp_tuple typs ->
-      Ptyp_tuple (List.map (map_core_type f) typs)
+      Ptyp_arrow (lbl', t1, t2)
     | Ptyp_constr (lid, typs) ->
-      Ptyp_constr (map_lident f lid, List.map (map_core_type f) typs)
+      Ptyp_constr (map_lident f lid, typs)
     | Ptyp_object (fields, closed_flag) ->
-      Ptyp_object (List.map (fun (s, attrs, typ) -> f s, attrs, map_core_type f typ) fields, closed_flag)
+      Ptyp_object (List.map (fun (s, attrs, typ) -> f s, attrs, typ) fields, closed_flag)
     | Ptyp_class (lid, typs) ->
-      Ptyp_class (map_lident f lid, List.map (map_core_type f) typs)
+      Ptyp_class (map_lident f lid, typs)
     | Ptyp_alias (typ, s) ->
-      Ptyp_alias (map_core_type f typ, f s)
+      Ptyp_alias (typ, f s)
     | Ptyp_variant (rfs, closed, lbls) ->
       Ptyp_variant (List.map (function
         | Rtag (lbl, attrs, b, cts) ->
           Rtag (f lbl, attrs, b, cts)
         | t -> t) rfs, closed, lbls)
     | Ptyp_poly (vars, typ) ->
-      Ptyp_poly (List.map f vars, map_core_type f typ)
+      Ptyp_poly (List.map f vars, typ)
     | Ptyp_package (lid, typs) ->
-      Ptyp_package (map_lident f lid, List.map (fun (lid, typ) -> (map_lident f lid, map_core_type f typ)) typs)
+      Ptyp_package (map_lident f lid, List.map (fun (lid, typ) -> (map_lident f lid, typ)) typs)
     | other -> other
   }
 
@@ -420,6 +418,9 @@ let identifier_mapper f super =
           { expr with pexp_desc = Pexp_record (xs, o) }
         | {pexp_desc= Pexp_fun (arg_lbl, eo, pat, e) } ->
           { expr with pexp_desc = Pexp_fun (map_arg_label f arg_lbl, eo, pat, e) }
+        | {pexp_desc= Pexp_apply (e, args)} ->
+          { expr with
+            pexp_desc = Pexp_apply (e, List.map (fun (arg_lbl, e) -> (map_arg_label f arg_lbl), e) args) }
         | _ -> expr
     in
     super.expr mapper expr
