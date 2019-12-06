@@ -74,7 +74,7 @@ type foo = {method};
 
 let f = (~method) => Js.log(method);
 
-let _ = f(~method="GET");
+let x = f(~method="GET");
 
 type marshalFields = {. "switch_": string};
 

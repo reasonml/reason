@@ -69,7 +69,7 @@ type foo = {method_: method_}
 
 let f ~method_ = Js.log(method_)
 
-let _ = f ~method_:"GET"
+let x = f ~method_:"GET"
 
 type marshalFields = < switch: string   >  Js.t
 
