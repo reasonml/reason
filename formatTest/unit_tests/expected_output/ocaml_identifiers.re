@@ -81,3 +81,10 @@ type marshalFields = {. "switch_": string};
 let testMarshalFields: marshalFields = {
   "switch_": "switch",
 };
+
+/* Not an identifier test, but this is testing OCaml -> RE */
+let x =
+  List.map(y => {
+    ();
+    y;
+  });

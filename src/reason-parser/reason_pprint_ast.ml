@@ -6108,6 +6108,9 @@ let printer = object(self:'self)
     match expr.pexp_desc with
     | Pexp_ifthenelse _
     | Pexp_try _ -> false
+    | Pexp_sequence _ ->
+      (* `let ... in` should _always_ preserve braces *)
+      true
     | _ ->
         preserve_braces &&
         Reason_attributes.has_preserve_braces_attrs stylisticAttrs
