@@ -13,7 +13,7 @@ if [ ! -d $CLOSURE_COMPILER_DIR ]; then
   popd
 fi
 
-ESY_TARGET_DIR=`esy echo '#{self.target_dir}'`
+ESY_TARGET_DIR=`esy @jsoo echo '#{self.target_dir}'`
 JSOO_FILE="$ESY_TARGET_DIR/default/js/refmt.bc.js"
 OUTPUT="$THIS_SCRIPT_DIR/../refmt"
 

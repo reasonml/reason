@@ -1,0 +1,33 @@
+opam-version: "2.0"
+maintainer:   "dev@ocsigen.org"
+authors:      "Ocsigen team"
+bug-reports:  "https://github.com/ocsigen/js_of_ocaml/issues"
+homepage:     "http://ocsigen.github.io/js_of_ocaml"
+dev-repo:     "git+https://github.com/ocsigen/js_of_ocaml.git"
+synopsis:     "Compiler from OCaml bytecode to Javascript"
+description: """
+Js_of_ocaml is a compiler from OCaml bytecode to JavaScript.
+It makes it possible to run pure OCaml programs in JavaScript
+environment like browsers and Node.js
+"""
+
+name: "js_of_ocaml"
+
+build: [["dune" "build" "-p" name "-j" jobs]]
+
+depends: [
+  "ocaml" {>= "4.02.0"}
+  "dune" {>= "1.11.1"}
+  "ocaml-migrate-parsetree" {>= "1.4"}
+  "ppx_tools_versioned" {>= "5.2.3"}
+  "uchar"
+  "js_of_ocaml-compiler"
+]
+url {
+  src:
+    "https://github.com/ocsigen/js_of_ocaml/releases/download/3.5.1/js_of_ocaml-3.5.1.tbz"
+  checksum: [
+    "sha256=3a050eb9507058164431c8e1f1c86b3c61e30a5d0b0cf2c5f48b959b87eaade9"
+    "sha512=0bbca03ac220f28adf060d4c2d8f726801bce80461aa73724a6c53b4979af919c820cc723b0a7e9bda93270cef5c0485aea942aa527010a3c386a13b7e2d4842"
+  ]
+}

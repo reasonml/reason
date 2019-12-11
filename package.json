@@ -21,6 +21,6 @@
 		"bs-platform": "1.9.3"
 	},
 	"scripts": {
-		"prepublishOnly": "esy dune build js/refmt.bc.js && ./js/closurefy.sh"
+		"prepublishOnly": "esy @jsoo && ./js/closurefy.sh"
 	}
 }

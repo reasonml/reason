@@ -1,0 +1,9 @@
+{
+    "source": "./esy.json",
+    "override": {
+        "build": "dune build js/refmt.bc.js",
+        "devDependencies": {
+            "@opam/js_of_ocaml": "*"
+        }
+    }
+}
