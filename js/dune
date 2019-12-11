@@ -1,0 +1,6 @@
+(executable
+ (name refmt)
+ (modes js)
+ (js_of_ocaml
+   (flags --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict))
+ (libraries reason js_of_ocaml))
