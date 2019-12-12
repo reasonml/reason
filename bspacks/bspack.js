@@ -146,5 +146,17 @@ const bspackRefmt = version => {
     }
 };
 
+const getVersion = () => {
+    return require('../esy.json').version
+}
+
+const setVersion = () => {
+    execSync('make pre_release', {cwd: projectRoot, env: {
+        ...process.ENV,
+        version: getVersion()
+    }})
+}
+
+setVersion();
 bspackRefmt('4023');
 bspackRefmt('4061');
