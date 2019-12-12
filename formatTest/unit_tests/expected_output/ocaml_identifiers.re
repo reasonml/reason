@@ -89,4 +89,4 @@ let x =
     y;
   });
 
-let y = x.method_;
+let y = x.method;
