@@ -1,15 +1,17 @@
 (*
  * Note: This file is currently broken, since Reason removed
- * Refmt_api.Reason_syntax_util.Error in favor of Reerror's `Printexc.to_string e`
+ * Reason_syntax_util.Error in favor of Reerror's `Printexc.to_string e`
 *)
 
-module RE = Refmt_api.Reason_toolchain.RE
-module ML = Refmt_api.Reason_toolchain.ML
+open Js_of_ocaml
+
+module RE = Reason_toolchain.RE
+module ML = Reason_toolchain.ML
 
 module Js = Js_of_ocaml.Js
 
 let locationToJsObj (loc: Location.t) =
-  let (file, start_line, start_char) = Location.get_pos_info loc.loc_start in
+  let (_file, start_line, start_char) = Location.get_pos_info loc.loc_start in
   let (_, end_line, end_char) = Location.get_pos_info loc.loc_end in
   (* The right way of handling ocaml syntax error locations. Do do this at home
     copied over from
@@ -63,19 +65,6 @@ let parseWith f code =
     let jsError =
       Js.Unsafe.obj [|
         ("message", Js.Unsafe.inject (Js.string errorString));
-        ("location", Js.Unsafe.inject jsLocation);
-      |]
-    in
-    Js.Unsafe.fun_call throwAnything [|Js.Unsafe.inject jsError|]
-  (* from reason *)
-  | Refmt_api.Reason_errors.Reason_error (err, loc) ->
-    let reportedError =
-      Location.error_of_printer loc (Refmt_api.Reason_errors.report_error ~loc) err
-    in
-    let jsLocation = locationToJsObj reportedError.loc in
-    let jsError =
-      Js.Unsafe.obj [|
-        ("message", Js.Unsafe.inject (Js.string reportedError.msg));
         ("location", Js.Unsafe.inject jsLocation);
       |]
     in

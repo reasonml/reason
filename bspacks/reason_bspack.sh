@@ -104,69 +104,6 @@ build_bspack () {
   cd -
 }
 
-build_js_api () {
-  echo "👉 bspacking the js api"
-  set -x
-  # =============
-  # Now, second task. Packing the repo again but with a new entry file, for JS
-  # consumption
-  # =============
-
-  # this one is left here as an intermediate file for the subsequent steps. We
-  # disregard the usual entry point that is refmt_impl above (which takes care of
-  # terminal flags parsing, etc.) and swap it with a new entry point, refmtJsApi (see below)
-  ./bspack.exe \
-    -bs-main Reason_toolchain \
-    -prelude-str "$resultStub" \
-    -I "$menhirSuggestedLib" \
-    -I "$reasonEsyTargetDir/default/src/ppx/"                               \
-    -I "$reasonEsyTargetDir/default/src/reason-merlin/"                     \
-    -I "$reasonEsyTargetDir/default/src/reason-parser/"                     \
-    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/easy_format/"  \
-    -I "$reasonEsyTargetDir/default/src/reason-parser/vendor/cmdliner/"     \
-    -I "$reasonEsyTargetDir/default/src/refmt/"                             \
-    -I "$reasonEsyTargetDir/default/src/refmttype/"                         \
-    -I "$ppxDeriversTargetDir" \
-    -I "$ocamlMigrateParseTreeTargetDir" \
-    -bs-MD \
-    -o "$REFMT_API.ml"
-
-  # This hack is required since the emitted code by bspack somehow adds 	
-	sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' $REFMT_API.ml
-  
-  # the `-no-alias-deps` flag is important. Not sure why...
-  # remove warning 40 caused by ocaml-migrate-parsetree
-  $ESY ocamlc -g -no-alias-deps -w -40-3 -I +compiler-libs ocamlcommon.cma "$REFMT_API.ml" -o "$REFMT_API.byte"
-
-  # compile refmtJsApi as the final entry file
-  $ESY ocamlfind ocamlc -bin-annot -g -w -30-3-40 -package js_of_ocaml,ocaml-migrate-parsetree -o "$REFMT_API_ENTRY" -I $buildDir -c -impl ./refmtJsApi.ml
-  # link them together into the final bytecode
-  $ESY ocamlfind ocamlc -linkpkg -package js_of_ocaml,ocaml-migrate-parsetree -g -o "$REFMT_API_FINAL.byte" "$REFMT_API.cmo" "$REFMT_API_ENTRY.cmo"
-  cp $REFMT_API_FINAL.byte $outputDir
-  # # use js_of_ocaml to take the compiled bytecode and turn it into a js file
-  $ESY js_of_ocaml --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict -o "$REFMT_PRE_CLOSURE.js" "$REFMT_API_FINAL.byte"
-
-  # Grab the closure compiler if needed
-  CLOSURE_COMPILER_DIR="$THIS_SCRIPT_DIR/closure-compiler"
-  if [ ! -d $CLOSURE_COMPILER_DIR ]; then
-    mkdir -p $CLOSURE_COMPILER_DIR
-    pushd $CLOSURE_COMPILER_DIR
-    curl -O http://dl.google.com/closure-compiler/compiler-20170910.tar.gz
-    tar -xzf compiler-20170910.tar.gz
-    popd
-  fi
-
-  # use closure compiler to minify the final file!
-  java -jar ./closure-compiler/closure-compiler-v20170910.jar --create_source_map "$REFMT_CLOSURE.map" --language_in ECMASCRIPT6 --compilation_level SIMPLE "$REFMT_PRE_CLOSURE.js" > "$REFMT_CLOSURE.js"
-
-  cp $REFMT_CLOSURE.js $outputDir
-
-  # for the js bundle
-  node ./testRefmtJs.js
-  echo
-  echo "✅ finished building refmt js api"
-}
-
 build_refmt () {
   echo "👉 bspacking refmt"
 
@@ -219,10 +156,6 @@ run() {
   get_ppx_derivers
   get_omp
   build_refmt
-  # js_of_ocaml has a stack overflow error if we're on 4.06, no idea why
-  if [ $SANDBOX = "4023" ]; then
-    build_js_api
-  fi
 }
 
 SANDBOX="4023"

@@ -66,3 +66,16 @@ type method_ = string
 type foo = {method_: method_}
 [@@some_attr: type_]
 [@@other_attr: method_]
+
+let f ~method_ = Js.log(method_)
+
+let x = f ~method_:"GET"
+
+type marshalFields = < switch: string   >  Js.t
+
+let testMarshalFields = ([%bs.obj { switch = "switch" }] : marshalFields)
+
+(* Not an identifier test, but this is testing OCaml -> RE *)
+let x = List.map (fun y ->
+  ();
+  y)

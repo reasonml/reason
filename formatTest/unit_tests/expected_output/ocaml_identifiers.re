@@ -71,3 +71,20 @@ type method = string;
 [@some_attr: type_]
 [@other_attr: method]
 type foo = {method};
+
+let f = (~method) => Js.log(method);
+
+let x = f(~method="GET");
+
+type marshalFields = {. "switch_": string};
+
+let testMarshalFields: marshalFields = {
+  "switch_": "switch",
+};
+
+/* Not an identifier test, but this is testing OCaml -> RE */
+let x =
+  List.map(y => {
+    ();
+    y;
+  });

@@ -21,6 +21,6 @@
 		"bs-platform": "1.9.3"
 	},
 	"scripts": {
-		"prepublishOnly": "./bspacks/downloadSomeDependencies.sh && ./bspacks/reason_bspack.sh"
+		"prepublishOnly": "esy @jsoo && ./js/closurefy.sh"
 	}
 }
