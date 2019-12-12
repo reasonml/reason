@@ -8,8 +8,6 @@ open Js_of_ocaml
 module RE = Reason_toolchain.RE
 module ML = Reason_toolchain.ML
 
-module Js = Js_of_ocaml.Js
-
 let locationToJsObj (loc: Location.t) =
   let (_file, start_line, start_char) = Location.get_pos_info loc.loc_start in
   let (_, end_line, end_char) = Location.get_pos_info loc.loc_end in
