@@ -1,5 +1,5 @@
 {
-  "checksum": "e7dd8c24a73bd14de63f394accd23204",
+  "checksum": "79c8ed29d4d86ba5cd085a9b84ba5ef1",
   "root": "reason-cli@link-dev:./esy.json",
   "node": {
     "reason-cli@link-dev:./esy.json": {
@@ -18,8 +18,8 @@
         "@opam/fix@opam:20181206@6f3a1b41", "@opam/dune@opam:1.11.4@a7ccb7ae"
       ],
       "devDependencies": [
-        "ocaml@4.6.1@d41d8cd9", "@opam/odoc@opam:1.4.2@6f058006",
-        "@opam/merlin@opam:3.3.3@d653b06a"
+        "ocaml@4.6.1@d41d8cd9", "@opam/ppx_derivers@opam:1.2.1@ecf0aa45",
+        "@opam/odoc@opam:1.4.2@11b715bb", "@opam/merlin@opam:3.3.3@d653b06a"
       ]
     },
     "ocaml@4.6.1@d41d8cd9": {
@@ -374,8 +374,8 @@
         "ocaml@4.6.1@d41d8cd9", "@opam/dune@opam:1.11.4@a7ccb7ae"
       ]
     },
-    "@opam/odoc@opam:1.4.2@6f058006": {
-      "id": "@opam/odoc@opam:1.4.2@6f058006",
+    "@opam/odoc@opam:1.4.2@11b715bb": {
+      "id": "@opam/odoc@opam:1.4.2@11b715bb",
       "name": "@opam/odoc",
       "version": "opam:1.4.2",
       "source": {

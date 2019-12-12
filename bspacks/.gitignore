@@ -1,5 +1,4 @@
-bspack.exe
-bin/*.o
-bin/*.cm*
-bin/bspack.ml
-output/
+node_modules
+output
+build
+_esy

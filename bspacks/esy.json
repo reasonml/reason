@@ -1,20 +1,10 @@
 {
-  "name": "get-bspacks-deps",
-  "notes": "This is to get all bspacks dependencies",
+  "name": "get-bspack",
+  "notes": "This is to get and build bspack",
   "private": true,
   "version": "0.0.0",
   "dependencies": {
-    "@opam/js_of_ocaml": "*",
-    "@opam/menhir": "20190924",
-    "@opam/ocaml-migrate-parsetree": "*",
-    "@opam/ppx_derivers": "*"
-  },
-  "scripts": {
-    "show-omp-dir": "echo #{@opam/ocaml-migrate-parsetree.target_dir}",
-    "show-ppx_derivers-dir": "echo #{@opam/ppx_derivers.target_dir}"
-  },
-  "devDependencies": {
-    "ocaml": "~4.2.3004"
+      "bspack": "bucklescript/bucklescript:bspack.json"
   },
   "esy": {
     "build": [
