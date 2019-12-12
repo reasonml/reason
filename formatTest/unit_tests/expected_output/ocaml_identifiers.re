@@ -88,3 +88,5 @@ let x =
     ();
     y;
   });
+
+let y = x.method_;

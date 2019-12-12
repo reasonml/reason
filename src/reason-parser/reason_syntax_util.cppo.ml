@@ -421,6 +421,9 @@ let identifier_mapper f super =
         | {pexp_desc= Pexp_apply (e, args)} ->
           { expr with
             pexp_desc = Pexp_apply (e, List.map (fun (arg_lbl, e) -> (map_arg_label f arg_lbl), e) args) }
+        | {pexp_desc= Pexp_field (e, lid)} ->
+          { expr with
+            pexp_desc = Pexp_field (e, map_lident f lid) }
         | _ -> expr
     in
     super.expr mapper expr

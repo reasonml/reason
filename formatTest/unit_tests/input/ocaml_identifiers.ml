@@ -79,3 +79,5 @@ let testMarshalFields = ([%bs.obj { switch = "switch" }] : marshalFields)
 let x = List.map (fun y ->
   ();
   y)
+
+let y = x.method_
