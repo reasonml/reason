@@ -7,7 +7,7 @@ esy_cache_key: &esy_cache_key
 esy_post_build_cache_key: &esy_post_build_cache_key
   key: esy-post-build-cache-{{ checksum "esy.json" }}-{{ checksum "esy.lock/index.json" }}-{{ checksum ".circleci/config.yml" }}
 
-common_steps: &common_steps
+common_steps: &common_step
   steps:
     - run:
         name: "Install npm"
