@@ -1,3 +1,14 @@
+## 3.5.4
+
+Fixes:
+- Fix regression where keywords were not renamed correctly (@cristianoc) [#2520](https://github.com/facebook/reason/pull/2520)
+- Fix regression where quoted object attributes / labeled arguments weren't renamed correctly (@anmonteiro) [#2509](https://github.com/facebook/reason/pull/2509)
+- Fix issue where JSX braces break into multiple lines (@anmonteiro) [#2503](https://github.com/facebook/reason/pull/2503)
+
+Others:
+- Improve bspacks process for 4.06 and add esy workflow for building refmt.js
+
+
 ## 3.5.3
 - 🎉 MUCH better parsing error locations - more reliable autocomplete 🎉 (@let-def)[https://github.com/let-def] ([#2439](https://github.com/facebook/reason/pull/2439))
 - Rebased the better error recovery diff onto 4.09 OCaml [@anmonteiro](https://github.com/anmonteiro) ([#2480](https://github.com/facebook/reason/pull/2480))
