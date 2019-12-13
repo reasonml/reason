@@ -404,51 +404,51 @@ let map_core_type f typ =
   and swapping the symbols listed above.
   *)
 let identifier_mapper f super =
-let map_fields fields = List.map(fun (lid,p) -> (map_lident f lid, p)) fields in
+let map_fields fields = List.map(fun (lid,x) -> (map_lident f lid, x)) fields in
 let map_name ({txt} as name) = {name with txt=(f txt)} in
-let map_longident lid = map_lident f lid in
+let map_lid lid = map_lident f lid in
 let map_label label = map_arg_label f label in
 { super with
   expr = begin fun mapper expr ->
     let expr =
       match expr with
         | { pexp_desc = Pexp_ident lid } ->
-          { expr with pexp_desc = Pexp_ident (map_longident lid) }
+          { expr with pexp_desc = Pexp_ident (map_lid lid) }
         | { pexp_desc = Pexp_fun (label, eo, pat, e) } ->
           { expr with pexp_desc = Pexp_fun (map_label label, eo, pat, e) }
         | { pexp_desc = Pexp_apply (e, args) } ->
           { expr with
             pexp_desc = Pexp_apply (e, List.map (fun (label, e) -> (map_label label), e) args) }
-        | { pexp_desc = Pexp_variant (label, e) } ->
+        | { pexp_desc = Pexp_variant (s, e) } ->
           { expr with
-            pexp_desc = Pexp_variant (f label, e) }
+            pexp_desc = Pexp_variant (f s, e) }
         | { pexp_desc = Pexp_record (fields, closed) } ->
           { expr with pexp_desc = Pexp_record (map_fields fields, closed) }
         | { pexp_desc = Pexp_field (e, lid) } ->
           { expr with
-            pexp_desc = Pexp_field (e, map_longident lid) }
+            pexp_desc = Pexp_field (e, map_lid lid) }
         | { pexp_desc = Pexp_setfield (e1, lid, e2) } ->
           { expr with
-            pexp_desc = Pexp_setfield (e1, map_longident lid, e2) }
-        | { pexp_desc = Pexp_send (e, label) } ->
+            pexp_desc = Pexp_setfield (e1, map_lid lid, e2) }
+        | { pexp_desc = Pexp_send (e, s) } ->
           { expr with
-            pexp_desc = Pexp_send (e, f label) }
+            pexp_desc = Pexp_send (e, f s) }
         | { pexp_desc = Pexp_new lid } ->
           { expr with
-            pexp_desc = Pexp_new (map_longident lid) }
-        | { pexp_desc = Pexp_setinstvar (lid, e) } ->
+            pexp_desc = Pexp_new (map_lid lid) }
+        | { pexp_desc = Pexp_setinstvar (name, e) } ->
           { expr with
-            pexp_desc = Pexp_setinstvar (map_name lid, e) }
-        | { pexp_desc = Pexp_override label_exp_list } ->
-          let label_exp_list = List.map (fun (l,e) -> (map_name l, e)) label_exp_list in
+            pexp_desc = Pexp_setinstvar (map_name name, e) }
+        | { pexp_desc = Pexp_override name_exp_list } ->
+          let name_exp_list = List.map (fun (name,e) -> (map_name name, e)) name_exp_list in
           { expr with
-            pexp_desc = Pexp_override label_exp_list }
-        | { pexp_desc = Pexp_newtype (name, e) } ->
+            pexp_desc = Pexp_override name_exp_list }
+        | { pexp_desc = Pexp_newtype (s, e) } ->
           { expr with
-            pexp_desc = Pexp_newtype (f name, e) }
+            pexp_desc = Pexp_newtype (f s, e) }
         | { pexp_desc = Pexp_open (override, lid, e) } ->
           { expr with
-            pexp_desc = Pexp_open (override, map_longident lid, e) }
+            pexp_desc = Pexp_open (override, map_lid lid, e) }
         | _ -> expr
     in
     super.expr mapper expr
@@ -460,14 +460,14 @@ let map_label label = map_arg_label f label in
           { pat with ppat_desc = Ppat_var (map_name name) }
         | { ppat_desc = Ppat_alias (p, name) } ->
           { pat with ppat_desc = Ppat_alias (p, map_name name) }
-        | { ppat_desc = Ppat_variant (label, po) } ->
+        | { ppat_desc = Ppat_variant (s, po) } ->
           { pat with
-            ppat_desc = Ppat_variant (f label, po) }
+            ppat_desc = Ppat_variant (f s, po) }
         | { ppat_desc = Ppat_record (fields, closed) } ->
           { pat with
             ppat_desc = Ppat_record (map_fields fields, closed) }
         | { ppat_desc = Ppat_type lid } ->
-          { pat with ppat_desc = Ppat_type (map_longident lid) }
+          { pat with ppat_desc = Ppat_type (map_lid lid) }
         | _ -> pat
     in
     super.pat mapper pat
@@ -475,24 +475,19 @@ let map_label label = map_arg_label f label in
   value_description = begin fun mapper desc ->
     let desc' =
       { desc with
-        pval_name = { desc.pval_name with txt = f desc.pval_name.txt }}
+        pval_name = map_name  desc.pval_name }
     in
     super.value_description mapper desc'
   end;
   type_declaration = begin fun mapper type_decl ->
     let type_decl' =
-      { type_decl with ptype_name =
-        { type_decl.ptype_name with txt = f type_decl.ptype_name.txt }
-      }
+      { type_decl with ptype_name = map_name type_decl.ptype_name }
     in
     let type_decl'' = match type_decl'.ptype_kind with
     | Ptype_record lst ->
       { type_decl'
         with ptype_kind = Ptype_record (List.map (fun lbl ->
-          { lbl
-          with pld_name =
-            { lbl.pld_name
-            with txt = f lbl.pld_name.txt } })
+          { lbl with pld_name = map_name lbl.pld_name })
         lst) }
     | _ -> type_decl'
     in
@@ -504,9 +499,8 @@ let map_label label = map_arg_label f label in
   class_declaration = begin fun mapper class_decl ->
     let class_decl' =
       { class_decl
-      with pci_name =
-        { class_decl.pci_name with txt = f class_decl.pci_name.txt }
-        ; pci_expr = map_class_expr f class_decl.pci_expr
+      with pci_name = map_name class_decl.pci_name
+        ;  pci_expr = map_class_expr f class_decl.pci_expr
          }
     in
     super.class_declaration mapper class_decl'
@@ -540,17 +534,14 @@ let map_label label = map_arg_label f label in
   class_type_declaration = begin fun mapper class_type_decl ->
     let class_type_decl' =
       { class_type_decl
-      with pci_name =
-        { class_type_decl.pci_name with txt = f class_type_decl.pci_name.txt } }
+      with pci_name = map_name class_type_decl.pci_name }
     in
     super.class_type_declaration mapper class_type_decl'
   end;
   module_type_declaration = begin fun mapper module_type_decl ->
     let module_type_decl' =
       { module_type_decl
-        with pmtd_name =
-          { module_type_decl.pmtd_name
-          with txt = f module_type_decl.pmtd_name.txt } }
+        with pmtd_name = map_name module_type_decl.pmtd_name }
     in
     super.module_type_declaration mapper module_type_decl'
   end;
