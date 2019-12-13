@@ -67,6 +67,10 @@ end
 (* Polymorphic variants (probably ok as-is?) *)
 module P = struct
   type t = [ `pub | `method_ ]
+
+  let x = `method_
+
+  let () = fun `method_ -> 34
 end
 
 type method_ = string

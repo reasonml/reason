@@ -78,6 +78,10 @@ module type method = {};
 /* Polymorphic variants (probably ok as-is?) */
 module P = {
   type t = [ | `pub_ | `method];
+
+  let x = `method;
+
+  let () = (`method) => 34;
 };
 
 type method = string;
