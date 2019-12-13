@@ -406,17 +406,19 @@ let map_core_type f typ =
 let identifier_mapper f super =
 let map_fields fields = List.map(fun (lid,p) -> (map_lident f lid, p)) fields in
 let map_name ({txt} as name) = {name with txt=(f txt)} in
+let map_longident lid = map_lident f lid in
+let map_label label = map_arg_label f label in
 { super with
   expr = begin fun mapper expr ->
     let expr =
       match expr with
         | { pexp_desc = Pexp_ident lid } ->
-          { expr with pexp_desc = Pexp_ident (map_lident f lid) }
-        | { pexp_desc = Pexp_fun (arg_lbl, eo, pat, e) } ->
-          { expr with pexp_desc = Pexp_fun (map_arg_label f arg_lbl, eo, pat, e) }
+          { expr with pexp_desc = Pexp_ident (map_longident lid) }
+        | { pexp_desc = Pexp_fun (label, eo, pat, e) } ->
+          { expr with pexp_desc = Pexp_fun (map_label label, eo, pat, e) }
         | { pexp_desc = Pexp_apply (e, args) } ->
           { expr with
-            pexp_desc = Pexp_apply (e, List.map (fun (arg_lbl, e) -> (map_arg_label f arg_lbl), e) args) }
+            pexp_desc = Pexp_apply (e, List.map (fun (label, e) -> (map_label label), e) args) }
         | { pexp_desc = Pexp_variant (label, e) } ->
           { expr with
             pexp_desc = Pexp_variant (f label, e) }
@@ -424,13 +426,29 @@ let map_name ({txt} as name) = {name with txt=(f txt)} in
           { expr with pexp_desc = Pexp_record (map_fields fields, closed) }
         | { pexp_desc = Pexp_field (e, lid) } ->
           { expr with
-            pexp_desc = Pexp_field (e, map_lident f lid) }
+            pexp_desc = Pexp_field (e, map_longident lid) }
         | { pexp_desc = Pexp_setfield (e1, lid, e2) } ->
           { expr with
-            pexp_desc = Pexp_setfield (e1, map_lident f lid, e2) }
+            pexp_desc = Pexp_setfield (e1, map_longident lid, e2) }
+        | { pexp_desc = Pexp_send (e, label) } ->
+          { expr with
+            pexp_desc = Pexp_send (e, f label) }
+        | { pexp_desc = Pexp_new lid } ->
+          { expr with
+            pexp_desc = Pexp_new (map_longident lid) }
+        | { pexp_desc = Pexp_setinstvar (lid, e) } ->
+          { expr with
+            pexp_desc = Pexp_setinstvar (map_name lid, e) }
+        | { pexp_desc = Pexp_override label_exp_list } ->
+          let label_exp_list = List.map (fun (l,e) -> (map_name l, e)) label_exp_list in
+          { expr with
+            pexp_desc = Pexp_override label_exp_list }
         | { pexp_desc = Pexp_newtype (name, e) } ->
           { expr with
             pexp_desc = Pexp_newtype (f name, e) }
+        | { pexp_desc = Pexp_open (override, lid, e) } ->
+          { expr with
+            pexp_desc = Pexp_open (override, map_longident lid, e) }
         | _ -> expr
     in
     super.expr mapper expr
