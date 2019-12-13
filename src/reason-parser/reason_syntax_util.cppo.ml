@@ -404,32 +404,38 @@ let map_core_type f typ =
   and swapping the symbols listed above.
   *)
 let identifier_mapper f super =
+let map_fields fields = List.map(fun (lid,p) -> (map_lident f lid, p)) fields in
 { super with
   expr = begin fun mapper expr ->
     let expr =
       match expr with
-        | {pexp_desc=Pexp_ident lid} ->
-           {expr with pexp_desc=Pexp_ident (map_lident f lid)}
-        | {pexp_desc= Pexp_record (lst, o)} ->
-          let xs = List.map (fun (lid, e) ->
-            (map_lident f lid, e))
-            lst
-          in
-          { expr with pexp_desc = Pexp_record (xs, o) }
-        | {pexp_desc= Pexp_fun (arg_lbl, eo, pat, e) } ->
+        | { pexp_desc = Pexp_ident lid } ->
+          { expr with pexp_desc=Pexp_ident (map_lident f lid) }
+        | { pexp_desc= Pexp_record (fields, closed) } ->
+          { expr with pexp_desc = Pexp_record (map_fields fields, closed) }
+        | { pexp_desc= Pexp_fun (arg_lbl, eo, pat, e) } ->
           { expr with pexp_desc = Pexp_fun (map_arg_label f arg_lbl, eo, pat, e) }
-        | {pexp_desc= Pexp_apply (e, args)} ->
+        | { pexp_desc = Pexp_field (e, lid) } ->
+          { expr with
+            pexp_desc = Pexp_field (e, map_lident f lid) }
+        | { pexp_desc= Pexp_setfield (e1, lid, e2) } ->
+          { expr with
+            pexp_desc = Pexp_setfield (e1, map_lident f lid, e2) }
+        | { pexp_desc= Pexp_apply (e, args) } ->
           { expr with
             pexp_desc = Pexp_apply (e, List.map (fun (arg_lbl, e) -> (map_arg_label f arg_lbl), e) args) }
-        | _ -> expr
+          | _ -> expr
     in
     super.expr mapper expr
   end;
   pat = begin fun mapper pat ->
     let pat =
       match pat with
-        | {ppat_desc=Ppat_var ({txt} as id)} ->
-             {pat with ppat_desc=Ppat_var ({id with txt=(f txt)})}
+        | { ppat_desc = Ppat_var ({txt} as id) } ->
+          { pat with ppat_desc = Ppat_var ({id with txt=(f txt)}) }
+        | { ppat_desc = Ppat_record (fields, closed) } ->
+          { pat with
+            ppat_desc = Ppat_record (map_fields fields, closed) }
         | _ -> pat
     in
     super.pat mapper pat

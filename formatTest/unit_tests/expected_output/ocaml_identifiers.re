@@ -10,9 +10,23 @@ module V = {
 
 /* Record fields */
 module R = {
-  type r = {method: int};
+  type r = {mutable method: int};
 
   let foo = {method: 4};
+
+  let x = foo.method;
+
+  let () = foo.method = 42;
+
+  let y =
+    switch (foo) {
+    | {method} => method
+    };
+
+  let z =
+    switch (foo) {
+    | {method: 12} => 21
+    };
 };
 
 /* Class names and instance variables */

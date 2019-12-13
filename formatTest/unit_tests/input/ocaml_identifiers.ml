@@ -10,9 +10,17 @@ end
 
 (* Record fields *)
 module R = struct
-  type r = { method_ : int }
+  type r = { mutable method_ : int }
 
   let foo = { method_ = 4 }
+
+  let x = foo.method_
+
+  let () = foo.method_ <- 42
+
+  let y = match foo with {method_} -> method_
+
+  let z = match foo with {method_=12} -> 21
 end
 
 (* Class names and instance variables *)
