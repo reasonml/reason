@@ -458,12 +458,16 @@ let map_label label = map_arg_label f label in
       match pat with
         | { ppat_desc = Ppat_var name } ->
           { pat with ppat_desc = Ppat_var (map_name name) }
+        | { ppat_desc = Ppat_alias (p, name) } ->
+          { pat with ppat_desc = Ppat_alias (p, map_name name) }
         | { ppat_desc = Ppat_variant (label, po) } ->
           { pat with
             ppat_desc = Ppat_variant (f label, po) }
         | { ppat_desc = Ppat_record (fields, closed) } ->
           { pat with
             ppat_desc = Ppat_record (map_fields fields, closed) }
+        | { ppat_desc = Ppat_type lid } ->
+          { pat with ppat_desc = Ppat_type (map_longident lid) }
         | _ -> pat
     in
     super.pat mapper pat
