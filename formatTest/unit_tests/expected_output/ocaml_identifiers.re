@@ -106,3 +106,5 @@ let x =
     ();
     y;
   });
+
+let newType = (type method, ()) => ();

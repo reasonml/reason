@@ -405,6 +405,7 @@ let map_core_type f typ =
   *)
 let identifier_mapper f super =
 let map_fields fields = List.map(fun (lid,p) -> (map_lident f lid, p)) fields in
+let map_name ({txt} as name) = {name with txt=(f txt)} in
 { super with
   expr = begin fun mapper expr ->
     let expr =
@@ -427,15 +428,18 @@ let map_fields fields = List.map(fun (lid,p) -> (map_lident f lid, p)) fields in
         | { pexp_desc = Pexp_apply (e, args) } ->
           { expr with
             pexp_desc = Pexp_apply (e, List.map (fun (arg_lbl, e) -> (map_arg_label f arg_lbl), e) args) }
-          | _ -> expr
+        | { pexp_desc = Pexp_newtype (name, e) } ->
+          { expr with
+            pexp_desc = Pexp_newtype (f name, e) }
+        | _ -> expr
     in
     super.expr mapper expr
   end;
   pat = begin fun mapper pat ->
     let pat =
       match pat with
-        | { ppat_desc = Ppat_var ({txt} as id) } ->
-          { pat with ppat_desc = Ppat_var ({id with txt=(f txt)}) }
+        | { ppat_desc = Ppat_var name } ->
+          { pat with ppat_desc = Ppat_var (map_name name) }
         | { ppat_desc = Ppat_record (fields, closed) } ->
           { pat with
             ppat_desc = Ppat_record (map_fields fields, closed) }
