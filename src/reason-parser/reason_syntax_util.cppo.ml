@@ -412,22 +412,22 @@ let map_name ({txt} as name) = {name with txt=(f txt)} in
       match expr with
         | { pexp_desc = Pexp_ident lid } ->
           { expr with pexp_desc = Pexp_ident (map_lident f lid) }
-        | { pexp_desc = Pexp_record (fields, closed) } ->
-          { expr with pexp_desc = Pexp_record (map_fields fields, closed) }
         | { pexp_desc = Pexp_fun (arg_lbl, eo, pat, e) } ->
           { expr with pexp_desc = Pexp_fun (map_arg_label f arg_lbl, eo, pat, e) }
+        | { pexp_desc = Pexp_apply (e, args) } ->
+          { expr with
+            pexp_desc = Pexp_apply (e, List.map (fun (arg_lbl, e) -> (map_arg_label f arg_lbl), e) args) }
+        | { pexp_desc = Pexp_variant (label, e) } ->
+          { expr with
+            pexp_desc = Pexp_variant (f label, e) }
+        | { pexp_desc = Pexp_record (fields, closed) } ->
+          { expr with pexp_desc = Pexp_record (map_fields fields, closed) }
         | { pexp_desc = Pexp_field (e, lid) } ->
           { expr with
             pexp_desc = Pexp_field (e, map_lident f lid) }
         | { pexp_desc = Pexp_setfield (e1, lid, e2) } ->
           { expr with
             pexp_desc = Pexp_setfield (e1, map_lident f lid, e2) }
-        | { pexp_desc = Pexp_variant (label, e) } ->
-          { expr with
-            pexp_desc = Pexp_variant (f label, e) }
-        | { pexp_desc = Pexp_apply (e, args) } ->
-          { expr with
-            pexp_desc = Pexp_apply (e, List.map (fun (arg_lbl, e) -> (map_arg_label f arg_lbl), e) args) }
         | { pexp_desc = Pexp_newtype (name, e) } ->
           { expr with
             pexp_desc = Pexp_newtype (f name, e) }
@@ -440,12 +440,12 @@ let map_name ({txt} as name) = {name with txt=(f txt)} in
       match pat with
         | { ppat_desc = Ppat_var name } ->
           { pat with ppat_desc = Ppat_var (map_name name) }
-        | { ppat_desc = Ppat_record (fields, closed) } ->
-          { pat with
-            ppat_desc = Ppat_record (map_fields fields, closed) }
         | { ppat_desc = Ppat_variant (label, po) } ->
           { pat with
             ppat_desc = Ppat_variant (f label, po) }
+        | { ppat_desc = Ppat_record (fields, closed) } ->
+          { pat with
+            ppat_desc = Ppat_record (map_fields fields, closed) }
         | _ -> pat
     in
     super.pat mapper pat
