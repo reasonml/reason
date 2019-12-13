@@ -10,9 +10,17 @@ end
 
 (* Record fields *)
 module R = struct
-  type r = { method_ : int }
+  type r = { mutable method_ : int }
 
   let foo = { method_ = 4 }
+
+  let x = foo.method_
+
+  let () = foo.method_ <- 42
+
+  let y = match foo with {method_} -> method_
+
+  let z = match foo with {method_=12} -> 21
 end
 
 (* Class names and instance variables *)
@@ -59,6 +67,10 @@ end
 (* Polymorphic variants (probably ok as-is?) *)
 module P = struct
   type t = [ `pub | `method_ ]
+
+  let x = `method_
+
+  let () = fun `method_ -> 34
 end
 
 type method_ = string
@@ -79,3 +91,5 @@ let testMarshalFields = ([%bs.obj { switch = "switch" }] : marshalFields)
 let x = List.map (fun y ->
   ();
   y)
+
+let newType (type method_) () = ()
