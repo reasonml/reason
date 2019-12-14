@@ -169,3 +169,6 @@ a->(b->c);
 
 <div> {url->a(b, _)} </div>;
 <div> {url->a(b, _)->a(b, _)} </div>;
+
+foo->Option.map(fn(_, arg));
+

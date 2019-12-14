@@ -3745,6 +3745,11 @@ let printer = object(self:'self)
           | Some l -> makeList [l; e]
           | None -> e)
         | args ->
+            let args = List.map
+              (fun (label, arg) ->
+                label, self#process_underscore_application arg)
+              args
+            in
             let fakeApplExp =
               let loc_end = match List.rev args with
                 | (_, e)::_ -> e.pexp_loc.loc_end
