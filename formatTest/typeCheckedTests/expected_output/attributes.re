@@ -405,10 +405,9 @@ type reactClass;
 
 /* "react-dom" shouldn't spread the attribute over multiple lines */
 [@bs.val] [@bs.module "react-dom"]
-external render: (reactElement, element) => unit =
-  "render";
+external render: (reactElement, element) => unit;
 
-[@bs.module "f"] external f: int => int = "f";
+[@bs.module "f"] external f: int => int;
 
 [@bs.val] [@bs.module "react"] [@bs.splice]
 external createCompositeElementInternalHack:
@@ -427,7 +426,7 @@ external add_nat: (int, int) => int =
 [@ocaml.deprecated
   "Use bar instead. It's a much cooler function. This string needs to be a little long"
 ]
-external foo: bool => bool = "";
+external foo: bool => bool;
 
 /* Attributes on an entire polymorphic variant leaf */
 [@bs.module "fs"]
@@ -439,8 +438,7 @@ external readFileSync:
       | [@bs.as "ascii"] `my_name
     ]
   ) =>
-  string =
-  "";
+  string;
 
 [@bs.module "fs"]
 external readFileSync2:
@@ -451,8 +449,7 @@ external readFileSync2:
       | [@bs.as "ascii"] `my_name
     ]
   ) =>
-  string =
-  "";
+  string;
 
 /* Ensure that attributes on extensions are printed */
 [@test
@@ -460,17 +457,21 @@ external readFileSync2:
   [%%extension]
 ];
 
-external debounce: (int, [@bs.meth] unit) => unit =
-  "";
+external debounce:
+  (int, [@bs.meth] unit) => unit;
 
 external debounce:
-  int => [@bs.meth] (unit => unit) =
-  "";
+  (int, [@bs.meth] unit) => unit;
+
+external debounce:
+  (int, [@bs.meth] unit) => unit;
+
+external debounce:
+  int => [@bs.meth] (unit => unit);
 
 external debounce:
   (int, [@bs.meth] (unit => unit)) =>
-  [@bs.meth] (unit => unit) =
-  "";
+  [@bs.meth] (unit => unit);
 
 external debounce:
   (
@@ -478,8 +479,7 @@ external debounce:
     [@bs.meth] (unit => unit),
     [@bs.meth] (unit => unit)
   ) =>
-  [@bs.meth] (unit => unit) =
-  "";
+  [@bs.meth] (unit => unit);
 
 external debounce:
   (
@@ -489,8 +489,7 @@ external debounce:
       unit => [@bs.meth] (unit => unit)
     )
   ) =>
-  [@bs.meth] (unit => unit) =
-  "";
+  [@bs.meth] (unit => unit);
 
 let x = "hi";
 

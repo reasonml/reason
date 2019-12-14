@@ -27,7 +27,9 @@ type reactElement;
 [@bs.val] [@bs.module "React"]
 external createClassInternalHack : (t('classSpec)) => reactClass = "createClass";
 
-[@bs.send.pipe : array('a)] external map : [@bs] (('a) => 'b) => array('b) = "";
+[@bs.send.pipe : array('a)] external map: [@bs] (('a) => 'b) => array('b) = "";
+
+[@bs.send.pipe : array('a)] external map: [@bs] (('a) => 'b) => array('b);
 
 [@bs.val] [@bs.module "react"]
 external createClassInternalHack : (t('classSpec)) => reactClass =
