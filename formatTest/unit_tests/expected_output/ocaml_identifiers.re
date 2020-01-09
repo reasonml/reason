@@ -12,20 +12,20 @@ module V = {
 module R = {
   type r = {mutable method: int};
 
-  let foo = {method: 4};
+  let foo = {method_: 4};
 
-  let x = foo.method;
+  let x = foo.method_;
 
-  let () = foo.method = 42;
+  let () = foo.method_ = 42;
 
   let y =
     switch (foo) {
-    | {method} => method
+    | {method_: method} => method
     };
 
   let z =
     switch (foo) {
-    | {method: 12} => 21
+    | {method_: 12} => 21
     };
 };
 
@@ -69,7 +69,8 @@ module O = {
 
 /* Function parameter labels */
 module L = {
-  let f = (~method) => ignore(method);
+  let f = (~method_ as method) =>
+    ignore(method);
 };
 
 /* Module types */
@@ -90,14 +91,14 @@ type method = string;
 [@other_attr: method]
 type foo = {method};
 
-let f = (~method) => Js.log(method);
+let f = (~method_ as method) => Js.log(method);
 
-let x = f(~method="GET");
+let x = f(~method_="GET");
 
 type marshalFields = {. "switch_": string};
 
 let testMarshalFields: marshalFields = {
-  "switch_": "switch",
+  "switch": "switch",
 };
 
 /* Not an identifier test, but this is testing OCaml -> RE */

@@ -24,6 +24,9 @@ open Ast_mapper
 open Parsetree
 open Longident
 
+(* Rename labels in function definition/application and records *)
+let rename_labels = ref false
+
 (** Check to see if the string `s` is made up of `keyword` and zero or more
     trailing `_` characters. *)
 let potentially_conflicts_with ~keyword s =
@@ -414,20 +417,21 @@ let map_label label = map_arg_label f label in
       match expr with
         | { pexp_desc = Pexp_ident lid } ->
           { expr with pexp_desc = Pexp_ident (map_lid lid) }
-        | { pexp_desc = Pexp_fun (label, eo, pat, e) } ->
+        | { pexp_desc = Pexp_fun (label, eo, pat, e) } when !rename_labels ->
           { expr with pexp_desc = Pexp_fun (map_label label, eo, pat, e) }
-        | { pexp_desc = Pexp_apply (e, args) } ->
+        | { pexp_desc = Pexp_apply (e, args) } when !rename_labels ->
           { expr with
-            pexp_desc = Pexp_apply (e, List.map (fun (label, e) -> (map_label label), e) args) }
+            pexp_desc = Pexp_apply (e, List.map (fun (label, e) ->
+            (map_label label), e) args) }
         | { pexp_desc = Pexp_variant (s, e) } ->
           { expr with
             pexp_desc = Pexp_variant (f s, e) }
-        | { pexp_desc = Pexp_record (fields, closed) } ->
+        | { pexp_desc = Pexp_record (fields, closed) } when !rename_labels ->
           { expr with pexp_desc = Pexp_record (map_fields fields, closed) }
-        | { pexp_desc = Pexp_field (e, lid) } ->
+        | { pexp_desc = Pexp_field (e, lid) } when !rename_labels ->
           { expr with
             pexp_desc = Pexp_field (e, map_lid lid) }
-        | { pexp_desc = Pexp_setfield (e1, lid, e2) } ->
+        | { pexp_desc = Pexp_setfield (e1, lid, e2) } when !rename_labels ->
           { expr with
             pexp_desc = Pexp_setfield (e1, map_lid lid, e2) }
         | { pexp_desc = Pexp_send (e, s) } ->
@@ -463,7 +467,7 @@ let map_label label = map_arg_label f label in
         | { ppat_desc = Ppat_variant (s, po) } ->
           { pat with
             ppat_desc = Ppat_variant (f s, po) }
-        | { ppat_desc = Ppat_record (fields, closed) } ->
+        | { ppat_desc = Ppat_record (fields, closed) } when !rename_labels ->
           { pat with
             ppat_desc = Ppat_record (map_fields fields, closed) }
         | { ppat_desc = Ppat_type lid } ->
