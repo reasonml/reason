@@ -377,8 +377,8 @@ let map_core_type f typ =
     | Ptyp_var var -> Ptyp_var (f var)
     | Ptyp_arrow (lbl, t1, t2) ->
       let lbl' = match lbl with
-        | Labelled s -> Labelled (f s)
-        | Optional s -> Optional (f s)
+        | Labelled s when !rename_labels -> Labelled (f s)
+        | Optional s when !rename_labels -> Optional (f s)
         | lbl -> lbl
       in
       Ptyp_arrow (lbl', t1, t2)
@@ -488,7 +488,7 @@ let map_label label = map_arg_label f label in
       { type_decl with ptype_name = map_name type_decl.ptype_name }
     in
     let type_decl'' = match type_decl'.ptype_kind with
-    | Ptype_record lst ->
+    | Ptype_record lst when !rename_labels ->
       { type_decl'
         with ptype_kind = Ptype_record (List.map (fun lbl ->
           { lbl with pld_name = map_name lbl.pld_name })

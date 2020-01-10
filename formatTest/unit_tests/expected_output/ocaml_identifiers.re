@@ -10,7 +10,7 @@ module V = {
 
 /* Record fields */
 module R = {
-  type r = {mutable method: int};
+  type r = {mutable method_: int};
 
   let foo = {method_: 4};
 
@@ -89,7 +89,7 @@ type method = string;
 
 [@some_attr: type_]
 [@other_attr: method]
-type foo = {method};
+type foo = {method_: method};
 
 let f = (~method_ as method) => Js.log(method);
 
