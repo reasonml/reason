@@ -8,7 +8,7 @@
     "url": "https://github.com/facebook/reason.git"
   },
   "dependencies": {
-    "ocaml": " >= 4.2.0 < 4.10.0",
+    "ocaml": " >= 4.2.0 < 4.11.0",
     "@opam/fix": "*",
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
