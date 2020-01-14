@@ -13,6 +13,10 @@ VERBOSE=${VERBOSE:-}
 OCAML_VERSION=`echo $(ocaml -version) | egrep -o '[0-9]+.[0-9]+.[0-9]+' | head -1`
 OCAML_VERSION=${OCAML_VERSION:-"4.02.3"}
 
+case ${OCAML_VERSION} in
+4.10.*) OCAML_VERSION=4.09.0;; # Outputs from OCaml 4.10 are exepected to be the same as OCaml 4.09
+esac
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 REFMT="$DIR/../_build/install/default/bin/refmt"
