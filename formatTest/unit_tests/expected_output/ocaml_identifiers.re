@@ -95,7 +95,7 @@ let f = (~method_ as method) => Js.log(method);
 
 let x = f(~method_="GET");
 
-type marshalFields = {. "switch_": string};
+type marshalFields = {. "switch": string};
 
 let testMarshalFields: marshalFields = {
   "switch": "switch",

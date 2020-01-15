@@ -384,7 +384,7 @@ let map_core_type f typ =
       Ptyp_arrow (lbl', t1, t2)
     | Ptyp_constr (lid, typs) ->
       Ptyp_constr (map_lident f lid, typs)
-    | Ptyp_object (fields, closed_flag) ->
+    | Ptyp_object (fields, closed_flag) when !rename_labels ->
       Ptyp_object (List.map (fun (s, attrs, typ) -> f s, attrs, typ) fields, closed_flag)
     | Ptyp_class (lid, typs) ->
       Ptyp_class (map_lident f lid, typs)
