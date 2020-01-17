@@ -21,6 +21,6 @@
 		"bs-platform": "1.9.3"
 	},
 	"scripts": {
-		"prepublishOnly": "esy @jsoo && ./js/closurefy.sh"
+		"prepublishOnly": "cp .dune-for-prepublish dune && esy @jsoo && ./js/closurefy.sh"
 	}
 }

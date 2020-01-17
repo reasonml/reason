@@ -1,1 +1,1 @@
-(ignored_subdirs (node_modules))
+(ignored_subdirs (node_modules js))
