@@ -5,12 +5,12 @@
 
 (rule
  (targets ocaml_util.ml)
- (deps ../generate/select.exe ocaml_util.ml-4.09 ocaml_util.ml-4.08
+ (deps ../generate/select.exe ocaml_util.ml-4.10 ocaml_util.ml-4.09 ocaml_util.ml-4.08
    ocaml_util.ml-4.07 ocaml_util.ml-4.06 ocaml_util.ml-default)
  (action
   (with-stdout-to
    %{targets}
-   (run ../generate/select.exe ocaml_util.ml-4.09 ocaml_util.ml-4.08
+   (run ../generate/select.exe ocaml_util.ml-4.10 ocaml_util.ml-4.09 ocaml_util.ml-4.08
      ocaml_util.ml-4.07 ocaml_util.ml-4.06 ocaml_util.ml-default))))
 
 (rule
