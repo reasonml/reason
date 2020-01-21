@@ -2525,7 +2525,7 @@ seq_expr_no_seq [@recover.expr default_expr ()]:
 | as_loc(LETOP) letop_bindings SEMI seq_expr
   { let (pbop_pat, pbop_exp, rev_ands) = $2 in
     let ands = List.rev rev_ands in
-    let pbop_loc = mklocation $symbolstartpos $endpos in
+    let pbop_loc = mklocation $symbolstartpos $endpos($2) in
     let let_ = {pbop_op = $1; pbop_pat; pbop_exp; pbop_loc} in
     mkexp ~loc:pbop_loc (Pexp_letop { let_; ands; body = $4}) }
 ;
