@@ -32,3 +32,13 @@ let z = {
   let.&/\* b = Some(5);
   a + b;
 };
+
+let _ = {
+  let.opt _ = Some("a");
+
+  let.opt _ = Some("c");
+
+  // hello
+
+  None;
+};
