@@ -385,18 +385,23 @@ let map_core_type f typ =
     | Ptyp_constr (lid, typs) ->
       Ptyp_constr (map_lident f lid, typs)
     | Ptyp_object (fields, closed_flag) when !rename_labels ->
-      Ptyp_object (List.map (fun (s, attrs, typ) -> f s, attrs, typ) fields, closed_flag)
+      Ptyp_object
+        (List.map (function
+          | { pof_desc = Otag (s, typ); _ } as pof -> { pof with pof_desc = Otag ({ s with txt = f s.txt }, typ) }
+          | other -> other)
+          fields
+        , closed_flag)
     | Ptyp_class (lid, typs) ->
       Ptyp_class (map_lident f lid, typs)
     | Ptyp_alias (typ, s) ->
       Ptyp_alias (typ, f s)
     | Ptyp_variant (rfs, closed, lbls) ->
       Ptyp_variant (List.map (function
-        | Rtag (lbl, attrs, b, cts) ->
-          Rtag (f lbl, attrs, b, cts)
+        | { prf_desc = Rtag (lbl, b, cts) } as prf ->
+          { prf with prf_desc = Rtag ({ lbl with txt = f lbl.txt }, b, cts) }
         | t -> t) rfs, closed, lbls)
     | Ptyp_poly (vars, typ) ->
-      Ptyp_poly (List.map f vars, typ)
+      Ptyp_poly (List.map (fun li -> { li with txt = f li.txt }) vars, typ)
     | Ptyp_package (lid, typs) ->
       Ptyp_package (map_lident f lid, List.map (fun (lid, typ) -> (map_lident f lid, typ)) typs)
     | other -> other
@@ -436,7 +441,7 @@ let map_label label = map_arg_label f label in
             pexp_desc = Pexp_setfield (e1, map_lid lid, e2) }
         | { pexp_desc = Pexp_send (e, s) } ->
           { expr with
-            pexp_desc = Pexp_send (e, f s) }
+            pexp_desc = Pexp_send (e, { s with txt = f s.txt }) }
         | { pexp_desc = Pexp_new lid } ->
           { expr with
             pexp_desc = Pexp_new (map_lid lid) }
@@ -449,10 +454,7 @@ let map_label label = map_arg_label f label in
             pexp_desc = Pexp_override name_exp_list }
         | { pexp_desc = Pexp_newtype (s, e) } ->
           { expr with
-            pexp_desc = Pexp_newtype (f s, e) }
-        | { pexp_desc = Pexp_open (override, lid, e) } ->
-          { expr with
-            pexp_desc = Pexp_open (override, map_lid lid, e) }
+            pexp_desc = Pexp_newtype ({ s with txt = f s.txt }, e) }
         | _ -> expr
     in
     super.expr mapper expr
@@ -526,9 +528,9 @@ let map_label label = map_arg_label f label in
     | Pctf_inherit class_type ->
       Pctf_inherit (map_class_type f class_type)
     | Pctf_val (lbl, mut, vf, ct) ->
-      Pctf_val (f lbl, mut, vf, ct)
+      Pctf_val ({ lbl with txt = f lbl.txt }, mut, vf, ct)
     | Pctf_method (lbl, pf, vf, ct) ->
-      Pctf_method (f lbl, pf, vf, ct)
+      Pctf_method ({ lbl with txt = f lbl.txt }, pf, vf, ct)
     | x -> x
     in
     super.class_type_field mapper
