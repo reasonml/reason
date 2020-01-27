@@ -2,7 +2,7 @@
   "name": "reason-cli",
   "notes": "This is just the dev package config (also built as globally installable reason-cli). See ./refmt.json ./rtop.json for individual release package configs.",
   "license": "MIT",
-  "version": "3.5.4",
+  "version": "3.6.0",
   "dependencies": {
     "ocaml": " >= 4.2.0 < 4.11.0",
     "@opam/fix": "*",
