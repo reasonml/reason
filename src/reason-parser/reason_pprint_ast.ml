@@ -6511,7 +6511,6 @@ let printer = object(self:'self)
     let primDecl =
       match vd.pval_prim with
       | [""] -> lblBefore
-      | _ when vd.pval_prim = [vd.pval_name.txt] -> lblBefore
       | _ ->
         let frstHalf = makeList ~postSpace:true [lblBefore; atom "="] in
         let sndHalf = makeSpacedBreakableInlineList (List.map self#constant_string vd.pval_prim) in

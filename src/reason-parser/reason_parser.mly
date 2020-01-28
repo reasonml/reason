@@ -1615,12 +1615,11 @@ structure_item:
     | item_attributes
       EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
       { let loc = mklocation $symbolstartpos $endpos in
-        let prim = if $7 = [""] then [$3.txt] else $7 in
-        mkstr (Pstr_primitive (Val.mk $3 $5 ~prim ~attrs:$1 ~loc)) }
+        mkstr (Pstr_primitive (Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc)) }
     | item_attributes
       EXTERNAL as_loc(val_ident) COLON core_type SEMI
       { let loc = mklocation $symbolstartpos $endpos in
-        mkstr (Pstr_primitive (Val.mk $3 $5 ~prim:[$3.txt] ~attrs:$1 ~loc)) }
+        mkstr (Pstr_primitive (Val.mk $3 $5 ~prim:[""] ~attrs:$1 ~loc)) }
     | type_declarations
       { let (nonrec_flag, tyl) = $1 in mkstr(Pstr_type (nonrec_flag, tyl)) }
     | str_type_extension
@@ -1822,13 +1821,12 @@ signature_item:
   | item_attributes
     EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
     { let loc = mklocation $symbolstartpos $endpos in
-      let prim = if $7 = [""] then [$3.txt] else $7 in
-      Psig_value (Val.mk $3 $5 ~prim ~attrs:$1 ~loc)
+      Psig_value (Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc)
     }
   | item_attributes
     EXTERNAL as_loc(val_ident) COLON core_type SEMI
     { let loc = mklocation $symbolstartpos $endpos in
-      Psig_value (Val.mk $3 $5 ~prim:[$3.txt] ~attrs:$1 ~loc)
+      Psig_value (Val.mk $3 $5 ~prim:[""] ~attrs:$1 ~loc)
     }
   | type_declarations
     { let (nonrec_flag, tyl) = $1 in Psig_type (nonrec_flag, tyl) }

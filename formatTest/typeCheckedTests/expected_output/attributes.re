@@ -405,9 +405,10 @@ type reactClass;
 
 /* "react-dom" shouldn't spread the attribute over multiple lines */
 [@bs.val] [@bs.module "react-dom"]
-external render: (reactElement, element) => unit;
+external render: (reactElement, element) => unit =
+  "render";
 
-[@bs.module "f"] external f: int => int;
+[@bs.module "f"] external f: int => int = "f";
 
 [@bs.val] [@bs.module "react"] [@bs.splice]
 external createCompositeElementInternalHack:
@@ -460,8 +461,8 @@ external readFileSync2:
 external debounce:
   (int, [@bs.meth] unit) => unit;
 
-external debounce:
-  (int, [@bs.meth] unit) => unit;
+external debounce: (int, [@bs.meth] unit) => unit =
+  "debounce";
 
 external debounce:
   (int, [@bs.meth] unit) => unit;
