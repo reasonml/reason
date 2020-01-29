@@ -172,7 +172,6 @@ workflows:
   version: 2
   build-deploy:
     jobs:
-      - 4.02.3
       - 4.03.0
       - 4.04.0
       - 4.06.1
