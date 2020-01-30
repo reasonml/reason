@@ -2,7 +2,7 @@
 
 Minor:
 - External syntax: make the `external ... = ""` part optional (@romanschejbal)[#2464](https://github.com/facebook/reason/pull/2464)
-  - `external myFn: (string) => unit;` is now equivalent to `external myFn: (string) => "";`
+  - `external myFn: (string) => unit;` is now equivalent to `external myFn: (string) => unit = "";`
 
 Fixes:
 - Fixes issues where `method` and similar keywords will be transformed to `method_` (@cristianoc) [#2530](https://github.com/facebook/reason/pull/2530)
