@@ -1,0 +1,27 @@
+opam-version: "2.0"
+maintainer: "zandoye@gmail.com"
+authors: [ "ZAN DoYe" ]
+homepage: "https://bitbucket.org/zandoye/charinfo_width/"
+bug-reports: "https://bitbucket.org/zandoye/charinfo_width/issues"
+license: "MIT"
+dev-repo: "hg+https://bitbucket.org/zandoye/charinfo_width"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test & (ocaml:version >= "4.04.0")}
+]
+depends: [
+  "ocaml" {>= "4.02.3"}
+  "result"
+  "camomile" {>= "1.0.0" & < "2.0~"}
+  "dune"
+  "ppx_expect" {with-test & < "v0.14"}
+]
+
+synopsis: "Determine column width for a character"
+description: """
+This module is implemented purely in OCaml and the width function follows the prototype of POSIX's wcwidth."""
+
+url {
+  src:"https://bitbucket.org/zandoye/charinfo_width/get/1.1.0.tar.gz"
+  checksum: "md5=c4ab038e06f06a29692c05fdd7c268c5"
+}

@@ -11,14 +11,14 @@ build: [
 ]
 depends: [
   "ocaml" { >= "4.03" }
-  "dune"
+  "dune" { >= "1.3" }
 ]
 synopsis: "Facilities for memoization and fixed points"
 url {
   src:
-    "https://gitlab.inria.fr/fpottier/fix/repository/20181206/archive.tar.gz"
+    "https://gitlab.inria.fr/fpottier/fix/repository/20200131/archive.tar.gz"
   checksum: [
-    "md5=ae129ed3822149a7f8c98f975512e534"
-    "sha512=1db240ff0a87200979bf4308e2110a37631f280e36c5f53dde767579ca63992a760eaeb6e1fc9a41c3f3a63d3dc29a3361114ad304cb09e83945ab4213ff5f6d"
+    "md5=991ff031666c662eaab638d2e0f4ac1d"
+    "sha512=01c45a1d90b02ec0939e968b185a6a373ac6117e2287b9a26d3db9d71e9569d086cea50da60710fcab5c2ed9d3b4c72b76839c0651e436f1fb39c77dc7c04b5e"
   ]
 }

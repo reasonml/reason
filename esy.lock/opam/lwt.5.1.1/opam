@@ -2,10 +2,10 @@ opam-version: "2.0"
 
 synopsis: "Promises and event-driven I/O"
 
-version: "4.4.0"
+version: "5.1.1"
 license: "MIT"
 homepage: "https://github.com/ocsigen/lwt"
-doc: "https://ocsigen.org/lwt/manual/"
+doc: "https://ocsigen.org/lwt"
 bug-reports: "https://github.com/ocsigen/lwt/issues"
 
 authors: [
@@ -42,7 +42,7 @@ conflicts: [
 ]
 
 post-messages: [
-  "Lwt 5.0.0 will make some breaking changes in November 2019. See
+  "Lwt 5.0.0 has made some minor breaking changes. See
   https://github.com/ocsigen/lwt/issues/584"
 ]
 
@@ -60,6 +60,6 @@ a single thread by default. This reduces the need for locks or other
 synchronization primitives. Code can be run in parallel on an opt-in basis."
 
 url {
-  src: "https://github.com/ocsigen/lwt/archive/4.4.0.tar.gz"
-  checksum: "md5=8bfc70c2944020fa08dd04877747f5f9"
+  src: "https://github.com/ocsigen/lwt/archive/5.1.1.tar.gz"
+  checksum: "md5=4ddec0f42b7aa4a310175a14c47c60a3"
 }
