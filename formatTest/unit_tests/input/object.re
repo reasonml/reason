@@ -43,3 +43,30 @@ type o2 = {
 };
 
 let obj = {as _; [@foo] val a = 1};
+
+/* Oinherit (https://github.com/ocaml/ocaml/pull/1118) */
+type t1 = {
+  .
+  n: string,
+  ...t,
+};
+
+type t1 = {
+  ..
+  n: string,
+  ...t,
+};
+
+type g1 = {
+  .
+  n: string,
+  ...t,
+  ...y,
+};
+
+type g2 = {
+  .
+  n: string,
+  ...t,
+  ...y,
+};

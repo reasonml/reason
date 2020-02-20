@@ -12,7 +12,7 @@
     "@opam/merlin-extend": " >= 0.4",
     "@opam/result": "*",
     "@opam/ocaml-migrate-parsetree": "*",
-    "@opam/dune": "*"
+    "@opam/dune": "< 2.0.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",

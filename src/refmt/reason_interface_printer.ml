@@ -1,5 +1,5 @@
 open Migrate_parsetree
-open Ast_404
+open Ast_408
 
 type t = Parsetree.signature
 let err = Printer_maker.err

@@ -16,7 +16,7 @@
 
 #ifdef BS_NO_COMPILER_PATCH
 open Migrate_parsetree
-open Ast_404
+open Ast_408
 #endif
 
 open Asttypes
@@ -385,18 +385,23 @@ let map_core_type f typ =
     | Ptyp_constr (lid, typs) ->
       Ptyp_constr (map_lident f lid, typs)
     | Ptyp_object (fields, closed_flag) when !rename_labels ->
-      Ptyp_object (List.map (fun (s, attrs, typ) -> f s, attrs, typ) fields, closed_flag)
+      Ptyp_object
+        (List.map (function
+          | { pof_desc = Otag (s, typ); _ } as pof -> { pof with pof_desc = Otag ({ s with txt = f s.txt }, typ) }
+          | other -> other)
+          fields
+        , closed_flag)
     | Ptyp_class (lid, typs) ->
       Ptyp_class (map_lident f lid, typs)
     | Ptyp_alias (typ, s) ->
       Ptyp_alias (typ, f s)
     | Ptyp_variant (rfs, closed, lbls) ->
       Ptyp_variant (List.map (function
-        | Rtag (lbl, attrs, b, cts) ->
-          Rtag (f lbl, attrs, b, cts)
+        | { prf_desc = Rtag (lbl, b, cts) } as prf ->
+          { prf with prf_desc = Rtag ({ lbl with txt = f lbl.txt }, b, cts) }
         | t -> t) rfs, closed, lbls)
     | Ptyp_poly (vars, typ) ->
-      Ptyp_poly (List.map f vars, typ)
+      Ptyp_poly (List.map (fun li -> { li with txt = f li.txt }) vars, typ)
     | Ptyp_package (lid, typs) ->
       Ptyp_package (map_lident f lid, List.map (fun (lid, typ) -> (map_lident f lid, typ)) typs)
     | other -> other
@@ -436,7 +441,7 @@ let map_label label = map_arg_label f label in
             pexp_desc = Pexp_setfield (e1, map_lid lid, e2) }
         | { pexp_desc = Pexp_send (e, s) } ->
           { expr with
-            pexp_desc = Pexp_send (e, f s) }
+            pexp_desc = Pexp_send (e, { s with txt = f s.txt }) }
         | { pexp_desc = Pexp_new lid } ->
           { expr with
             pexp_desc = Pexp_new (map_lid lid) }
@@ -449,10 +454,7 @@ let map_label label = map_arg_label f label in
             pexp_desc = Pexp_override name_exp_list }
         | { pexp_desc = Pexp_newtype (s, e) } ->
           { expr with
-            pexp_desc = Pexp_newtype (f s, e) }
-        | { pexp_desc = Pexp_open (override, lid, e) } ->
-          { expr with
-            pexp_desc = Pexp_open (override, map_lid lid, e) }
+            pexp_desc = Pexp_newtype ({ s with txt = f s.txt }, e) }
         | _ -> expr
     in
     super.expr mapper expr
@@ -526,9 +528,9 @@ let map_label label = map_arg_label f label in
     | Pctf_inherit class_type ->
       Pctf_inherit (map_class_type f class_type)
     | Pctf_val (lbl, mut, vf, ct) ->
-      Pctf_val (f lbl, mut, vf, ct)
+      Pctf_val ({ lbl with txt = f lbl.txt }, mut, vf, ct)
     | Pctf_method (lbl, pf, vf, ct) ->
-      Pctf_method (f lbl, pf, vf, ct)
+      Pctf_method ({ lbl with txt = f lbl.txt }, pf, vf, ct)
     | x -> x
     in
     super.class_type_field mapper
@@ -552,7 +554,7 @@ let map_label label = map_arg_label f label in
 }
 
 let remove_stylistic_attrs_mapper_maker super =
-  let open Ast_404 in
+  let open Ast_408 in
   let open Ast_mapper in
 { super with
   expr = begin fun mapper expr ->
@@ -580,18 +582,94 @@ let remove_stylistic_attrs_mapper_maker super =
 let remove_stylistic_attrs_mapper =
   remove_stylistic_attrs_mapper_maker Ast_mapper.default_mapper
 
+#if OCAML_VERSION >= (4, 8, 0)
+let noop_mapper =
+  let noop = fun _mapper x -> x in
+  { Ast_mapper.default_mapper with
+    expr = noop;
+    structure = noop;
+    structure_item = noop;
+    signature = noop;
+    signature_item = noop; }
+(* Don't need to backport past 4.08 *)
+let backport_letopt_mapper = noop_mapper
+#else
+(** This will convert Pexp_letop into a series of `apply`s to simulate 4.08's behavior.
+ *
+ * For example,
+ *
+ * {
+ *   let+ x = y
+ *   and+ a = b;
+ *   x + a
+ * }
+ *
+ * Will be transformed into:
+ *
+ * (let+)((and+)(y, b), ((x, a)) => x + a)
+ *)
+let backport_letopt_mapper_maker super =
+  let open Ast_408 in
+  let open Ast_mapper in
+{ super with
+  expr = fun mapper expr ->
+    match expr.pexp_desc with
+    | Pexp_letop { let_; ands; body } ->
+      (* coalesce the initial 'let' and any subsequent 'and's into a final
+         Pattern (for the argument of the continuation function) and
+         Expression (the first arg ot the let function)
+
+          let+ a = b
+          and+ c = d
+          and+ e = f
+          and+ g = h
+
+         produces the pattern (a, (c, (e, g)))
+         and the expression (and+)(b, (and+)(d, (and+)(f, h)))
+      *)
+      let rec loop = function
+        | [] -> assert false
+        | {pbop_op; pbop_pat; pbop_exp}::[] -> (pbop_pat, pbop_exp, pbop_op)
+        | {pbop_op; pbop_pat; pbop_exp; pbop_loc}::rest ->
+          let (pattern, expr, op) = loop rest in
+          let and_op_ident = Ast_helper.Exp.ident
+            ~loc:op.loc
+            (Location.mkloc (Longident.Lident op.txt) op.loc)
+          in
+          (
+            Ast_helper.Pat.tuple ~loc:pbop_loc [pbop_pat; pattern],
+            Ast_helper.Exp.apply ~loc:pbop_loc and_op_ident [(Nolabel, pbop_exp); (Nolabel, expr)],
+            pbop_op
+          )
+      in
+      let (pattern, expr, _) = loop (let_::ands) in
+      let let_op_ident = Ast_helper.Exp.ident
+        ~loc:let_.pbop_op.loc
+        (Location.mkloc (Longident.Lident let_.pbop_op.txt) let_.pbop_op.loc)
+      in
+      super.expr mapper {expr with
+        pexp_desc = Pexp_apply (let_op_ident,  [
+          (Nolabel, expr);
+          (Nolabel, Ast_helper.Exp.fun_ ~loc:let_.pbop_loc Nolabel None pattern body)
+        ])}
+    | _ -> super.expr mapper expr
+}
+
+let backport_letopt_mapper =
+  backport_letopt_mapper_maker Ast_mapper.default_mapper
+#endif
+
+let escape_stars_slashes str =
+  if String.contains str '/' then
+    replace_string "/*" "/\\*" @@
+    replace_string "*/" "*\\/" @@
+    replace_string "//" "/\\/" @@
+    str
+  else
+    str
+
 (** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
-let escape_stars_slashes_mapper =
-  let escape_stars_slashes str =
-    if String.contains str '/' then
-      replace_string "/*" "/\\*" @@
-      replace_string "*/" "*\\/" @@
-      replace_string "//" "/\\/" @@
-      str
-    else
-      str
-  in
-  identifier_mapper escape_stars_slashes
+let escape_stars_slashes_mapper = identifier_mapper escape_stars_slashes
 
 (* To be used in parser, transform a token into an ast node with different identifier
  *)
@@ -604,7 +682,7 @@ let ml_to_reason_swap_operator_mapper = identifier_mapper ml_to_reason_swap
 (* attribute_equals tests an attribute is txt
  *)
 let attribute_equals to_compare = function
-  | ({txt}, _) -> txt = to_compare
+  | { attr_name = {txt}; _ } -> txt = to_compare
 
 (* attribute_exists tests if an attribute exists in a list
  *)

@@ -1,0 +1,41 @@
+opam-version: "2.0"
+maintainer: "jeremie@dimino.org"
+authors: "Jérémie Dimino"
+license: "BSD3"
+homepage: "https://github.com/ocaml-community/utop"
+bug-reports: "https://github.com/ocaml-community/utop/issues"
+doc: "https://ocaml-community.github.io/utop/"
+depends: [
+  "ocaml" {>= "4.03.0" & < "4.11"}
+  "base-unix"
+  "base-threads"
+  "ocamlfind" {>= "1.7.2"}
+  "lambda-term" {>= "2.0" & < "3.0"}
+  "lwt"
+  "lwt_react"
+  "camomile"
+  "react" {>= "1.0.0"}
+  "cppo" {build & >= "1.1.2"}
+  "dune" {>= "1.0"}
+]
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]
+dev-repo: "git+https://github.com/ocaml-community/utop.git"
+synopsis: "Universal toplevel for OCaml"
+description: """
+utop is an improved toplevel (i.e., Read-Eval-Print Loop or REPL) for
+OCaml.  It can run in a terminal or in Emacs. It supports line
+edition, history, real-time and context sensitive completion, colors,
+and more.  It integrates with the Tuareg mode in Emacs.
+"""
+url {
+  src:
+    "https://github.com/ocaml-community/utop/releases/download/2.4.3/utop-2.4.3.tbz"
+  checksum: [
+    "sha256=4e30ba6e224bea5776bc1a6ac3fee7f7548a35acf41d35e59c45913e28a0ea80"
+    "sha512=507917f4256c4a37058a106598a61aa092301f008b7e9385950a615e37b7f1a217f1e3b116678cb90ef1938c038ed135dabf2f9987c8fec21b5eb322a005632a"
+  ]
+}

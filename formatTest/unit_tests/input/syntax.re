@@ -1264,3 +1264,15 @@ try({
 }) {
   | _ => ()
 };
+
+/* Pcl_open (4.06+) */
+class x = {
+  open EM;
+  as self;
+};
+
+class y = {
+  open EM;
+  open OM;
+  as self;
+};

@@ -13,7 +13,7 @@
   BuckleScript; ping @chenglou and a few others and we'll keep them synced up by
   patching the right parts, through the power of types(tm)
 *)
-open Migrate_parsetree.Ast_404
+open Migrate_parsetree.Ast_408
 
 val ml_to_reason_swap : string -> string
 
@@ -38,6 +38,10 @@ val isLineComment : string -> bool
 
 val remove_stylistic_attrs_mapper : Ast_mapper.mapper
 
+val backport_letopt_mapper : Ast_mapper.mapper
+
+val escape_stars_slashes : string -> string
+
 val escape_stars_slashes_mapper :
   Ast_mapper.mapper -> Ast_mapper.mapper
 
@@ -47,14 +51,12 @@ val reason_to_ml_swap_operator_mapper :
 val ml_to_reason_swap_operator_mapper :
   Ast_mapper.mapper -> Ast_mapper.mapper
 
-val attribute_exists : 'a -> ('a Asttypes.loc * 'b) list -> bool
+val attribute_exists : string -> Parsetree.attributes -> bool
 
 val attributes_conflicted :
-  'a -> 'a -> ('a Asttypes.loc * 'b) list -> bool
+  string -> string -> Parsetree.attributes -> bool
 
-val normalized_attributes :
-  'a ->
-  ('a Asttypes.loc * 'b) list -> ('a Asttypes.loc * 'b) list
+val normalized_attributes : string -> Parsetree.attributes -> Parsetree.attributes
 
 val apply_mapper_to_structure :
   Parsetree.structure -> Ast_mapper.mapper -> Parsetree.structure

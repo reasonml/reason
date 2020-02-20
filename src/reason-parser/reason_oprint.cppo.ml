@@ -86,7 +86,7 @@
 
 #ifdef BS_NO_COMPILER_PATCH
 open Migrate_parsetree
-open Ast_404
+open Ast_408
 #endif
 
 open Format
@@ -101,7 +101,7 @@ let cautious f ppf arg =
 #ifdef BS_NO_COMPILER_PATCH
 let rec print_ident ppf =
   function
-    Oide_ident s -> pp_print_string ppf s
+    Oide_ident s -> pp_print_string ppf s.printed_name
   | Oide_dot (id, s) ->
       print_ident ppf id; pp_print_char ppf '.'; pp_print_string ppf s
   | Oide_apply (id1, id2) ->
@@ -166,7 +166,7 @@ let print_out_value ppf tree =
   let rec print_tree_1 ppf =
     function
     (* for the next few cases, please see context at https://github.com/facebook/reason/pull/1516#issuecomment-337069150 *)
-    | Oval_constr (name, [Oval_constr ((Oide_ident "()"), [])]) ->
+    | Oval_constr (name, [Oval_constr ((Oide_ident { printed_name = "()" }), [])]) ->
       (* for normal variants, but sugar Foo(()) to Foo() *)
        fprintf ppf "@[<1>%a()@]" print_ident name
     | Oval_constr (name, [param]) ->
@@ -175,7 +175,7 @@ let print_out_value ppf tree =
     | Oval_constr (name, (_ :: _ as params)) ->
         fprintf ppf "@[<1>%a(%a)@]" print_ident name
             (print_tree_list print_tree_1 ",") params
-    | Oval_variant (name, Some (Oval_constr ((Oide_ident "()"), []))) ->
+    | Oval_variant (name, Some (Oval_constr ((Oide_ident { printed_name = "()" }), []))) ->
       (* for polymorphic variants, but sugar `foo(()) to `foo() *)
       fprintf ppf "@[<2>`%s()@]" name
     | Oval_variant (name, Some param) ->
@@ -197,11 +197,7 @@ let print_out_value ppf tree =
     | Oval_nativeint i -> fprintf ppf "%nin" i
     | Oval_float f -> pp_print_string ppf (float_repres f)
     | Oval_char c -> fprintf ppf "%C" c
-#if OCAML_VERSION >= (4,3,0) && not defined BS_NO_COMPILER_PATCH
-    | Oval_string (s,_,_) ->
-#else
-    | Oval_string s ->
-#endif
+    | Oval_string (s, _, _) ->
         begin try fprintf ppf "\"%s\"" (Reason_syntax_util.escape_string s) with
           Invalid_argument s when s = "String.create" -> fprintf ppf "<huge string>"
         end
@@ -347,7 +343,7 @@ and print_simple_out_type ppf =
   (* same for `Js.Internal.fn(...)`. Either might shown *)
   | Otyp_constr (
       (Oide_dot (
-        (Oide_dot ((Oide_ident "Js"), "Internal") | Oide_ident "Js_internal"),
+        (Oide_dot ((Oide_ident { printed_name = "Js" }), "Internal") | Oide_ident { printed_name = "Js_internal" }),
         ("fn" | "meth" as name)
       ) as id),
       ([Otyp_variant(_, Ovar_fields [variant, _, tys], _, _); result] as tyl)
@@ -355,7 +351,7 @@ and print_simple_out_type ppf =
       (* Otyp_arrow *)
       let make tys result =
         if tys = [] then
-          Otyp_arrow ("", Otyp_constr (Oide_ident "unit", []),result)
+          Otyp_arrow ("", Otyp_constr (Oide_ident { printed_name = "unit" }, []),result)
         else
           match tys with
           | [ Otyp_tuple tys as single] ->
@@ -386,7 +382,8 @@ and print_simple_out_type ppf =
   (* also BuckleScript-specific. See the comment in the previous pattern *)
   | Otyp_constr (
       (Oide_dot (
-        (Oide_dot ((Oide_ident "Js"), "Internal") | Oide_ident "Js_internal"), "meth_callback" ) as id
+        (Oide_dot ((Oide_ident { printed_name = "Js" }), "Internal")
+        | Oide_ident { printed_name = "Js_internal" }), "meth_callback" ) as id
       ),
       ([Otyp_variant(_, Ovar_fields [variant, _, tys], _,_); result] as tyl)
     ) ->
@@ -415,7 +412,7 @@ and print_simple_out_type ppf =
       end
   (* also BuckleScript-specific. Turns Js.t({. foo: bar}) into {. "foo": bar} *)
   | Otyp_constr (
-      (Oide_dot ((Oide_ident "Js"), "t")),
+      (Oide_dot ((Oide_ident { printed_name = "Js" }), "t")),
       [Otyp_object (fields, rest)]
     ) ->
       let dot = match rest with
@@ -452,12 +449,7 @@ and print_simple_out_type ppf =
           Ovar_fields fields ->
             print_list print_row_field (fun ppf -> fprintf ppf "@;<1 -2>| ")
               ppf fields
-#if OCAML_VERSION >= (4,3,0) && not defined BS_NO_COMPILER_PATCH
         | Ovar_typ typ -> print_simple_out_type ppf typ
-#else
-        | Ovar_name (id, tyl) ->
-            fprintf ppf "@[%a%a@]" print_typargs tyl print_ident id
-#endif
       in
       fprintf ppf "%s[%s@[<hv>@[<hv>%a@]%a ]@]" (if non_gen then "_" else "")
         (if closed then if tags = None then " " else "< "
@@ -472,7 +464,7 @@ and print_simple_out_type ppf =
   | Otyp_abstract | Otyp_open
   | Otyp_sum _ | Otyp_record _ | Otyp_manifest (_, _) -> ()
   | Otyp_module (p, n, tyl) ->
-      fprintf ppf "@[<1>(module %s" p;
+      fprintf ppf "@[<1>(module %a" print_ident p;
       let first = ref true in
       List.iter2
         (fun s t ->
@@ -481,10 +473,8 @@ and print_simple_out_type ppf =
         )
         n tyl;
       fprintf ppf ")@]"
-#if OCAML_VERSION >= (4,3,0) || defined BS_NO_COMPILER_PATCH
   | Otyp_attribute (t, attr) ->
         fprintf ppf "@[<1>(%a [@@%s])@]" print_out_type t attr.oattr_name
-#endif
 
 and print_object_fields ~quote_fields ppf =
   function
@@ -707,16 +697,10 @@ and print_out_sig_item ppf =
           | Orec_first -> "type"
           | Orec_next  -> "and")
         ppf td
-#if OCAML_VERSION >= (4,3,0) || defined BS_NO_COMPILER_PATCH
   | Osig_ellipsis ->
     fprintf ppf "..."
   | Osig_value {oval_name; oval_type; oval_prims; oval_attributes} ->
     let printAttributes ppf = List.iter (fun a -> fprintf ppf "[@@%s]" a.oattr_name) in
-#else
-  | Osig_value(oval_name, oval_type, oval_prims) ->
-    let printAttributes ppf attrs = () in
-    let oval_attributes = [] in
-#endif
     let keyword = if oval_prims = [] then "let" else "external" in
     let (hackyBucklescriptExternalAnnotation, rhsValues) = List.partition (fun item ->
       (* "BS:" is considered as a bucklescript external annotation, `[@bs.module]` and the sort.
