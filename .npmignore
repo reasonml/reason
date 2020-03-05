@@ -1,10 +1,6 @@
-*
-!refmt.js
-!refmt.map
-!README.md
-!PATENTS.txt
-!LICENSE.txt
-!HISTORY.md
-!FUTURE.md
-!LICENSE.txt
-!ORIGINS.md
+_esy
+node_modules
+_build
+.git
+refmt.js
+refmt.map
