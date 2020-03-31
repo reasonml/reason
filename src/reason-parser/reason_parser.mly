@@ -2651,17 +2651,7 @@ as_loc
       ([mkloc (Term (Nolabel, None, mkpat_constructor_unit loc loc)) loc], true)
   }
   | LPAREN DOT labelled_pattern_comma_list RPAREN {
-      let patterns = List.map (fun p ->
-          match p.txt with
-          | Term (Labelled _, x, y)
-          | Term (Optional _, x, y)  ->
-            syntax_error p.loc "Uncurried function definition with labelled \
-                                arguments is not supported at the moment.";
-            {p with txt = Term (Nolabel, x, y)}
-          | _ -> p
-        ) $3
-      in
-      (patterns, true)
+      ($3, true)
   }
 ;
 
@@ -4432,13 +4422,7 @@ arrow_type_parameter:
 %inline uncurried_arrow_type_parameter:
     DOT? as_loc(arrow_type_parameter)
   { let uncurried = match $1 with | Some _ -> true | None -> false in
-    match $2.txt with
-    | (Labelled _, x) when uncurried ->
-       syntax_error $2.loc
-         "An uncurried function type with labelled arguments is \
-          not supported at the moment.";
-       ({$2 with txt = (Nolabel, x)}, uncurried)
-    | _ -> ($2, uncurried)
+    ($2, uncurried)
   }
 
 %inline arrow_type_parameter_comma_list:
