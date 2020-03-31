@@ -131,7 +131,7 @@ $BSPACK_EXE \
 
 
 # This hack is required since the emitted code by bspack somehow adds
-sed -i'.bak' -e 's/Migrate_parsetree__Ast_404/Migrate_parsetree.Ast_404/' build/*.ml
+sed -i'.bak' -e 's/Migrate_parsetree__Ast_408/Migrate_parsetree.Ast_408/' build/*.ml
 
 # the `-no-alias-deps` flag is important. Not sure why...
 # remove warning 40 caused by ocaml-migrate-parsetree
