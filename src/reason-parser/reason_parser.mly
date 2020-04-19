@@ -437,7 +437,7 @@ let mkstrexp e attrs =
   | ({pexp_desc = Pexp_apply (({pexp_attributes} as e1), args) } as eRewrite)
       when let f = (List.filter (function
         | { attr_name = {txt = "bs"}; _} -> true
-          | _ -> false ) e.pexp_attributes)  in
+          | _ -> false ) pexp_attributes)  in
       List.length f > 0
     ->
       let appExprAttrs = List.filter (function
