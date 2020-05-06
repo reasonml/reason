@@ -33,6 +33,12 @@
       ["esy-installer", "reason.install"],
       ["esy-installer", "rtop.install"]
     ],
+    "exportedEnv": {
+      "INPUT_ARGUMENTS": {
+        "scope": "global",
+        "val": "some-dummy-value-till-esy-is-fixed"
+      }
+    },
     "release": {
       "bin": {
         "rtop": "rtop",
