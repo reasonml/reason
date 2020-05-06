@@ -36,7 +36,7 @@
     "exportedEnv": {
       "INPUT_ARGUMENTS": {
         "scope": "global",
-        "val": "some-dummy-value-till-esy-is-fixed"
+        "val": "foobar"
       }
     },
     "release": {
