@@ -72,6 +72,10 @@ jobs:
       - template: utils/create-docs.yml
       - script: "esy test"
         displayName: "Test command"
+      - powershell: esy x env
+        continueOnError: true
+        condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
+        displayName: "Print exported env in powershell"
       - script: "esy release"
         displayName: "esy release"
       - template: utils/publish-build-cache.yml
