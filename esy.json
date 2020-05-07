@@ -36,19 +36,19 @@
     "exportedEnv": {
       "INPUT_ARGUMENTS": {
         "scope": "global",
-        "val": "foobar"
+        "val": "a"
       },
       "BUILD_REQUESTEDFOREMAIL": {
         "scope": "global",
-        "val": "foobar"
+        "val": "b"
       },
       "VSTS_SECRET_VARIABLES": {
         "scope": "global",
-        "val": "foobar"
+        "val": "c"
       },
       "SYSTEM_PULLREQUEST_MERGEDAT": {
         "scope": "global",
-        "val": "foobar"
+        "val": "d"
       }
     },
     "release": {
