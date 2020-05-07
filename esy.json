@@ -37,6 +37,18 @@
       "INPUT_ARGUMENTS": {
         "scope": "global",
         "val": "foobar"
+      },
+      "BUILD_REQUESTEDFOREMAIL": {
+        "scope": "global",
+        "val": "foobar"
+      },
+      "VSTS_SECRET_VARIABLES": {
+        "scope": "global",
+        "val": "foobar"
+      },
+      "SYSTEM_PULLREQUEST_MERGEDAT": {
+        "scope": "global",
+        "val": "foobar"
       }
     },
     "release": {
