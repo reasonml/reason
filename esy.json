@@ -33,6 +33,24 @@
       ["esy-installer", "reason.install"],
       ["esy-installer", "rtop.install"]
     ],
+    "exportedEnv": {
+      "INPUT_ARGUMENTS": {
+        "scope": "global",
+        "val": "a"
+      },
+      "BUILD_REQUESTEDFOREMAIL": {
+        "scope": "global",
+        "val": "b"
+      },
+      "VSTS_SECRET_VARIABLES": {
+        "scope": "global",
+        "val": "c"
+      },
+      "SYSTEM_PULLREQUEST_MERGEDAT": {
+        "scope": "global",
+        "val": "d"
+      }
+    },
     "release": {
       "bin": {
         "rtop": "rtop",
