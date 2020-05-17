@@ -1,5 +1,5 @@
 # steps to install esy globally
 
 steps:
-  - script: "npm install -g '@esy-nightly/esy'"
+  - script: "npm install -g @esy-nightly/esy"
     displayName: "install esy"
