@@ -3747,6 +3747,10 @@ mark_position_pat
     { let attrs, cst = $1 in mkpat ~attrs (Ppat_constant cst) }
   | signed_constant DOTDOT signed_constant
     { mkpat (Ppat_interval (snd $1, snd $3)) }
+  | signed_constant DOT signed_constant {
+    syntax_error (mklocation $startpos $endpos) "Constant ranges must be separated with spaces around the ..";
+     mkpat (Ppat_interval (snd $1, snd $3))
+  }
   | as_loc(constr_longident)
     { mkpat (Ppat_construct ($1, None)) }
   | name_tag

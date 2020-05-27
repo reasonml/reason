@@ -123,7 +123,7 @@ let lazy true = 10;
 let lazy #x = 10;
 let lazy `Variant = 10;
 let lazy `variant = 10;
-let lazy '0'..'9' = 10;
+let lazy '0' .. '9' = 10;
 let lazy (lazy true) = 10;
 let lazy [%extend] = 10;
 

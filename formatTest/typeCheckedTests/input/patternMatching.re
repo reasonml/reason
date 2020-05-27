@@ -154,6 +154,20 @@ switch (Some(1)) {
 | _ => 3
 };
 
+let myInt = 100;
+/* Numeric ranges are rejected by the type checker, but validly parsed so drop this in
+ * an annotationto test the parsing. */
+[@something? 1 .. 2]
+let rangeInt = 0;
+
+let myChar = 'x';
+let rangeChar =
+  switch(myChar) {
+    | 'a'..'b' => "a to b"
+    | 'b' .. 'z' => "b to z"
+    | c => "something else"
+  };
+
 /* with parens around direct list pattern in constructor pattern */
 switch (None) {
 | Some([]) => ()
