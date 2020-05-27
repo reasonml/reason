@@ -83,13 +83,7 @@
     }
   },
   "scripts": {
-    "//": "sanity test. Expected by ci.",
-    "test": "esy x refmt --version",
-
-    "//": "Actual test.",
-    "tests": "esy x make test",
-
-    "//": "Required by CI",
+    "test": "esy x make test-once-installed",
     "doc": "esy dune build @doc"
   }
 }

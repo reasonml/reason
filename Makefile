@@ -11,19 +11,18 @@ install:
 	opam pin add reason . -y
 
 # CI uses opam. Regular workflow needn't.
-test-ci: install test
+test-ci: install test-once-installed
 
-test: build clean-tests
-	dune build src/reason-parser-tests/testOprint.exe
-	# ./miscTests/rtopIntegrationTest.sh
-	./miscTests/jsxPpxTest.sh
+# Can be run with esy x - no need to build beforehand.
+test-once-installed: clean-tests
+	./miscTests/rtopIntegrationTest.sh
 	./miscTests/backportSyntaxTests.sh
 	cd formatTest; ./test.sh
 
 .PHONY: coverage
 coverage:
 	find -iname "bisect*.out" -exec rm {} \;
-	make test
+	make test-once-installed
 	bisect-ppx-report -ignore-missing-files -I _build/ -html coverage-after/ bisect*.out ./*/*/*/bisect*.out
 	find -iname "bisect*.out" -exec rm {} \;
 
