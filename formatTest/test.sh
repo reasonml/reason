@@ -17,22 +17,22 @@ case ${OCAML_VERSION} in
 4.10.*) OCAML_VERSION=4.09.0;; # Outputs from OCaml 4.10 are exepected to be the same as OCaml 4.09
 esac
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+unameOut="$(uname -s)"
+# Create paths of shape C:/ not /c/ form, so use pwd -W on windows bash.
+case "${unameOut}" in
+    MINGW*)     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd -W )";;
+    *)          DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+esac
 
-REFMT="$DIR/../_build/install/default/bin/refmt"
-OPRINT_TEST_BIN="$DIR/../_build/default/src/reason-parser-tests/testOprint.exe"
 
-if [[ -f REFMT ]];
-then
-    echo "Cannot find refmt at $REFMT" 1>&2
-    exit 1;
-fi
+
 
 # for better visual diffing in the terminal, try https://github.com/jeffkaufman/icdiff
 if hash icdiff 2> /dev/null; then
     DIFF="icdiff"
 elif hash git 2> /dev/null; then
-    DIFF="git --no-pager diff --no-index"
+    # Pass core.safecrlf=false to avoid warnings on windows
+    DIFF="git -c core.safecrlf=false --no-pager diff --no-index"
 else
     DIFF="eval diff --unchanged-line-format='' --new-line-format=':%dn: %L' --old-line-format=':%dn: %L'"
 fi
@@ -130,13 +130,13 @@ function stdin_test() {
     FILEEXT="${FILENAME##*.}"
 
     if [[ $FILEEXT = "re" ]]; then
-      cat $INPUT_FILE | $REFMT $EXTRA_FLAGS --print-width 50 --print re 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | refmt $EXTRA_FLAGS --print-width 50 --print re 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "rei" ]]; then
-      cat $INPUT_FILE | $REFMT --interface true --print-width 50 --parse re --print re 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | refmt --interface true --print-width 50 --parse re --print re 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "ml" ]]; then
-      cat $INPUT_FILE | $REFMT --heuristics-file $HEURISTICS_FILE --interface false --print-width 50 --parse ml --print re 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | refmt --heuristics-file $HEURISTICS_FILE --interface false --print-width 50 --parse ml --print re 2>&1 > $OUTPUT_FILE
     elif [[ $FILEEXT = "mli" ]]; then
-      cat $INPUT_FILE | $REFMT --heuristics-file $HEURISTICS_FILE --interface true --print-width 50 --parse ml --print re 2>&1 > $OUTPUT_FILE
+      cat $INPUT_FILE | refmt --heuristics-file $HEURISTICS_FILE --interface true --print-width 50 --parse ml --print re 2>&1 > $OUTPUT_FILE
     else
       warning "  ⊘ FAILED --use-stdin \n"
       info "  Cannot determine default implementation parser for extension ${FILEEXT}"
@@ -194,8 +194,8 @@ function unit_test() {
           notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
           OUTPUT_NOT_GENERATED=1
         else
-          debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-          $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+          debug "refmt --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+          refmt --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
           if ! [[ $? -eq 0 ]]; then
               warning "  ⊘ TEST FAILED CONVERTING ML TO RE\n"
               return 1
@@ -204,8 +204,8 @@ function unit_test() {
         fi
 
     else
-      debug "  '$REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+      debug "  'refmt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      refmt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
     fi
 
     OFILE="${FILE}"
@@ -273,22 +273,22 @@ function idempotent_test() {
         else
           debug "  Converting $FILE to $REFILE:"
 
-          debug "  Formatting Once: $REFMT $EXTRA_FLAGS --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-          $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+          debug "  Formatting Once: refmt $EXTRA_FLAGS --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+          refmt --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
           if ! [[ $? -eq 0 ]]; then
               warning "⊘ FAILED\n"
               return 1
           fi
           FILE=$REFILE
-          debug "  Generating output again: $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-          $REFMT --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+          debug "  Generating output again: refmt $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+          refmt --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
         fi
     else
-      debug "  Formatting Once: '$REFMT $EXTRA_FLAGS --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-      $REFMT $EXTRA_FLAGS --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+      debug "  Formatting Once: 'refmt $EXTRA_FLAGS --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+      refmt $EXTRA_FLAGS --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
 
-      debug "  Generating output again: $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-      $REFMT $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+      debug "  Generating output again: refmt $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+      refmt $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     fi
 
     if [[ -z ${OUTPUT_NOT_GENERATED+x} ]]; then
@@ -342,8 +342,8 @@ function typecheck_test() {
             notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
         else
             debug "  Converting $FILE to $REFILE:"
-            debug "$REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
-            $REFMT --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
+            debug "refmt --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE"
+            refmt --heuristics-file $INPUT/arity.txt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
             if ! [[ $? -eq 0 ]]; then
                 warning "  ⊘ FAILED\n"
                 return 1
@@ -351,12 +351,23 @@ function typecheck_test() {
             FILE=$REFILE
         fi
     else
-        debug "  Formatting: $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE"
-        $REFMT --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+        debug "  Formatting: refmt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE"
+        refmt --print-width 50 --print re $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
             return 1
         fi
+      debug "  Generating output again: refmt --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
+      refmt $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+      $DIFF $OUTPUT/$FILE $OUTPUT/$FILE
+      if ! [[ $? -eq 0 ]]; then
+          warning "  ⊘ FAILED\n"
+          info "  ${INFO}$OUTPUT/$FILE${RESET}"
+          info "  second round of formatting doesn't match first (not idempotent)"
+          info "  run a diff on $OUTPUT/$FILE $OUTPUT/$FILE"
+          echo ""
+          return 1
+      fi
     fi
 
     if [ "$FILE" != "$(basename $FILE .re)" ]; then
@@ -374,8 +385,8 @@ function typecheck_test() {
     then
         notice "  ☒ IGNORED COMPILATION STEP: Requires OCaml >= $MIN_VERSION"
     else
-        debug "  Compiling: ocamlc -c -pp $REFMT $COMPILE_FLAGS $OUTPUT/$FILE"
-        ocamlc -c -pp "$REFMT --print binary" $COMPILE_FLAGS "$OUTPUT/$FILE"
+        debug "  Compiling: ocamlc -c -pp refmt $COMPILE_FLAGS $OUTPUT/$FILE"
+        ocamlc -c -pp "refmt --print binary" $COMPILE_FLAGS "$OUTPUT/$FILE"
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
             return 1
@@ -399,8 +410,8 @@ function oprint_test() {
 
     info "Outcome Printer Test: $FILE"
 
-    debug "  'cat $FILE | $OPRINT_TEST_BIN $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-    cat $INPUT/$FILE | $OPRINT_TEST_BIN $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+    debug "  'cat $FILE | testOprint.exe $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+    cat $INPUT/$FILE | testOprint.exe $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
 
     debug "  'cp $OUTPUT/$FILE $INTF_OUTPUT/$(basename $FILE .re).rei"
     cp $OUTPUT/$FILE $INTF_OUTPUT/$(basename $FILE .re).rei
@@ -448,10 +459,10 @@ function error_test() {
       warning "  ⊘ FAILED: .ml files should not need to be run against error tests. \n"
       return 1
     else
-      debug "  '$REFMT --print-width 50 --print re $INPUT/$FILE &> $OUTPUT/$FILE'"
+      debug "  'refmt --print-width 50 --print re $INPUT/$FILE &> $OUTPUT/$FILE'"
       # ensure errors are not absolute filepaths
       cd $INPUT
-      $REFMT --print-width 50 --print re $(basename $FILE) &> $OUTPUT/$FILE
+      refmt --print-width 50 --print re $(basename $FILE) &> $OUTPUT/$FILE
       cd - > /dev/null
     fi
 

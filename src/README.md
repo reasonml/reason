@@ -55,7 +55,9 @@ works with `esy` projects, loading all the right dependencies.
 ##### Running tests
 
 You can run commands as if you had installed Reason by prefixing commands with `esy x` ("esy execute").
-For example `esy x make test`
+For example `esy x make test-once-installed`
+ 
+
 
 For more, see the [esy documentation](https://github.com/esy-ocaml/esy).
 
@@ -66,15 +68,15 @@ For more, see the [esy documentation](https://github.com/esy-ocaml/esy).
 
 ### Build
 
-`make build`. **If this fails on your machine but master passes**, it means your setup wasn't right. Could you check if you followed the above installation steps? In particular, make sure you did `eval $(opam config env)` and sourced your shell environment (if you don't know how, just open a new shell tab and it'll be sourced usually).
+`esy x refmt --help`. **If this fails on your machine but master passes**, it means your setup wasn't right. Could you check if you followed the above installation steps? In particular, make sure you did `eval $(opam config env)` and sourced your shell environment (if you don't know how, just open a new shell tab and it'll be sourced usually).
 
-The generated artifacts are in `_build`. All the binaries are in `_build/install/default/bin`.
+The generated artifacts are in `esy echo '#{self.target_dir}/default/`. All the binaries are in `esy echo '#{self.target_dir}/install/default/bin`.
 
 ### Test
 
-To do some one-off tests, try `echo "let a = 1" | _build/install/default/bin/refmt`
+To do some one-off tests, try `echo "let a = 1" | esy x refmt`
 
-`make test` (make sure to follow the repo pinning instructions above!). The tests will output the difference between the expected syntax formatting and the actual one, if any.
+`esy x make test-once-installed` (make sure to follow the repo pinning instructions above!). The tests will output the difference between the expected syntax formatting and the actual one, if any.
 
 Small exception: testing your changes in `rtop` is a little complicated, but you usually don't need to test it. If you do, you might have seen that your changes of the parser or printer don't affect `rtop` when you run it. Instead, you need to do `opam pin add -y reason .` and _then_ run `rtop` to see the Reason changes reflected.
 
@@ -134,11 +136,11 @@ Here's a recommended workflow:
 
 - First put your code in the current master syntax in a file `test.re`
 - `make build`
-- `./_build/install/default/bin/refmt --print ast test.re`
+- `esy x refmt --print ast test.re`
 - look closely at the ast, spot the thing you need
 - Search for your item in `reason_parser.mly`
 - Change the logic
-- `make test`
+- `esy x make test-once-installed`
 
 Lexer helpers doc: http://caml.inria.fr/pub/docs/manual-ocaml/libref/Lexing.html
 Parser helper docs: http://caml.inria.fr/pub/docs/manual-ocaml/libref/Parsetree.html
@@ -192,7 +194,7 @@ To add a Menhir error message, you first need to know the error code. To find th
 
 ```
 make
-./_build/install/default/bin/refmt --parse re foo.re
+esy x refmt --parse re foo.re
 ```
 
 Where `foo.re` contains a syntax error. This will result in an error message like:
@@ -209,8 +211,7 @@ Here, the error code is 2665. We then search for this code in `src/reason-parser
 To test the new error message you can run the following commands again:
 
 ```
-make
-./refmt --parse re foo.re
+esy x refmt --parse re foo.re
 ```
 
 Then submit a PR!
@@ -223,7 +224,7 @@ Before digging into Reason parser, make sure this isn't actually caused by some 
 
 ```
 make
-./_build/install/default/bin/refmt --parse re --print ast test.re
+esy x refmt --parse re --print ast test.re
 ```
 
 Where `test.re` has the code that produces the error message at the wrong location.
@@ -245,37 +246,24 @@ As you can see from other parts in the parser, many do have a `~loc` assigned to
       }
 ```
 
-## Working With PPX
-
-reactjs_jsx_ppx_v2 uses the ppx system. It works on the AST. It helps being able to see the AST of a particular snippet. Assuming you've written some code in a file `foo.re`, run the following incantation to output the code's AST:
-
-```
-ocamlc -dparsetree -ppx ./_build/default/src/ppx/reactjs_jsx_ppx_v2.exe -pp "./_build/default/src/refmt/refmt_impl.exe --print binary" -impl foo.re
-```
-
-That dumps the AST after accepting the ppx and the reason syntax. You can also dump the final code in Reason syntax instead:
-
-```
-ocamlc -dsource -ppx ./_build/default/src/ppx/reactjs_jsx_ppx_v2.exe -pp "./_build/default/src/refmt/refmt_impl.exe --print binary" -impl foo.re | ./_build/default/src/refmt/refmt_impl.exe --parse ml --print re --interface false
-```
 
 ## Testing Two Different Syntax Versions
 
 If you'd like to convert from an old Reason syntax version to the one in master (whether to debug things, or if you're interested in trying out some syntax changes from master and then explaining to us why your perspective on the Reason syntax is the best, lol):
 
 - Revert the repo to the old commit you want
-- Build, through `make build`
-- Move the built refmt binary `./_build/install/default/bin/refmt` somewhere else
+- Build, through `esy`
+- Move the built refmt binary `esy x which refmt` somewhere else
 - Revert back to master
-- `make build` again to get the master binary.
+- `esy x which refmt` again to get the master binary.
 
 Then do:
 
 ```
-./_build/install/default/bin/refmt --parse my_old_syntax_file.re --print binary_reason | ./refmt_impl --parse binary_reason --print re
+esy x refmt --parse my_old_syntax_file.re --print binary_reason | ./refmt_impl --parse binary_reason --print re
 ```
 
-Basically, turn your old syntax into an AST (which is resilient to syntax changes), then turn it back into the new, textual code. If you're reverting to an old enough version, the old binary's flags and/or the old build instructions might be different. In that case, see `./_build/install/default/bin/refmt -help` and/or the old README.
+Basically, turn your old syntax into an AST (which is resilient to syntax changes), then turn it back into the new, textual code. If you're reverting to an old enough version, the old binary's flags and/or the old build instructions might be different. In that case, see `esy x refmt --help` and/or the old README.
 
 ## Cutting a release
 
