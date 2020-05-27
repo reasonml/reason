@@ -155,8 +155,8 @@ switch (Some(1)) {
 };
 
 let myInt = 100;
-/* Numeric ranges are rejected by the type checker, but validly parsed so drop this in
- * an annotationto test the parsing. */
+/* Numeric ranges are rejected by the type checker, but validly parsed so drop
+ * this in an annotation to test the parsing. */
 [@something? 1 .. 2]
 let rangeInt = 0;
 
