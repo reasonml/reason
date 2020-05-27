@@ -8,9 +8,9 @@
 module Cmdliner = Vendored_cmdliner
 open Cmdliner
 
-let read_lines file =
+let read_text_lines file =
   let list = ref [] in
-  let chan = open_in_bin file in
+  let chan = open_in file in
   try
     while true do
       list := input_line chan :: !list
@@ -46,7 +46,7 @@ let refmt
       | (None, true) -> `Reason (* default *)
     in
     let constructorLists = match heuristics_file with
-      | Some f_name -> read_lines f_name
+      | Some f_name -> read_text_lines f_name
       | None -> []
     in
     let interface = match interface with
