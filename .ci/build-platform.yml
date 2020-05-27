@@ -35,16 +35,10 @@ jobs:
       - bash: |
           # COMPUTE THE ESY INSTALL CACHE LOCATION AHEAD OF TIME
           DESIRED_LEN="86"
-          # Note: This will need to change when upgrading esy version
-          # that reenables long paths on windows.
-          if [ "$AGENT_OS" == "Windows_NT" ]; then
-            DESIRED_LEN="33"
-          fi
           HOME_ESY3="$HOME/.esy/3"
           HOME_ESY3_LEN=${#HOME_ESY3}
           NUM_UNDERS=$(echo "$(($DESIRED_LEN-$HOME_ESY3_LEN))")
-          UNDERS=$(printf "%-${NUM_UNDERS}s" "_")
-          UNDERS="${UNDERS// /_}"
+          UNDERS=$(bash -c "printf '_%.0s' {1..${NUM_UNDERS}}")
           THE_ESY__CACHE_INSTALL_PATH=${HOME_ESY3}${UNDERS}/i
           if [ "$AGENT_OS" == "Windows_NT" ]; then
             THE_ESY__CACHE_INSTALL_PATH=$( cygpath --mixed --absolute "$THE_ESY__CACHE_INSTALL_PATH")
