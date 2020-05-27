@@ -361,17 +361,6 @@ function typecheck_test() {
             warning "  ⊘ FAILED\n"
             return 1
         fi
-      debug "  Generating output again: refmt --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted"
-      refmt $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
-      $DIFF $OUTPUT/$FILE $OUTPUT/$FILE
-      if ! [[ $? -eq 0 ]]; then
-          warning "  ⊘ FAILED\n"
-          info "  ${INFO}$OUTPUT/$FILE${RESET}"
-          info "  second round of formatting doesn't match first (not idempotent)"
-          info "  run a diff on $OUTPUT/$FILE $OUTPUT/$FILE"
-          echo ""
-          return 1
-      fi
     fi
 
     if [ "$FILE" != "$(basename $FILE .re)" ]; then
