@@ -410,8 +410,8 @@ function oprint_test() {
 
     info "Outcome Printer Test: $FILE"
 
-    debug "  'cat $FILE | testOprint.exe $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
-    cat $INPUT/$FILE | testOprint.exe $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
+    debug "  'cat $FILE | testOprint $INPUT/$FILE 2>&1 > $OUTPUT/$FILE'"
+    cat $INPUT/$FILE | testOprint $INPUT/$FILE 2>&1 > $OUTPUT/$FILE
 
     debug "  'cp $OUTPUT/$FILE $INTF_OUTPUT/$(basename $FILE .re).rei"
     cp $OUTPUT/$FILE $INTF_OUTPUT/$(basename $FILE .re).rei
