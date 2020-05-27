@@ -3380,7 +3380,7 @@ let printer = object(self:'self)
             let raw_literal, _ = extract_raw_literal x.ppat_attributes in
             (self#constant ?raw_literal c)
           | Ppat_interval (c1, c2) ->
-            makeList [self#constant c1; atom ".."; self#constant c2]
+            makeList ~postSpace:true [self#constant c1; atom ".."; self#constant c2]
           | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
           | Ppat_constraint (p, ct) ->
               formatPrecedence (formatTypeConstraint (self#pattern p) (self#core_type ct))
