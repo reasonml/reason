@@ -12,11 +12,11 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml"         {>= "4.02" & < "4.11"}
+  "ocaml"         {>= "4.02" & < "4.12"}
   "dune"          {>= "1.4"}
   "ocamlfind"     {build}
   "menhir"        {>= "20170418"}
-  "merlin-extend" {>= "0.4"}
+  "merlin-extend" {>= "0.5"}
   "fix"
   "result"
   "ocaml-migrate-parsetree"

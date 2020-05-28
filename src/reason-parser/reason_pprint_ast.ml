@@ -2030,13 +2030,6 @@ let constant ?raw_literal ?(parens=true) ppf = function
     paren (parens && i.[0] = '-')
       (fun ppf (i,m) -> Format.fprintf ppf "%s%c" i m) ppf (i,m)
 
-let is_punned_labelled_expression e lbl = match e.pexp_desc with
-  | Pexp_ident { txt }
-  | Pexp_constraint ({pexp_desc = Pexp_ident { txt }}, _)
-  | Pexp_coerce ({pexp_desc = Pexp_ident { txt }}, _, _)
-    -> txt = Longident.parse lbl
-  | _ -> false
-
 let is_punned_labelled_pattern_no_attrs p lbl = match p.ppat_attributes, p.ppat_desc with
   | _::_, _ -> false
   | [], Ppat_constraint ({ ppat_desc = Ppat_var { txt }; ppat_attributes=[]}, _)
@@ -3441,7 +3434,7 @@ let printer = object(self:'self)
           | Ppat_interval (c1, c2) ->
             makeList ~postSpace:true [self#constant c1; atom ".."; self#constant c2]
           | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
-          | Ppat_constraint (p, ct) ->
+          | Ppat_constraint _ ->
               formatPrecedence (self#pattern x)
           | Ppat_lazy p ->formatPrecedence (label ~space:true (atom "lazy") (self#simple_pattern p))
           | Ppat_extension e -> self#extension e
@@ -4524,7 +4517,7 @@ let printer = object(self:'self)
           expr
       in
       makeList ~break:Never [atom "..."; childLayout]
-  (**
+  (*
         How JSX is formatted/wrapped. We want the attributes to wrap independently
         of children.
 
@@ -4560,7 +4553,7 @@ let printer = object(self:'self)
       | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processArguments tail processedAttrs None
       | (Labelled "children", (
-          {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple components})} as arg
+          {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple _})} as arg
           )
         ) :: tail ->
         (match self#formatJsxChildrenNonSpread arg [] with
@@ -7979,9 +7972,9 @@ let printer = object(self:'self)
     let term = self#unparseProtectedExpr e in
     let param = match (l, e) with
       | (Nolabel, _) -> term
-      | (Labelled lbl, _) when is_punned_labelled_expression e lbl ->
+      | (Labelled lbl, _) when Reason_heuristics.is_punned_labelled_expression e lbl ->
         makeList [atom namedArgSym; term]
-      | (Optional lbl, _) when is_punned_labelled_expression e lbl ->
+      | (Optional lbl, _) when Reason_heuristics.is_punned_labelled_expression e lbl ->
         makeList [atom namedArgSym; label term (atom "?")]
       | (Labelled lbl, _) ->
         label (atom (namedArgSym ^ lbl ^ "=")) term

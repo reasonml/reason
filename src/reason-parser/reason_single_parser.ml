@@ -196,7 +196,7 @@ let rec decompose_token pos0 split =
   | [] -> None
   | '=' :: tl ->
     let eq = (Reason_parser.EQUAL, pcur, pnext) in
-    let (revFirstTwo, tl, pcur, pnext) = match tl with
+    let (revFirstTwo, tl, pcur, _pnext) = match tl with
     | '?' :: tlTl ->
       [(Reason_parser.QUESTION, pcur, pnext); eq], tlTl, pnext, (advance pnext 1)
     | _ -> [eq], tl, pcur, pnext
@@ -214,7 +214,7 @@ let rec decompose_token pos0 split =
         (match common_remaining_infix_token pcur tl with
         | None -> None (* Couldn't parse the non-empty tail - invalidates whole thing *)
         | Some(r) -> Some(List.rev (r :: less)))
-  | '>' :: tl ->
+  | '>' :: _tl ->
       (* Recurse to take advantage of all the logic in case the remaining
        * begins with an equal sign. *)
       let gt_tokens, rest_split, prest = split_greaters [] pcur split in
@@ -235,7 +235,7 @@ let list_init len f = List.rev (init_tailrec_aux [] 0 len f)
 
 let explode s = list_init (String.length s) (String.get s)
 
-let rec try_split_label (tok_kind, pos0, posn) =
+let try_split_label (tok_kind, pos0, _posn) =
   match tok_kind with
   | Reason_parser.INFIXOP0 s ->
     (match decompose_token pos0 (explode s) with

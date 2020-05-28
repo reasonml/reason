@@ -6,7 +6,13 @@ let is_punned_labelled_expression e lbl =
   | Pexp_ident { txt }
   | Pexp_constraint ({pexp_desc = Pexp_ident { txt }}, _)
   | Pexp_coerce ({pexp_desc = Pexp_ident { txt }}, _, _)
-    -> txt = Longident.parse lbl
+    ->
+     begin match Longident.unflatten [ lbl ] with
+     | Some lid ->
+       txt = lid
+     | None ->
+       false
+     end
   | _ -> false
 
 (* We manually check the length of `Thing.map(foo, bar, baz`,
