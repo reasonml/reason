@@ -24,6 +24,10 @@ case "${unameOut}" in
     *)          DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 esac
 
+case "${unameOut}" in
+    MINGW*)     REFMT_NAME_FOR_OCAML="refmt.exe";;
+    *)          REFMT_NAME_FOR_OCAML="refmt"
+esac
 
 
 
@@ -385,8 +389,8 @@ function typecheck_test() {
     then
         notice "  ☒ IGNORED COMPILATION STEP: Requires OCaml >= $MIN_VERSION"
     else
-        debug "  Compiling: ocamlc -c -pp refmt $COMPILE_FLAGS $OUTPUT/$FILE"
-        ocamlc -c -pp "refmt --print binary" $COMPILE_FLAGS "$OUTPUT/$FILE"
+        debug "  Compiling: ocamlc -c -pp $REFMT_NAME_FOR_OCAML $COMPILE_FLAGS $OUTPUT/$FILE"
+        ocamlc -c -pp "$REFMT_NAME_FOR_OCAML --print binary" $COMPILE_FLAGS "$OUTPUT/$FILE"
         if ! [[ $? -eq 0 ]]; then
             warning "  ⊘ FAILED\n"
             return 1
