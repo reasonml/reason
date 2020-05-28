@@ -25,7 +25,7 @@ case "${unameOut}" in
 esac
 
 case "${unameOut}" in
-    MINGW*)     REFMT_NAME_FOR_OCAML="refmt.exe";;
+    MINGW*)     REFMT_NAME_FOR_OCAML=$(cygpath --mixed --absolute $(which refmt.exe));;
     *)          REFMT_NAME_FOR_OCAML="refmt"
 esac
 
