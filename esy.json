@@ -75,6 +75,7 @@
         "@opam/react",
         "@opam/result",
         "@opam/seq",
+	"@opam/charInfo_width",
         "@opam/utop",
         "@opam/zed",
         "ocaml"
