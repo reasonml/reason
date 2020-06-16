@@ -527,3 +527,109 @@ Fmt.([@foo] {x: 1});
 Fmt.([@foo] [1, 2, 3]);
 Fmt.([@foo] (1, 2, 3));
 Fmt.([@foo] {val x = 10});
+
+
+/**
+ * Attributes are associate with the identifier, function call, constructor
+ * appcation or constructor application pattern in front of it - up until a
+ * type constraint, an | (or) or an 'as'.
+ */
+
+let punnned_lbl_a = (~lbl as [@ATTR] lbl) => lbl;
+let punnned_lbl_b = (~lbl as [@ATTR] (lbl: int)) => lbl;
+let punnned_lbl_c = (~lbl as [@ATTR] ([@ATTR2] lbl)) => lbl;
+let punnned_lbl_d = (~lbl as [@ATTR] ([@ATTR2] lbl: int)) => lbl;
+let punnned_lbl_e = (~lbl as [@ATTR] ([@ATTR2] (lbl: int))) => lbl;
+
+let punnned_lbl_f = (~lbl as [@ATTR] lbl: int) => lbl;
+let punnned_lbl_g = (~lbl as ([@ATTR] lbl: int)) => lbl;
+let punnned_lbl_h = (~lbl as ([@ATTR] (lbl: int))) => lbl;
+/** Attributes have lower precedence than type constraint. The following should
+ * be printed identically.  */
+let punnned_lbl_i = (~lbl as [@ATTR] lbl: int) => lbl;
+let punnned_lbl_i' = (~lbl as [@ATTR] (lbl: int)) => lbl;
+
+let nonpunned_lbla = (~lbl as [@ATTR] lblNonpunned) => lblNonpunned;
+let nonpunned_lbl_b = (~lbl as [@ATTR] (lblNonpunned: int)) => lblNonpunned;
+let nonpunned_lbl_c = (~lbl as [@ATTR] ([@ATTR2] lblNonpunned)) => lblNonpunned;
+let nonpunned_lbl_d = (~lbl as [@ATTR] ([@ATTR2] lblNonpunned: int)) => lblNonpunned;
+let nonpunned_lbl_e = (~lbl as [@ATTR] ([@ATTR2] (lblNonpunned: int))) => lblNonpunned;
+
+let nonpunned_lbl_f = (~lbl as [@ATTR] lblNonpunned: int) => lblNonpunned;
+let nonpunned_lbl_g = (~lbl as ([@ATTR] lblNonpunned: int)) => lblNonpunned;
+let nonpunned_lbl_h = (~lbl as ([@ATTR] (lblNonpunned: int))) => lblNonpunned;
+
+let nonpunned_lbl_i = (~lbl as [@ATTR] lblNonpunned: int) => lblNonpunned;
+let nonpunned_lbl_i' = (~lbl as [@ATTR] (lblNonpunned: int)) => lblNonpunned;
+
+
+/* Won't parse: let [@attr] x1 : int = xInt; */
+let xInt = 0;
+
+/**
+  Attribute on the pattern node inside of constraint
+  pattern (
+    Ppat_constraint(
+      pattern(@xxx, Ppat_var "x"),
+      coretype
+    )
+  )
+  This will get sugared to `let ([@attr] x2) : int = xInt`
+*/
+let ([@attr] x2 : int) = xInt;
+/**
+  Attribute on the pattern holding the constraint:
+  pattern(
+    @xxx
+    Ppat_constraint(
+      pattern(Pexpident "x"),
+      coretype
+    )
+  )
+*/
+let ([@attr] (x3 : int)) = xInt;
+let ([@attr] ([@attr0] x4: int)) = xInt;
+let ([@attr] (([@attr0] x5): int)) = xInt;
+
+type eitherOr('a, 'b) = Either('a) | Or('b);
+let [@attr] Either(a) | Or(a) = Either("hi");
+// Can drop the the parens around Either.
+let ([@attr] Either(a)) | Or(a) = Either("hi");
+// Can drop the parens around Or.
+let Either(b) | ([@attr] Or(b)) = Either("hi");
+// Should keep the parens around both
+let [@attr] (Either(a) | Or(a)) = Either("hi");
+
+// Should keep the parens
+let [@attr] (_x as xAlias) = 10;
+// Should drop the parens
+let ([@attr] _x) as xAlias' = 10;
+
+
+/**
+  Attribute on the expression node inside of constraint
+  expression(
+    Pexp_constraint(
+      expression(@xxx, Pexpident "x"),
+      coretype
+    )
+  )
+*/
+let _ = ([@xxx] xInt : int);    // This should format the same
+let _ = (([@xxx] xInt) : int);  // This should format the same
+
+/**
+  Attribute on the expression holding the constraint:
+  expression(
+    @xxx
+    Pexp_constraint(
+      expression(Pexpident "x"),
+      coretype
+    )
+  )
+*/
+let _ = [@xxx] (xInt : int);    // This should format the same
+
+[@foo? [@attr] (x: int)];
+[@foo? [@attr] ([@bar] x: int)];
+[@foo ? [@attr] (Either("hi") | Or("hi"))];
