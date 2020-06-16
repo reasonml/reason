@@ -2033,12 +2033,10 @@ let is_punned_labelled_expression e lbl = match e.pexp_desc with
     -> txt = Longident.parse lbl
   | _ -> false
 
-let is_punned_labelled_pattern p lbl = match p.ppat_desc with
-  | Ppat_constraint ({ ppat_desc = Ppat_var _; ppat_attributes = _::_ }, _)
-    -> false
-  | Ppat_constraint ({ ppat_desc = Ppat_var { txt } }, _)
-  | Ppat_var { txt }
-    -> txt = lbl
+let is_punned_labelled_pattern_no_attrs p lbl = match p.ppat_attributes, p.ppat_desc with
+  | _::_, _ -> false
+  | [], Ppat_constraint ({ ppat_desc = Ppat_var { txt }; ppat_attributes=[]}, _)
+  | [], Ppat_var { txt } -> txt = lbl
   | _ -> false
 
 let isLongIdentWithDot = function
@@ -3191,12 +3189,27 @@ let printer = object(self:'self)
       ~postSpace:true
       ~preSpace:true
       [left; right]
-
-  method pattern_without_or x =
-    (* TODOATTRIBUTES: Handle the stdAttrs here *)
-    let {arityAttrs} = partitionAttributes x.ppat_attributes in
-    match x.ppat_desc with
-      | Ppat_alias (p, s) ->
+      
+  (*
+   * Renders level 3 or simpler patterns:
+   *
+   * Simpler
+   * ^   -----------
+   * |   1.     [ ], { }, X.{  }, ident, (any-other-pattern-with-parens-around)
+   * |   2.     F(args), lazy(foo), [@attr] 1-2
+   * |   3.     pat as alias, pat | pat
+   * |   4.     1-3 : typ
+   * v   ------------
+   * Complex
+   *
+   * Assumes visually rendered attributes have already been rendered.
+   *)
+  method pattern_at_least_as_simple_as_alias_or_or x =
+    let {arityAttrs=_; stdAttrs} = partitionAttributes x.ppat_attributes in
+    match stdAttrs, x.ppat_desc with
+      | [], Ppat_or (p1, p2) ->
+        self#or_pattern p1 p2
+      | [], Ppat_alias (p, s) ->
           let raw_pattern = (self#pattern p) in
           let pattern_with_precedence = match p.ppat_desc with
             | Ppat_or (p1, p2) -> formatPrecedence (self#or_pattern p1 p2)
@@ -3208,44 +3221,101 @@ let printer = object(self:'self)
               atom "as";
               (source_map ~loc:s.loc (protectIdentifier s.txt))
             ]) (* RA*)
-      | Ppat_variant (l, Some p) ->
-          if arityAttrs != [] then
-            raise (NotPossible "Should never see embedded attributes on poly variant")
-          else
-            source_map ~loc:x.ppat_loc
-              (self#constructor_pattern (atom ("`" ^ l)) p
-                 ~polyVariant:true ~arityIsClear:true)
-      | Ppat_lazy p -> label ~space:true (atom "lazy") (self#simple_pattern p)
-      | Ppat_construct (({txt} as li), po) when not (txt = Lident "::")-> (* FIXME The third field always false *)
-          let formattedConstruction = match po with
-            (* TODO: Check the explicit_arity field on the pattern/constructor
-               attributes to determine if should desugar to an *actual* tuple. *)
-            (* | Some ({ *)
-            (*   ppat_desc=Ppat_tuple l; *)
-            (*   ppat_attributes=[{txt="explicit_arity"; loc}] *)
-            (* }) -> *)
-            (*   label ~space:true (self#longident_loc li) (makeSpacedBreakableInlineList (List.map self#simple_pattern l)) *)
-            | Some pattern ->
-                let arityIsClear = isArityClear arityAttrs in
-                self#constructor_pattern ~arityIsClear (self#longident_loc li) pattern
-            | None ->
-                self#longident_loc li
-          in
-          source_map ~loc:x.ppat_loc formattedConstruction
-      | _ -> self#simple_pattern x
+      | _ -> self#pattern_at_least_as_simple_as_application x
 
-  method pattern x =
-    let {arityAttrs; stdAttrs} = partitionAttributes x.ppat_attributes in
+  (* Formats a pattern that is a least as "simple" as function application
+   * style syntax. Produces formatting that is as simple as either 1 or 2.
+   *
+   * Simpler
+   * ^   -----------
+   * |   1.     [ ], { }, X.{  }, ident, (any-other-pattern-with-parens-around)
+   * |   2.     F(args), lazy(foo), [@attr] 1-2
+   * |   3.     pat as alias, pat | pat
+   * |   4.     1-3 : typ
+   * v   ------------
+   * Complex
+   *
+   *
+   * 1. and 2. do not need parens around them in order to apply attributes to
+   * them. 3. does need parens around it to apply attributes to the whole
+   * pattern.
+   *
+   * Assumes visually rendered attributes have already been rendered.
+   *)
+  method pattern_at_least_as_simple_as_application x =
+    (* TODOATTRIBUTES: Handle the stdAttrs here *)
+    let {stdAttrs; arityAttrs} = partitionAttributes x.ppat_attributes in
+    let formattedPattern =
+      match x.ppat_desc with
+        | Ppat_variant (l, Some p) ->
+            if arityAttrs != [] then
+              raise (NotPossible "Should never see embedded attributes on poly variant")
+            else
+              source_map ~loc:x.ppat_loc
+                (self#constructor_pattern (atom ("`" ^ l)) p
+                   ~polyVariant:true ~arityIsClear:true)
+        | Ppat_lazy p -> label ~space:true (atom "lazy") (self#simple_pattern p)
+        | Ppat_construct (({txt} as li), po) when not (txt = Lident "::")-> (* FIXME The third field always false *)
+            let formattedConstruction = match po with
+              (* TODO: Check the explicit_arity field on the pattern/constructor
+                 attributes to determine if should desugar to an *actual* tuple. *)
+              (* | Some ({ *)
+              (*   ppat_desc=Ppat_tuple l; *)
+              (*   ppat_attributes=[{txt="explicit_arity"; loc}] *)
+              (* }) -> *)
+              (*   label ~space:true (self#longident_loc li) (makeSpacedBreakableInlineList (List.map self#simple_pattern l)) *)
+              | Some pattern ->
+                  let arityIsClear = isArityClear arityAttrs in
+                  self#constructor_pattern ~arityIsClear (self#longident_loc li) pattern
+              | None ->
+                  self#longident_loc li
+            in
+            source_map ~loc:x.ppat_loc formattedConstruction
+        | _ -> self#simple_pattern {x with ppat_attributes=arityAttrs}
+    in
     if stdAttrs != [] then
-      formatAttributed
-        (* Doesn't need to be simple_pattern because attributes are parse as
-         * appyling to the entire "function application style" syntax preceeding them *)
-        (self#pattern {x with ppat_attributes=arityAttrs})
-        (self#attributes stdAttrs)
-    else match x.ppat_desc with
-      | Ppat_or (p1, p2) ->
-        self#or_pattern p1 p2
-      | _ -> self#pattern_without_or x
+      formatAttributed formattedPattern (self#attributes stdAttrs)
+    else formattedPattern
+
+  (* Format a pattern with no particular requirements of simplicity. For example when
+   * formatting a pattern *inside* one tuple position:
+   *        |
+   *        v
+   * let (x : int, foo) = ..
+   *
+   * 
+   * Renders level 3 or simpler patterns:
+   *
+   * Simpler
+   * ^   -----------
+   * |   1.     [ ], { }, X.{  }, ident, (any-other-pattern-with-parens-around)
+   * |   2.     F(args), lazy(foo), [@attr] 1-2
+   * |   3.     pat as alias, pat | pat
+   * |   4.     1-3 : typ
+   * v   ------------
+   * Complex
+   *
+   * Assumes visually rendered attributes have already been rendered.
+   *)
+  method pattern x =
+    let {arityAttrs=_; stdAttrs} = partitionAttributes x.ppat_attributes in
+    match stdAttrs, x.ppat_desc with
+      | [], Ppat_constraint (p, ct) ->
+          let (pat, typ) = begin match (p, ct) with
+          | (
+              {ppat_desc = Ppat_unpack(unpack)},
+              {ptyp_desc = Ptyp_package (lid, cstrs)}
+            ) ->
+              (makeList ~postSpace:true [atom "module"; atom unpack.txt],
+               self#typ_package ~mod_prefix:false lid cstrs)
+          | _ ->
+            (* Have to call pattern_at_least_as_simple_as_alias_or_or because
+             * we don't want to allow *another* nested type annotation without
+             * first adding parens *)
+            (self#pattern_at_least_as_simple_as_alias_or_or p, self#core_type ct)
+          end in
+          formatTypeConstraint pat typ
+      | _ -> self#pattern_at_least_as_simple_as_alias_or_or x
 
   method patternList ?(wrap=("","")) pat =
     let pat_list, pat_last = self#pattern_list_split_cons [] pat in
@@ -3297,21 +3367,6 @@ let printer = object(self:'self)
     if protect then
       makeList ~postSpace:true ~wrap:("(", ")") [unwrapped_layout ]
     else unwrapped_layout
-
-  method constrained_pattern x = match x.ppat_desc with
-    | Ppat_constraint (p, ct) ->
-        let (pat, typ) = begin match (p, ct) with
-        | (
-            {ppat_desc = Ppat_unpack(unpack)},
-            {ptyp_desc = Ptyp_package (lid, cstrs)}
-          ) ->
-            (makeList ~postSpace:true [atom "module"; atom unpack.txt],
-             self#typ_package ~mod_prefix:false lid cstrs)
-        | _ ->
-          (self#pattern p, self#core_type ct)
-        end in
-        formatTypeConstraint pat typ
-    | _  -> self#pattern x
 
   method simple_pattern x =
     let {arityAttrs; stdAttrs} = partitionAttributes x.ppat_attributes in
@@ -3383,7 +3438,7 @@ let printer = object(self:'self)
             makeList ~postSpace:true [self#constant c1; atom ".."; self#constant c2]
           | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
           | Ppat_constraint (p, ct) ->
-              formatPrecedence (formatTypeConstraint (self#pattern p) (self#core_type ct))
+              formatPrecedence (self#pattern x)
           | Ppat_lazy p ->formatPrecedence (label ~space:true (atom "lazy") (self#simple_pattern p))
           | Ppat_extension e -> self#extension e
           | Ppat_exception p ->
@@ -3404,10 +3459,10 @@ let printer = object(self:'self)
         source_map ~loc:x.ppat_loc itm
 
   method label_exp lbl opt pat =
-    let term = self#constrained_pattern pat in
+    let term = self#pattern pat in
     let param = match lbl with
       | Nolabel -> term
-      | Labelled lbl | Optional lbl when is_punned_labelled_pattern pat lbl ->
+      | Labelled lbl | Optional lbl when is_punned_labelled_pattern_no_attrs pat lbl ->
         makeList [atom namedArgSym; term]
       | Labelled lbl | Optional lbl ->
         let lblLayout=
@@ -5207,8 +5262,8 @@ let printer = object(self:'self)
     self#binding (escape_stars_slashes prefixText) ~loc:pbop_loc ~pat:pbop_pat pbop_exp
 
   method binding prefixText ?(attrs=[]) ~loc ~pat expr = (* TODO: print attributes *)
-    let body = match pat.ppat_desc with
-      | (Ppat_var _) ->
+    let body = match pat.ppat_attributes, pat.ppat_desc with
+      | [], (Ppat_var _) ->
         self#wrappedBinding prefixText ~arrow:"=>"
           (source_map ~loc:pat.ppat_loc (self#simple_pattern pat))
           [] expr
@@ -5224,7 +5279,7 @@ let printer = object(self:'self)
          forms of explicit polymorphic annotations in the parse tree, and how
          we must recover them here.
        *)
-      | (Ppat_constraint(p, ty)) -> (
+      | [], (Ppat_constraint(p, ty)) -> (
           (* Locally abstract forall types are *seriously* mangled by the parsing
              stage, and we have to be very smart about how to recover it.
 
@@ -5666,6 +5721,7 @@ let printer = object(self:'self)
       source_map ~loc:ppat_loc (self#patternList ~wrap:("(", ")")  listPattern)
     | _ -> assert false
 
+  (* TODO: Similar to tuples, do not print parens around type constraints (same for lists) *)
   method patternArray ?(wrap=("","")) l =
     let (left, right) = wrap in
     let wrap = (left ^ "[|", "|]" ^ right) in
@@ -5674,7 +5730,7 @@ let printer = object(self:'self)
   method patternTuple ?(wrap=("","")) l =
     let (left, right) = wrap in
     let wrap = (left ^ "(", ")" ^ right) in
-    makeList ~wrap ~sep:commaTrail ~postSpace:true ~break:IfNeed (List.map self#constrained_pattern l)
+    makeList ~wrap ~sep:commaTrail ~postSpace:true ~break:IfNeed (List.map self#pattern l)
 
   method patternRecord ?(wrap=("","")) l closed =
     let longident_x_pattern (li, p) =
@@ -6455,11 +6511,11 @@ let printer = object(self:'self)
       makeList ~wrap ~break ~pad ~postSpace ~sep:(Layout.Sep ";") rows
     | PPat (x, None) ->
       let wrap = wrap_prefix "?" wrap in
-      makeList ~wrap ~break ~pad [self#pattern x]
+      makeList ~wrap ~break ~pad [self#pattern_at_least_as_simple_as_alias_or_or x]
     | PPat (x, Some e) ->
       let wrap = wrap_prefix "?" wrap in
       makeList ~wrap ~break ~pad ~postSpace [
-        self#pattern x;
+        self#pattern_at_least_as_simple_as_alias_or_or x;
         label ~space:true (atom "when") (self#unparseExpr e)
       ]
 

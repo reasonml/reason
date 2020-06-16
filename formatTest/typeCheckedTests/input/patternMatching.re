@@ -236,3 +236,9 @@ switch (None) {
 | Some([someSuperLongString, ...es6ListSugarLikeSyntaxWhichIsSuperLong]) => ()
 | _ => ()
 }
+
+
+
+type aOrB = A(int) | B(int);
+let ((nestedAnnotation: int) : int) = 0;
+let ((A(i) | B(i): aOrB)) = A(0);
