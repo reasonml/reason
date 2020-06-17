@@ -562,6 +562,32 @@ let nonpunned_lbl_h = (~lbl as ([@ATTR] (lblNonpunned: int))) => lblNonpunned;
 let nonpunned_lbl_i = (~lbl as [@ATTR] lblNonpunned: int) => lblNonpunned;
 let nonpunned_lbl_i' = (~lbl as [@ATTR] (lblNonpunned: int)) => lblNonpunned;
 
+let defaulted_punnned_lbl_a = (~lbl as [@ATTR] lbl=0) => lbl;
+let defaulted_punnned_lbl_b = (~lbl as [@ATTR] (lbl: int)=0) => lbl;
+let defaulted_punnned_lbl_c = (~lbl as [@ATTR] ([@ATTR2] lbl)=0) => lbl;
+let defaulted_punnned_lbl_d = (~lbl as [@ATTR] ([@ATTR2] lbl: int)=0) => lbl;
+let defaulted_punnned_lbl_e = (~lbl as [@ATTR] ([@ATTR2] (lbl: int))=0) => lbl;
+
+let defaulted_punnned_lbl_f = (~lbl as [@ATTR] lbl: int=0) => lbl;
+let defaulted_punnned_lbl_g = (~lbl as ([@ATTR] lbl: int)=0) => lbl;
+let defaulted_punnned_lbl_h = (~lbl as ([@ATTR] (lbl: int))=0) => lbl;
+/** Attributes have lower precedence than type constraint. The following should
+ * be printed identically.  */
+let defaulted_punnned_lbl_i = (~lbl as [@ATTR] lbl: int=0) => lbl;
+let defaulted_punnned_lbl_i' = (~lbl as [@ATTR] (lbl: int)=0) => lbl;
+
+let defaulted_nonpunned_lbla = (~lbl as [@ATTR] lblNonpunned=0) => lblNonpunned;
+let defaulted_nonpunned_lbl_b = (~lbl as [@ATTR] (lblNonpunned: int)=0) => lblNonpunned;
+let defaulted_nonpunned_lbl_c = (~lbl as [@ATTR] ([@ATTR2] lblNonpunned)=0) => lblNonpunned;
+let defaulted_nonpunned_lbl_d = (~lbl as [@ATTR] ([@ATTR2] lblNonpunned: int)=0) => lblNonpunned;
+let defaulted_nonpunned_lbl_e = (~lbl as [@ATTR] ([@ATTR2] (lblNonpunned: int))=0) => lblNonpunned;
+
+let defaulted_nonpunned_lbl_f = (~lbl as [@ATTR] lblNonpunned: int=0) => lblNonpunned;
+let defaulted_nonpunned_lbl_g = (~lbl as ([@ATTR] lblNonpunned: int)=0) => lblNonpunned;
+let defaulted_nonpunned_lbl_h = (~lbl as ([@ATTR] (lblNonpunned: int))=0) => lblNonpunned;
+
+let defaulted_nonpunned_lbl_i = (~lbl as [@ATTR] lblNonpunned: int=0) => lblNonpunned;
+let defaulted_nonpunned_lbl_i' = (~lbl as [@ATTR] (lblNonpunned: int)=0) => lblNonpunned;
 
 /* Won't parse: let [@attr] x1 : int = xInt; */
 let xInt = 0;
