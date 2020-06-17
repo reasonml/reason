@@ -180,6 +180,7 @@ function unit_test() {
     FILEEXT="${FILENAME##*.}"
 
 
+    OUTPUT_NOT_GENERATED="0"
     info "Unit Test: $FILE"
     if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
         if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
@@ -219,7 +220,7 @@ function unit_test() {
         OFILE="${VERSION_SPECIFIC_FILE}"
     fi
 
-    if [[ -z ${OUTPUT_NOT_GENERATED+x} ]]; then
+    if [ "$OUTPUT_NOT_GENERATED" == "0" ]; then
       debug "  Comparing results:  diff $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE"
 
       $DIFF $EXPECTED_OUTPUT/$OFILE $OUTPUT/$FILE
@@ -243,7 +244,7 @@ function unit_test() {
         return 1
       else
         success "  ☑ PASS"
-        echo
+        echo ""
       fi
     fi
 }
@@ -258,6 +259,7 @@ function idempotent_test() {
     FILEEXT="${FILENAME##*.}"
 
     info "Idempotent Test: $FILE"
+    OUTPUT_NOT_GENERATED=0
     if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ] || [ "$(basename $FILE)" != "$(basename $FILE .mli)" ]; then
         if [ "$(basename $FILE)" != "$(basename $FILE .ml)" ]; then
           SUFFIX=".re"
@@ -273,7 +275,7 @@ function idempotent_test() {
         if [ "$MIN_VERSION" != "$BASE_NAME" ] && [ "$(version "$OCAML_VERSION")" -lt "$(version "$MIN_VERSION")" ]
         then
           notice "  ☒ IGNORED REFMT STEP: Requires OCaml >= $MIN_VERSION"
-          OUTPUT_NOT_GENERATED=1
+          OUTPUT_NOT_GENERATED="1"
         else
           debug "  Converting $FILE to $REFILE:"
 
@@ -295,7 +297,7 @@ function idempotent_test() {
       refmt $EXTRA_FLAGS --print-width 50 --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
     fi
 
-    if [[ -z ${OUTPUT_NOT_GENERATED+x} ]]; then
+    if [ "$OUTPUT_NOT_GENERATED" == "0" ]; then
       $DIFF $OUTPUT/$FILE $OUTPUT/$FILE.formatted
       if ! [[ $? -eq 0 ]]; then
           warning "⊘ FAILED\n"
