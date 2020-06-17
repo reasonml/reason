@@ -3189,7 +3189,7 @@ let printer = object(self:'self)
       ~postSpace:true
       ~preSpace:true
       [left; right]
-      
+
   (*
    * Renders level 3 or simpler patterns:
    *
@@ -3283,7 +3283,7 @@ let printer = object(self:'self)
    *        v
    * let (x : int, foo) = ..
    *
-   * 
+   *
    * Renders level 3 or simpler patterns:
    *
    * Simpler
