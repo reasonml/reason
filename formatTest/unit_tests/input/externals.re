@@ -7,3 +7,21 @@ external multilineStringExtern : int => int = {|
  Did you know you can put whatver you want inside
  of an extern? Good luck with the linker though!
 |};
+
+module Nested = {
+  external multilineStringExtern : int => int = {|
+   Did you know you can put whatver you want inside
+   of an extern? Good luck with the linker though!
+  |};
+  external multilineStringExternWithTag : int => int = {js|
+   Did you know you can put whatver you want inside
+   of an extern? Good luck with the linker though!
+  |js};
+  external multilineStringExtern : int => int = "
+   And this has a newline in it, so will be formatted with { | | } style string";
+  external containsQuote : int => int = "This has a quote in it \" so will be formatted as { | | } style string";
+  external noIndentation : int => int = {|
+Did you know you can put whatver you want inside
+of an extern? Good luck with the linker though!
+|};
+};
