@@ -486,10 +486,10 @@ module Callbacks = {
 };
 
 let test = {
-  let x = 1;
+  let _x = 1;
   [@attr1]
   open Callbacks;
-  let s = "hello" ++ "!";
+  let _s = "hello" ++ "!";
   [@attr2] Callbacks.("hello" ++ "!");
 };
 
