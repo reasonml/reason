@@ -1991,8 +1991,12 @@ let paren b fu ppf x =
   then Format.fprintf ppf "(%a)" fu x
   else fu ppf x
 
-let constant_string ppf s =
-  Format.fprintf ppf "%S" s
+let constant_string_for_primitive ppf s =
+  let hasQuote = try String.index s '"' with Not_found -> -1 in
+  let hasNewline = try String.index s '\n' with Not_found -> -1 in
+  if hasQuote > -1 || hasNewline > -1 then
+    Format.fprintf ppf "{|%s|}" s
+  else Format.fprintf ppf "%S" s
 
 let tyvar ppf str =
   Format.fprintf ppf "'%s" str
@@ -2430,7 +2434,7 @@ let printer = object(self:'self)
   method constant ?raw_literal ?(parens=true) =
     wrap (constant ?raw_literal ~parens)
 
-  method constant_string = wrap constant_string
+  method constant_string_for_primitive = wrap constant_string_for_primitive
   method tyvar = wrap tyvar
 
   (* c ['a,'b] *)
@@ -6684,7 +6688,8 @@ let printer = object(self:'self)
       | [""] -> lblBefore
       | _ ->
         let frstHalf = makeList ~postSpace:true [lblBefore; atom "="] in
-        let sndHalf = makeSpacedBreakableInlineList (List.map self#constant_string vd.pval_prim) in
+        let sndHalf =
+          makeSpacedBreakableInlineList (List.map self#constant_string_for_primitive vd.pval_prim) in
         label ~space:true frstHalf sndHalf
     in
     match vd.pval_attributes with
