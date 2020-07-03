@@ -9,22 +9,32 @@ Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems.
 
 [![native esy package on npm][reason-badge]](https://www.npmjs.com/package/@esy-ocaml/reason)
 
-## [Getting Started](https://reasonml.github.io/docs/en/installation)
+## User Documentation
 
-## [Community](https://reasonml.github.io/docs/en/community.html)
+**The Reason user docs live online at [https://reasonml.github.io](https://reasonml.github.io)**.
+The repo for those Reason docs lives at [github.com/reasonml/reasonml.github.io](https://github.com/reasonml/reasonml.github.io)
 
-## [Roadmap & Contribution](https://reasonml.github.io/docs/en/roadmap)
+Docs links for new users:
 
-### Documentations
+- [Getting Started](https://reasonml.github.io/docs/en/installation)
 
-Go to https://github.com/reasonml/reasonml.github.io to contribute to the Reason documentation.
+- [Community](https://reasonml.github.io/docs/en/community.html)
 
-### Codebase
+### Contributing:
 
-See the [src folder's README](https://github.com/facebook/reason/tree/master/src/README.md).
+```sh
+npm install -g esy@next
+git clone https://github.com/facebook/reason.git
+cd reason
+esy
+esy test # Run the tests
+```
 
-## Programmatically Using Reason Parser From JavaScript:
-See [USING_PARSER_PROGRAMMATICALLY.md](https://github.com/facebook/reason/tree/master/USING_PARSER_PROGRAMMATICALLY.md)
+### Contributor Documentation:
+
+The [`docs/`](./docs/) directory in this repo contains documentation for
+contributors to Reason itself (this repo).
+
 
 ## License
 
