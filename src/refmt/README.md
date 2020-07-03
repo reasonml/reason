@@ -16,6 +16,6 @@ This package provides support for using Reason with native OCaml compilers.
 
 Go to https://github.com/reasonml/reasonml.github.io to contribute to the Reason documentation.
 
-### Codebase
+### Contributing
 
-See the [src folder's README](https://github.com/facebook/reason/tree/master/src/README.md).
+See the [docs folder's `GETTING_STARTED_CONTRIBUTING.md`](../docs/GETTING_STARTED_CONTRIBUTING.md).

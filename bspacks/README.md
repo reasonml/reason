@@ -54,7 +54,7 @@ to that version first:
 opam switch 4.02.3
 ```
 
-Build / install the main Reason repo. Follow the instructions in https://github.com/facebook/reason/blob/master/src/README.md#contributor-setup.
+Build / install the main Reason repo. Follow the instructions in https://github.com/facebook/reason/blob/master/docs/GETTING_STARTED_CONTRIBUTING.md#contributor-setup.
 
 Then, install the dependencies:
 
