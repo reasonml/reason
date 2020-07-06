@@ -19,6 +19,7 @@ let is_stylistic_attr = function
    * affect printing *)
   | { attr_name = {txt="ocaml.ppwarn"}; _}
   | { attr_name = {txt="reason.preserve_braces"}; _} -> true
+  | { attr_name = {txt="reason.template"}; _} -> true
   | _ -> false
 
 

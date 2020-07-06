@@ -173,6 +173,9 @@ let make_ghost_loc loc = {
 
 let ghloc ?(loc=dummy_loc ()) d = { txt = d; loc = (make_ghost_loc loc) }
 
+let reloc_expr exp startpos endpos =
+  {exp with pexp_loc = {exp.pexp_loc with loc_start = startpos; loc_end = endpos}}
+
 (**
   * turn an object into a real
   *)
@@ -309,11 +312,11 @@ let mkoperator {Location. txt; loc} =
 let ghunit ?(loc=dummy_loc ()) () =
   mkexp ~ghost:true ~loc (Pexp_construct (mknoloc (Lident "()"), None))
 
-let mkinfixop arg1 op arg2 =
-  mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
+let mkinfixop ?loc ?attrs arg1 op arg2 =
+  mkexp ?loc ?attrs (Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
 
-let mkinfix arg1 name arg2 =
-  mkinfixop arg1 (mkoperator name) arg2
+let mkinfix ?loc ?attrs arg1 name arg2 =
+  mkinfixop ?loc ?attrs arg1 (mkoperator name) arg2
 
 let neg_string f =
   if String.length f > 0 && f.[0] = '-'
@@ -1100,6 +1103,7 @@ let add_brace_attr expr =
 %token AS
 %token ASSERT
 %token BACKQUOTE
+%token <string> NAMETAG [@recover.expr ""] [@recover.cost 2]
 %token BANG
 %token BAR
 %token BARBAR
@@ -1210,6 +1214,12 @@ let add_brace_attr expr =
 %token STAR
 %token <string * string option * string option> STRING
   [@recover.expr ("", None, None)] [@recover.cost 2]
+
+%token <string> STRING_TEMPLATE_TERMINATED
+  [@recover.expr ("")] [@recover.cost 2]
+%token <string> STRING_TEMPLATE_SEGMENT_LBRACE
+  [@recover.expr ("")] [@recover.cost 2]
+
 %token STRUCT
 %token THEN
 %token TILDE
@@ -3009,6 +3019,11 @@ parenthesized_expr:
  *)
 %inline simple_expr_template(E):
   | as_loc(val_longident) { mkexp (Pexp_ident $1) }
+  | template_string
+    {
+      let (_indent, expr) = $1 in
+      expr
+    }
   | constant
     { let attrs, cst = $1 in mkexp ~attrs (Pexp_constant cst) }
   | jsx                   { $1 }
@@ -4649,6 +4664,44 @@ constant:
   }
 ;
 
+(*
+ * Important: Read docs/TEMPLATE_LITERALS.md to understand this.
+ * TODO: In STRING_TEMPLATE_TERMINATED case, detect empty string and return a
+ * None.
+ *)
+template_string:
+  | STRING_TEMPLATE_TERMINATED {
+    let split_by_newlines = Reason_syntax_util.split_by_newline ~keep_empty:true $1 in
+    let revLines = List.rev split_by_newlines in
+    let (indent, revLines) =
+      Reason_template.Parse.normalize_or_remove_last_line revLines in
+    let txt =
+      Reason_template.Parse.strip_leading_for_non_last ~indent "" revLines in
+    ( indent,
+      Ast_helper.Exp.constant (Pconst_string (txt, Some "reason.template")))
+  }
+  | STRING_TEMPLATE_SEGMENT_LBRACE seq_expr RBRACE template_string
+  {
+    let indent, tmplt = $4 in
+    let op1 = mkloc "++" (mklocation $endpos($1) $startpos($2)) in
+    let op2 = mkloc "++" (mklocation $startpos($3) $startpos($4)) in
+    (* Right associative, unlike the future ++ will be parsed in next breaking
+     * change. We will keep this right assoc though to make it easy to print *)
+    let attrs = simple_ghost_text_attr "reason.template" in
+    let seq_expr = reloc_expr $2 $endpos($1) $startpos($3) in
+    if String.length $1 == 0 then
+      (indent, mkinfix ~attrs seq_expr op2 tmplt)
+    else
+      let split_by_newlines = Reason_syntax_util.split_by_newline ~keep_empty:true $1 in
+      let revLines = List.rev split_by_newlines in
+      let txt =
+        Reason_template.Parse.strip_leading_for_non_last ~indent "" revLines in
+      let left = (Ast_helper.Exp.constant (Pconst_string (txt, None))) in
+      (indent, mkinfix ~attrs left op1 (mkinfix ~attrs seq_expr op2 tmplt))
+    (* TODO: Perform the string concat or printf depending *)
+  }
+;
+
 signed_constant:
   | constant     { $1 }
   | MINUS INT    { let (n, m) = $2 in ([], Pconst_integer("-" ^ n, m)) }
@@ -4849,7 +4902,7 @@ toplevel_directive:
 
 opt_LET_MODULE: MODULE { () } | LET MODULE { () };
 
-%inline name_tag: BACKQUOTE ident { $2 };
+%inline name_tag: NAMETAG { $1 };
 
 %inline label: LIDENT { $1 };
 

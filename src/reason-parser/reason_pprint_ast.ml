@@ -1194,21 +1194,13 @@ let rec beginsWithStar_ line length idx =
 
 let beginsWithStar line = beginsWithStar_ line (String.length line) 0
 
-let rec numLeadingSpace_ line length idx accum =
-  if idx = length then accum else
-    match String.get line idx with
-    | '\t' | ' ' -> numLeadingSpace_ line length (idx + 1) (accum + 1)
-    | _ -> accum
-
-let numLeadingSpace line = numLeadingSpace_ line (String.length line) 0 0
-
 (* Computes the smallest leading spaces for non-empty lines *)
 let smallestLeadingSpaces strs =
   let rec smallestLeadingSpaces curMin strs = match strs with
     | [] -> curMin
     | ""::tl -> smallestLeadingSpaces curMin tl
     | hd::tl ->
-      let leadingSpace = numLeadingSpace hd in
+      let leadingSpace = Reason_syntax_util.num_leading_space hd in
       let nextMin = min curMin leadingSpace in
       smallestLeadingSpaces nextMin tl
   in
@@ -1269,7 +1261,7 @@ let formatComment_ txt =
         | Some num -> num + 1
     in
     let padNonOpeningLine s =
-      let numLeadingSpaceForThisLine = numLeadingSpace s in
+      let numLeadingSpaceForThisLine = Reason_syntax_util.num_leading_space s in
       if String.length s == 0 then ""
       else (String.make leftPad ' ') ^
            (string_after s (min attemptRemoveCount numLeadingSpaceForThisLine)) in
@@ -1852,7 +1844,7 @@ let semiTerminated term = makeList [term; atom ";"]
 (* postSpace is so that when comments are interleaved, we still use spacing rules. *)
 let makeLetSequence ?(wrap=("{", "}")) letItems =
   makeList
-    ~break:Always_rec
+    ~break:Layout.Always_rec
     ~inline:(true, false)
     ~wrap
     ~postSpace:true
@@ -1896,6 +1888,60 @@ let formatAttributed ?(labelBreak=`Auto) x y =
     (makeList ~inline:(true, true) ~postSpace:true y)
     x
 
+
+(** Utility for creating several lines (in reverse order) where each line is of
+ * the form lbl(a, lbl(b, lbl(c ...) and the line never breaks unless the a, b,
+ * c were to break.
+ *
+ * This is useful for printing string interpolation syntax, but may be useful
+ * for many other things.
+ * TODO: Put this in its own module when we can refactor.
+ *)
+module Reason_template_layout = struct
+  let labelLinesBreakRight ?(flushLine=false) revLines itm =
+    match flushLine, revLines with
+    | false, last_ln :: firsts ->
+        label ~break:`Never last_ln itm :: firsts
+    | _, []
+    | true, _ -> itm :: revLines
+
+  let lets ~wrap loc let_list =
+    if List.length let_list > 1 then source_map ~loc (makeLetSequence ~wrap let_list)
+    else source_map ~loc (makeList ~break:IfNeed ~wrap let_list)
+
+  let rec append_lines ?(flushLine=false) acc lines =
+    match lines with
+    | [] -> acc
+    | hd :: tl -> append_lines ~flushLine:true (labelLinesBreakRight ~flushLine acc (atom hd)) tl
+
+  let append_lines acc txt =
+    let escapedString = Reason_template.Print.escape_string_template txt in
+    let next_lines = Reason_syntax_util.split_by_newline ~keep_empty:true escapedString in
+    append_lines acc next_lines
+
+  let rec format_simple_string_template_string_concat letListMaker acc e1 e2 = (
+    match e1.pexp_attributes, e1.pexp_desc with
+    | [], Pexp_constant(Pconst_string (s, (None | Some("reason.template")))) ->
+      format_simple_string_template letListMaker (append_lines acc s) e2
+    | _ ->
+        format_simple_string_template letListMaker (
+          labelLinesBreakRight acc (lets e1.pexp_loc ~wrap:("${", "}") (letListMaker e1))
+        ) e2
+  )
+  and format_simple_string_template letListMaker acc x = (
+    let {stdAttrs; jsxAttrs; stylisticAttrs} = partitionAttributes x.pexp_attributes in
+    match (x.pexp_desc) with
+    | Pexp_constant(Pconst_string (s, (None | Some("reason.template")))) -> append_lines acc s
+    | (
+        Pexp_apply ({pexp_desc=Pexp_ident ({txt = Longident.Lident("++")})}, [(Nolabel, e1); (Nolabel, e2)])
+      ) when Reason_template.Print.is_template_style stylisticAttrs ->
+        format_simple_string_template_string_concat letListMaker acc e1 e2
+    | _ ->
+        labelLinesBreakRight acc (lets x.pexp_loc ~wrap:("${", "}") (letListMaker x))
+  )
+end
+
+
 (* For when the type constraint should be treated as a separate breakable line item itself
    not docked to some value/pattern label.
    fun x
@@ -1914,7 +1960,6 @@ let formatCoerce expr optType coerced =
       label ~space:true (makeList ~postSpace:true [expr; atom ":>"]) coerced
     | Some typ ->
       label ~space:true (makeList ~postSpace:true [formatTypeConstraint expr typ; atom ":>"]) coerced
-
 
 (* Standard function application style indentation - no special wrapping
  * behavior.
@@ -2022,11 +2067,21 @@ let constant_string_for_primitive ppf s =
 let tyvar ppf str =
   Format.fprintf ppf "'%s" str
 
+(* Constant string template that has no interpolation *)
+let constant_string_template s =
+  let next_lines = Reason_syntax_util.split_by_newline ~keep_empty:true s in
+  let at_least_two = match next_lines with _ :: _ :: _ -> true | _ -> false in
+  makeList
+    ~wrap:("`", "`")
+    ~pad:(true, true)
+    ~break:(if at_least_two then Always_rec else IfNeed)
+    (List.map (fun s -> atom(Reason_template.Print.escape_string_template s)) next_lines)
+
 (* In some places parens shouldn't be printed for readability:
  * e.g. Some((-1)) should be printed as Some(-1)
  * In `1 + (-1)` -1 should be wrapped in parens for readability
  *)
-let constant ?raw_literal ?(parens=true) ppf = function
+let single_token_constant ?raw_literal ?(parens=true) ppf = function
   | Pconst_char i ->
     Format.fprintf ppf "%C"  i
   | Pconst_string (i, None) ->
@@ -2036,6 +2091,9 @@ let constant ?raw_literal ?(parens=true) ppf = function
       | None ->
         Format.fprintf ppf "\"%s\"" (Reason_syntax_util.escape_string i)
     end
+  (* Ideally, this branch should never even be hit *)
+  | Pconst_string (i, Some "reason.template") ->
+    Format.fprintf ppf "` %s `" (Reason_template.Print.escape_string_template i)
   | Pconst_string (i, Some delim) ->
     Format.fprintf ppf "{%s|%s|%s}" delim i delim
   | Pconst_integer (i, None) ->
@@ -2445,8 +2503,12 @@ let printer = object(self:'self)
   method longident_loc (x:Longident.t Location.loc) =
     source_map ~loc:x.loc (self#longident x.txt)
 
-  method constant ?raw_literal ?(parens=true) =
-    wrap (constant ?raw_literal ~parens)
+  method constant ?raw_literal ?(parens=true) c =
+    match c with
+    (* The one that isn't a "single token" *)
+    | Pconst_string (s, Some "reason.template") -> constant_string_template s
+    (* Single token constants *)
+    | _ -> ensureSingleTokenSticksToLabel (wrap (single_token_constant ?raw_literal ~parens) c)
 
   method constant_string_for_primitive = wrap constant_string_for_primitive
   method tyvar = wrap tyvar
@@ -3504,11 +3566,20 @@ let printer = object(self:'self)
     e2;
     atom cls;
   ]
-
-
   method simple_get_application x =
-    let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
+    let {stdAttrs; jsxAttrs; stylisticAttrs} = partitionAttributes x.pexp_attributes in
     match (x.pexp_desc, stdAttrs, jsxAttrs) with
+    | (
+        Pexp_apply ({pexp_desc=Pexp_ident ({txt = Longident.Lident("++")})}, [(Nolabel, e1); (Nolabel, e2)]),
+        [],
+        []
+      ) when Reason_template.Print.is_template_style stylisticAttrs ->
+        let revAllLines =
+          Reason_template_layout.format_simple_string_template_string_concat self#letList [] e1 e2 in
+        Some(
+          source_map ~loc:x.pexp_loc
+          (makeList ~pad:(true, true) ~wrap:("`", "`") ~break:Always_rec (List.rev (revAllLines)))
+        )
     | (_, _::_, []) -> None (* Has some printed attributes - not simple *)
     | (Pexp_apply ({pexp_desc=Pexp_ident loc}, l), [], _jsx::_) -> (
       (* TODO: Soon, we will allow the final argument to be an identifier which
@@ -6405,8 +6476,7 @@ let printer = object(self:'self)
         | Pexp_constant c ->
             (* Constants shouldn't break when to the right of a label *)
           let raw_literal, _ = extract_raw_literal x.pexp_attributes in
-            Some (ensureSingleTokenSticksToLabel
-                    (self#constant ?raw_literal c))
+          Some ((self#constant ?raw_literal c))
         | Pexp_pack me ->
           Some (
             makeList
