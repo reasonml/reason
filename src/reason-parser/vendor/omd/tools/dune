@@ -1,0 +1,2 @@
+(executable
+ (name gen_entities))
