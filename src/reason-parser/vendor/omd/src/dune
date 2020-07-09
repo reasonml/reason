@@ -1,7 +1,7 @@
 (library
  (name omd)
  (libraries str)
- (public_name omd)
+ (public_name reason.omd)
  (flags :standard -w -30))
 
 (rule

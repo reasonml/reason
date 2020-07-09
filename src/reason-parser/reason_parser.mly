@@ -985,8 +985,9 @@ let mkBsObjTypeSugar ~loc ~closed rows =
   mktyp(Ptyp_constr(jsDotTCtor, [obj]))
 
 let doc_loc loc = {txt = "ocaml.doc"; loc = loc}
+let raw_doc_loc loc = {txt = "ocaml.docraw"; loc = loc}
 
-let doc_attr text loc =
+let doc_attr ?(raw=false) text loc =
   let open Parsetree in
   let exp =
     { pexp_desc = Pexp_constant (Pconst_string(text, None));
@@ -999,7 +1000,9 @@ let doc_attr text loc =
     { pstr_desc = Pstr_eval (exp, []); pstr_loc = exp.pexp_loc }
   in
   {
-    attr_name = doc_loc loc;
+    attr_name = (match raw with
+      | true -> doc_loc loc
+      | false -> raw_doc_loc loc);
     attr_payload = PStr [item];
     attr_loc = loc
   }
@@ -4916,7 +4919,10 @@ attribute:
         attr_loc = mklocation $symbolstartpos $endpos
       }
     }
-  | DOCSTRING { doc_attr $1 (mklocation $symbolstartpos $endpos) }
+  | DOCSTRING {
+      doc_attr (Omd.to_ocamldoc Omd.of_string ($1)) (mklocation $symbolstartpos $endpos) ::
+      doc_attr ~raw:true $1 (mklocation $symbolstartpos $endpos)
+    }
 ;
 
 (* Inlined to avoid having to deal with buggy $symbolstartpos *)
