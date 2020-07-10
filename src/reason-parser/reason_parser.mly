@@ -1175,6 +1175,7 @@ let add_brace_attr expr =
 %token LBRACKETPERCENTPERCENT
 %token LESS
 %token <string> LESSIDENT [@recover.expr ""] [@recover.cost 2]
+%token <string> LESSUIDENT [@recover.expr ""] [@recover.cost 2]
 %token LESSGREATER
 %token LESSSLASHGREATER
 %token LESSDOTDOTGREATER
@@ -1378,6 +1379,7 @@ conflicts.
 %left     SHARPOP MINUSGREATER LBRACKET DOT
 (* Finally, the first tokens of simple_expr are above everything else. *)
 %nonassoc LBRACKETLESS LBRACELESS LBRACE LPAREN
+
 
 
 (* Entry points *)
@@ -2712,12 +2714,18 @@ jsx_arguments:
 ;
 
 jsx_start_tag_and_args:
-    as_loc(LESSIDENT) jsx_arguments
-    { let name = Longident.parse $1.txt in
+  as_loc(LESSIDENT) jsx_arguments
+     { let name = Longident.parse $1.txt in
       (jsx_component {$1 with txt = name} $2, name)
+    }
+  | LESS as_loc(LIDENT) jsx_arguments
+    { let name = Longident.parse $2.txt in
+      (jsx_component {$2 with txt = name} $3, name)
     }
   | LESS as_loc(mod_ext_longident) jsx_arguments
     { jsx_component $2 $3, $2.txt }
+  | as_loc(mod_ext_lesslongident) jsx_arguments
+    { jsx_component $1 $2, $1.txt }
 ;
 
 jsx_start_tag_and_args_without_leading_less:
@@ -4018,8 +4026,13 @@ type_variables_with_variance_comma_list:
 ;
 
 type_variables_with_variance:
-  loption(parenthesized(type_variables_with_variance_comma_list))
-  { $1 }
+    | loption(parenthesized(type_variables_with_variance_comma_list))
+    { $1 }
+    (* No need to parse LESSIDENT here, because for
+     * type_variables_with_variance, you'll never have an identifier in any of
+     * the type parameters*)
+    | lessthangreaterthanized(type_variables_with_variance_comma_list)
+    { $1 }
 ;
 
 type_variable_with_variance:
@@ -4470,8 +4483,26 @@ non_arrowed_core_type:
   | lseparated_nonempty_list(COMMA, protected_type) COMMA? {$1}
 ;
 
+%inline first_less_than_type_ident:
+  LESSIDENT { Lident $1 }
+
+(* Since the <xyz token is parsed as a single token we need to catch that case here *)
+%inline first_less_than_type_param:
+mark_position_typ
+  (  as_loc(first_less_than_type_ident)
+      { mktyp(Ptyp_constr($1, [])) }
+    | as_loc(first_less_than_type_ident) type_parameters
+      { mktyp(Ptyp_constr($1, $2)) }
+  ) { $1 }
+
 type_parameters:
   | parenthesized(type_parameter_comma_list) { $1 }
+  | lessthangreaterthanized(type_parameter_comma_list) { $1 }
+  | first_less_than_type_param COMMA? GREATER { [$1] }
+  | first_less_than_type_param COMMA type_parameter_comma_list GREATER
+    {
+      $1 :: $3
+    }
 ;
 
 (* "protected" stands for an environment where non-simple grammar
@@ -4648,6 +4679,7 @@ val_ident:
 ;
 
 %inline infix_operator:
+  | GREATER           { ">" }
   | INFIXOP0          { $1 }
   | INFIXOP1          { $1 }
   | INFIXOP2          { $1 }
@@ -4655,13 +4687,12 @@ val_ident:
   (* SLASHGREATER is INFIXOP3 but we needed to call it out specially *)
   | SLASHGREATER      { "/>" }
   | INFIXOP4          { $1 }
-  | PLUS              { "+" }
-  | PLUSDOT           { "+." }
-  | MINUS             { "-" }
-  | MINUSDOT          { "-." }
+  | PLUS          { "+"  }
+  | PLUSDOT       { "+." }
+  | MINUS         { "-"  }
+  | MINUSDOT      { "-." }
   | STAR              { "*" }
   | LESS              { "<" }
-  | GREATER           { ">" }
   | OR                { "or" }
   | BARBAR            { "||" }
   | AMPERSAND         { "&" }
@@ -4669,6 +4700,7 @@ val_ident:
   | COLONEQUAL        { ":=" }
   | PLUSEQ            { "+=" }
   | PERCENT           { "%" }
+  | GREATERDOTDOTDOT { ">..." }
   (* We don't need to (and don't want to) consider </> an infix operator for now
      because our lexer requires that "</>" be expressed as "<\/>" because
      every star and slash after the first character must be escaped.
@@ -4677,8 +4709,6 @@ val_ident:
      operator swapping requires that we express that as != *)
   | LESSDOTDOTGREATER { "<..>" }
   | GREATER GREATER   { ">>" }
-  | GREATERDOTDOTDOT { ">..." }
-;
 
 operator:
   | PREFIXOP          { $1 }
@@ -4728,6 +4758,17 @@ mod_longident:
   | mod_longident DOT UIDENT      { Ldot($1, $3) }
 ;
 
+/*
+mod_less_uident_ext_longident:
+  imod_less_uident_ext_longident { $1 }
+;
+
+%inline imod_less_uident_ext_longident:
+  | LESSUIDENT                    { Lident $1 }
+  | mod_ext_longident DOT UIDENT  { Ldot($1, $3) }
+;
+*/
+
 mod_ext_longident: imod_ext_longident { $1 }
 
 %inline imod_ext_longident:
@@ -4746,6 +4787,32 @@ mod_ext_apply:
     List.fold_left (fun p1 p2 -> Lapply (p1, p2)) $1 $2
   }
 ;
+
+mod_ext_lesslongident: imod_ext_lesslongident { $1 }
+
+%inline imod_ext_lesslongident:
+  | LESSUIDENT                        { Lident $1 }
+  | mod_ext_lesslongident DOT UIDENT  { Ldot($1, $3) }
+  | mod_ext_less_apply                 { $1 }
+;
+
+mod_ext_less_apply:
+  imod_ext_lesslongident
+  parenthesized(lseparated_nonempty_list(COMMA, mod_ext_longident))
+  { if not !Clflags.applicative_functors then (
+      let loc = mklocation $startpos $endpos in
+      raise_error (Applicative_path loc) loc
+    );
+    List.fold_left (fun p1 p2 -> Lapply (p1, p2)) $1 $2
+  }
+;
+
+
+
+
+
+
+
 
 mty_longident:
   | ident                        { Lident $1 }
@@ -4839,12 +4906,12 @@ override_flag:
   | BANG          { Override }
 ;
 
-subtractive:
+%inline subtractive:
   | MINUS         { "-"  }
   | MINUSDOT      { "-." }
 ;
 
-additive:
+%inline additive:
   | PLUS          { "+"  }
   | PLUSDOT       { "+." }
 ;
@@ -5060,5 +5127,8 @@ lseparated_nonempty_list_aux(sep, X):
   X sep lseparated_nonempty_list(sep, X) { $1 :: $3 };
 
 %inline parenthesized(X): delimited(LPAREN, X, RPAREN) { $1 };
+
+(*Less than followed by one or more X, then greater than *)
+%inline lessthangreaterthanized(X): delimited(LESS, X, GREATER) { $1 };
 
 %%

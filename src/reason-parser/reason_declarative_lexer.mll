@@ -319,7 +319,6 @@ let identchar_latin1 =
 let operator_chars =
   ['!' '$' '%' '&' '+' '-' ':' '<' '=' '>' '?' '@' '^' '|' '~' '#' '.'] |
   ( '\\'? ['/' '*'] )
-
 let dotsymbolchar =
   ['!' '$' '%' '&' '*' '+' '-' '/' ':' '=' '>' '?' '@' '^' '|' '\\' 'a'-'z' 'A'-'Z' '_' '0'-'9']
 let kwdopchar = ['$' '&' '*' '+' '-' '/' '<' '=' '>' '@' '^' '|' '.' '!']
@@ -490,6 +489,8 @@ rule token state = parse
   | "[>" { LBRACKETGREATER }
   | "<" (((uppercase identchar* '.')* lowercase identchar*) as tag)
     { LESSIDENT tag }
+  | "<" ((uppercase identchar*) as tag)
+    { LESSUIDENT tag }
   | ">..." { GREATERDOTDOTDOT }
   (* Allow parsing of Pexp_override:
    * let z = {<state: 0, x: y>};
@@ -583,7 +584,11 @@ rule token state = parse
   | '\\'? ['~' '?' '!'] operator_chars+
     { PREFIXOP (lexeme_operator lexbuf) }
   | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
-    { INFIXOP0 (lexeme_operator lexbuf) }
+    {
+      (* See decompose_token in Reason_single_parser.ml for how let `x=-1` is lexed
+       * and broken up into multiple tokens when necessary. *)
+      INFIXOP0 (lexeme_operator lexbuf)
+    }
   | '\\'? '@' operator_chars*
     { INFIXOP1 (lexeme_operator lexbuf) }
   | '\\'? '^' ('\\' '.')? operator_chars*
