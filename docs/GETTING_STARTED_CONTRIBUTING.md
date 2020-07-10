@@ -177,13 +177,17 @@ Run the main parser through Menhir with the `--explain` flag to have it print
 out details about the conflict. `esy menhir --explain src/reason-parser/reason_parser.mly`.
 The debug information can be found at `src/reason-parser/reason_parser.conflicts`.
 
-### Debugging the Parser State at Runtime
+Use the `--dump` flag to have Menhir print the state transitions for debugging the parser rules
+that are applied `esy  menhir --dump  src/reason-parser/reason_parser.mly`
+It will generate `src/reason-parser/reason_parser.automaton` which you can inspect. It will also
+drop a `reason_parser.ml` and `reason_parser.mli` in that directory which you need to remove before
+building again.
 
-If you set the environment variable as follows, the parser state will be printed out as it parses files.
+### Debugging the Lexer/Parser State at Runtime
 
-```sh
-export OCAMLRUNPARAM='p'
-```
+Add the `--trace` flag to the _end_ of the `menhir` `(flags..)` section in the
+`dune` file for the `reason-parser`, and it will print out tokens that are
+lexed along with parser state transitions.
 
 ### Add a Menhir Error Message
 

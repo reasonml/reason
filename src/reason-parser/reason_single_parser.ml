@@ -168,37 +168,64 @@ let try_insert_semi_on = function
 
 (* Logic for splitting '=?...' operators into '=' '?' '...' *)
 
-let token_for_label_operator = function
-  | "-" -> Some Reason_parser.MINUS
-  | "-." -> Some Reason_parser.MINUSDOT
-  | "+" -> Some Reason_parser.PLUS
-  | "+." -> Some Reason_parser.PLUSDOT
-  | "!" -> Some Reason_parser.BANG
-  | _ -> None
+let advance p n = {p with Lexing.pos_cnum = p.Lexing.pos_cnum + n}
 
-let split_label s =
-  let is_optional = String.length s > 1 && s.[1] == '?' in
-  let idx = if is_optional then 2 else 1 in
-  let operator = String.sub s idx (String.length s - idx) in
-  (token_for_label_operator operator, is_optional)
+let rec split_greaters acc pcur = function
+  | '>' :: tl ->
+    let pnext = (advance pcur 1) in
+    split_greaters ((Reason_parser.GREATER, pcur, pnext) :: acc) pnext tl
+  | nonGts -> (List.rev acc), nonGts, pcur
 
-let try_split_label (tok_kind, pos0, posn) =
-  match tok_kind with
-  | Reason_parser.INFIXOP0 s when s.[0] == '=' ->
-    begin match split_label s with
-    | None, _ -> []
-    | Some new_token, is_optional ->
-      let advance p n = {p with Lexing.pos_cnum = p.Lexing.pos_cnum + n} in
-      let pos1 = advance pos0 1 in
-      let pos2 = if is_optional then advance pos1 1 else pos1 in
-      let token0 = (Reason_parser.EQUAL, pos0, pos1) in
-      let token2 = (new_token, pos2, posn) in
-      if is_optional then
-        let token1 = (Reason_parser.QUESTION, pos1, pos2) in
-        [token0; token1; token2]
+let rec decompose_token pos0 split =
+  let pcur = advance pos0 1 in
+  let pnext = advance pos0 2 in
+  match split with
+  (* Empty token is a valid decomposition *)
+  | [] -> []
+  | '=' :: tl ->
+    let eq = (Reason_parser.EQUAL, pcur, pnext) in
+    let (revFirstTwo, tl, pcur, pnext) = match tl with
+    | '?' :: tlTl -> ((Reason_parser.QUESTION, pcur, pnext) :: eq :: []), tlTl, pnext, (advance pnext 1)
+    | _ -> (eq :: []), tl, pcur, pnext
+    in
+    let rev_result = match tl with
+    | ['-'] -> (Reason_parser.MINUS, pcur, pnext) :: revFirstTwo
+    | ['-'; '.'] -> (Reason_parser.MINUSDOT, pcur, advance pnext 1) :: revFirstTwo
+    | ['+'] -> (Reason_parser.PLUS, pcur, pnext) :: revFirstTwo
+    | ['+'; '.'] -> (Reason_parser.PLUSDOT, pcur, advance pnext 1) :: revFirstTwo
+    | ['!'] -> (Reason_parser.BANG, pcur, pnext) :: revFirstTwo
+    | ['>'] -> (Reason_parser.GREATER, pcur, pnext) :: revFirstTwo
+    | ['<'] -> (Reason_parser.LESS, pcur, pnext) :: revFirstTwo
+    | [] ->  revFirstTwo
+    | _ -> []
+    in
+    List.rev rev_result
+  (* For type parameters  type t<+'a> = .. *)
+  | '<' :: tl ->
+      if tl == [] then [(Reason_parser.LESS, pcur, pnext)]
       else
-        [token0; token2]
-    end
+        (match decompose_token pnext tl with
+        (* Couldn't parse the tail *)
+        | [] -> []
+        | _::_ as rest_tokens -> (Reason_parser.LESS, pcur, pnext) :: rest_tokens)
+  | '>' :: tl ->
+      let gt_tokens, rest_split, prest = split_greaters [] pcur split in
+      if rest_split == [] then
+        gt_tokens
+      else
+        (match decompose_token prest rest_split with
+        (* If there were remaining tokens but couldn't be parsed, then our
+         * > operator cannot be properly split because we don't know what to
+         * do with the tail. *)
+        | [] -> []
+        | _::_ as rest_tokens -> gt_tokens @ rest_tokens)
+  | _ -> []
+
+let explode s = List.init (String.length s) (String.get s)
+
+let rec try_split_label (tok_kind, pos0, posn) =
+  match tok_kind with
+  | Reason_parser.INFIXOP0 s -> decompose_token pos0 (explode s)
   | _ -> []
 
 (* Logic for attempting to consume a token
