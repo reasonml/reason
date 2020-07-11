@@ -990,10 +990,8 @@ let mkBsObjTypeSugar ~loc ~closed rows =
   mktyp(Ptyp_constr(jsDotTCtor, [obj]))
 
 let doc_loc loc = {txt = "ocaml.doc"; loc = loc}
-let raw_doc_loc loc = {txt = "reason.doc"; loc = loc}
 
-let doc_attr ?(raw=false) text loc =
-  (* Here is where we will convert from markdown to odoc - transform the "text" *)
+let doc_attr_item text loc =
   let open Parsetree in
   let exp =
     { pexp_desc = Pexp_constant (Pconst_string(text, None));
@@ -1002,14 +1000,16 @@ let doc_attr ?(raw=false) text loc =
       pexp_loc_stack = [];
     }
   in
-  let item =
-    { pstr_desc = Pstr_eval (exp, []); pstr_loc = exp.pexp_loc }
-  in
+  { pstr_desc = Pstr_eval (exp, []); pstr_loc = exp.pexp_loc }
+
+let doc_attr text loc =
+  let open Parsetree in
+  let markdown_text = (Omd.to_ocamldoc (Omd.of_string text)) in
+  let ocamldoc_item = doc_attr_item text loc in
+  let markdown_item = doc_attr_item markdown_text loc in
   {
-    attr_name = (match raw with
-      | true -> doc_loc loc
-      | false -> raw_doc_loc loc);
-    attr_payload = PStr [item];
+    attr_name = doc_loc loc;
+    attr_payload = PStr [ocamldoc_item; markdown_item];
     attr_loc = loc
   }
 
@@ -4940,8 +4940,8 @@ attribute:
      * reason.doc/text instead of ocaml.doc/text and _that_ is the one that the
      * printer should pay attention to, completely ignoring the ocaml.doc/text
      * ones.  The ocaml.doc/text ones would only be received by odoc. *)
-      doc_attr (Omd.to_ocamldoc Omd.of_string ($1)) (mklocation $symbolstartpos $endpos) ::
-      doc_attr ~raw:true $1 (mklocation $symbolstartpos $endpos)
+     (* doc_attr (Omd.to_ocamldoc Omd.of_string ($1)) (mklocation $symbolstartpos $endpos) :: *)
+      doc_attr $1 (mklocation $symbolstartpos $endpos)
     }
 ;
 
