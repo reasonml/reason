@@ -33,7 +33,7 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
   | ({ attr_name = {txt="ocaml.text"}; _} as doc)::atTl when partDoc = true ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with docAttrs=doc::partition.docAttrs}
-  | ({ attr_name = {txt="ocaml.doc"}; _} as doc)::atTl when partDoc = true ->
+  | ({ attr_name = {txt="ocaml.doc" | "ocaml.text"}; _} as doc)::atTl when partDoc = true ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with docAttrs=doc::partition.docAttrs}
   | ({ attr_name = {txt="reason.raw_literal"}; _} as attr) :: atTl ->

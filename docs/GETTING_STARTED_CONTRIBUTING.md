@@ -1,13 +1,52 @@
 # Core Reason
 
-**See a list of easy tasks [here](https://github.com/facebook/reason/labels/GOOD%20FIRST%20TASK)**
-
-## Code of Conduct
-The code of conduct is described in [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md)
-
 ## Contributor Setup
 
-Thanks for considering contributing to Reason! Here's the setup you need:
+
+### With esy
+
+```sh
+# Make sure you have the latest esy
+npm install -g esy@next
+git clone https://github.com/facebook/reason.git
+cd reason
+esy
+```
+
+
+#### Testing:
+
+**Test Suite:**
+
+```sh
+esy test # Run tests
+```
+
+**One Off Tests:**
+
+Start up the `rtop` top level with your changes:
+
+```sh
+esy x rtop
+```
+
+Pipe some text to `refmt` with your changes:
+
+```sh
+echo "let a = 1" | esy x refmt
+```
+
+
+> **`esy` tips:**
+> - `esy x your command` will run one command `your command` in an environment
+>   where the projects are built/installed. `esy x which refmt` will build the
+>   packages and install them for the duration of one command - `which refmt`.
+>   This will print the location of the built `refmt` binary.
+> - For more, see the [esy documentation](https://github.com/esy-ocaml/esy).
+
+
+> All the built binaries are in `esy echo '#{self.target_dir}/install/default/bin'`.
+
 
 ### With opam
 
@@ -29,67 +68,24 @@ cd reason
 opam pin add -y reason .
 opam pin add -y rtop .
 ```
+> **Opam Troubleshooting:**
+> - Is the previous pinning unsuccessful? We might have updated a dependency;
+>   try `opam update` then `opam upgrade`.
+> - During the last `opam pin` step, make sure your local repo is clean. In
+>   particular, remove artifacts and `node_modules`. Otherwise the pinning
+>   might go stale or stall due to the big `node_modules`.
 
-### With esy
-
-[`esy`](https://github.com/esy/esy) is an `npm`-like workflow for developing and consuming
-opam packages. It is still experimental, but if you're more familiar with `npm` than `opam`,
-`esy` will likely be an easier way to contribute to Reason.
-**Please file issues regarding `esy` at the [esy project](https://github.com/esy/esy) itself.**
-
-```sh
-# Make sure you have the latest esy
-npm remove -g esy
-npm install -g esy@next
-git clone https://github.com/facebook/reason.git
-cd reason
-esy install
-esy build
-```
-
-##### Editors
-- To use VSCode, just open the Reason project root, and `ocaml-language-server` automatically
-works with `esy` projects, loading all the right dependencies.
-- To use Vim/Emacs, start your editor using `esy vim` or `esy emacs`.
-
-##### Running tests
-
-You can run commands as if you had installed Reason by prefixing commands with `esy x` ("esy execute").
-For example `esy x make test-once-installed`
- 
-
-
-For more, see the [esy documentation](https://github.com/esy-ocaml/esy).
-
-### Troubleshooting
-
-- Is the previous pinning unsuccessful? We might have updated a dependency; try `opam update` then `opam upgrade`.
-- During the last `opam pin` step, make sure your local repo is clean. In particular, remove artifacts and `node_modules`. Otherwise the pinning might go stale or stall due to the big `node_modules`.
-
-### Build
-
-`esy x refmt --help`. **If this fails on your machine but master passes**, it means your setup wasn't right. Could you check if you followed the above installation steps? In particular, make sure you did `eval $(opam config env)` and sourced your shell environment (if you don't know how, just open a new shell tab and it'll be sourced usually).
-
-The generated artifacts are in `esy echo '#{self.target_dir}/default/`. All the binaries are in `esy echo '#{self.target_dir}/install/default/bin`.
-
-### Test
-
-To do some one-off tests, try `echo "let a = 1" | esy x refmt`
-
-`esy x make test-once-installed` (make sure to follow the repo pinning instructions above!). The tests will output the difference between the expected syntax formatting and the actual one, if any.
-
-Small exception: testing your changes in `rtop` is a little complicated, but you usually don't need to test it. If you do, you might have seen that your changes of the parser or printer don't affect `rtop` when you run it. Instead, you need to do `opam pin add -y reason .` and _then_ run `rtop` to see the Reason changes reflected.
 
 ## Repo Walkthrough
 
 ![reason_-_bucklescript_in_ocaml](https://user-images.githubusercontent.com/1909539/31158768-0c7e9d04-a879-11e7-9cfb-19780a599231.png)
 (_Click to see a larger version_)
 
-We're that orange part! The core of the codebase is a parser + a printer, plus other miscellaneous utilities we expose.
+Reason is the orange part. The core of the codebase is a parser + a printer, plus other miscellaneous utilities we expose.
 
 Throughout the codebase, you might see mentions of "migrate-parsetree", `Ast_404`, etc. These refer to https://github.com/let-def/ocaml-migrate-parsetree. It's a library that allows you to convert between different versions of the OCaml AST. This way, the Reason repo can be written in OCaml 4.04's AST data structures, while being usable on OCaml 4.02's libraries (BuckleScript's on 4.02 too).
 
-Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a library that helps us with parsing (it's a "parser generator"). We **highly recommend** you to read about Menhir [here](https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html).
+The Reason lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a library that generates parsers. You can read more about Menhir [here](https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html).
 
 ### Core Files
 
@@ -100,7 +96,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 - `src/reason-parser/reason_pprint_ast.ml`: the pretty-printer! This is the reverse of parsing: it takes in the AST (abstract syntax tree) and prints out the nicely formatted code text.
 
 - `src/reason-parser/reason_parser.messages.checked-in`: this is the huge table of mostly generated, sometimes hand-written, syntax error messages. When the parser ends up at an invalid parsing state (aka ends up with a syntax error), it'd refer to that file's content and see if that case has a specific error message assigned to it. For an example fix, see [this PR](https://github.com/facebook/reason/pull/1018) and the [follow-up](https://github.com/facebook/reason/pull/1033). To add a syntax error message see the "Add a Menhir Error Message" section below.
-  - When running `make build`, and a new `reason_parser.messages` file is generated, do a `mv reason_parser.messages reason_parser.messages.checked-in` to persist the updated messages.
+  - When running `esy`, and a new `reason_parser.messages` file is generated, do a `mv reason_parser.messages reason_parser.messages.checked-in` to persist the updated messages.
 
 - `src/reason-parser/reason_oprint.ml`: the "outcome printer" used by Merlin, rtop and terminal, that prints the errors in Reason syntax. More info in the file itself.
 
@@ -112,7 +108,7 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `*.mllib`: related: see the [OCaml extensions list](https://reasonml.github.io/docs/en/faq.html#i-m-seeing-a-weird-cmi-cmx-cmj-cma-file-referenced-in-a-compiler-error-where-do-these-files-come-from-). These are generated file from `pkg/build.ml`, which describes the package we distribute. No need to worry about them.
 
-- `src/reason-parser/reason_config.ml`: global configuration that says whether our parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in our codebase will show you how this is used.
+- `src/reason-parser/reason_config.ml`: global configuration that says whether the parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in the codebase will show you how this is used.
 
 - `src/refmttype/reason_format_type.ml`, `reason_type_of_ocaml_type.ml`: again, see `pkg/build.ml`. These produce the `refmttype` binary, used by [BetterErrors](refmttype) to output compiler errors in Reason syntax rather than the OCaml one.
 
@@ -122,11 +118,11 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 
 - `src/rtop/reason_utop.ml`, `src/rtop/reason_toploop.ml`, `src/rtop/rtop_init.ml`: Reason's [Utop](https://github.com/diml/utop) integration. Utop's the terminal-based REPL you see when executing `utop` (in Reason's case, the wrapper `rtop`).
 
-- `*.sh`: some of our binaries' entries.
+- `*.sh`: some of the binaries' entries.
 
 - `src/rtop/reason_util.ml`, `reason_syntax_util.ml`: utils.
 
-- `src/reason-parser/reactjs_jsx_ppx_v2.ml`: our ReactJS interop that translates [Reason JSX](https://reasonml.github.io/docs/en/jsx.html) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
+- `src/reason-parser/reactjs_jsx_ppx_v2.ml`: the ReactJS interop that translates [Reason JSX](https://reasonml.github.io/docs/en/jsx.html) into something that ReactJS understands. See the comments in the file and the description in [ReasonReact](https://reasonml.github.io/reason-react/#reason-react-jsx).
 
 - `src/reason-parser-tests/testOprint.ml`: unit tests for the outcome printer mentioned above. See the file for more info on how outcome printing is tested.
 
@@ -135,12 +131,11 @@ Our lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/), a li
 Here's a recommended workflow:
 
 - First put your code in the current master syntax in a file `test.re`
-- `make build`
 - `esy x refmt --print ast test.re`
 - look closely at the ast, spot the thing you need
 - Search for your item in `reason_parser.mly`
 - Change the logic
-- `esy x make test-once-installed`
+- `esy test`
 
 Lexer helpers doc: http://caml.inria.fr/pub/docs/manual-ocaml/libref/Lexing.html
 Parser helper docs: http://caml.inria.fr/pub/docs/manual-ocaml/libref/Parsetree.html
@@ -178,7 +173,9 @@ Random Stack Overflow answer: https://stackoverflow.com/questions/9897358/ocaml-
 
 ### Debugging Grammar Conflicts
 
-Run the main parser through Menhir with the `--explain` flag to have it print out details about the conflict. `menhir --explain src/reason-parser/reason_parser.mly`. The debug information can be found at `src/reason-parser/reason_parser.conflicts`.
+Run the main parser through Menhir with the `--explain` flag to have it print
+out details about the conflict. `esy menhir --explain src/reason-parser/reason_parser.mly`.
+The debug information can be found at `src/reason-parser/reason_parser.conflicts`.
 
 ### Debugging the Parser State at Runtime
 
@@ -193,7 +190,6 @@ export OCAMLRUNPARAM='p'
 To add a Menhir error message, you first need to know the error code. To find the error code, you can run the following commands from the Reason project root:
 
 ```
-make
 esy x refmt --parse re foo.re
 ```
 
@@ -223,7 +219,6 @@ In some situations, Reason might report errors in a different place than where i
 Before digging into Reason parser, make sure this isn't actually caused by some PPX. Otherwise, run:
 
 ```
-make
 esy x refmt --parse re --print ast test.re
 ```
 
@@ -264,70 +259,3 @@ esy x refmt --parse my_old_syntax_file.re --print binary_reason | ./refmt_impl -
 ```
 
 Basically, turn your old syntax into an AST (which is resilient to syntax changes), then turn it back into the new, textual code. If you're reverting to an old enough version, the old binary's flags and/or the old build instructions might be different. In that case, see `esy x refmt --help` and/or the old README.
-
-## Cutting a release
-
-### OPAM Releases
-
-Reason exists on OCaml's package manager OPAM.
-
-- Make sure local changes are properly committed
-- Update remote:
-
-```sh
-git fetch;
-git reset --hard origin/master
-```
-
-- Prerelease:
-
-```sh
-env version=x.y.z make pre_release
-```
-
-- Check everything is ok locally
-- Release!
-
-```sh
-env version=x.y.z make release
-```
-
-- Use [opam-publish](https://github.com/ocaml/opam-publish) to publish the latest version to opam.
-
-#### Releasing to OPAM manually
-
-Typically Reason will be released to NPM first (through Esy). To manually release
-to OPAM, simply:
-
-1. Copy the `.opam` file(s) in this repo
-2. Add a `url` clause ([example](https://github.com/ocaml/opam-repository/blob/a55812366d555a5d2ba45cba01fbdab49e459515/packages/reason/reason.3.2.0/opam#L28-L31)) with the place where to find the release tarball.
-3. Submit a PR to the [OPAM repository](https://github.com/ocaml/opam-repository) under e.g.
-`packages/reason/reason.X.Y.Z/opam`.
-
-### Esy Releases
-
-Cutting a release of esy versions is a good way to get packages out there for
-testing before submitting to opam. This lets you catch bugs quickly without
-having to go through the whole process of re-releasing to opam.
-
-```sh
-esy install
-esy build
-esy make esy-prepublish
-```
-
-Then follow the instructions. You should also probably `cd` into each
-`_release/xxxx/package` and try `esy install && esy build` to make sure
-everything builds correctly before publishing esy packages. If each of the
-individual packages builds correctly, then `rm` the `_release` directory
-and re-prepare the release by reruning `esy make esy-prepublish`. There's no
-need to test that each package builds correctly - you already did that.
-
-Note `esy` packages are "published to npm" but that is different than the
-following workflow for publishing to npm.
-
-### NPM
-
-Reason's also on npm, albeit for a different purpose. The `refmt.js` file is distributed there, for use-cases where the native `refmt` doesn't suffice (e.g. using it on the web).
-
-To publish to npm, get https://github.com/sindresorhus/np and run `np`.
