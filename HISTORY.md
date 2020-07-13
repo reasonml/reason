@@ -1,10 +1,18 @@
+
+## 3.7.0
+**New Feature, Non Breaking:**
+- Reason Syntax v4 [NEW-FEATURE-NON-BREAKING]: Angle Brackets Type Parameters (PARSING) (@jordwalke)[https://github.com/facebook/reason/pull/2604]
+**Bug Fixes:**
+- Fix printing of externals that happen to have newlines/quotes in them (@jordwalke)[#2593](https://github.com/facebook/reason/pull/2593)
+- Fix parsing/printing of attributes on patterns (@jordwalke)[#2592](https://github.com/facebook/reason/pull/2592)
+
 ## 3.6.0
 
-Minor:
+**New Feature, Non Breaking:**
 - External syntax: make the `external ... = ""` part optional (@romanschejbal)[#2464](https://github.com/facebook/reason/pull/2464)
   - `external myFn: (string) => unit;` is now equivalent to `external myFn: (string) => unit = "";`
 
-Fixes:
+**Bug Fixes:**
 - Fixes issues where `method` and similar keywords will be transformed to `method_` (@cristianoc) [#2530](https://github.com/facebook/reason/pull/2530)
 
 ## 3.5.4
