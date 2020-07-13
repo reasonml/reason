@@ -226,7 +226,14 @@ let rec decompose_token pos0 split =
         | Some(r) -> Some(List.rev gt_tokens @ r))
   | _ -> None
 
-let explode s = List.init (String.length s) (String.get s)
+
+let rec init_tailrec_aux acc i n f =
+  if i >= n then acc
+  else init_tailrec_aux (f i :: acc) (i+1) n f
+
+let list_init len f = List.rev (init_tailrec_aux [] 0 len f)
+
+let explode s = list_init (String.length s) (String.get s)
 
 let rec try_split_label (tok_kind, pos0, posn) =
   match tok_kind with
