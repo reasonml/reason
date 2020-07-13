@@ -6536,6 +6536,15 @@ let printer = object(self:'self)
 
   (* [@ ...] Simple attributes *)
   method attribute = function
+    (*
+      In case there are two entries in the AST, use the second one because that
+      is the markdown text, and ignore the converted ocamldoc text.
+    *)
+    | { attr_name = { Location. txt = ("ocaml.doc" | "ocaml.text") }
+      ; attr_payload =
+          PStr [_;{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)) } , _);
+                  pstr_loc }]
+      ; _ }
     | { attr_name = { Location. txt = ("ocaml.doc" | "ocaml.text") }
       ; attr_payload =
           PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, None)) } , _);

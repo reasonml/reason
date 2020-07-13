@@ -5,13 +5,15 @@
 
 (rule
  (targets ocaml_util.ml)
- (deps ../generate/select.exe ocaml_util.ml-4.10 ocaml_util.ml-4.09 ocaml_util.ml-4.08
-   ocaml_util.ml-4.07 ocaml_util.ml-4.06 ocaml_util.ml-default)
+ (deps ../generate/select.exe ocaml_util.ml-4.10 ocaml_util.ml-4.09
+   ocaml_util.ml-4.08 ocaml_util.ml-4.07 ocaml_util.ml-4.06
+   ocaml_util.ml-default)
  (action
   (with-stdout-to
    %{targets}
-   (run ../generate/select.exe ocaml_util.ml-4.10 ocaml_util.ml-4.09 ocaml_util.ml-4.08
-     ocaml_util.ml-4.07 ocaml_util.ml-4.06 ocaml_util.ml-default))))
+   (run ../generate/select.exe ocaml_util.ml-4.10 ocaml_util.ml-4.09
+     ocaml_util.ml-4.08 ocaml_util.ml-4.07 ocaml_util.ml-4.06
+     ocaml_util.ml-default))))
 
 (rule
  (targets reason_string.ml)
@@ -95,4 +97,4 @@
    reason_recover_parser reason_declarative_lexer reason_lexer reason_oprint
    reason_parser_explain_raw reason_parser_explain reason_parser_recover
    reason_string)
- (libraries ocaml-migrate-parsetree menhirLib reason.easy_format))
+ (libraries ocaml-migrate-parsetree menhirLib reason.easy_format reason.omd))

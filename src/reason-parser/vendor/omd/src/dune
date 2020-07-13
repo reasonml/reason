@@ -1,0 +1,12 @@
+(library
+ (name omd)
+ (libraries str)
+ (public_name reason.omd)
+ (flags :standard -w -30))
+
+(rule
+ (with-stdout-to
+  entities.ml
+  (chdir
+   ../tools
+   (run ./gen_entities.exe %{dep:../tools/entities.json}))))
