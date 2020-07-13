@@ -48,7 +48,7 @@ let jsx = (~children, ()) => 0;
 type t('a) = 'a;
 let optionArg = (~arg: option(t(int))=?, ()) => arg;
 let optionArgList =
-    (~arg: list(list(int))=?, ()) => arg;
+    (~arg: option(list(list(int)))=?, ()) => arg;
 let defaultJsxArg = (~arg: t(int)=<jsx />, ()) => arg;
 let defaultFalse = (~arg: t(bool)=!true, ()) => arg;
 /* Doesn't work on master either let defaultTrue = (~arg:t<bool>= !!true) => arg; */

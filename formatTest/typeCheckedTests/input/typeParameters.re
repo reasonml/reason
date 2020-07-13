@@ -5,16 +5,16 @@
 type threeThings<'t> = ('t, 't, 't);
 type listOf<'t> = list<'t>;
 
-type underscoreParam< _> = Underscored;
-type underscoreParamCovariance< +_> = Underscored;
-type underscoreParamContravariance< -_> = Underscored;
+type underscoreParam<_> = Underscored;
+type underscoreParamCovariance<+_> = Underscored;
+type underscoreParamContravariance<-_> = Underscored;
 
-type tickParamCovariance< +'a> = Underscored;
-type tickParamContravariance< -'a> = Underscored;
+type tickParamCovariance<+'a> = Underscored;
+type tickParamContravariance<-'a> = Underscored;
 
 let x : option<list<'a> > = None;
 type myFunctionType<'a> = (list<('a, 'a)>, int => option<list<'a> >);
-let funcAnnoted = (~a: list<int> =[0, 1, ], ()) => a;
+let funcAnnoted = (~a: list<int>=[0, 1, ], ()) => a;
 
 
 
@@ -41,7 +41,7 @@ let jsx= (~children, ()) => 0;
 
 type t<'a> = 'a;
 let optionArg = (~arg:option<t<int>>=?, ()) => arg;
-let optionArgList = (~arg:list<list<int>>=?, ()) => arg;
+let optionArgList = (~arg:option<list<list<int>>>=?, ()) => arg;
 let defaultJsxArg = (~arg:t(int)=<jsx/>, ()) => arg;
 let defaultFalse = (~arg:t<bool>=!true, ()) => arg;
 /* Doesn't work on master either let defaultTrue = (~arg:t<bool>= !!true) => arg; */
