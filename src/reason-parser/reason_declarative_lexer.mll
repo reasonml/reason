@@ -308,6 +308,7 @@ let update_loc lexbuf file line absolute chars =
 let newline = ('\013'* '\010')
 let blank = [' ' '\009' '\012']
 let lowercase = ['a'-'z' '_']
+let lowercase_no_under = ['a'-'z']
 let uppercase = ['A'-'Z']
 let uppercase_or_lowercase = lowercase | uppercase
 let identchar = ['A'-'Z' 'a'-'z' '_' '\'' '0'-'9']
@@ -487,7 +488,11 @@ rule token state = parse
   | "[|" { LBRACKETBAR }
   | "[<" { LBRACKETLESS }
   | "[>" { LBRACKETGREATER }
-  | "<" (((uppercase identchar* '.')* lowercase identchar*) as tag)
+  | "<" (((uppercase identchar* '.')*
+         (lowercase_no_under | lowercase identchar identchar*)) as tag)
+    (* Parsing <_ helps resolve no conflicts in the parser and creates other
+     * challenges with splitting up INFIXOP0 tokens (in Reason_parser_single)
+     * so we don't do it. *)
     { LESSIDENT tag }
   | "<" ((uppercase identchar*) as tag)
     { LESSUIDENT tag }

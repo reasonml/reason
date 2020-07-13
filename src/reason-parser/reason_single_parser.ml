@@ -176,56 +176,64 @@ let rec split_greaters acc pcur = function
     split_greaters ((Reason_parser.GREATER, pcur, pnext) :: acc) pnext tl
   | nonGts -> (List.rev acc), nonGts, pcur
 
+let common_remaining_infix_token pcur =
+  let pnext = advance pcur 1 in
+  function
+  | ['-'] -> Some(Reason_parser.MINUS, pcur, pnext)
+  | ['-'; '.'] -> Some(Reason_parser.MINUSDOT, pcur, advance pnext 1)
+  | ['+'] -> Some(Reason_parser.PLUS, pcur, pnext)
+  | ['+'; '.'] -> Some(Reason_parser.PLUSDOT, pcur, advance pnext 1)
+  | ['!'] -> Some(Reason_parser.BANG, pcur, pnext)
+  | ['>'] -> Some(Reason_parser.GREATER, pcur, pnext)
+  | ['<'] -> Some(Reason_parser.LESS, pcur, pnext)
+  | _ -> None
+
 let rec decompose_token pos0 split =
   let pcur = advance pos0 1 in
   let pnext = advance pos0 2 in
   match split with
   (* Empty token is a valid decomposition *)
-  | [] -> []
+  | [] -> None
   | '=' :: tl ->
     let eq = (Reason_parser.EQUAL, pcur, pnext) in
     let (revFirstTwo, tl, pcur, pnext) = match tl with
-    | '?' :: tlTl -> ((Reason_parser.QUESTION, pcur, pnext) :: eq :: []), tlTl, pnext, (advance pnext 1)
-    | _ -> (eq :: []), tl, pcur, pnext
+    | '?' :: tlTl ->
+      [(Reason_parser.QUESTION, pcur, pnext); eq], tlTl, pnext, (advance pnext 1)
+    | _ -> [eq], tl, pcur, pnext
     in
-    let rev_result = match tl with
-    | ['-'] -> (Reason_parser.MINUS, pcur, pnext) :: revFirstTwo
-    | ['-'; '.'] -> (Reason_parser.MINUSDOT, pcur, advance pnext 1) :: revFirstTwo
-    | ['+'] -> (Reason_parser.PLUS, pcur, pnext) :: revFirstTwo
-    | ['+'; '.'] -> (Reason_parser.PLUSDOT, pcur, advance pnext 1) :: revFirstTwo
-    | ['!'] -> (Reason_parser.BANG, pcur, pnext) :: revFirstTwo
-    | ['>'] -> (Reason_parser.GREATER, pcur, pnext) :: revFirstTwo
-    | ['<'] -> (Reason_parser.LESS, pcur, pnext) :: revFirstTwo
-    | [] ->  revFirstTwo
-    | _ -> []
-    in
-    List.rev rev_result
+    if tl == [] then Some(List.rev revFirstTwo)
+    else
+      (match common_remaining_infix_token pcur tl with
+      | None -> None
+      | Some(r) -> Some(List.rev (r :: revFirstTwo)))
   (* For type parameters  type t<+'a> = .. *)
   | '<' :: tl ->
-      if tl == [] then [(Reason_parser.LESS, pcur, pnext)]
+      let less = [Reason_parser.LESS, pcur, pnext] in
+      if tl == [] then Some less
       else
-        (match decompose_token pnext tl with
-        (* Couldn't parse the tail *)
-        | [] -> []
-        | _::_ as rest_tokens -> (Reason_parser.LESS, pcur, pnext) :: rest_tokens)
+        (match common_remaining_infix_token pcur tl with
+        | None -> None (* Couldn't parse the non-empty tail - invalidates whole thing *)
+        | Some(r) -> Some(List.rev (r :: less)))
   | '>' :: tl ->
+      (* Recurse to take advantage of all the logic in case the remaining
+       * begins with an equal sign. *)
       let gt_tokens, rest_split, prest = split_greaters [] pcur split in
       if rest_split == [] then
-        gt_tokens
+        Some gt_tokens
       else
         (match decompose_token prest rest_split with
-        (* If there were remaining tokens but couldn't be parsed, then our
-         * > operator cannot be properly split because we don't know what to
-         * do with the tail. *)
-        | [] -> []
-        | _::_ as rest_tokens -> gt_tokens @ rest_tokens)
-  | _ -> []
+        | None -> None (* Couldn't parse the non-empty tail - invalidates whole thing *)
+        | Some(r) -> Some(List.rev gt_tokens @ r))
+  | _ -> None
 
 let explode s = List.init (String.length s) (String.get s)
 
 let rec try_split_label (tok_kind, pos0, posn) =
   match tok_kind with
-  | Reason_parser.INFIXOP0 s -> decompose_token pos0 (explode s)
+  | Reason_parser.INFIXOP0 s ->
+    (match decompose_token pos0 (explode s) with
+    | None -> []
+    | Some(l) -> l)
   | _ -> []
 
 (* Logic for attempting to consume a token
