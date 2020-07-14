@@ -140,6 +140,11 @@ module Clflags = Reason_syntax_util.Clflags
 
 *)
 
+let make_floating_doc = function
+  | {attr_name = {txt = "ocaml.doc"; _} as attr_name; _} as attr ->
+      {attr with attr_name = {attr_name with txt = "ocaml.text"}}
+  | attr -> attr
+
 let uncurry_payload ?(name="bs") loc =
   { attr_name = {loc; txt = name};
     attr_payload = PStr [];
@@ -987,6 +992,7 @@ let mkBsObjTypeSugar ~loc ~closed rows =
 let doc_loc loc = {txt = "ocaml.doc"; loc = loc}
 
 let doc_attr text loc =
+  (* Here is where we will convert from markdown to odoc - transform the "text" *)
   let open Parsetree in
   let exp =
     { pexp_desc = Pexp_constant (Pconst_string(text, None));
@@ -1730,8 +1736,12 @@ structure_item:
     | let_bindings
       { val_of_let_bindings $1 }
     ) { [$1] }
- | located_attributes
-   { List.map (fun x -> mkstr ~loc:x.loc (Pstr_attribute x.txt)) $1 }
+   | located_attributes
+     {
+       List.map
+        (fun x -> mkstr ~loc:x.loc (Pstr_attribute (make_floating_doc x.txt)))
+        $1
+     }
 ;
 
 module_binding_body:
@@ -1951,7 +1961,9 @@ signature_item:
 signature_items:
   | as_loc(signature_item) { [mksig ~loc:$1.loc $1.txt] }
   | located_attributes
-    { List.map (fun x -> mksig ~loc:x.loc (Psig_attribute x.txt)) $1 }
+    { List.map
+      (fun x -> mksig ~loc:x.loc (Psig_attribute (make_floating_doc x.txt)))
+      $1 }
 ;
 
 open_declaration:
@@ -2111,7 +2123,9 @@ class_field:
       { mkcf_attrs (Pcf_extension $2) $1 }
     ) { [$1] }
   | located_attributes
-    { List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 }
+    { List.map
+      (fun x -> mkcf ~loc:x.loc (Pcf_attribute (make_floating_doc x.txt)))
+      $1 }
 ;
 
 value:
@@ -2375,7 +2389,9 @@ class_sig_field:
       { mkctf_attrs (Pctf_extension $2) $1 }
     ) { [$1] }
   | located_attributes
-    { List.map (fun x -> mkctf ~loc:x.loc (Pctf_attribute x.txt)) $1 }
+    { List.map
+      (fun x -> mkctf ~loc:x.loc (Pctf_attribute (make_floating_doc x.txt)))
+      $1 }
 ;
 
 value_type:
@@ -4983,7 +4999,13 @@ attribute:
         attr_loc = mklocation $symbolstartpos $endpos
       }
     }
-  | DOCSTRING { doc_attr $1 (mklocation $symbolstartpos $endpos) }
+  | DOCSTRING {
+    (* Here is where we will make another copy of doc_attr but with
+     * reason.doc/text instead of ocaml.doc/text and _that_ is the one that the
+     * printer should pay attention to, completely ignoring the ocaml.doc/text
+     * ones.  The ocaml.doc/text ones would only be received by odoc. *)
+    doc_attr $1 (mklocation $symbolstartpos $endpos)
+  }
 ;
 
 (* Inlined to avoid having to deal with buggy $symbolstartpos *)
