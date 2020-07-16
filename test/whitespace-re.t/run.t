@@ -1,5 +1,6 @@
 Format whitespace in .re files
   $ refmt ./input.re
+  [@reason.version 3.7];
   module Test = {
     open Belt;
     open React;

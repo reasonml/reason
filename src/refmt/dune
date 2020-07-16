@@ -2,7 +2,7 @@
  (name refmt_impl)
  (public_name refmt)
  (package reason)
- (libraries reason reason.cmdliner dune-build-info))
+ (libraries reason reason.cmdliner dune-build-info reason_version))
 
 (rule
  (targets git_commit.ml)

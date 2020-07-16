@@ -1,5 +1,6 @@
 Format bucklescript
   $ refmt ./input.re
+  [@reason.version 3.7];
   bla #= 10;
   
   bla #= Some(10);

@@ -1,5 +1,6 @@
 Format externals
   $ refmt ./input.re
+  [@reason.version 3.7];
   /**
    * Tests external formatting.
    */

@@ -1,5 +1,6 @@
 Format features from OCaml 4.03
   $ refmt ./input.re
+  [@reason.version 3.7];
   type t =
     | A({a: int})
     | B;

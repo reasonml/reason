@@ -1,6 +1,7 @@
 Format class and class type
   $ refmt ./input.re
-  class type _module ('provider_impl) = {};
+  [@reason.version 3.7];
+  class type _module('provider_impl) = {};
   type t;
   class type bzz = {
     inherit _module(t);

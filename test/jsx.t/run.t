@@ -1,5 +1,6 @@
 Format JSX
   $ refmt ./input.re
+  [@reason.version 3.7];
   let x =
     <Window
       style={

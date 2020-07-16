@@ -1,5 +1,7 @@
 Format trailing
   $ refmt ./input.re
+  [@reason.version 3.7];
+  
   let x = {"obj": obj};
   
   let x = {"key": key, "keyTwo": keyTwo};

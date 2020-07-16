@@ -1,5 +1,6 @@
 Format first class modules
   $ refmt ./input.re
+  [@reason.version 3.7];
   module Modifier = (
     val Db.Hashtbl.create():
       Db.Sig with type t = Mods.t

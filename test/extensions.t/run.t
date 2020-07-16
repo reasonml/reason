@@ -1,5 +1,7 @@
 Format extensions
   $ refmt ./input.re
+  [@reason.version 3.7];
+  
   /* Extension sugar */
   
   [%extend open M];

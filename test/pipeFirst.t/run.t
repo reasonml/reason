@@ -1,5 +1,6 @@
 Format pipe first (->)
   $ refmt ./input.re
+  [@reason.version 3.7];
   foo->f->g->h;
   
   bar->f->g->h;
