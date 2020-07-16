@@ -294,6 +294,14 @@ let expandLocation pos ~expand:(startPos, endPos) =
     }
   }
 
+let should_keep_floating_stylistic_structure_attr = function
+  | {pstr_desc=Pstr_attribute a; _} -> not (Reason_attributes.is_stylistic_attr a)
+  | _ -> true
+
+let should_keep_floating_stylistic_sig_attr = function
+  | {psig_desc=Psig_attribute a; _} -> not (Reason_attributes.is_stylistic_attr a)
+  | _ -> true
+
 (* Computes the location of the attribute with the lowest line number
  * that isn't ghost. Useful to determine the start location of an item
  * in the parsetree that has attributes.
@@ -1060,6 +1068,19 @@ let makeTup ?(wrap=("", ""))?(trailComma=true) ?(uncurried = false) l =
   let lparen = lwrap ^ (if uncurried then "(. " else "(") in
   makeList
     ~wrap:(lparen, ")" ^ rwrap)
+    ~sep:(if trailComma then commaTrail else commaSep)
+    ~postSpace:true
+    ~break:IfNeed l
+
+(* Makes angle brackets < > *)
+let typeParameterBookends ?(wrap=("", ""))?(trailComma=true) l =
+  let useAngle = Reason_version.supports Reason_version.AngleBracketTypes in
+  let left = if useAngle then "<" else "(" in
+  let right = if useAngle then ">" else ")" in
+  let (lwrap, rwrap) = wrap in
+  let lparen = lwrap ^ left in
+  makeList
+    ~wrap:(lparen, right ^ rwrap)
     ~sep:(if trailComma then commaTrail else commaSep)
     ~postSpace:true
     ~break:IfNeed l
@@ -2433,7 +2454,7 @@ let printer = object(self:'self)
   (* c ['a,'b] *)
   method class_params_def = function
     | [] -> atom ""
-    | l -> makeTup (List.map self#type_param l)
+    | l -> typeParameterBookends (List.map self#type_param l)
 
   (* This will fall through to the simple version. *)
   method non_arrowed_core_type x = self#non_arrowed_non_simple_core_type x
@@ -2539,7 +2560,7 @@ let printer = object(self:'self)
 
     let labelWithParams = match formattedTypeParams with
       | [] -> binding
-      | l -> label binding (makeTup l)
+      | l -> label binding (typeParameterBookends l)
     in
     let everythingButConstraints =
       let nameParamsEquals = makeList ~postSpace:true [labelWithParams; assignToken] in
@@ -2591,7 +2612,7 @@ let printer = object(self:'self)
     let binding = makeList ~postSpace:true (prepend::name::[]) in
     let labelWithParams = match formattedTypeParams with
       | [] -> binding
-      | l -> label binding (makeTup l)
+      | l -> label binding (typeParameterBookends l)
     in
     let everything =
       let nameParamsEquals = makeList ~postSpace:true [labelWithParams; assignToken] in
@@ -2747,7 +2768,7 @@ let printer = object(self:'self)
       let ct = self#core_type arg in
       let ct = match arg.ptyp_desc with
         | Ptyp_tuple _ -> ct
-        | _ -> makeTup [ct]
+        | _ -> typeParameterBookends [ct]
       in
       if i == 0 && not opt_ampersand then
         ct
@@ -3084,6 +3105,7 @@ let printer = object(self:'self)
             | [{ptyp_desc = Ptyp_constr(lii, [{ ptyp_desc = Ptyp_object (_::_ as ll, o)}])}]
               when isJsDotTLongIdent lii.txt ->
               label (self#longident_loc li)
+                (* ADD TEST CASE FOR THIS *)
                 (self#unparseObject ~withStringKeys:true ~wrap:("(",")") ll o)
             | _ ->
               (* small guidance: in `type foo = bar`, we're now at the `bar` part *)
@@ -3092,7 +3114,7 @@ let printer = object(self:'self)
                  avoid (@see @avoidSingleTokenWrapping): *)
               label
                 (self#longident_loc li)
-                (makeTup (
+                (typeParameterBookends (
                   List.map self#type_param_list_element l
                 ))
             )
@@ -3130,7 +3152,7 @@ let printer = object(self:'self)
         | Ptyp_class (li, l) ->
           label
             (makeList [atom "#"; self#longident_loc li])
-            (makeTup (List.map self#core_type l))
+            (typeParameterBookends (List.map self#core_type l))
         | Ptyp_extension e -> self#extension e
         | Ptyp_arrow (_, _, _)
         | Ptyp_alias (_, _)
@@ -6763,7 +6785,7 @@ let printer = object(self:'self)
         | _::_ ->
           label
             (self#longident_loc li)
-            (makeList ~wrap:("(", ")") ~sep:commaTrail (List.map self#core_type l))
+            (typeParameterBookends (List.map self#core_type l))
       )
     | Pcty_extension e ->
       self#attach_std_item_attrs x.pcty_attributes (self#extension e)
@@ -6820,7 +6842,7 @@ let printer = object(self:'self)
           label ~space:true (atom opener) (atom pci_name.txt)
         else
           label
-            ~space:true
+            ~space:false
             (label ~space:true (atom opener) (atom pci_name.txt))
             (self#class_params_def ls)
       in
@@ -7127,7 +7149,7 @@ let printer = object(self:'self)
       | Pcl_constr (li, l) ->
         label
           (makeList ~postSpace:true [atom "class"; self#longident_loc li])
-          (makeTup (List.map self#non_arrowed_non_simple_core_type l))
+          (typeParameterBookends (List.map self#non_arrowed_non_simple_core_type l))
       | Pcl_open _
       | Pcl_constraint _
       | Pcl_extension _
@@ -7591,7 +7613,7 @@ let printer = object(self:'self)
           ~xf:self#structure_item
           ~getLoc:(fun x -> x.pstr_loc)
           ~comments:self#comments
-          structureItems
+          (List.filter should_keep_floating_stylistic_structure_attr structureItems)
       in
       source_map ~loc:{loc_start; loc_end; loc_ghost = false}
         (makeList
@@ -8312,10 +8334,47 @@ let add_explicit_arity_mapper super =
   in
   { super with Ast_mapper. expr; pat }
 
+(** Doesn't actually "map", but searches for version number in AST and records
+ * it if present. Needs to be executed before printing. *)
+let record_version_mapper super =
+  let super_structure_item = super.Ast_mapper.structure_item in
+  let super_signature_item = super.Ast_mapper.signature_item in
+  let structure_item mapper structure_item =
+    (match Reason_version.Ast_nodes.extract_version_attribute_structure_item structure_item with
+    | None -> ()
+    | Some(mjr, mnr) -> Reason_version.set_explicit (mjr, mnr));
+    super_structure_item mapper structure_item
+  in
+  let signature_item mapper signature_item =
+    (match Reason_version.Ast_nodes.extract_version_attribute_signature_item signature_item with
+    | None -> ()
+    | Some(mjr, mnr) -> Reason_version.set_explicit (mjr, mnr));
+    super_signature_item mapper signature_item
+  in
+  { super with Ast_mapper.structure_item; Ast_mapper.signature_item }
+
+(* These won't get removed from partitioning since they are individual floating
+ * attributes *)
+let remove_floating_style_attributes super =
+  let super_structure = super.Ast_mapper.structure in
+  let super_signature = super.Ast_mapper.signature in
+  let structure mapper structure =
+    super_structure
+      mapper
+      (List.filter should_keep_floating_stylistic_structure_attr structure)
+  in
+  let signature mapper signature =
+    super_signature
+      mapper
+      (List.filter should_keep_floating_stylistic_sig_attr signature)
+  in
+  { super with Ast_mapper.structure; Ast_mapper.signature }
+
 let preprocessing_mapper =
   ml_to_reason_swap_operator_mapper
-    (escape_stars_slashes_mapper
-      (add_explicit_arity_mapper Ast_mapper.default_mapper))
+    (remove_floating_style_attributes
+      (record_version_mapper (escape_stars_slashes_mapper
+        (add_explicit_arity_mapper Ast_mapper.default_mapper))))
 
 let core_type ppf x =
   format_layout ppf
@@ -8328,12 +8387,16 @@ let pattern ppf x =
 let signature (comments : Comment.t list) ppf x =
   List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
-    (printer#signature (apply_mapper_to_signature x preprocessing_mapper))
+    (printer#signature
+      (Reason_version.Ast_nodes.inject_attr_from_version_intf
+        (apply_mapper_to_signature x preprocessing_mapper)))
 
 let structure (comments : Comment.t list) ppf x =
   List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
-    (printer#structure (apply_mapper_to_structure x preprocessing_mapper))
+    (printer#structure
+      (Reason_version.Ast_nodes.inject_attr_from_version_impl
+        (apply_mapper_to_structure x preprocessing_mapper)))
 
 let expression ppf x =
   format_layout ppf
