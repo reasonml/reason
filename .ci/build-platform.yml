@@ -19,7 +19,7 @@ jobs:
       - powershell: Write-Host "##vso[task.setvariable variable=PATH;]C:\Program Files\Git\bin;C:\Windows\system32;${env:PATH}"
         continueOnError: true
         condition: eq(variables['AGENT.OS'], 'Windows_NT')
-        displayName: "Make sure C:\Program Files\Git\bin and windows/system32 is at front of path if windows"
+        displayName: "Make sure C:/Program Files/Git/bin and windows/system32 is at front of path if windows"
       - powershell: $Env:Path
         continueOnError: true
         condition: and(eq(variables['AGENT.OS'], 'Windows_NT'), and(eq(variables['Build.Reason'], 'PullRequest'), and(succeeded(), ne(variables['Build.SourceBranch'], variables['System.PullRequest.TargetBranch']))))
