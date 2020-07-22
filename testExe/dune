@@ -1,0 +1,6 @@
+(executable
+ (name RunReasonTests)
+ (public_name RunReasonTests.exe)
+ (package reason-dev)
+ (libraries reason.test)
+)

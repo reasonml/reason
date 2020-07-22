@@ -12,7 +12,7 @@ build: [
 depends: [
   "dune" {>= "1.0"}
   "cppo" {build}
-  "ocaml" {>= "4.02.3"}
+  "ocaml" {>= "4.02.3" & < "4.11"}
 ]
 synopsis: "A protocol to provide custom frontend to Merlin"
 description: """
