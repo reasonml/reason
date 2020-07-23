@@ -7,6 +7,9 @@
 - Fix printing of externals that happen to have newlines/quotes in them (@jordwalke)[#2593](https://github.com/facebook/reason/pull/2593)
 - Fix parsing/printing of attributes on patterns (@jordwalke)[#2592](https://github.com/facebook/reason/pull/2592)
 
+**Changes:**
+- Updated README.md by adding Logo at the top & aligned header elements to the center (@iamdarshshah)[#2609](https://github.com/facebook/reason/pull/2609)
+
 ## 3.6.0
 
 **New Feature, Non Breaking:**
