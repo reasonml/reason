@@ -51,4 +51,31 @@ describe("formatTest", ({describe, _}) => {
          )
        )
   );
+
+  describe("backport_syntax_tests", ({test, _}) => {
+    let filename = "./miscTests/backport_syntax_tests/basic.re";
+
+    test(
+      filename,
+      ({expect}) => {
+        let (stdOut, stdErr) = syscall(buildOprintArgs(filename));
+        expect.string(stdOut).toMatchSnapshot();
+        expect.string(stdErr).toBeEmpty();
+      },
+    )
+  });
+
+  describe("reactjs_jsx_ppx_tests", ({test, _}) =>
+    lsDir("./miscTests/reactjs_jsx_ppx_tests")
+    |> List.iter(filename =>
+         test(
+           filename,
+           ({expect}) => {
+             let (stdOut, stdErr) = syscall(buildOprintArgs(filename));
+             expect.string(stdOut).toMatchSnapshot();
+             expect.string(stdErr).toBeEmpty();
+           },
+         )
+       )
+  );
 });

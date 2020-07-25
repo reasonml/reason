@@ -1,0 +1,37 @@
+formatTest › reactjs_jsx_ppx_tests › ./miscTests/reactjs_jsx_ppx_tests/expected_v2_1.re
+module ReactDOMRe:
+  {
+    let createElement: ('b, ~props: 'c=?, array('a)) => int;
+    let createElementVariadic: ('b, ~props: 'c=?, array('a)) => int;
+    let props:
+      (~className: 'a=?, ~width: 'b=?, ~comp: 'c=?, ~compCallback: 'd=?,
+      unit) => int;
+  };
+module Foo:
+  {
+    let make:
+      (~className: 'a=?, ~width: 'b=?, ~comp: 'c=?, ~bar: 'd=?, 'e) => int;
+    let createElement:
+      (~className: 'a=?, ~ref: 'b=?, ~key: 'c=?, ~width: 'd=?, ~comp: 'e=?,
+      ~bar: 'f=?, ~children: 'g, unit) => int;
+    module Bar:
+      {
+        let make: (~className: 'a=?, 'b) => int;
+        let createElement:
+          (~className: 'a=?, ~ref: 'b=?, ~key: 'c=?, ~children: 'd, unit) =>
+          int;
+      };
+  };
+module Bar:
+  {
+    let make: (~bar: 'a=?, 'b) => int;
+    let createElement: (~bar: 'a=?, ~children: 'b, unit) => int;
+  };
+module ReasonReact:
+  {
+    let element: (~key: 'a=?, ~ref: 'b=?, 'c) => int;
+    let fragment: array('a) => int;
+  };
+let divRef: int;
+let divRefs: array(int);
+

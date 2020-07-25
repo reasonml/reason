@@ -16,7 +16,6 @@ test-ci: install test-once-installed
 # Can be run with esy x - no need to build beforehand.
 test-once-installed: clean-tests
 	./miscTests/rtopIntegrationTest.sh
-	./miscTests/backportSyntaxTests.sh
 	cd formatTest; ./test.sh
 
 .PHONY: coverage
