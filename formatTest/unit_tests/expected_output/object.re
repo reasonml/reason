@@ -76,3 +76,10 @@ type g2 = {
   ...t,
   ...y,
 };
+
+type m1 = {. ...M.t};
+type m2('a) = {
+  .
+  n: string,
+  ...M.t('a),
+};

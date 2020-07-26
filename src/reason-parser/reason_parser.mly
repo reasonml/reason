@@ -4597,8 +4597,8 @@ object_label_declaration:
     { Of.tag ~attrs:$1 $2 (mkct $2) }
   | item_attributes as_loc(LIDENT) COLON poly_type
     { Of.tag ~attrs:$1 $2 $4 }
-  | DOTDOTDOT as_loc(LIDENT)
-    { Of.inherit_ ~loc:(mklocation $symbolstartpos $endpos) (mkct $2) }
+  | DOTDOTDOT basic_core_type
+    { Of.inherit_ ~loc:(mklocation $symbolstartpos $endpos) $2 }
 ;
 
 object_label_declarations:
