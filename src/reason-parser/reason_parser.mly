@@ -1787,6 +1787,8 @@ mark_position_mty
     { mkmty (Pmty_ident $1) }
   | extension
     { mkmty (Pmty_extension $1) }
+  | LPAREN MODULE TYPE OF module_expr RPAREN
+    { mkmty (Pmty_typeof $5) }
   ) {$1};
 
 module_type_signature:
@@ -1832,8 +1834,6 @@ mark_position_mty
     { mkmty (Pmty_with($1, $2)) }
   | simple_module_type
     {$1}
-  | LPAREN MODULE TYPE OF module_expr RPAREN
-    { mkmty (Pmty_typeof $5) }
   | attribute module_type %prec attribute_precedence
     { {$2 with pmty_attributes = $1 :: $2.pmty_attributes} }
   | functor_parameters EQUALGREATER module_type %prec below_SEMI
