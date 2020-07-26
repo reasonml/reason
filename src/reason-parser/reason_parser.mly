@@ -942,17 +942,18 @@ let rewriteFunctorApp module_name elt loc =
   else
     mkexp ~loc (Pexp_ident {txt=Ldot (module_name, elt); loc})
 
-let jsx_component module_name attrs children loc =
-  let rec getFirstPart = function
-    | Lident fp -> fp
-    | Ldot (fp, _) -> getFirstPart fp
-    | Lapply (fp, _) -> getFirstPart fp in
-  let firstPart = getFirstPart module_name.txt in
-  let element_fn = if String.get firstPart 0 != '_' && firstPart = String.capitalize_ascii firstPart then
-    (* firstPart will be non-empty so the 0th access is fine. Modules can't start with underscore *)
-    rewriteFunctorApp module_name.txt "createElement" module_name.loc
-  else
-    mkexp ~loc:module_name.loc (Pexp_ident(mkloc (Lident firstPart) module_name.loc))
+let jsx_component lid attrs children loc =
+  let is_module_name = function
+    | Lident s
+    | Ldot (_, s) ->
+      (* s will be non-empty so the 0th access is fine. Modules can't start with underscore *)
+       String.get s 0 != '_' && s = String.capitalize_ascii s
+    | Lapply (_, _) -> true
+  in
+  let element_fn = if is_module_name lid.txt then
+      rewriteFunctorApp lid.txt "createElement" lid.loc
+    else
+      mkexp ~loc:lid.loc (Pexp_ident lid)
   in
   let body = mkexp(Pexp_apply(element_fn, attrs @ children)) ~loc in
   let attribute = {

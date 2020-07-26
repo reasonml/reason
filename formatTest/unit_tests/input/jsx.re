@@ -574,3 +574,7 @@ let v =
   }>
   <InactionText three={msg##prop} four={msg##errorText} />
 </ActionButton>;
+
+<Foo.bar />;
+
+<Foo.Bar.baz arg="hello" />;

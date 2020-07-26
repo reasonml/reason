@@ -370,12 +370,10 @@ let asd =
   [@foo] <One test=true foo=2> "a" "b" </One>;
 let asd2 =
   [@foo]
-  [@JSX]
-  One.createElementobvioustypo(
-    ~test=false,
-    ~children=["a", "b"],
-    (),
-  );
+  <One.createElementobvioustypo test=false>
+    "a"
+    "b"
+  </One.createElementobvioustypo>;
 
 let span =
     (~test: bool, ~foo: int, ~children, ()) => 1;
