@@ -721,3 +721,7 @@ let v =
     four={msg##errorText}
   />
 </ActionButton>;
+
+<Foo.bar />;
+
+<Foo.Bar.baz arg="hello" />;
