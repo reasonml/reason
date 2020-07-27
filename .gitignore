@@ -30,3 +30,4 @@ _esybuild
 _esyinstall
 .merlin
 _release
+.vscode

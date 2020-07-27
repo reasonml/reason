@@ -27,11 +27,31 @@ let buildRefmtArgs = (filename, extension) => {
 
 let buildOprintArgs = filename => "cat " ++ filename ++ " | " ++ oprintTestBin;
 
+let buildOcamlCompiler = (filename, extension) => {
+  let compileFlags =
+    switch (extension) {
+    | ".re" => "-intf-suffix .rei -impl"
+    | ".rei" => "-intf"
+    | _ => ""
+    };
+
+  let whichOcamlc = "which ocamlc";
+
+  "$("
+  ++ whichOcamlc
+  ++ ") -c -pp '"
+  ++ refmtBin
+  ++ " --print binary'"
+  ++ compileFlags
+  ++ " "
+  ++ filename;
+};
+
 describe("formatTest", ({describe, _}) => {
   ["idempotentTests", "typeCheckedTests", "unit_tests"]
   |> List.iter(folder =>
        describe(folder, ({test, _}) =>
-         lsDir("./formatTest/" ++ folder ++ "/input")
+         lsDir("./formatTest/" ++ folder)
          |> List.filter(isSourcefile)
          |> List.iter(filename => {
               test(
@@ -49,8 +69,7 @@ describe("formatTest", ({describe, _}) => {
      );
 
   describe("errorTests", ({test, _}) =>
-    lsDir("./formatTest/errorTests/input")
-    /* |> List.filter(isSourcefile) */
+    lsDir("./formatTest/errorTests")
     |> List.iter(filename =>
          test(
            filename,
@@ -66,8 +85,7 @@ describe("formatTest", ({describe, _}) => {
   );
 
   describe("oprintTests", ({test, _}) =>
-    lsDir("./formatTest/oprintTests/input")
-    /* |> List.filter(isSourcefile) */
+    lsDir("./formatTest/oprintTests")
     |> List.iter(filename =>
          test(
            filename,
@@ -105,6 +123,23 @@ describe("formatTest", ({describe, _}) => {
              let refmt =
                buildRefmtArgs(filename, Filename.extension(filename));
              let (stdOut, stdErr) = syscall(refmt);
+             expect.string(stdOut).toMatchSnapshot();
+             expect.string(stdErr).toBeEmpty();
+           },
+         )
+       )
+  );
+
+  describeSkip("features OCaml 4.08", ({test, _}) =>
+    lsDir("./formatTest/features4.08")
+    |> List.filter(isSourcefile)
+    |> List.iter(filename =>
+         test(
+           filename,
+           ({expect}) => {
+             let ocamlc =
+               buildOcamlCompiler(filename, Filename.extension(filename));
+             let (stdOut, stdErr) = syscall(ocamlc);
              expect.string(stdOut).toMatchSnapshot();
              expect.string(stdErr).toBeEmpty();
            },
