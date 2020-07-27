@@ -8,6 +8,8 @@ let isSourcefile = filename =>
     extensions,
   );
 
+let isOcamlVersion = minVersion => minVersion < Sys.ocaml_version;
+
 let buildRefmtArgs = (filename, extension) => {
   let args =
     switch (extension) {
@@ -130,23 +132,22 @@ describe("formatTest", ({describe, _}) => {
        )
   );
 
-  describe("features OCaml 4.08", ({test, _}) =>
-    lsDir("./formatTest/features4.08")
-    |> List.filter(isSourcefile)
-    |> List.iter(filename =>
-         test(
-           filename,
-           ({expect}) => {
-             let ocamlc =
-               buildOcamlCompiler(filename, Filename.extension(filename));
-             Printf.printf("\n");
-             Printf.printf("%s", ocamlc);
-             Printf.printf("\n");
-             let (stdOut, stdErr) = syscall(ocamlc);
-             expect.string(stdOut).toMatchSnapshot();
-             expect.string(stdErr).toBeEmpty();
-           },
+  if (isOcamlVersion("4.08.0")) {
+    describe("features OCaml 4.08", ({test, _}) =>
+      lsDir("./formatTest/features4.08")
+      |> List.filter(isSourcefile)
+      |> List.iter(filename =>
+           test(
+             filename,
+             ({expect}) => {
+               let ocamlc =
+                 buildOcamlCompiler(filename, Filename.extension(filename));
+               let (stdOut, stdErr) = syscall(ocamlc);
+               expect.string(stdOut).toMatchSnapshot();
+               expect.string(stdErr).toBeEmpty();
+             },
+           )
          )
-       )
-  );
+    );
+  };
 });
