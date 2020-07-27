@@ -130,7 +130,7 @@ describe("formatTest", ({describe, _}) => {
        )
   );
 
-  describeSkip("features OCaml 4.08", ({test, _}) =>
+  describe("features OCaml 4.08", ({test, _}) =>
     lsDir("./formatTest/features4.08")
     |> List.filter(isSourcefile)
     |> List.iter(filename =>
@@ -139,6 +139,9 @@ describe("formatTest", ({describe, _}) => {
            ({expect}) => {
              let ocamlc =
                buildOcamlCompiler(filename, Filename.extension(filename));
+             Printf.printf("\n");
+             Printf.printf("%s", ocamlc);
+             Printf.printf("\n");
              let (stdOut, stdErr) = syscall(ocamlc);
              expect.string(stdOut).toMatchSnapshot();
              expect.string(stdErr).toBeEmpty();
