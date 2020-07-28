@@ -12,13 +12,13 @@
     "@opam/merlin-extend": " >= 0.4",
     "@opam/result": "*",
     "@opam/ocaml-migrate-parsetree": "*",
-    "@opam/dune": "< 2.0.0",
-    "@reason-native/rely": "^3.1.0"
+    "@opam/dune": "< 2.0.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",
     "@opam/odoc": "*",
-    "ocaml": "~4.6.0"
+    "ocaml": "~4.6.0",
+    "@reason-native/rely": "^3.1.2"
   },
   "notes-ctd": [
     "This is how you make an esy monorepo for development, but then release the monorepo as many individual packages:",
