@@ -70,11 +70,16 @@ let without_stylistic_attrs attrs =
   in
   loop [] attrs
 
+let is_jsx_attribute { attr_name = {txt}; _} = txt = "JSX"
+
+(* TODO: Make this fast and not filter *)
+let has_jsx_attributes attrs = List.exists is_jsx_attribute attrs
+
 let is_preserve_braces_attr { attr_name = {txt}; _} =
   txt = "reason.preserve_braces"
 
 let has_preserve_braces_attrs stylisticAttrs =
-  (List.filter is_preserve_braces_attr stylisticAttrs) != []
+  List.exists is_preserve_braces_attr stylisticAttrs
 
 let maybe_remove_stylistic_attrs attrs should_preserve =
   if should_preserve then

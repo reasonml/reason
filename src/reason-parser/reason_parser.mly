@@ -2763,6 +2763,13 @@ jsx:
       let body = mktailexp_extension loc $2 None in
       makeFrag loc body
     }
+  (* There is not need yet for <> ...expr </> because it would currently
+   * parse as expr.
+  | LESSGREATER DOTDOTDOT simple_expr_no_call LESSSLASHGREATER
+    { let loc = mklocation $symbolstartpos $endpos in
+      makeFrag loc $3
+    }
+  *)
   | jsx_start_tag_and_args SLASHGREATER
     { let (component, _) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
