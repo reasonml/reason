@@ -8,6 +8,8 @@ build:
 	dune build
 
 install:
+	opam pin add rely https://github.com/facebookexperimental/reason-native.git -y
+	opam pin add pastel https://github.com/facebookexperimental/reason-native.git -y
 	opam pin add reason . -y
 
 # CI uses opam. Regular workflow needn't.
@@ -15,6 +17,7 @@ test-ci: install test-once-installed
 
 # Can be run with esy x - no need to build beforehand.
 test-once-installed:
+	esy test
 	./miscTests/rtopIntegrationTest.sh
 
 .PHONY: coverage
