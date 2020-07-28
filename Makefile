@@ -14,9 +14,8 @@ install:
 test-ci: install test-once-installed
 
 # Can be run with esy x - no need to build beforehand.
-test-once-installed: clean-tests
+test-once-installed:
 	./miscTests/rtopIntegrationTest.sh
-	cd formatTest; ./test.sh
 
 .PHONY: coverage
 coverage:
@@ -25,26 +24,16 @@ coverage:
 	bisect-ppx-report -ignore-missing-files -I _build/ -html coverage-after/ bisect*.out ./*/*/*/bisect*.out
 	find -iname "bisect*.out" -exec rm {} \;
 
-clean-tests:
-	rm -rf ./formatTest/**/actual_output
-	rm -rf ./formatTest/**/intf_output
-	rm -rf ./formatTest/**/**/TestTest.cmi
-	rm -f ./formatTest/failed_tests
-	rm -f ./miscTests/reactjs_jsx_ppx_tests/*.cm*
-
-testFormat: build clean-tests
-	cd formatTest; ./test.sh
-
 all_errors:
 	@ echo "Regenerate all the possible error states for Menhir."
 	@ echo "Warning: This will take a while and use a lot of CPU and memory."
 	@ echo "---"
 	menhir --explain --strict --unused-tokens src/reason-parser/reason_parser.mly --list-errors > src/reason-parser/reason_parser.messages.checked-in
 
-clean: clean-tests
+clean:
 	dune clean
 
-clean-for-ci: clean-tests
+clean-for-ci:
 	rm -rf ./_build
 
 .PHONY: build clean
@@ -53,7 +42,7 @@ ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 SUBSTS:=$(ROOT_DIR)/pkg/substs
 
 # For publishing esy releases to npm
-esy-prepublish: build clean-tests pre_release
+esy-prepublish: build pre_release
 	node ./scripts/esy-prepublish.js
 
 # For OPAM
