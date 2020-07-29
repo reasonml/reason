@@ -6489,25 +6489,21 @@ let printer = object(self:'self)
             self#formatPipeFirst e
           else
             self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") e
+
+      (* No braces - very simple *)
+      | {pexp_desc = Pexp_ident li} -> self#longident_loc li
+      | {pexp_desc = Pexp_constant constant} as x ->
+          let raw_literal, _ = extract_raw_literal x.pexp_attributes in
+          self#constant ?raw_literal constant
       | _ ->
-          (* Currently spreading a list must be wrapped in { }.
-           * You can remove the entire even_wrap_simple arg when that is fixed. *)
+          (* Currently spreading a list, or having a list as a child must be
+           * wrapped in { }. You can remove the entire even_wrap_simple arg
+           * when that is fixed (there is a conflict in grammar when allowing
+           * a [] without {[]} as child. *)
           (* Simple child that has jsx: <hi> </hi> *)
           (* Simple child that doesn't have jsx: "hello" *)
           (* Simple child that doesn't have jsx but is a "::" and requires braces: [a, b] *)
-          let even_wrap_simple = match x with
-          | {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple _})} ->
-              not (Reason_attributes.has_jsx_attributes x.pexp_attributes)
-          | _ -> false
-          in
-          if even_wrap_simple then
-            self#inline_braces#dont_preserve_braces#simplifyUnparseExpr
-              ~even_wrap_simple ~inline:true ~wrap:("{", "}") x
-          else
-          (match self#dont_preserve_braces#simplest_expression x with
-            | Some r -> r
-            | None -> (self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") x)
-          )
+          self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") x
     in
     match expr with
     | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} ->
