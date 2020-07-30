@@ -50,7 +50,7 @@ let buildOcamlCompiler = (filename, extension) => {
 };
 
 describe("formatTest", ({describe, _}) => {
-  ["idempotentTests", "typeCheckedTests", "unit_tests"]
+  ["typeCheckedTests", "unit_tests"]
   |> List.iter(folder =>
        describe(folder, ({test, _}) =>
          lsDir("./formatTest/" ++ folder)

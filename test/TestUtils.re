@@ -3,11 +3,6 @@ let lsDir = dir =>
 
 let syscall = (~env=[||], cmd) => {
   let (ic, oc, ec) = Unix.open_process_full(cmd, env);
-  /* We need to handle CLRF https://github.com/facebook/reason/pull/2275 */
-  set_binary_mode_in(ic, true);
-  set_binary_mode_in(ec, true);
-  set_binary_mode_out(oc, true);
-
   let buf1 = Buffer.create(96)
   and buf2 = Buffer.create(48);
   try(
