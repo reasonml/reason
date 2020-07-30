@@ -235,7 +235,7 @@ let list_init len f = List.rev (init_tailrec_aux [] 0 len f)
 
 let explode s = list_init (String.length s) (String.get s)
 
-let try_split_label (tok_kind, pos0) =
+let try_split_label (tok_kind, pos0, _posn) =
   match tok_kind with
   | Reason_parser.INFIXOP0 s ->
     (match decompose_token pos0 (explode s) with
