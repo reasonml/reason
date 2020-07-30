@@ -8,16 +8,19 @@ build:
 	dune build
 
 # CI uses opam. Regular workflow needn't.
-test-ci: test-once-installed
+test-ci: tests test-integration
+
+tests:
+	dune exec Run.exe
 
 # Can be run with esy x - no need to build beforehand.
-test-once-installed:
+test-integration:
 	./miscTests/rtopIntegrationTest.sh
 
 .PHONY: coverage
 coverage:
 	find -iname "bisect*.out" -exec rm {} \;
-	make test-once-installed
+	make test-integration
 	bisect-ppx-report -ignore-missing-files -I _build/ -html coverage-after/ bisect*.out ./*/*/*/bisect*.out
 	find -iname "bisect*.out" -exec rm {} \;
 
