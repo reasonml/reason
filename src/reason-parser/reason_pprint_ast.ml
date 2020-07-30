@@ -4524,6 +4524,7 @@ let printer = object(self:'self)
           expr
       in
       makeList ~break:Never [atom "..."; childLayout]
+
   (**
         How JSX is formatted/wrapped. We want the attributes to wrap independently
         of children.
@@ -4560,7 +4561,7 @@ let printer = object(self:'self)
       | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processArguments tail processedAttrs None
       | (Labelled "children", (
-          {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple components})} as arg
+          {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple _components})} as arg
           )
         ) :: tail ->
         (match self#formatJsxChildrenNonSpread arg [] with
