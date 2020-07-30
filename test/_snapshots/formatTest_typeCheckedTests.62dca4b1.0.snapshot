@@ -1,12 +1,6 @@
 formatTest › typeCheckedTests › ./formatTest/typeCheckedTests/jsx.re
 type component = {displayName: string};
 
-module Bar = {
-  let createElement = (~c=?, ~children, ()) => {
-    displayName: \"test\",
-  };
-};
-
 module Nesting = {
   let createElement = (~children, ()) => {
     displayName: \"test\",
@@ -562,11 +556,11 @@ let div = (~onClick, ~children, ()) => ();
 </div>;
 
 /*
- * This is identical to just having "foobar" as a single JSX child (which means
+ * This is identical to just having \"foobar\" as a single JSX child (which means
  * it's in a list).
  */
 let yetAnotherDiv =
-  <div onClick=onClickHandler> "foobar" </div>;
+  <div onClick=onClickHandler> \"foobar\" </div>;
 
 let tl = [];
 
@@ -576,10 +570,12 @@ let tl = [];
  * simple for the purposes of spreading into JSX, or as a child.
  */
 <div onClick=onClickHandler>
-  ...{[yetAnotherDiv, ...tl]}
+  yetAnotherDiv
+  tl
 </div>;
 
 /*
  * This is equivalent to having no children.
  */
 <div onClick=onClickHandler />;
+
