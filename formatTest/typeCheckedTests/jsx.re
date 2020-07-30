@@ -436,3 +436,23 @@ let onClickHandler = () => ();
 let div = (~onClick, ~children, ()) => ();
 
 <div onClick=onClickHandler> <> "foobar" </> </div>;
+
+/*
+ * This is identical to just having "foobar" as a single JSX child (which means
+ * it's in a list).
+ */
+let yetAnotherDiv = <div onClick=onClickHandler>... <> "foobar" </> </div>;
+
+let tl = [];
+
+/*
+ * Spreading a list that has an identifier/expression as its tail.  This should
+ * preserve the spread and preserve the braces.  [list] is not considered
+ * simple for the purposes of spreading into JSX, or as a child.
+ */
+<div onClick=onClickHandler>...{[yetAnotherDiv, ...tl]}</div>;
+
+/*
+ * This is equivalent to having no children.
+ */
+<div onClick=onClickHandler>...{[]}</div>;

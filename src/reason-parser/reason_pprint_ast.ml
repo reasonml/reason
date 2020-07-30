@@ -3757,27 +3757,28 @@ let printer = object(self:'self)
     in
     source_map ~loc:e.pexp_loc itm
 
-  method simplifyUnparseExpr ?(inline=false) ?(wrap=("(", ")")) x =
-    match self#unparseExprRecurse x with
-    | SpecificInfixPrecedence (_, itm) ->
+  method simplifyUnparseExpr ?(inline=false) ?(even_wrap_simple=false) ?(wrap=("(", ")")) x =
+    match self#unparseExprRecurse x, even_wrap_simple with
+    | SpecificInfixPrecedence (_, itm), _ ->
         formatPrecedence
           ~inline
           ~wrap
           ~loc:x.pexp_loc
           (self#unparseResolvedRule itm)
-    | FunctionApplication itms ->
+    | FunctionApplication itms, _ ->
       formatPrecedence
         ~inline
         ~wrap
         ~loc:x.pexp_loc
         (formatAttachmentApplication applicationFinalWrapping None (itms, Some x.pexp_loc))
-    | PotentiallyLowPrecedence itm ->
+    | PotentiallyLowPrecedence itm, _
+    | Simple itm, true  ->
         formatPrecedence
           ~inline
           ~wrap
           ~loc:x.pexp_loc
           itm
-    | Simple itm -> itm
+    | Simple itm, false -> itm
 
 
   method unparseResolvedRule  = function
@@ -4496,6 +4497,33 @@ let printer = object(self:'self)
     | x -> [self#class_expr x]
 
 
+  method dotdotdotChild expr =
+    let self = self#inline_braces in
+    match expr with
+    | {pexp_desc = Pexp_apply (funExpr, args)}
+      when printedStringAndFixityExpr funExpr == Normal &&
+           Reason_attributes.without_stylistic_attrs expr.pexp_attributes == [] ->
+      begin match (self#formatFunAppl ~prefix:(atom "...") ~wrap:("{", "}") ~jsxAttrs:[] ~args ~funExpr ~applicationExpr:expr ()) with
+      | [x] -> x
+      | xs -> makeList xs
+      end
+    | {pexp_desc = Pexp_fun _ } ->
+        self#formatPexpFun ~prefix:(atom "...") ~wrap:("{", "}") expr
+    | _ ->
+      (* Currently spreading a list must be wrapped in { }.
+       * You can remove the entire even_wrap_simple arg when that is fixed. *)
+      let even_wrap_simple = match expr with
+      | {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple _})} ->
+          not (Reason_attributes.has_jsx_attributes expr.pexp_attributes)
+      | _ -> false
+      in
+      let childLayout =
+        self#dont_preserve_braces#simplifyUnparseExpr
+          ~even_wrap_simple
+          ~wrap:("{", "}")
+          expr
+      in
+      makeList ~break:Never [atom "..."; childLayout]
   (**
         How JSX is formatted/wrapped. We want the attributes to wrap independently
         of children.
@@ -4531,24 +4559,16 @@ let printer = object(self:'self)
       match arguments with
       | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processArguments tail processedAttrs None
-      | (Labelled "children", {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple components} )}) :: tail ->
-        processArguments tail processedAttrs (self#formatChildren components [])
+      | (Labelled "children", (
+          {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple components})} as arg
+          )
+        ) :: tail ->
+        (match self#formatJsxChildrenNonSpread arg [] with
+        (* Back out of the standard jsx child formatting *)
+        | None -> processArguments tail processedAttrs (Some [self#dotdotdotChild arg])
+        | Some chldn -> processArguments tail processedAttrs (Some chldn))
       | (Labelled "children", expr) :: tail ->
-          let dotdotdotChild = match expr with
-            | {pexp_desc = Pexp_apply (funExpr, args)}
-              when printedStringAndFixityExpr funExpr == Normal &&
-                   Reason_attributes.without_stylistic_attrs expr.pexp_attributes == [] ->
-              begin match (self#formatFunAppl ~prefix:(atom "...") ~wrap:("{", "}") ~jsxAttrs:[] ~args ~funExpr ~applicationExpr:expr ()) with
-              | [x] -> x
-              | xs -> makeList xs
-              end
-            | {pexp_desc = Pexp_fun _ } ->
-                self#formatPexpFun ~prefix:(atom "...") ~wrap:("{", "}") expr
-            | _ ->
-              let childLayout = self#dont_preserve_braces#simplifyUnparseExpr ~wrap:("{", "}") expr in
-              makeList ~break:Never [atom "..."; childLayout]
-          in
-          processArguments tail processedAttrs (Some [dotdotdotChild])
+          processArguments tail processedAttrs (Some [self#dotdotdotChild expr])
       | (Optional lbl, expression) :: tail ->
         let {jsxAttrs; _} = partitionAttributes expression.pexp_attributes in
         let value_has_jsx = jsxAttrs != [] in
@@ -6290,7 +6310,8 @@ let printer = object(self:'self)
         Reason_attributes.has_preserve_braces_attrs stylisticAttrs
 
   method simplest_expression x =
-    let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
+    let {stdAttrs; jsxAttrs; stylisticAttrs; arityAttrs} = partitionAttributes x.pexp_attributes in
+    let hasJsxAttribute = jsxAttrs != [] in
     if stdAttrs != [] then
       None
     else if self#should_preserve_requested_braces x then
@@ -6329,27 +6350,34 @@ let printer = object(self:'self)
               ~sep:(Sep ",")
               (List.map string_x_expression l)
           )
+        | Pexp_construct ( {txt= Lident "[]"},_) when hasJsxAttribute -> Some (atom "<> </>")
+        | Pexp_construct ( {txt= Lident"::"},Some _) when hasJsxAttribute ->
+            (match self#formatJsxChildrenNonSpread x [] with
+            | None ->
+                (* Back out of the standard jsx child formatting *)
+                (* This is actually not a useful construct to have written:
+                 *   <> ... x </>
+                 * Is the same as:
+                 *   x
+                 * There is also a bug in the parser where a space is needed
+                 * between <> and ..., but no one would write the ... form of
+                 * <> anyways. *)
+                let withoutJsxAttributes = {x with pexp_attributes=(stylisticAttrs @ arityAttrs)} in
+                self#simplest_expression withoutJsxAttributes
+            | Some chldn ->
+              Some (makeList
+                ~break:IfNeed
+                ~inline:(false, false)
+                ~postSpace:true
+                ~wrap:("<>", "</>")
+                ~pad:(true, true)
+                chldn))
         | Pexp_construct _  when is_simple_construct (view_expr x) ->
-            let hasJsxAttribute = jsxAttrs != [] in
             Some (
               match view_expr x with
-              | `nil -> if hasJsxAttribute then atom "<> </>" else atom "[]"
+              | `nil -> atom "[]"
               | `tuple -> atom "()"
               | `list xs -> (* LIST EXPRESSION *)
-                if hasJsxAttribute then
-                  let actualChildren =
-                    match self#formatChildren xs [] with
-                    | None -> []
-                    | Some ch -> ch
-                  in
-                    makeList
-                      ~break:IfNeed
-                      ~inline:(false, false)
-                      ~postSpace:true
-                      ~wrap:("<>", "</>")
-                      ~pad:(true, true)
-                      actualChildren
-                else
                   self#unparseSequence ~construct:`List xs
               | `cons xs ->
                   self#unparseSequence ~construct:`ES6List xs
@@ -6442,49 +6470,50 @@ let printer = object(self:'self)
       | None -> None
       | Some i -> Some (source_map ~loc:x.pexp_loc i)
 
-  method formatChildren children processedRev =
-    match children with
-    | {pexp_desc = Pexp_constant constant} as x :: remaining ->
-      let raw_literal, _ = extract_raw_literal x.pexp_attributes in
-      self#formatChildren remaining (self#constant ?raw_literal constant :: processedRev)
-    | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple children} )} as x :: remaining ->
-      let {jsxAttrs} = partitionAttributes x.pexp_attributes in
-      if jsxAttrs != [] then
-        match self#simplest_expression x with
-        | Some r -> self#formatChildren remaining (r :: processedRev)
-        | None -> self#formatChildren (remaining @ children) processedRev
-      else
-        self#formatChildren (remaining @ children) processedRev
-    | ({pexp_desc = Pexp_apply _} as e) :: remaining ->
-        let child =
-        (* Pipe first behaves differently according to the expression on the
-         * right. In example (1) below, it's a `SpecificInfixPrecedence`; in
-         * (2), however, it's `Simple` and doesn't need to be wrapped in parens.
-         *
-         * (1). <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
-         * (2). <Foo> (title === "" ? [1, 2, 3] : blocks)->Foo.toString </Foo>; *)
-        if Reason_heuristics.isPipeFirst e &&
-           not (Reason_heuristics.isPipeFirstWithNonSimpleJSXChild e)
-        then
-          self#formatPipeFirst e
-        else
-          self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") e
-        in
-        self#formatChildren remaining (child::processedRev)
-    | {pexp_desc = Pexp_ident li} :: remaining ->
-      self#formatChildren remaining (self#longident_loc li :: processedRev)
-    | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} :: remaining -> self#formatChildren remaining processedRev
-    | {pexp_desc = Pexp_match _ } as head :: remaining ->
-        self#formatChildren
-          remaining
-          (self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
-    | head :: remaining ->
-        self#formatChildren
-          remaining
-          (self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") head :: processedRev)
-    | [] -> match processedRev with
+  (* Renders jsx children. Returns None if it is not a valid JSX child
+   * structure and must be rendered as spread.  You cannot render any list of
+   * JSX children in Reason unless it is nil-terminated. Otherwise you must use
+   * spread.  *)
+  method formatJsxChildrenNonSpread expr processedRev =
+    let formatJsxChild x =
+      match x with
+      | ({pexp_desc = Pexp_apply _} as e) ->
+          (* Pipe first behaves differently according to the expression on the
+           * right. In example (1) below, it's a `SpecificInfixPrecedence`; in
+           * (2), however, it's `Simple` and doesn't need to be wrapped in parens.
+           *
+           * (1). <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
+           * (2). <Foo> (title === "" ? [1, 2, 3] : blocks)->Foo.toString </Foo>; *)
+          if Reason_heuristics.isPipeFirst e &&
+             not (Reason_heuristics.isPipeFirstWithNonSimpleJSXChild e)
+          then
+            self#formatPipeFirst e
+          else
+            self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") e
+
+      (* No braces - very simple *)
+      | {pexp_desc = Pexp_ident li} -> self#longident_loc li
+      | {pexp_desc = Pexp_constant constant} as x ->
+          let raw_literal, _ = extract_raw_literal x.pexp_attributes in
+          self#constant ?raw_literal constant
+      | _ ->
+          (* Currently spreading a list, or having a list as a child must be
+           * wrapped in { }. You can remove the entire even_wrap_simple arg
+           * when that is fixed (there is a conflict in grammar when allowing
+           * a [] without {[]} as child. *)
+          (* Simple child that has jsx: <hi> </hi> *)
+          (* Simple child that doesn't have jsx: "hello" *)
+          (* Simple child that doesn't have jsx but is a "::" and requires braces: [a, b] *)
+          self#inline_braces#simplifyUnparseExpr ~inline:true ~wrap:("{", "}") x
+    in
+    match expr with
+    | {pexp_desc = Pexp_construct ({txt = Lident "[]"}, None)} ->
+       (match processedRev with
         | [] -> None
-        | _::_ -> Some (List.rev processedRev)
+        | _::_ -> Some (List.rev processedRev))
+    | {pexp_desc = Pexp_construct ({txt = Lident "::"}, Some {pexp_desc = Pexp_tuple [hd; tl]} )} ->
+        self#formatJsxChildrenNonSpread tl (formatJsxChild hd :: processedRev)
+    | _ -> None
 
   method direction_flag = function
     | Upto -> atom "to"
@@ -8160,6 +8189,7 @@ let printer = object(self:'self)
                    (source_map ~loc:retCb.pexp_loc (makeLetSequence xs))]
               )
             in
+            (* This will need to be (theFunc, args) *)
             label theFunc args
         end in
         maybeJSXAttr @ [formattedFunAppl]
