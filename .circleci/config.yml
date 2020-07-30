@@ -48,6 +48,8 @@ common_steps: &common_steps
     - run:
         name: 'opam pin'
         command: |
+          opam pin add pastel https://github.com/facebookexperimental/reason-native.git -y
+          opam pin add rely https://github.com/facebookexperimental/reason-native.git -y
           opam pin add -y reason .
           opam pin add -y rtop .
     - run:

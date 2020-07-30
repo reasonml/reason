@@ -7,16 +7,11 @@ default: build
 build:
 	dune build
 
-install:
-	esy
-	opam pin add reason . -y
-
 # CI uses opam. Regular workflow needn't.
-test-ci: install test-once-installed
+test-ci: test-once-installed
 
 # Can be run with esy x - no need to build beforehand.
 test-once-installed:
-	esy test
 	./miscTests/rtopIntegrationTest.sh
 
 .PHONY: coverage
