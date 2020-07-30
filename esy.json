@@ -102,7 +102,7 @@
     }
   },
   "scripts": {
-    "test": "esy x RunReasonTests.exe",
+    "test": "dune exec ./testExe/Run.exe",
     "doc": "esy dune build @doc"
   }
 }

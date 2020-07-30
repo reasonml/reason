@@ -1,0 +1,17 @@
+opam-version: "2.0"
+maintainer: "Jordan Walke <jordojw@gmail.com>"
+
+build: [
+  ["dune" "build" "-p" name "-j" jobs] {dev}
+  ["dune" "runtest" "-p" name "-j" jobs] {dev}
+]
+
+pin-depends: [
+  [ "rely.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
+  [ "cli.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
+  [ "file-context-printer.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
+]
+
+synopsis: "reason-dev: The package that runs the tests"
+description: """
+reason-dev runs a few snapshot tests to ensure bla"""
