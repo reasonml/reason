@@ -8,8 +8,7 @@ build:
 	dune build
 
 install:
-	opam pin add rely https://github.com/facebookexperimental/reason-native.git -y
-	opam pin add pastel https://github.com/facebookexperimental/reason-native.git -y
+	esy
 	opam pin add reason . -y
 
 # CI uses opam. Regular workflow needn't.
