@@ -37,6 +37,7 @@ common_steps: &common_steps
           opam install -y dune
           opam install -y menhir
           opam install -y utop
+          opam install ./reason-dev.opam --deps-only
     - run:
         name: 'Clean'
         command: make clean-for-ci
@@ -48,7 +49,7 @@ common_steps: &common_steps
     - run:
         name: 'opam pin'
         command: |
-          opam pin add -y reason . --kind=path
+          opam pin add -y reason .
           opam pin add -y rtop .
     - run:
         name: 'Test'
