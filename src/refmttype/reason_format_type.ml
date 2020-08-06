@@ -6,6 +6,16 @@
  *)
 
 
+let () = Reason_pprint_ast.configure
+  (* This can be made pluggable in the future. *)
+  ~width:80
+  ~assumeExplicitArity:false
+  ~constructorLists:[]
+
+let print_version = Reason_version.latest_version_for_package
+let () = Reason_version.print_version.major <- print_version.major
+let () = Reason_version.print_version.minor <- print_version.minor
+
 (* No String.split in stdlib... *)
 let split str ~by =
   let rec split' str ~by accum =

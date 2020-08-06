@@ -3,6 +3,12 @@ open Extend_protocol.Reader
 let () =
   Reason_config.recoverable := true
 
+(* Merlin integration will by default print types according to the package
+ * version. The reason is that when printing, we don't have original source
+ * files which include the version attribute. It is often just printing a
+ * type segment *)
+(* Somehow putting print version = 3.8 up here impacts the *parse* behavior!
+ * How? *)
 module Reason_reader = struct
   type t = buffer
 
@@ -44,6 +50,9 @@ module Reason_reader = struct
      fun () -> Lazy.force fmt
 
   let pretty_print ppf =
+    let print_version = Reason_version.latest_version_for_package in
+    let () = Reason_version.print_version.major <- print_version.major in
+    let () = Reason_version.print_version.minor <- print_version.minor in
     let open Reason_toolchain in
     function
     | Pretty_core_type x ->
