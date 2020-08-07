@@ -758,6 +758,10 @@ module Clflags = struct
 end
 
 let parse_lid s =
+#if OCAML_VERSION >= (4, 6, 0)
   match Longident.unflatten (String.split_on_char '.' s) with
   | Some lid -> lid
   | None -> failwith (Format.asprintf "parse_lid: unable to parse '%s' to longident" s)
+#else
+ Longident.parse s
+#endif
