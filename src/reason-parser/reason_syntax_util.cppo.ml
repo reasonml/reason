@@ -756,3 +756,8 @@ module Clflags = struct
   let fast = unsafe
 #endif
 end
+
+let parse_lid s =
+  match Longident.unflatten (String.split_on_char '.' s) with
+  | Some lid -> lid
+  | None -> failwith (Format.asprintf "parse_lid: unable to parse '%s' to longident" s)
