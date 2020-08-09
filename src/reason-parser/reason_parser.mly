@@ -431,29 +431,8 @@ let makeFrag loc body =
 
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
-
 let mkstrexp e attrs =
-  match e with
-  | ({pexp_desc = Pexp_apply (({pexp_attributes} as e1), args) } as eRewrite)
-      when let f = (List.filter (function
-        | { attr_name = {txt = "bs"}; _} -> true
-          | _ -> false ) pexp_attributes)  in
-      List.length f > 0
-    ->
-      let appExprAttrs = List.filter (function
-          | { attr_name = {txt = "bs"}; attr_payload = PStr []; _ } -> false
-          | _ -> true ) pexp_attributes in
-      let strEvalAttrs = (uncurry_payload e1.pexp_loc)::(List.filter (function
-          | { attr_name = {txt = "bs"}; attr_payload = PStr []} -> false
-          | _ -> true ) attrs) in
-      let e = {
-        eRewrite with
-        pexp_desc = (Pexp_apply(e1, args));
-        pexp_attributes = appExprAttrs
-      } in
-      { pstr_desc = Pstr_eval (e, strEvalAttrs); pstr_loc = e.pexp_loc }
-  | _ ->
-      { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
+  { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
 let ghexp_constraint loc e (t1, t2) =
   match t1, t2 with
