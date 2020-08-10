@@ -9,7 +9,7 @@
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
     "@opam/utop": " >= 1.17.0 < 2.5.0",
-    "@opam/merlin-extend": " >= 0.4",
+    "@opam/merlin-extend": " >= 0.6",
     "@opam/result": "*",
     "@opam/ocaml-migrate-parsetree": "*",
     "@opam/dune": "< 2.0.0"

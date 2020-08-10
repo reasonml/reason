@@ -99,3 +99,5 @@ module Clflags : sig
   val fast : bool ref
 #endif
 end
+
+val parse_lid : string -> Longident.t

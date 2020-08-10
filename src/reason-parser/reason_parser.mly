@@ -2711,11 +2711,11 @@ jsx_arguments:
 
 jsx_start_tag_and_args:
   as_loc(LESSIDENT) jsx_arguments
-     { let name = Longident.parse $1.txt in
+     { let name = parse_lid $1.txt in
       (jsx_component {$1 with txt = name} $2, name)
     }
   | LESS as_loc(LIDENT) jsx_arguments
-    { let name = Longident.parse $2.txt in
+    { let name = parse_lid $2.txt in
       (jsx_component {$2 with txt = name} $3, name)
     }
   | LESS as_loc(mod_ext_longident) jsx_arguments
@@ -2762,7 +2762,7 @@ jsx:
     { let (component, start) = $1 in
       let loc = mklocation $startpos($4) $endpos in
       (* TODO: Make this tag check simply a warning *)
-      let endName = Longident.parse $4 in
+      let endName = parse_lid $4 in
       let _ = ensureTagsAreEqual start endName loc in
       let siblings = if List.length $3 > 0 then $3 else [] in
       component [
@@ -2775,7 +2775,7 @@ jsx:
     { let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       (* TODO: Make this tag check simply a warning *)
-      let endName = Longident.parse $4 in
+      let endName = parse_lid $4 in
       let _ = ensureTagsAreEqual start endName loc in
       let child = $3 in
       component [
@@ -2803,7 +2803,7 @@ jsx_without_leading_less:
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
-    let endName = Longident.parse $4 in
+    let endName = parse_lid $4 in
     let _ = ensureTagsAreEqual start endName loc in
     let siblings = if List.length $3 > 0 then $3 else [] in
     component [
@@ -2815,7 +2815,7 @@ jsx_without_leading_less:
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
-    let endName = Longident.parse $4 in
+    let endName = parse_lid $4 in
     let _ = ensureTagsAreEqual start endName loc in
     let child = $3 in
     component [
