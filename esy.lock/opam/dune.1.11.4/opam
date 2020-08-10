@@ -26,7 +26,7 @@ homepage: "https://github.com/ocaml/dune"
 doc: "https://dune.readthedocs.io/"
 bug-reports: "https://github.com/ocaml/dune/issues"
 depends: [
-  "ocaml" {>= "4.02"}
+  "ocaml" {>= "4.02" & < "4.12"}
   "base-unix"
   "base-threads"
 ]
