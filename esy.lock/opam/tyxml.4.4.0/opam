@@ -4,7 +4,7 @@ homepage: "https://github.com/ocsigen/tyxml/"
 bug-reports: "https://github.com/ocsigen/tyxml/issues"
 doc: "https://ocsigen.org/tyxml/manual/"
 dev-repo: "git+https://github.com/ocsigen/tyxml.git"
-license: "LGPL-2.1-only with OCaml-LGPL-linking-exception"
+license: "LGPL-2.1 with OCaml linking exception"
 
 build: [
   ["dune" "subst"] {pinned}
@@ -14,12 +14,11 @@ build: [
 
 depends: [
   "ocaml" {>= "4.02"}
-  "re" {>= "1.5.0"}
-  ("ocaml" {>= "4.07"} | "re" {>= "1.8.0"})
   "dune"
   "alcotest" {with-test}
   "seq"
   "uutf" {>= "1.0.0"}
+  "re" {>= "1.5.0"}
 ]
 
 synopsis:"TyXML is a library for building correct HTML and SVG documents"
@@ -40,6 +39,9 @@ let to_ocaml = Html.(a ~a:[a_href "ocaml.org"] [txt "OCaml!"])
 authors: "The ocsigen team"
 url {
   src:
-    "https://github.com/ocsigen/tyxml/releases/download/4.3.0/tyxml-4.3.0.tbz"
-  checksum: "md5=fd834a567f813bf447cab5f4c3a723e2"
+    "https://github.com/ocsigen/tyxml/releases/download/4.4.0/tyxml-4.4.0.tbz"
+  checksum: [
+    "sha256=516394dd4a5c31726997c51d66aa31cacb91e3c46d4e16c7699130e204042530"
+    "sha512=d5f2187f8410524cec7a14b28e8950837070eb0b6571b015dd06076c2841eb7ccaffa86d5d2307eaf1950ee62f9fb926477dac01c870d9c1a2f525853cb44d0c"
+  ]
 }

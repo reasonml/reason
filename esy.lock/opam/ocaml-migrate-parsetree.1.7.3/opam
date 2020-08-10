@@ -17,7 +17,7 @@ depends: [
   "result"
   "ppx_derivers"
   "dune" {>= "1.9.0"}
-  "ocaml" {>= "4.02.3"}
+  "ocaml" {>= "4.02.3" & < "4.12"}
 ]
 synopsis: "Convert OCaml parsetrees between different versions"
 description: """
@@ -29,9 +29,9 @@ rewriters independent of a compiler version.
 """
 url {
   src:
-    "https://github.com/ocaml-ppx/ocaml-migrate-parsetree/releases/download/v1.5.0/ocaml-migrate-parsetree-v1.5.0.tbz"
+    "https://github.com/ocaml-ppx/ocaml-migrate-parsetree/releases/download/v1.7.3/ocaml-migrate-parsetree-v1.7.3.tbz"
   checksum: [
-    "sha256=7f56679c9561552762666de5b6b81c8e4cc2e9fd92272e2269878a2eb534e3c0"
-    "sha512=87fdccafae83b0437f1ccd4f3cfbc49e699bc0804596480e0df88510ba33410f31d48c7f677fe72800ed3f442a3a586d82d86aee1d12a964f79892833847b16a"
+    "sha256=6d85717bcf476b87f290714872ed4fbde0233dc899c3158a27f439d70224fb55"
+    "sha512=fe9c74a244d160d973d8ca62e356edad4c872fc46471ddc668f854456d3979576895d446d49da2aee61c65b441b72c573225b0b254ab2eac4a0fb4debdbce9d4"
   ]
 }

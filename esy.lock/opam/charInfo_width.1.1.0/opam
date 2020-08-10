@@ -14,7 +14,7 @@ depends: [
   "result"
   "camomile" {>= "1.0.0" & < "2.0~"}
   "dune"
-  "ppx_expect" {with-test & < "v0.14"}
+  "ppx_expect" {with-test & < "v0.15"}
 ]
 
 synopsis: "Determine column width for a character"

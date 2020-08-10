@@ -7,10 +7,10 @@ dev-repo: "git+https://github.com/ocaml/merlin.git"
 build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
-  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test & os != "macos" & ocaml:version >= "4.03"}
 ]
 depends: [
-  "ocaml" {>= "4.02.1" & < "4.10"}
+  "ocaml" {>= "4.02.3" & < "4.11"}
   "dune" {>= "1.8.0"}
   "ocamlfind" {>= "1.5.2"}
   "yojson" {>= "1.6.0"}
@@ -63,9 +63,9 @@ See https://github.com/OCamlPro/opam-user-setup
 ]
 url {
   src:
-    "https://github.com/ocaml/merlin/releases/download/v3.3.3/merlin-v3.3.3.tbz"
+    "https://github.com/ocaml/merlin/releases/download/v3.3.6/merlin-v3.3.6.tbz"
   checksum: [
-    "sha256=72909ef47eea1f6fca13b4109a34dccf8fe3923a3c026f1ed1db9eb5ee9aae15"
-    "sha512=2a5f39d966be56c1322982effc05bc98fd5f66cd12f1f76953f8daa9eca74a58c92a186854f4e601e2f0bb038720691446e7591b4613982accded3e579fedb23"
+    "sha256=3b32d29dc225cd4a975b7345d6dadd41056312f7edfb718b175bd8294165c08c"
+    "sha512=41e5e463c3961c0b5ce77ba8e0a27bf6f426ceb5cad62593389078f30a33f0a45508d3a2c0ff1783d491044a52db33049033aee34cc7b3782a54e4c954d30a8d"
   ]
 }
