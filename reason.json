@@ -14,7 +14,7 @@
     "@opam/menhir": " >= 20170418.0.0",
     "@opam/merlin-extend": " >= 0.3",
     "@opam/result": "*",
-    "@opam/ocaml-migrate-parsetree": "*",
+    "@opam/ocaml-migrate-parsetree": "< 2.0.0",
     "@opam/dune": "*"
   },
   "devDependencies": {
