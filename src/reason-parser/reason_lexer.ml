@@ -32,16 +32,20 @@ let init ?insert_completion_ident lexbuf =
 let lexbuf state = state.lexbuf
 
 
-let rec comment_capturing_tokenizer tokenizer =
-  fun state ->
+let rec comment_capturing_version_switching_token state =
+  let tokenizer =
+    if Reason_version.fast_parse_supports_HashVariantsColonMethodCallStarClassTypes () then
+      Reason_declarative_lexer.token_v3_8
+    else
+      Reason_declarative_lexer.token_v3_7
+  in
   match tokenizer state.declarative_lexer_state state.lexbuf
   with
   | COMMENT (s, comment_loc) ->
      state.comments <- (s, comment_loc) :: state.comments;
-     comment_capturing_tokenizer tokenizer state
+     comment_capturing_version_switching_token state
   | tok -> tok
-
-let token a = (comment_capturing_tokenizer Reason_declarative_lexer.token) a
+let token = comment_capturing_version_switching_token
 
 let token_after_interpolation_region state =
   Reason_declarative_lexer.token_in_template_string_region

@@ -1,15 +1,16 @@
 /* **** comment */
 /*** comment */
-/*** docstring */
+/** docstring */;
+
+[@reason.version 3.7];
+
 /* comment */
-/*** docstring */
+/** docstring */;
 /*** comment */
 /**** comment */
 /***** comment */
 
 /** */;
-[@reason.version 3.7];
-
 /*** */
 /**** */
 

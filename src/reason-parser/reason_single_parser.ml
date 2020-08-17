@@ -185,9 +185,19 @@ let common_remaining_infix_token pcur =
   | ['+'; '.'] -> Some(Reason_parser.PLUSDOT, pcur, advance pnext 1)
   | ['!'] -> Some(Reason_parser.BANG, pcur, pnext)
   | ['>'] -> Some(Reason_parser.GREATER, pcur, pnext)
-  | ['<'] -> Some(Reason_parser.LESS, pcur, pnext)
-  | ['#'] -> Some(Reason_parser.SHARP, pcur, pnext)
-  | [':'] -> Some(Reason_parser.COLON, pcur, pnext)
+  (* Return the more liberal of the two `LESS_THEN_SPACE`,
+     `LESS_THEN_NOT_SPACE` because terms can either parse with either, or
+     LESS_THEN_NOT_SPACE, so return the one that some rules demand, and others
+     can tolerate. *)
+  | ['<'] -> Some(Reason_parser.LESS_THEN_NOT_SPACE, pcur, pnext)
+  | ['*'] -> Some(Reason_parser.STAR, pcur, pnext)
+  | ['#'] ->
+      if Reason_version.fast_parse_supports_HashVariantsColonMethodCallStarClassTypes () then
+        Some(Reason_parser.SHARP_3_8, pcur, pnext)
+      else
+        Some(Reason_parser.SHARP_3_7, pcur, pnext)
+  | [':'] ->
+      Some(Reason_parser.COLON, pcur, pnext)
   | _ -> None
 
 let rec decompose_token pos0 split =
@@ -209,7 +219,7 @@ let rec decompose_token pos0 split =
       | Some(r) -> Some(List.rev (r :: revFirstTwo)))
   (* For type parameters  type t<+'a> = .. and t<#classNameOrPolyVariantKind>*)
   | '<' :: tl ->
-      let less = [Reason_parser.LESS, pcur, pnext] in
+      let less = [Reason_parser.LESS_THEN_NOT_SPACE, pcur, pnext] in
       if tl == [] then Some less
       else
         (match common_remaining_infix_token pcur tl with

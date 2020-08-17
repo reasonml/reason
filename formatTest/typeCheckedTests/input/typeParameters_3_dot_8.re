@@ -3,6 +3,14 @@
  */
 [@reason.version 3.8];
 
+
+module type ListItem = {
+  let x : int;
+};
+
+let myListOfModules: list<module ListItem> = [];
+
+
 type threeThings<'t> = ('t, 't, 't);
 type listOf<'t> = list<'t>;
 

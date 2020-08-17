@@ -1063,27 +1063,6 @@ let makeAppList = function
   | [hd] -> hd
   | l -> makeList ~inline:(true, true) ~postSpace:true ~break:IfNeed l
 
-let makeTup ?(wrap=("", ""))?(trailComma=true) ?(uncurried = false) l =
-  let (lwrap, rwrap) = wrap in
-  let lparen = lwrap ^ (if uncurried then "(. " else "(") in
-  makeList
-    ~wrap:(lparen, ")" ^ rwrap)
-    ~sep:(if trailComma then commaTrail else commaSep)
-    ~postSpace:true
-    ~break:IfNeed l
-
-(* Makes angle brackets < > *)
-let typeParameterBookends ?(wrap=("", ""))?(trailComma=true) l =
-  let useAngle = Reason_version.supports Reason_version.AngleBracketTypes in
-  let left = if useAngle then "<" else "(" in
-  let right = if useAngle then ">" else ")" in
-  let (lwrap, rwrap) = wrap in
-  let lparen = lwrap ^ left in
-  makeList
-    ~wrap:(lparen, right ^ rwrap)
-    ~sep:(if trailComma then commaTrail else commaSep)
-    ~postSpace:true
-    ~break:IfNeed l
 
 let ensureSingleTokenSticksToLabel x =
   let listConfigIfCommentsInterleaved cfg =
@@ -1155,6 +1134,53 @@ let label ?break ?space ?indent (labelTerm:Layout.t) (term:Layout.t) =
 let atom ?loc str =
   let style = { Easy_format.atom_style = Some "atomClss" } in
   source_map ?loc (Layout.Easy (Easy_format.Atom(str, style)))
+
+let makeTup ?(wrap=("", ""))?(trailComma=true) ?(uncurried = false) l =
+  let (lwrap, rwrap) = wrap in
+  let lparen = lwrap ^ (if uncurried then "(. " else "(") in
+  makeList
+    ~wrap:(lparen, ")" ^ rwrap)
+    ~sep:(if trailComma then commaTrail else commaSep)
+    ~postSpace:true
+    ~break:IfNeed l
+
+(* Makes angle brackets < > *)
+let typeParameterBookends ?(wrap=("", ""))?(trailComma=true) l =
+  let useAngle = Reason_version.print_supports Reason_version.AngleBracketTypes in
+  let left = if useAngle then "<" else "(" in
+  let right = if useAngle then ">" else ")" in
+  let (lwrap, rwrap) = wrap in
+  let lparen = lwrap ^ left in
+  makeList
+    ~wrap:(lparen, right ^ rwrap)
+    ~sep:(if trailComma then commaTrail else commaSep)
+    ~postSpace:true
+    ~break:IfNeed l
+
+let classTypeIdent formattedLongIdent =
+  let useStar = Reason_version.print_supports Reason_version.HashVariantsColonMethodCallStarClassTypes in
+  if useStar then
+    makeList [atom "*"; formattedLongIdent]
+  else makeList [atom "#"; formattedLongIdent]
+
+(* For matching on polymorphic variant types *)
+let typePattern formattedLongIdent =
+  let useStar = Reason_version.print_supports Reason_version.HashVariantsColonMethodCallStarClassTypes in
+  if useStar then
+    makeList [atom "*"; formattedLongIdent]
+  else makeList [atom "#"; formattedLongIdent]
+
+let methodSend formattedObj =
+  let useColon =
+    Reason_version.print_supports Reason_version.HashVariantsColonMethodCallStarClassTypes in
+  if useColon then
+    label ~break:`Never formattedObj (atom "::")
+  else makeList [formattedObj; atom "#"]
+
+let polyVariantToken () =
+  let useColon =
+    Reason_version.print_supports Reason_version.HashVariantsColonMethodCallStarClassTypes in
+  if useColon then "#" else "`"
 
 (** Take x,y,z and n and generate [x, y, z, ...n] *)
 let makeES6List ?wrap:((lwrap,rwrap)=("", "")) lst last =
@@ -2830,7 +2856,7 @@ let printer = object(self:'self)
       let ct = self#core_type arg in
       let ct = match arg.ptyp_desc with
         | Ptyp_tuple _ -> ct
-        | _ -> typeParameterBookends [ct]
+        | _ -> formatPrecedence ct
       in
       if i == 0 && not opt_ampersand then
         ct
@@ -2886,7 +2912,7 @@ let printer = object(self:'self)
       add_bar fullLbl
     in
 
-    let prefix = if polymorphic then "`" else "" in
+    let prefix = if polymorphic then polyVariantToken () else "" in
     let sourceMappedName = atom ~loc:pcd_name.loc (prefix ^ pcd_name.txt) in
     let sourceMappedNameWithAttributes =
       let layout = match stdAttrs with
@@ -3206,14 +3232,14 @@ let printer = object(self:'self)
               | (Closed,Some tl) -> ("<", tl)
               | (Open,_) -> (">", []) in
           let node_list = List.mapi variant_helper l in
-          let ll = (List.map (fun t -> atom ("`" ^ t)) tl) in
+          let ll = (List.map (fun t -> atom (polyVariantToken () ^ t)) tl) in
           let tag_list = makeList ~postSpace:true ~break:IfNeed ((atom ">")::ll) in
           let type_list = if tl != [] then node_list@[tag_list] else node_list in
           makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed type_list
-        | Ptyp_class (li, []) -> makeList [atom "#"; self#longident_loc li]
+        | Ptyp_class (li, []) -> classTypeIdent (self#longident_loc li)
         | Ptyp_class (li, l) ->
           label
-            (makeList [atom "#"; self#longident_loc li])
+            (classTypeIdent (self#longident_loc li))
             (typeParameterBookends (List.map self#core_type l))
         | Ptyp_extension e -> self#extension e
         | Ptyp_arrow (_, _, _)
@@ -3333,7 +3359,7 @@ let printer = object(self:'self)
               raise (NotPossible "Should never see embedded attributes on poly variant")
             else
               source_map ~loc:x.ppat_loc
-                (self#constructor_pattern (atom ("`" ^ l)) p
+                (self#constructor_pattern (atom (polyVariantToken () ^ l)) p
                    ~polyVariant:true ~arityIsClear:true)
         | Ppat_lazy p -> label ~space:true (atom "lazy") (self#simple_pattern p)
         | Ppat_construct (({txt} as li), po) when not (txt = Lident "::")-> (* FIXME The third field always false *)
@@ -3506,8 +3532,7 @@ let printer = object(self:'self)
             label
               (label (self#longident_loc lid) (atom (".")))
               (if needsParens then formatPrecedence pat else pat)
-          | Ppat_type li ->
-              makeList [atom "#"; self#longident_loc li]
+          | Ppat_type li -> typePattern (self#longident_loc li)
           | Ppat_record (l, closed) ->
              self#patternRecord l closed
           | Ppat_tuple l ->
@@ -3517,7 +3542,7 @@ let printer = object(self:'self)
             (self#constant ?raw_literal c)
           | Ppat_interval (c1, c2) ->
             makeList ~postSpace:true [self#constant c1; atom ".."; self#constant c2]
-          | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
+          | Ppat_variant (l, None) -> makeList[atom (polyVariantToken ()); atom l]
           | Ppat_constraint _ ->
               formatPrecedence (self#pattern x)
           | Ppat_lazy p ->formatPrecedence (label ~space:true (atom "lazy") (self#simple_pattern p))
@@ -4392,7 +4417,7 @@ let printer = object(self:'self)
         if arityAttrs != [] then
           raise (NotPossible "Should never see embedded attributes on poly variant")
         else
-          FunctionApplication [self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom ("`" ^ l)) eo]
+          FunctionApplication [self#constructor_expression ~polyVariant:true ~arityIsClear:true stdAttrs (atom (polyVariantToken () ^ l)) eo]
     (* TODO: Should protect this identifier *)
     | Pexp_setinstvar (s, rightExpr) ->
       let rightItm = self#unparseResolvedRule (
@@ -6508,7 +6533,7 @@ let printer = object(self:'self)
                 [formatCoerce (self#unparseExpr e) optFormattedType (self#core_type ct)]
             )
         | Pexp_variant (l, None) ->
-            Some (ensureSingleTokenSticksToLabel (atom ("`" ^ l)))
+            Some (ensureSingleTokenSticksToLabel (atom (polyVariantToken () ^ l)))
         | Pexp_record (l, eo) -> Some (self#unparseRecord l eo)
         | Pexp_array l ->
           Some (self#unparseSequence ~construct:`Array l)
@@ -6548,7 +6573,7 @@ let printer = object(self:'self)
           in
           let lhs = self#simple_enough_to_be_lhs_dot_send e in
           let lhs = if needparens then makeList ~wrap:("(",")") [lhs] else lhs in
-          Some (label (makeList [lhs; atom "#";]) (atom s.txt))
+          Some (label (methodSend lhs) (atom s.txt))
         | _ -> None
       in
       match item with
@@ -8410,16 +8435,26 @@ let record_version_mapper super =
   let super_structure_item = super.Ast_mapper.structure_item in
   let super_signature_item = super.Ast_mapper.signature_item in
   let structure_item mapper structure_item =
-    (match Reason_version.Ast_nodes.extract_version_attribute_structure_item structure_item with
-    | None -> ()
-    | Some(mjr, mnr) -> Reason_version.set_explicit (mjr, mnr));
-    super_structure_item mapper structure_item
+    let mapped =
+      match Reason_version.Ast_nodes.is_structure_version_attribute structure_item with
+      | None -> structure_item
+      | Some(_updater, mjr, mnr) ->
+          Reason_version.print_version.major <- mjr;
+          Reason_version.print_version.minor <- mnr;
+          structure_item
+      in
+    super_structure_item mapper mapped
   in
   let signature_item mapper signature_item =
-    (match Reason_version.Ast_nodes.extract_version_attribute_signature_item signature_item with
-    | None -> ()
-    | Some(mjr, mnr) -> Reason_version.set_explicit (mjr, mnr));
-    super_signature_item mapper signature_item
+    let mapped =
+      match Reason_version.Ast_nodes.is_sig_version_attribute signature_item with
+      | None -> signature_item
+      | Some(_updater, mjr, mnr) ->
+          Reason_version.print_version.major <- mjr;
+          Reason_version.print_version.minor <- mnr;
+          signature_item
+      in
+    super_signature_item mapper mapped
   in
   { super with Ast_mapper.structure_item; Ast_mapper.signature_item }
 
@@ -8458,15 +8493,13 @@ let signature (comments : Comment.t list) ppf x =
   List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
     (printer#signature
-      (Reason_version.Ast_nodes.inject_attr_from_version_intf
-        (apply_mapper_to_signature x preprocessing_mapper)))
+      ((apply_mapper_to_signature x preprocessing_mapper)))
 
 let structure (comments : Comment.t list) ppf x =
   List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
     (printer#structure
-      (Reason_version.Ast_nodes.inject_attr_from_version_impl
-        (apply_mapper_to_structure x preprocessing_mapper)))
+      ((apply_mapper_to_structure x preprocessing_mapper)))
 
 let expression ppf x =
   format_layout ppf

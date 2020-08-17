@@ -1,3 +1,5 @@
+[@@@reason.version 3.7]
+;;
 Some (1, 2, 3)
 
 type bcd = TupleConstructor of (int * int) | MultiArgumentsConstructor of int * int

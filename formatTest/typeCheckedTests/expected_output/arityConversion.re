@@ -1,4 +1,5 @@
 [@reason.version 3.7];
+
 Some((1, 2, 3));
 
 type bcd =

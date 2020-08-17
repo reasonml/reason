@@ -11,7 +11,7 @@ class type bzz = {
 };
 
 class type t = { as 'a;
-  constraint 'a = #s
+  constraint 'a = *s
 };
 
 /* https://github.com/facebook/reason/issues/2037 */

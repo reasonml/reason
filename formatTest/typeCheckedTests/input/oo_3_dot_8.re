@@ -2,13 +2,36 @@
 
 [@reason.version 3.8];
 
+type canStillDefineConst =
+  | []
+  | :: (int, canStillDefineConst);
+
 class virtual stack('a) (init) = {
+  as self;
   /*
    * The "as this" is implicit and will be formatted away.
    */
   val virtual dummy: unit;
   val mutable v: list<'a> = init;
   pub virtual implementMe: int => int;
+  pub is_empty = () =>
+    switch (v) {
+    | [] => true
+    | _ => false
+    };
+  pub is_empty_unitless =
+    switch (v) {
+    | [] => true
+    | _ => false
+    };
+  pub empty_unitless = {
+    v = [];
+    self
+  };
+  pub empty = () => {
+    v = [];
+    self;
+  };
   pub pop =
     switch (v) {
     | [hd, ...tl] =>
@@ -89,6 +112,15 @@ class extendedStackAcknowledgeOverride
 };
 
 let inst = (new extendedStack)([1, 2]);
+
+let wasItFull = !inst::empty()::empty_unitless::is_empty();
+// this is the same
+let wasItFull' = !(inst::empty()::empty_unitless::is_empty());
+
+let orig_not = (!);
+let (!) = o => o::empty();
+
+
 
 /**
  * Recursive classes.
@@ -195,7 +227,7 @@ let acceptsOpenAnonObjAsArg =
         y: int,
       },
     ) =>
-  o#x + o#y;
+  o::x + o::y;
 let acceptsClosedAnonObjAsArg =
     (
       o: {
@@ -204,7 +236,7 @@ let acceptsClosedAnonObjAsArg =
         y: int,
       },
     ) =>
-  o#x + o#y;
+  o::x + o::y;
 let res =
   acceptsOpenAnonObjAsArg({
     pub x = 0;
@@ -346,13 +378,13 @@ let x: tupleClass<int, int> = {
   pub pr = (10, 10)
 };
 
-let x: #tupleClass<int, int> = x;
+let x: *tupleClass<int, int> = x;
 
 let incrementMyClassInstance:
-  (int, #tupleClass<int, int>) =>
-  #tupleClass<int, int> =
+  (int, *tupleClass<int, int>) =>
+  *tupleClass<int, int> =
   (i, inst) => {
-    let (x, y) = inst#pr;
+    let (x, y) = inst::pr;
     {pub pr = (x + i, y + i)};
   };
 
@@ -361,7 +393,7 @@ class myClassWithNoTypeParams = {};
  * The #myClassWithNoTypeParams should be treated as "simple"
  */
 type optionalMyClassSubtype<'a> =
-  option< #myClassWithNoTypeParams> as 'a;
+  option< *myClassWithNoTypeParams> as 'a;
 
 /**
  * Remember, "class type" is really "class_instance_type" (which is the type of
@@ -398,7 +430,7 @@ class addablePoint:
           one: addablePointClassType,
           two: addablePointClassType,
         ) =>
-      one#x + two#x + one#y + two#x;
+      one::x + two::x + one::y + two::x;
     pub x: int = init;
     pub y = init;
   };
@@ -412,7 +444,7 @@ class addablePoint2:
           one: addablePointClassType,
           two: addablePointClassType,
         ) =>
-      one#x + two#x + one#y + two#x;
+      one::x + two::x + one::y + two::x;
     pub x: int = init;
     pub y = init;
   };

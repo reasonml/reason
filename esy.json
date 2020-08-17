@@ -84,6 +84,6 @@
   },
   "scripts": {
     "test": "esy x make test-once-installed",
-    "doc": "esy dune build @doc"
+    "doc": "esy build dune build @doc"
   }
 }

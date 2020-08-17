@@ -306,7 +306,6 @@ let update_loc lexbuf file line absolute chars =
     pos_lnum = if absolute then line else pos.pos_lnum + line;
     pos_bol = pos.pos_cnum - chars;
   }
-
 }
 
 
@@ -325,6 +324,7 @@ let identchar_latin1 =
 let operator_chars =
   ['!' '$' '%' '&' '+' '-' ':' '<' '=' '>' '?' '@' '^' '|' '~' '#' '.'] |
   ( '\\'? ['/' '*'] )
+
 let dotsymbolchar =
   ['!' '$' '%' '&' '*' '+' '-' '/' ':' '=' '>' '?' '@' '^' '|' '\\' 'a'-'z' 'A'-'Z' '_' '0'-'9']
 let kwdopchar = ['$' '&' '*' '+' '-' '/' '<' '=' '>' '@' '^' '|' '.' '!']
@@ -346,6 +346,27 @@ let float_literal =
   ('.' ['0'-'9' '_']* )?
   (['e' 'E'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']*)?
 
+(* Will parse a patch version, as well as a leading v, and then we will just
+ * drop those. This is to gracefully handle if the user accidentally typed a v
+ * out in front or a patch version. It will be printed away. It will be printed
+ * back into the standard form [@reason.version 3.8] so that someone can
+ * contribute to a codebase that hasn't upgraded yet, but test a new version of
+ * Reason Syntax.
+ *
+ * Accepts:
+ * [@reason.version 3.8]
+ * [@reason.version 3.8.9]
+ * [@reason.version v3.8]
+ * [@reason.version v3.8.9]
+ * Eventually support:
+ * [@reason.3.8]
+ *)
+let version_attribute =
+    "[@reason.version "
+    'v'?(['0'-'9']+ as major)
+    '.' (['0'-'9']+ as minor)
+    (('.' ['0'-'9']+)? as _patch) ']'
+
 let hex_float_literal =
   '0' ['x' 'X']
   ['0'-'9' 'A'-'F' 'a'-'f'] ['0'-'9' 'A'-'F' 'a'-'f' '_']*
@@ -354,20 +375,20 @@ let hex_float_literal =
 
 let literal_modifier = ['G'-'Z' 'g'-'z']
 
-rule token state = parse
+rule base_token extends_tokenizer state = parse
   | "\\" newline {
       raise_error
         (Location.curr lexbuf)
         (Illegal_character (Lexing.lexeme_char lexbuf 0));
       update_loc lexbuf None 1 false 0;
-      token state lexbuf
+      extends_tokenizer state lexbuf
     }
   | newline
     { update_loc lexbuf None 1 false 0;
-      token state lexbuf
+      extends_tokenizer state lexbuf
     }
   | blank +
-    { token state lexbuf }
+    { extends_tokenizer state lexbuf }
   | "_"
     { UNDERSCORE }
   | "~"
@@ -381,14 +402,20 @@ rule token state = parse
       try Hashtbl.find keyword_table s
       with Not_found -> LIDENT s
     }
-  | "`" (lowercase | uppercase) identchar *
-    { let s = Lexing.lexeme lexbuf in
-      let word = String.sub s 1 (String.length s - 1) in
-      match Hashtbl.find keyword_table word with
-      | exception Not_found -> NAMETAG word
-      | _ ->
-        raise_error (Location.curr lexbuf) (Keyword_as_tag word);
-        LIDENT "thisIsABugReportThis"
+  | "`" ((lowercase | uppercase) identchar *)
+    {
+      if Reason_version.fast_parse_supports_HashVariantsColonMethodCallStarClassTypes () then (
+        set_lexeme_length lexbuf 1;
+        SHARP_3_7
+      ) else (
+        let s = Lexing.lexeme lexbuf in
+        let word = String.sub s 1 (String.length s - 1) in
+        match Hashtbl.find keyword_table word with
+        | exception Not_found -> NAMETAG word
+        | _ ->
+          raise_error (Location.curr lexbuf) (Keyword_as_tag word);
+          LIDENT "thisIsABugReportThis"
+      )
     }
   | lowercase_latin1 identchar_latin1 *
     { Ocaml_util.warn_latin1 lexbuf; LIDENT (Lexing.lexeme lexbuf) }
@@ -465,23 +492,7 @@ rule token state = parse
     { CHAR (char_for_hexadecimal_code lexbuf 3) }
   | "'" (("\\" _) as esc)
     { raise_error (Location.curr lexbuf) (Illegal_escape esc);
-      token state lexbuf
-    }
-  | "#=<"
-    { (* Allow parsing of foo#=<bar /> *)
-      set_lexeme_length lexbuf 2;
-      SHARPEQUAL
-    }
-  | "#="
-    { SHARPEQUAL }
-  | "#" operator_chars+
-    { SHARPOP (lexeme_operator lexbuf) }
-  (* File name / line number source mapping # n string\n *)
-  | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
-        ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
-        [^ '\010' '\013'] * newline
-    { update_loc lexbuf name (int_of_string num) true 0;
-      token state lexbuf
+      extends_tokenizer state lexbuf
     }
   | "&"  { AMPERSAND }
   | "&&" { AMPERAMPER }
@@ -497,30 +508,19 @@ rule token state = parse
     set_lexeme_length lexbuf 2;
     EQUALGREATER
   }
-  | "#"  { SHARP }
   | "."  { DOT }
   | ".." { DOTDOT }
   | "..."{ DOTDOTDOT }
   | ":"  { COLON }
-  | "::" { COLONCOLON }
   | ":=" { COLONEQUAL }
   | ":>" { COLONGREATER }
   | ";"  { SEMI }
   | ";;" { SEMISEMI }
-  | "<"  { LESS }
   | "="  { EQUAL }
   | "["  { LBRACKET }
   | "[|" { LBRACKETBAR }
   | "[<" { LBRACKETLESS }
   | "[>" { LBRACKETGREATER }
-  | "<" (((uppercase identchar* '.')*
-         (lowercase_no_under | lowercase identchar identchar*)) as tag)
-    (* Parsing <_ helps resolve no conflicts in the parser and creates other
-     * challenges with splitting up INFIXOP0 tokens (in Reason_parser_single)
-     * so we don't do it. *)
-    { LESSIDENT tag }
-  | "<" ((uppercase identchar*) as tag)
-    { LESSUIDENT tag }
   | ">..." { GREATERDOTDOTDOT }
   (* Allow parsing of Pexp_override:
    * let z = {<state: 0, x: y>};
@@ -599,7 +599,7 @@ rule token state = parse
       set_lexeme_length lexbuf 1;
       GREATER
     }
-  | "[@reason.version " (['0'-'9']+ as major) '.' (['0'-'9']+ as minor) (('.' ['0'-'9']+)? as _patch) ']' {
+  | version_attribute {
     (* Special case parsing of attribute so that we can special case its
      * parsing. Parses x.y.z even though it is not valid syntax otherwise -
      * just gracefully remove the last number. The parser will ignore this
@@ -607,7 +607,11 @@ rule token state = parse
      * the attribute into the footer of the file.  Then the printer will ensure
      * it is formatted at the top of the file, ideally after the first file
      * floating doc comment. *)
-    VERSION_ATTRIBUTE (int_of_string major, int_of_string minor)
+    (* TODO: Error if version has already been set explicitly in token stream *)
+    let major = int_of_string major in
+    let minor = int_of_string minor in
+    Reason_version.record_explicit_version_in_ast_if_not_yet major minor;
+    VERSION_ATTRIBUTE (major, minor)
   }
   | "[@" { LBRACKETAT }
   | "[%" { LBRACKETPERCENT }
@@ -627,6 +631,19 @@ rule token state = parse
   | "<..>" { LESSDOTDOTGREATER }
   | '\\'? ['~' '?' '!'] operator_chars+
     { PREFIXOP (lexeme_operator lexbuf) }
+  (* The parsing of various LESS* needs to happen after parsing all the other
+   * tokens that start with < except before parsing INFIXOP0 *)
+  | "<" (blank | newline) {
+    set_lexeme_length lexbuf 1;
+    LESS_THEN_SPACE
+  }
+  | "<"
+    (* Parsing <_ helps resolve no conflicts in the parser and creates other
+     * challenges with splitting up INFIXOP0 tokens (in Reason_parser_single)
+     * so we don't do it. *)
+    {
+      LESS_THEN_NOT_SPACE
+    }
   | '\\'? ['=' '<' '>' '|' '&' '$'] operator_chars*
     {
       (* See decompose_token in Reason_single_parser.ml for how let `x=-1` is lexed
@@ -677,12 +694,14 @@ rule token state = parse
     { LETOP (lexeme_operator lexbuf) }
   | "and" kwdopchar dotsymbolchar *
     { ANDOP (lexeme_operator lexbuf) }
-  | eof { EOF }
+  | eof {
+    EOF }
   | _
-    { raise_error
+    {
+      raise_error
         (Location.curr lexbuf)
         (Illegal_character (Lexing.lexeme_char lexbuf 0));
-      token state lexbuf
+      extends_tokenizer state lexbuf
     }
 
 and enter_comment state = parse
@@ -799,7 +818,6 @@ and comment buffer firstloc nestedloc = parse
     { store_lexeme buffer lexbuf;
       comment buffer firstloc nestedloc lexbuf
     }
-
   | "'" newline "'"
     { store_lexeme buffer lexbuf;
       update_loc lexbuf None 1 false 1;
@@ -825,6 +843,61 @@ and comment buffer firstloc nestedloc = parse
     { store_lexeme buffer lexbuf;
       comment buffer firstloc nestedloc lexbuf
     }
+
+
+and token_v3_7 state = parse
+  (* All of the sharpops need to be duplicated as well because they
+   * need to take priority over # *)
+  | "#=<"
+    { (* Allow parsing of foo#=<bar /> *)
+      set_lexeme_length lexbuf 2;
+      SHARPEQUAL
+    }
+  | "#=" { SHARPEQUAL }
+  | "#" operator_chars+
+    { SHARPOP (lexeme_operator lexbuf) }
+  (* File name / line number source mapping # n string\n *)
+  | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
+        ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
+        [^ '\010' '\013'] * newline
+    { update_loc lexbuf name (int_of_string num) true 0;
+      token_v3_7 state lexbuf
+    }
+  | "#" { SHARP_3_7 }
+  | "::" { COLONCOLON_3_7 }
+  (* EOF must be handled here because there's no way to unlex it before
+   * dispatching to the base lexer *)
+  | eof { EOF }
+  | _ {
+    set_lexeme_length lexbuf 0;
+    base_token token_v3_7 state lexbuf }
+
+and token_v3_8 state = parse
+  (* All of the sharpops need to be duplicated as well because they
+   * need to take priority over # *)
+  | "#=<"
+    { (* Allow parsing of foo#=<bar /> *)
+      set_lexeme_length lexbuf 2;
+      SHARPEQUAL
+    }
+  | "#=" { SHARPEQUAL }
+  | "#" operator_chars+
+    { SHARPOP (lexeme_operator lexbuf) }
+  (* File name / line number source mapping # n string\n *)
+  | "#" [' ' '\t']* (['0'-'9']+ as num) [' ' '\t']*
+        ("\"" ([^ '\010' '\013' '"' ] * as name) "\"")?
+        [^ '\010' '\013'] * newline
+    { update_loc lexbuf name (int_of_string num) true 0;
+      token_v3_8 state lexbuf
+    }
+  | "#" { SHARP_3_8 }
+  | "::" { COLONCOLON_3_8 }
+  (* EOF must be handled here because there's no way to unlex it before
+   * dispatching to the base lexer *)
+  | eof { EOF }
+  | _ {
+    set_lexeme_length lexbuf 0;
+    base_token token_v3_8 state lexbuf }
 
 (** [string rawbuf txtbuf lexbuf] parses a string from [lexbuf].
     The string contents is stored in two buffers:

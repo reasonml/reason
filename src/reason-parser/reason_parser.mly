@@ -925,6 +925,12 @@ let rewriteFunctorApp module_name elt loc =
   else
     mkexp ~loc (Pexp_ident {txt=Ldot (module_name, elt); loc})
 
+
+let rec jsx_has_functor_app = function
+  | Lident _ -> false
+  | Ldot (l, _) -> jsx_has_functor_app l
+  | Lapply (_, _) -> true
+
 let jsx_component lid attrs children loc =
   let is_module_name = function
     | Lident s
@@ -1002,6 +1008,12 @@ let raise_record_trailing_semi_error loc =
   syntax_error_exp loc
     "Record entries are separated by comma; \
      we've found a semicolon instead."
+
+let raise_functor_app_with_lident_access loc =
+  syntax_error_exp loc
+    "JSX syntax does not allow accessing a specific lower cased identifier \
+    after functor application such as <X(Y).z />"
+
 
 let raise_record_trailing_semi_error' loc =
   (Some (raise_record_trailing_semi_error loc), [])
@@ -1112,7 +1124,8 @@ let add_brace_attr expr =
 %token <char> CHAR
 %token CLASS
 %token COLON
-%token COLONCOLON
+%token COLONCOLON_3_7
+(* See COLONCOLON_3_8 which is only parsed in newer Reason Syntax and with SHARP precedence *)
 %token COLONEQUAL
 %token COLONGREATER
 %token COMMA
@@ -1164,9 +1177,8 @@ let add_brace_attr expr =
 %token LBRACKETGREATER
 %token LBRACKETPERCENT
 %token LBRACKETPERCENTPERCENT
-%token LESS
-%token <string> LESSIDENT [@recover.expr ""] [@recover.cost 2]
-%token <string> LESSUIDENT [@recover.expr ""] [@recover.cost 2]
+%token LESS_THEN_SPACE
+%token LESS_THEN_NOT_SPACE
 %token LESSGREATER
 %token LESSSLASHGREATER
 %token LESSDOTDOTGREATER
@@ -1207,7 +1219,10 @@ let add_brace_attr expr =
 %token <string> LESSSLASHIDENTGREATER [@recover.expr ""] [@recover.cost 2]
 %token SEMI
 %token SEMISEMI
-%token SHARP
+%token SHARP_3_7
+(* SHARP operator for v3.8+ *)
+%token SHARP_3_8
+%token COLONCOLON_3_8
 %token <string> SHARPOP
 %token SHARPEQUAL
 %token SIG
@@ -1271,10 +1286,11 @@ conflicts.
 
 %right    OR BARBAR                     (* expr (e || e || e) *)
 %right    AMPERSAND AMPERAMPER          (* expr (e && e && e) *)
-%left     INFIXOP0 LESS GREATER GREATERDOTDOTDOT (* expr (e OP e OP e) *)
+(* Menhir says that it is useless to include LESS_THEN_NOT_SPACE in the following list *)
+%left     INFIXOP0 LESS_THEN_SPACE GREATER GREATERDOTDOTDOT (* expr (e OP e OP e) *)
 %left     LESSDOTDOTGREATER (* expr (e OP e OP e) *)
 %right    INFIXOP1                      (* expr (e OP e OP e) *)
-%right    COLONCOLON                    (* expr (e :: e :: e) *)
+%right    COLONCOLON_3_7                    (* expr (e :: e :: e) *)
 %left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ (* expr (e OP e OP e) *)
 %left     PERCENT INFIXOP3 SLASHGREATER STAR          (* expr (e OP e OP e) *)
 %right    INFIXOP4                      (* expr (e OP e OP e) *)
@@ -1362,7 +1378,8 @@ conflicts.
 
 (* PREFIXOP and BANG precedence *)
 %nonassoc below_DOT_AND_SHARP           (* practically same as below_SHARP but we convey purpose *)
-%nonassoc SHARP                         (* simple_expr/toplevel_directive *)
+%nonassoc SHARP_3_7                         (* simple_expr/toplevel_directive *)
+%nonassoc COLONCOLON_3_8                    (* e::methodA::methodB is (e::methodA)::methodB *)
 %nonassoc below_DOT
 
 (* We need SHARPEQUAL to have lower precedence than `[` to make e.g.
@@ -1429,7 +1446,7 @@ conflicts.
 implementation:
   structure EOF
   {
-    let itms = Reason_version.Ast_nodes.inject_attr_from_version_impl $1 in
+    let itms = Reason_version.Ast_nodes.inject_attr_to_instruct_printing_impl $1 in
     apply_mapper_to_structure itms reason_mapper
   }
 ;
@@ -1437,7 +1454,7 @@ implementation:
 interface:
   signature EOF
   {
-    let itms = Reason_version.Ast_nodes.inject_attr_from_version_intf $1 in
+    let itms = Reason_version.Ast_nodes.inject_attr_to_instruct_printing_intf $1 in
     apply_mapper_to_signature itms reason_mapper
   }
 ;
@@ -2716,18 +2733,26 @@ jsx_arguments:
 ;
 
 jsx_start_tag_and_args:
-  as_loc(LESSIDENT) jsx_arguments
-     { let name = parse_lid $1.txt in
-      (jsx_component {$1 with txt = name} $2, name)
-    }
-  | LESS as_loc(LIDENT) jsx_arguments
-    { let name = parse_lid $2.txt in
+  | LESS_THEN_NOT_SPACE as_loc(LIDENT) jsx_arguments
+    {
+      let name = parse_lid $2.txt in
       (jsx_component {$2 with txt = name} $3, name)
     }
-  | LESS as_loc(mod_ext_longident) jsx_arguments
+  | LESS_THEN_NOT_SPACE as_loc(mod_ext_longident) DOT LIDENT jsx_arguments
+    {
+      if jsx_has_functor_app $2.txt then
+        let name = Longident.parse $4 in
+        (fun _children _loc ->
+          raise_functor_app_with_lident_access (mklocation $startpos($4) $endpos($4))),
+        name
+      else (
+        let name = Ldot($2.txt, $4) in
+        let loc_long_ident = mklocation $startpos($2) $endpos($4) in
+        (jsx_component {loc = loc_long_ident; txt = name} $5, name)
+      )
+    }
+  | LESS_THEN_NOT_SPACE as_loc(mod_ext_longident) jsx_arguments
     { jsx_component $2 $3, $2.txt }
-  | as_loc(mod_ext_lesslongident) jsx_arguments
-    { jsx_component $1 $2, $1.txt }
 ;
 
 jsx_start_tag_and_args_without_leading_less:
@@ -2817,7 +2842,7 @@ jsx_without_leading_less:
       (Nolabel, mkexp_constructor_unit loc loc)
     ] loc
   }
-    | jsx_start_tag_and_args_without_leading_less greater_spread simple_expr_no_call LESSSLASHIDENTGREATER {
+  | jsx_start_tag_and_args_without_leading_less greater_spread simple_expr_no_call LESSSLASHIDENTGREATER {
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
@@ -2834,6 +2859,11 @@ jsx_without_leading_less:
 optional_expr_extension:
   | (* empty *) { fun exp -> exp }
   | item_extension_sugar { fun exp -> expression_extension $1 exp  }
+;
+
+%inline coloncolon:
+  | COLONCOLON_3_7 { $1 }
+  | COLONCOLON_3_8 { $1 }
 ;
 
 (*
@@ -2889,7 +2919,7 @@ mark_position_exp
   | FOR optional_expr_extension LPAREN pattern IN expr direction_flag expr RPAREN
     simple_expr
     { $2 (mkexp (Pexp_for($4, $6, $8, $7, $10))) }
-  | LPAREN COLONCOLON RPAREN LPAREN expr COMMA expr RPAREN
+  | LPAREN coloncolon RPAREN LPAREN expr COMMA expr RPAREN
     { let loc_colon = mklocation $startpos($2) $endpos($2) in
       let loc = mklocation $symbolstartpos $endpos in
       mkexp_cons loc_colon (mkexp ~ghost:true ~loc (Pexp_tuple[$5;$7])) loc
@@ -3006,6 +3036,11 @@ parenthesized_expr:
     filter_raise_spread_syntax msg $2
   };
 
+%inline send:
+ | SHARP_3_7 {$1}
+ | COLONCOLON_3_8 {$1}
+;
+
 %inline bigarray_access:
   DOT LBRACE lseparated_nonempty_list(COMMA, expr) COMMA? RBRACE { $3 }
 
@@ -3117,7 +3152,7 @@ parenthesized_expr:
       let exp = Exp.mk ~loc ~attrs:[] (Pexp_override $4) in
       mkexp (Pexp_open(od, exp))
     }
-  | E SHARP as_loc(label)
+  | E send as_loc(label)
     { mkexp (Pexp_send($1, $3)) }
   | E as_loc(SHARPOP) simple_expr_no_call
     { mkinfixop $1 (mkoperator $2) $3 }
@@ -3711,14 +3746,14 @@ mark_position_pat
 
   | name_tag simple_pattern { mkpat (Ppat_variant($1, Some $2)) }
 
-  | pattern_without_or as_loc(COLONCOLON) pattern_without_or
+  | pattern_without_or as_loc(coloncolon) pattern_without_or
     { syntax_error $2.loc
         ":: is not supported in Reason, please use [hd, ...tl] instead";
       let loc = mklocation $symbolstartpos $endpos in
       mkpat_cons (mkpat ~ghost:true ~loc (Ppat_tuple[$1;$3])) loc
     }
 
-  | LPAREN COLONCOLON RPAREN LPAREN pattern_without_or COMMA pattern_without_or RPAREN
+  | LPAREN coloncolon RPAREN LPAREN pattern_without_or COMMA pattern_without_or RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
       mkpat_cons (mkpat ~ghost:true ~loc (Ppat_tuple[$5;$7])) loc
     }
@@ -3761,6 +3796,10 @@ simple_pattern_ident:
   as_loc(val_ident) { mkpat ~loc:$1.loc (Ppat_var $1) }
 ;
 
+%inline polyvariant_pat:
+  | SHARP_3_7 type_longident { mkpat (Ppat_type ($2)) }
+  | STAR type_longident { mkpat (Ppat_type ($2)) }
+
 simple_pattern_not_ident:
 mark_position_pat
   ( UNDERSCORE
@@ -3777,8 +3816,7 @@ mark_position_pat
     { mkpat (Ppat_construct ($1, None)) }
   | name_tag
     { mkpat (Ppat_variant ($1, None)) }
-  | SHARP type_longident
-    { mkpat (Ppat_type ($2)) }
+  | polyvariant_pat { $1 }
   | LPAREN lseparated_nonempty_list(COMMA, pattern_optional_constraint) COMMA? RPAREN
     { match $2 with
       | [] -> (* This shouldn't be possible *)
@@ -4486,26 +4524,8 @@ non_arrowed_core_type:
   | lseparated_nonempty_list(COMMA, protected_type) COMMA? {$1}
 ;
 
-%inline first_less_than_type_ident:
-  LESSIDENT { Lident $1 }
-
-(* Since the <xyz token is parsed as a single token we need to catch that case here *)
-%inline first_less_than_type_param:
-mark_position_typ
-  (  as_loc(first_less_than_type_ident)
-      { mktyp(Ptyp_constr($1, [])) }
-    | as_loc(first_less_than_type_ident) type_parameters
-      { mktyp(Ptyp_constr($1, $2)) }
-  ) { $1 }
-
 type_parameters:
-  | parenthesized(type_parameter_comma_list) { $1 }
-  | lessthangreaterthanized(type_parameter_comma_list) { $1 }
-  | first_less_than_type_param COMMA? GREATER { [$1] }
-  | first_less_than_type_param COMMA type_parameter_comma_list GREATER
-    {
-      $1 :: $3
-    }
+  | type_param_group(type_parameter_comma_list) { $1 }
 ;
 
 (* "protected" stands for an environment where non-simple grammar
@@ -4532,16 +4552,25 @@ non_arrowed_simple_core_type:
   | mark_position_typ(basic_core_type) { $1 }
 ;
 
+%inline class_type:
+  | SHARP_3_7 as_loc(class_longident) type_parameters
+    { mktyp(Ptyp_class($2, $3)) }
+  | SHARP_3_7 as_loc(class_longident)
+    { mktyp(Ptyp_class($2, [])) }
+  (* TODO: This is a pattern that could auto-detect 3.8+ *)
+  | STAR as_loc(class_longident) type_parameters
+    { mktyp(Ptyp_class($2, $3)) }
+  | STAR as_loc(class_longident)
+    { mktyp(Ptyp_class($2, [])) }
+
+
 basic_core_type:
 mark_position_typ
   ( type_longident type_parameters
     { mktyp(Ptyp_constr($1, $2)) }
-  | SHARP as_loc(class_longident) type_parameters
-    { mktyp(Ptyp_class($2, $3)) }
+  | class_type {$1}
   | QUOTE ident
     { mktyp(Ptyp_var $2) }
-  | SHARP as_loc(class_longident)
-    { mktyp(Ptyp_class($2, [])) }
   | UNDERSCORE
     { mktyp(Ptyp_any) }
   | type_longident
@@ -4733,7 +4762,8 @@ val_ident:
   | MINUS         { "-"  }
   | MINUSDOT      { "-." }
   | STAR              { "*" }
-  | LESS              { "<" }
+  (* Only less followed by some space will count as an infix *)
+  | LESS_THEN_SPACE   { "<" }
   | OR                { "or" }
   | BARBAR            { "||" }
   | AMPERSAND         { "&" }
@@ -4760,10 +4790,12 @@ operator:
   | ANDOP             { $1 }
 ;
 %inline constr_ident:
-  | UIDENT            { $1 }
-  | LBRACKET RBRACKET { "[]" }
-  | LPAREN RPAREN     { "()" }
-  | COLONCOLON        { "::" }
+  | UIDENT                          { $1 }
+  | LBRACKET RBRACKET               { "[]" }
+  | LPAREN LBRACKET RBRACKET RPAREN { "[]" }
+  | LPAREN RPAREN                   { "()" }
+  | coloncolon                      { "::" }
+  | LPAREN coloncolon RPAREN        { "::" }
 (*  | LPAREN COLONCOLON RPAREN { "::" } *)
   | FALSE             { "false" }
   | TRUE              { "true" }
@@ -4799,17 +4831,6 @@ mod_longident:
   | mod_longident DOT UIDENT      { Ldot($1, $3) }
 ;
 
-/*
-mod_less_uident_ext_longident:
-  imod_less_uident_ext_longident { $1 }
-;
-
-%inline imod_less_uident_ext_longident:
-  | LESSUIDENT                    { Lident $1 }
-  | mod_ext_longident DOT UIDENT  { Ldot($1, $3) }
-;
-*/
-
 mod_ext_longident: imod_ext_longident { $1 }
 
 %inline imod_ext_longident:
@@ -4828,31 +4849,6 @@ mod_ext_apply:
     List.fold_left (fun p1 p2 -> Lapply (p1, p2)) $1 $2
   }
 ;
-
-mod_ext_lesslongident: imod_ext_lesslongident { $1 }
-
-%inline imod_ext_lesslongident:
-  | LESSUIDENT                        { Lident $1 }
-  | mod_ext_lesslongident DOT UIDENT  { Ldot($1, $3) }
-  | mod_ext_less_apply                 { $1 }
-;
-
-mod_ext_less_apply:
-  imod_ext_lesslongident
-  parenthesized(lseparated_nonempty_list(COMMA, mod_ext_longident))
-  { if not !Clflags.applicative_functors then (
-      let loc = mklocation $startpos $endpos in
-      raise_error (Applicative_path loc) loc
-    );
-    List.fold_left (fun p1 p2 -> Lapply (p1, p2)) $1 $2
-  }
-;
-
-
-
-
-
-
 
 
 mty_longident:
@@ -4873,7 +4869,7 @@ class_longident:
 (* Toplevel directives *)
 
 toplevel_directive:
-  SHARP as_loc(ident) embedded
+  SHARP_3_7 as_loc(ident) embedded
           ( (* empty *)   { None }
           | STRING        { let (s, _, _) = $1 in Some(Pdir_string s) }
           | INT           { let (n, m) = $1 in Some(Pdir_int (n, m)) }
@@ -4902,7 +4898,11 @@ toplevel_directive:
 
 opt_LET_MODULE: MODULE { () } | LET MODULE { () };
 
-%inline name_tag: NAMETAG { $1 };
+%inline name_tag:
+  | NAMETAG { $1 }
+  | SHARP_3_8 LIDENT { $2 }
+  | SHARP_3_8 UIDENT { $2 }
+;
 
 %inline label: LIDENT { $1 };
 
@@ -5022,7 +5022,7 @@ attribute:
       (* Just ignore the attribute in the AST at this point, but record its version,
        * then we wil add it back at the "top" of the file. *)
       let major, minor = $1 in
-      Reason_version.set_explicit (major, minor);
+      Reason_version.record_explicit_version_in_ast_if_not_yet major minor;
       let attr_payload = Reason_version.Ast_nodes.mk_version_attr_payload major minor in
       let loc = mklocation $symbolstartpos $endpos in
       { attr_name = {loc; txt="reason.version"};
@@ -5188,8 +5188,15 @@ lseparated_nonempty_list_aux(sep, X):
 
 %inline parenthesized(X): delimited(LPAREN, X, RPAREN) { $1 };
 
+%inline either_kind_of_less:
+      | LESS_THEN_NOT_SPACE { $1 }
+      | LESS_THEN_SPACE { $1 }
+
 (*Less than followed by one or more X, then greater than *)
-%inline lessthangreaterthanized(X): delimited(LESS, X, GREATER) { $1 };
+%inline lessthangreaterthanized(X): delimited(either_kind_of_less, X, GREATER) {
+  Reason_version.refine_inferred Reason_version.AngleBracketTypes;
+  $1
+};
 
 (*Less than followed by one or more X, then greater than *)
 %inline loptioninline(X): ioption(X) { match $1 with None -> [] | Some x -> x};

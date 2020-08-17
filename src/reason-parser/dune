@@ -88,7 +88,7 @@
  (public_name reason)
  (wrapped false)
  (flags
-  (:standard -w -9-52 -safe-string))
+  (:standard -short-paths -w -9-52 -safe-string))
  (modules ocaml_util reason_syntax_util reason_comment reason_attributes
    reason_layout reason_heuristics reason_location reason_toolchain_conf
    reason_toolchain_reason reason_toolchain_ocaml reason_toolchain
