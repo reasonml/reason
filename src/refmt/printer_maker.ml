@@ -1,4 +1,4 @@
-open Migrate_parsetree
+open Reason_migrate_parsetree
 
 type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason | `Auto ]
 type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]

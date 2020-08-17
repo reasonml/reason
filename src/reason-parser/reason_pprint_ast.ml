@@ -48,7 +48,7 @@
 
 module Easy_format = Vendored_easy_format
 
-open Migrate_parsetree
+open Reason_migrate_parsetree
 open Ast_408
 open Asttypes
 open Location
@@ -2029,13 +2029,6 @@ let constant ?raw_literal ?(parens=true) ppf = function
   | Pconst_float (i, Some m) ->
     paren (parens && i.[0] = '-')
       (fun ppf (i,m) -> Format.fprintf ppf "%s%c" i m) ppf (i,m)
-
-let is_punned_labelled_expression e lbl = match e.pexp_desc with
-  | Pexp_ident { txt }
-  | Pexp_constraint ({pexp_desc = Pexp_ident { txt }}, _)
-  | Pexp_coerce ({pexp_desc = Pexp_ident { txt }}, _, _)
-    -> txt = Longident.parse lbl
-  | _ -> false
 
 let is_punned_labelled_pattern_no_attrs p lbl = match p.ppat_attributes, p.ppat_desc with
   | _::_, _ -> false
@@ -4524,8 +4517,7 @@ let printer = object(self:'self)
           expr
       in
       makeList ~break:Never [atom "..."; childLayout]
-
-  (**
+  (*
         How JSX is formatted/wrapped. We want the attributes to wrap independently
         of children.
 
@@ -4558,10 +4550,11 @@ let printer = object(self:'self)
     let self = self#inline_braces in
     let rec processArguments arguments processedAttrs children =
       match arguments with
+
       | (Labelled "children", {pexp_desc = Pexp_construct (_, None)}) :: tail ->
         processArguments tail processedAttrs None
       | (Labelled "children", (
-          {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple _components})} as arg
+          {pexp_desc = Pexp_construct ({txt = Lident"::"}, Some {pexp_desc = Pexp_tuple _})} as arg
           )
         ) :: tail ->
         (match self#formatJsxChildrenNonSpread arg [] with
@@ -7980,9 +7973,9 @@ let printer = object(self:'self)
     let term = self#unparseProtectedExpr e in
     let param = match (l, e) with
       | (Nolabel, _) -> term
-      | (Labelled lbl, _) when is_punned_labelled_expression e lbl ->
+      | (Labelled lbl, _) when Reason_heuristics.is_punned_labelled_expression e lbl ->
         makeList [atom namedArgSym; term]
-      | (Optional lbl, _) when is_punned_labelled_expression e lbl ->
+      | (Optional lbl, _) when Reason_heuristics.is_punned_labelled_expression e lbl ->
         makeList [atom namedArgSym; label term (atom "?")]
       | (Labelled lbl, _) ->
         label (atom (namedArgSym ^ lbl ^ "=")) term

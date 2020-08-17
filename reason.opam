@@ -11,14 +11,14 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml"         {>= "4.02" & < "4.11"}
+  "ocaml"         {>= "4.02" & < "4.12"}
   "dune"          {>= "1.4"}
   "ocamlfind"     {build}
   "menhir"        {>= "20170418"}
-  "merlin-extend" {>= "0.4"}
+  "merlin-extend" {>= "0.6"}
   "fix"
   "result"
-  "ocaml-migrate-parsetree"
+  "ocaml-migrate-parsetree" {< "2.0.0"}
 ]
 synopsis: "Reason: Syntax & Toolchain for OCaml"
 description: """

@@ -27,7 +27,7 @@ depends: [
   "cppo" {build}
   "dune"
   "fpath"
-  "ocaml" {>= "4.02.0"}
+  "ocaml" {>= "4.02.0" & < "4.12"}
   "result"
   "tyxml" {>= "4.3.0"}
 

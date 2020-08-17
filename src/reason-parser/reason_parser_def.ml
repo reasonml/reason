@@ -1,4 +1,4 @@
-open Migrate_parsetree.OCaml_408.Ast
+open Reason_migrate_parsetree.OCaml_408.Ast
 
 type labelled_parameter =
   | Term of Asttypes.arg_label * Parsetree.expression option * Parsetree.pattern

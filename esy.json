@@ -2,17 +2,17 @@
   "name": "reason-cli",
   "notes": "This is just the dev package config (also built as globally installable reason-cli). See ./refmt.json ./rtop.json for individual release package configs.",
   "license": "MIT",
-  "version": "3.6.0",
+  "version": "3.6.2",
   "dependencies": {
     "ocaml": " >= 4.2.0 < 4.11.0",
     "@opam/fix": "*",
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
     "@opam/utop": " >= 1.17.0 < 2.5.0",
-    "@opam/merlin-extend": " >= 0.4",
+    "@opam/merlin-extend": " >= 0.6",
     "@opam/result": "*",
-    "@opam/ocaml-migrate-parsetree": "*",
-    "@opam/dune": "< 2.0.0"
+    "@opam/dune": "< 2.0.0",
+    "@opam/ppx_derivers": "< 2.0.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",
@@ -87,7 +87,6 @@
         "@opam/menhir",
         "@opam/mmap",
         "@opam/ocplib-endian",
-        "@opam/ocaml-migrate-parsetree",
         "@opam/ocamlfind",
         "@opam/ppx_derivers",
         "@opam/react",

@@ -1,0 +1,16 @@
+(executable
+ (name ppx)
+ (flags :standard -linkall)
+ (libraries ppx1 ppx2))
+
+(rule
+ (with-stdout-to null.output (run ./ppx.exe --null)))
+
+(rule
+ (with-stdout-to null.expected (echo "")))
+
+(alias
+ (name   runtest)
+ (deps   null.expected null.output)
+ (action (run diff -u null.expected null.output)))
+

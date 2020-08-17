@@ -1,0 +1,34 @@
+commit 3f10a16153308f967149917585d2bc0b9c06492c
+Author: Anil Madhavapeddy <anil@recoil.org>
+Date:   Sun Jun 21 18:40:27 2020 +0100
+
+    Add `-fcommon` unconditionally to CFLAGS to fix gcc10 build
+    
+    Signed-off-by: Anil Madhavapeddy <anil@recoil.org>
+
+diff --git a/configure b/configure
+index 9a78a4554..0c54b560b 100755
+--- a/configure
++++ b/configure
+@@ -12424,7 +12424,7 @@ $as_echo "$as_me: WARNING: Consider using GCC version 4.2 or above." >&2;};
+ -fno-builtin-memcmp";
+       internal_cflags="$gcc_warnings" ;; #(
+   gcc-*) :
+-    common_cflags="-O2 -fno-strict-aliasing -fwrapv";
++    common_cflags="-O2 -fno-strict-aliasing -fwrapv -fcommon";
+       internal_cflags="$gcc_warnings" ;; #(
+   msvc-*) :
+     common_cflags="-nologo -O2 -Gy- -MD"
+diff --git a/configure.ac b/configure.ac
+index f5d8a2687..775e0e2db 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -540,7 +540,7 @@ AS_CASE([$host],
+ -fno-builtin-memcmp";
+       internal_cflags="$gcc_warnings"],
+     [gcc-*],
+-      [common_cflags="-O2 -fno-strict-aliasing -fwrapv";
++      [common_cflags="-O2 -fno-strict-aliasing -fwrapv -fcommon";
+       internal_cflags="$gcc_warnings"],
+     [msvc-*],
+       [common_cflags="-nologo -O2 -Gy- -MD"

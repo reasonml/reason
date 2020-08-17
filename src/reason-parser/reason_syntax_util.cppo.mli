@@ -13,7 +13,7 @@
   BuckleScript; ping @chenglou and a few others and we'll keep them synced up by
   patching the right parts, through the power of types(tm)
 *)
-open Migrate_parsetree.Ast_408
+open Reason_migrate_parsetree.Ast_408
 
 val ml_to_reason_swap : string -> string
 
@@ -99,3 +99,5 @@ module Clflags : sig
   val fast : bool ref
 #endif
 end
+
+val parse_lid : string -> Longident.t

@@ -48,7 +48,7 @@
 (* The parser definition *)
 
 %{
-open Migrate_parsetree
+open Reason_migrate_parsetree
 open OCaml_408.Ast
 open Reason_syntax_util
 open Location
@@ -431,29 +431,8 @@ let makeFrag loc body =
 
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
-
 let mkstrexp e attrs =
-  match e with
-  | ({pexp_desc = Pexp_apply (({pexp_attributes} as e1), args) } as eRewrite)
-      when let f = (List.filter (function
-        | { attr_name = {txt = "bs"}; _} -> true
-          | _ -> false ) e.pexp_attributes)  in
-      List.length f > 0
-    ->
-      let appExprAttrs = List.filter (function
-          | { attr_name = {txt = "bs"}; attr_payload = PStr []; _ } -> false
-          | _ -> true ) pexp_attributes in
-      let strEvalAttrs = (uncurry_payload e1.pexp_loc)::(List.filter (function
-          | { attr_name = {txt = "bs"}; attr_payload = PStr []} -> false
-          | _ -> true ) attrs) in
-      let e = {
-        eRewrite with
-        pexp_desc = (Pexp_apply(e1, args));
-        pexp_attributes = appExprAttrs
-      } in
-      { pstr_desc = Pstr_eval (e, strEvalAttrs); pstr_loc = e.pexp_loc }
-  | _ ->
-      { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
+  { pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
 let ghexp_constraint loc e (t1, t2) =
   match t1, t2 with
@@ -1095,7 +1074,7 @@ let add_brace_attr expr =
 
 %[@recover.prelude
 
-  open Migrate_parsetree.OCaml_408.Ast
+  open Reason_migrate_parsetree.OCaml_408.Ast
   open Parsetree
   open Ast_helper
 
@@ -1392,19 +1371,19 @@ conflicts.
 (* Entry points *)
 
 %start implementation                   (* for implementation files *)
-%type <Migrate_parsetree.Ast_408.Parsetree.structure> implementation
+%type <Reason_migrate_parsetree.Ast_408.Parsetree.structure> implementation
 %start interface                        (* for interface files *)
-%type <Migrate_parsetree.Ast_408.Parsetree.signature> interface
+%type <Reason_migrate_parsetree.Ast_408.Parsetree.signature> interface
 %start toplevel_phrase                  (* for interactive use *)
-%type <Migrate_parsetree.Ast_408.Parsetree.toplevel_phrase> toplevel_phrase
+%type <Reason_migrate_parsetree.Ast_408.Parsetree.toplevel_phrase> toplevel_phrase
 %start use_file                         (* for the #use directive *)
-%type <Migrate_parsetree.Ast_408.Parsetree.toplevel_phrase list> use_file
+%type <Reason_migrate_parsetree.Ast_408.Parsetree.toplevel_phrase list> use_file
 %start parse_core_type
-%type <Migrate_parsetree.Ast_408.Parsetree.core_type> parse_core_type
+%type <Reason_migrate_parsetree.Ast_408.Parsetree.core_type> parse_core_type
 %start parse_expression
-%type <Migrate_parsetree.Ast_408.Parsetree.expression> parse_expression
+%type <Reason_migrate_parsetree.Ast_408.Parsetree.expression> parse_expression
 %start parse_pattern
-%type <Migrate_parsetree.Ast_408.Parsetree.pattern> parse_pattern
+%type <Reason_migrate_parsetree.Ast_408.Parsetree.pattern> parse_pattern
 
 (* Instead of reporting an error directly, productions specified
  * below will be reduced first and popped up in the stack to a higher
@@ -2732,11 +2711,11 @@ jsx_arguments:
 
 jsx_start_tag_and_args:
   as_loc(LESSIDENT) jsx_arguments
-     { let name = Longident.parse $1.txt in
+     { let name = parse_lid $1.txt in
       (jsx_component {$1 with txt = name} $2, name)
     }
   | LESS as_loc(LIDENT) jsx_arguments
-    { let name = Longident.parse $2.txt in
+    { let name = parse_lid $2.txt in
       (jsx_component {$2 with txt = name} $3, name)
     }
   | LESS as_loc(mod_ext_longident) jsx_arguments
@@ -2783,7 +2762,7 @@ jsx:
     { let (component, start) = $1 in
       let loc = mklocation $startpos($4) $endpos in
       (* TODO: Make this tag check simply a warning *)
-      let endName = Longident.parse $4 in
+      let endName = parse_lid $4 in
       let _ = ensureTagsAreEqual start endName loc in
       let siblings = if List.length $3 > 0 then $3 else [] in
       component [
@@ -2796,7 +2775,7 @@ jsx:
     { let (component, start) = $1 in
       let loc = mklocation $symbolstartpos $endpos in
       (* TODO: Make this tag check simply a warning *)
-      let endName = Longident.parse $4 in
+      let endName = parse_lid $4 in
       let _ = ensureTagsAreEqual start endName loc in
       let child = $3 in
       component [
@@ -2824,7 +2803,7 @@ jsx_without_leading_less:
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
-    let endName = Longident.parse $4 in
+    let endName = parse_lid $4 in
     let _ = ensureTagsAreEqual start endName loc in
     let siblings = if List.length $3 > 0 then $3 else [] in
     component [
@@ -2836,7 +2815,7 @@ jsx_without_leading_less:
     let (component, start) = $1 in
     let loc = mklocation $symbolstartpos $endpos in
     (* TODO: Make this tag check simply a warning *)
-    let endName = Longident.parse $4 in
+    let endName = parse_lid $4 in
     let _ = ensureTagsAreEqual start endName loc in
     let child = $3 in
     component [

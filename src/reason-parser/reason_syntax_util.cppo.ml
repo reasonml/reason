@@ -15,7 +15,7 @@
 *)
 
 #ifdef BS_NO_COMPILER_PATCH
-open Migrate_parsetree
+open Reason_migrate_parsetree
 open Ast_408
 #endif
 
@@ -756,3 +756,12 @@ module Clflags = struct
   let fast = unsafe
 #endif
 end
+
+let parse_lid s =
+#if OCAML_VERSION >= (4, 6, 0)
+  match Longident.unflatten (String.split_on_char '.' s) with
+  | Some lid -> lid
+  | None -> failwith (Format.asprintf "parse_lid: unable to parse '%s' to longident" s)
+#else
+ Longident.parse s
+#endif

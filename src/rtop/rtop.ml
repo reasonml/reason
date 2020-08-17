@@ -1,4 +1,4 @@
-let () = UTop.require ["ocaml-migrate-parsetree"; "menhirLib";]
+let () = UTop.require ["reason.ocaml-migrate-parsetree"; "menhirLib";]
 
 let () = try Topdirs.dir_directory (Sys.getenv "OCAML_TOPLEVEL_PATH") with | Not_found -> ();;
 
