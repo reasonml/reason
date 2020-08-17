@@ -1,0 +1,17 @@
+(executable
+ (name driver)
+ (libraries ocaml-migrate-parsetree)
+ (link_flags -linkall))
+
+(rule
+ (with-stdout-to driver.ml
+  (echo "Migrate_parsetree.Driver.run_main ()")))
+
+(rule
+ (with-stdout-to file.blah
+  (echo "let x = 42")))
+
+(alias
+ (name runtest)
+ (action (ignore-stdout
+          (run ./driver.exe --impl %{dep:file.blah}))))

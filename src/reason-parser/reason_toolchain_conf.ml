@@ -1,4 +1,4 @@
-open Migrate_parsetree
+open Reason_migrate_parsetree
 include Ast_408
 
 module From_current = Convert(OCaml_current)(OCaml_408)

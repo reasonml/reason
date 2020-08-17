@@ -1,0 +1,11 @@
+(lang dune 1.0)
+
+;; This file is used by `make all-supported-ocaml-versions`
+(context (opam (switch 4.02.3)))
+(context (opam (switch 4.03.0)))
+(context (opam (switch 4.04.2)))
+(context (opam (switch 4.05.0)))
+(context (opam (switch 4.06.1)))
+(context (opam (switch 4.07.1)))
+(context (opam (switch 4.08.1)))
+;; (context (opam (switch ocaml-variants.4.09.0+beta1)))

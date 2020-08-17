@@ -1,0 +1,4 @@
+(lang dune 1.9)
+(name ocaml-migrate-parsetree)
+(version v1.7.3)
+(allow_approximate_merlin)

@@ -42,7 +42,7 @@
 *)
 
 (* #if defined BS_NO_COMPILER_PATCH then *)
-open Migrate_parsetree
+open Reason_migrate_parsetree
 open Ast_408
 module To_current = Convert(OCaml_408)(OCaml_current)
 

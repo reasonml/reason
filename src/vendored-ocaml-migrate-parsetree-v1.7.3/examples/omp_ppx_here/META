@@ -1,0 +1,8 @@
+description = "ocaml-migrate-parsetree example: replace __HERE__ by location"
+version = "1.0"
+requires(custom_ppx) = "ocaml-migrate-parsetree"
+ppx(-custom_ppx,-ppx_driver) = "./ppx_here --as-ppx"
+archive(byte,ppx_driver) = "ppx_here.cmo"
+archive(native,ppx_driver) = "ppx_here.cmx"
+plugin(byte,ppx_driver) = "ppx_here.cma"
+plugin(native,ppx_driver) = "ppx_here.cmxs"

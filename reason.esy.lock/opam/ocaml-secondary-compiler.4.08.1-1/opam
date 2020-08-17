@@ -1,0 +1,51 @@
+opam-version: "2.0"
+synopsis: "OCaml 4.08.1 Secondary Switch Compiler"
+maintainer: "platform@lists.ocaml.org"
+authors: "Xavier Leroy and many contributors"
+homepage: "https://ocaml.org"
+bug-reports: "https://github.com/ocaml/ocaml/issues"
+dev-repo: "git://github.com/ocaml/ocaml"
+depends: "ocaml" {< "4.08.0" | >= "4.09~"}
+build: [
+  [
+    "./configure"
+      "--prefix=%{_:share}%"
+      "--libdir=%{_:share}%/lib"
+      "--disable-debugger"
+      "--disable-installing-bytecode-programs"
+      "--disable-debug-runtime"
+      "--disable-instrumented-runtime"
+      "--disable-graph-lib"
+      "CC=cc" {os = "openbsd" | os = "freebsd" | os = "macos"}
+      "ASPP=cc -c" {os = "openbsd" | os = "freebsd" | os = "macos"}
+  ]
+  [make "-j%{jobs}%" {os != "cygwin"} "world.opt"]
+]
+install: [make "install"]
+url {
+  src: "https://github.com/ocaml/ocaml/archive/4.08.1.tar.gz"
+  checksum: "md5=723b6bfe8cf5abcbccc6911143f71055"
+}
+extra-files: [
+  ["0001-Don-t-build-manpages-for-stdlib-docs.patch" "md5=6caa580fe6031c109d2dc96b19bd40cd"]
+  ["0001-Fix-failure-to-install-tools-links.patch" "md5=e973762c0b3d62b0b25a26468086fae3"]
+  ["fix-gcc10.patch" "md5=17ecd696a8f5647a4c543280599f6974"]
+]
+patches: [
+  "0001-Don-t-build-manpages-for-stdlib-docs.patch"
+  "0001-Fix-failure-to-install-tools-links.patch"
+  "fix-gcc10.patch"
+]
+
+post-messages: [
+  "A failure in the middle of the build may be caused by build parallelism
+   (enabled by default).
+   Please file a bug report at https://github.com/ocaml/ocaml/issues"
+  {failure & jobs > 1 & os != "cygwin"}
+  "You can try installing again including --jobs=1
+   to force a sequential build instead."
+  {failure & jobs > 1 & os != "cygwin" & opam-version >= "2.0.5"}
+]
+description: "Installs an additional compiler to the opam switch in
+%{_:share}%/ocaml-secondary-compiler which can be accessed using
+`ocamlfind -toolchain secondary`."

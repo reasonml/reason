@@ -11,8 +11,8 @@
     "@opam/utop": " >= 1.17.0 < 2.5.0",
     "@opam/merlin-extend": " >= 0.6",
     "@opam/result": "*",
-    "@opam/ocaml-migrate-parsetree": " < 2.0.0",
-    "@opam/dune": "< 2.0.0"
+    "@opam/dune": "< 2.0.0",
+    "@opam/ppx_derivers": "< 2.0.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",
@@ -69,7 +69,6 @@
         "@opam/menhir",
         "@opam/mmap",
         "@opam/ocplib-endian",
-        "@opam/ocaml-migrate-parsetree",
         "@opam/ocamlfind",
         "@opam/ppx_derivers",
         "@opam/react",

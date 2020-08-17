@@ -1,0 +1,16 @@
+#! /bin/sh
+
+# clone-flexdll
+#
+# Brings in flexdll, if necessary
+
+if [ -d "flexdll" ] && [ -f "flexdll/flexdll.c" ]; then
+    echo "[Flexdll] Already present, no need to clone."
+else
+    echo "[Flexdll] Cloning..."
+    git clone https://github.com/esy-ocaml/flexdll.git
+    cd flexdll
+    git checkout f84baaeae463f96f9582883a9cfb7dd1096757ff
+    cd ..
+    echo "[Flexdll] Clone successful!"
+fi

@@ -1,0 +1,8 @@
+description = "Parse strings into fragment of the AST"
+version = "1.0"
+requires(custom_ppx) = "ocaml-migrate-parsetree"
+ppx(-custom_ppx,-ppx_driver) = "./ppx_parse --as-ppx"
+archive(byte,ppx_driver) = "ppx_parse.cmo"
+archive(native,ppx_driver) = "ppx_parse.cmx"
+plugin(byte,ppx_driver) = "ppx_parse.cma"
+plugin(native,ppx_driver) = "ppx_parse.cmxs"

@@ -1,0 +1,6 @@
+(executables
+ (names add_special_comments pp gencopy)
+ (libraries compiler-libs.common compiler-libs.bytecomp)
+ (flags :standard -w -3))
+
+(ocamllex pp_rewrite)
