@@ -9,17 +9,19 @@
  (libraries compiler-libs.common result ppx_derivers)
  (modules :standard \ migrate_parsetree_driver_main)
  (preprocess (action (run %{exe:../tools/pp.exe} %{read:ast-version} %{input-file})))
- (ppx.driver
-  (main       Migrate_parsetree.Driver.run_main)
-  (flags      --dump-ast)
-  (lint_flags --null)))
+ ; (ppx.driver
+ ;  (main       Migrate_parsetree.Driver.run_main)
+ ;  (flags      --dump-ast)
+ ;  (lint_flags --null))
+ )
 
-(library
- (name migrate_parsetree_driver_main)
- (public_name reason.ocaml-migrate-parsetree.driver-main)
- (modules migrate_parsetree_driver_main)
- (library_flags -linkall)
- (libraries reason_migrate_parsetree))
+; Not needed for reason repo (vendored)
+; (library
+;  (name reason.migrate_parsetree_driver_main)
+;  (public_name reason.ocaml-migrate-parsetree.driver-main)
+;  (modules migrate_parsetree_driver_main)
+;  (library_flags -linkall)
+;  (libraries reason_migrate_parsetree))
 
 (rule
  (copy#

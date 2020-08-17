@@ -1,6 +1,6 @@
 {
   "name": "@esy-ocaml/reason",
-  "version": "3.6.1",
+  "version": "3.6.2",
   "license": "MIT",
   "description": "Native Compiler Support for Reason: Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems",
   "repository": {
