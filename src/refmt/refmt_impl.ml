@@ -29,6 +29,8 @@ let refmt
     print_width
     heuristics_file
     in_place
+    parse_version
+    promote_version
     input_files
   =
   let refmt_single input_file =
@@ -59,6 +61,8 @@ let refmt
       | (true,    _) -> Some input_file
       | (false,   _) -> None
     in
+    Reason_version.set_explicit_parse_version parse_version.Reason_version.major parse_version.minor;
+    Reason_version.set_explicit_promote_version promote_version.Reason_version.major promote_version.minor;
     let (module Printer : Printer_maker.PRINTER) =
       if interface then (module Reason_interface_printer)
       else (module Reason_implementation_printer)
@@ -103,8 +107,7 @@ let refmt
 let top_level_info =
   let doc = "Reason's Parser & Pretty-printer" in
   let man = [`S "DESCRIPTION"; `P "refmt lets you format Reason files, parse them, and convert them between OCaml syntax and Reason syntax."] in
-let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
-  in
+  let version = "Reason " ^ Reason_version.package_version_string in
   Term.info "refmt" ~version ~doc ~man
 
 let refmt_t =
@@ -118,6 +121,8 @@ let refmt_t =
               $ print_width
               $ heuristics_file
               $ in_place
+              $ parse_version
+              $ promote_version
               $ input
 
 let () =

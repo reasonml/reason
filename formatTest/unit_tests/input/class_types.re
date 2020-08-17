@@ -35,3 +35,18 @@ class type t = {
 class type t = {
   open M;
 };
+
+class intTuplesTuples = (
+  class tupleClass(
+    (#tupleClass(int,int)),
+    (#tupleClass(int,int))
+  )
+);
+
+
+class intTuplesTuples = (
+  class tupleClass(
+    (*tupleClass(int,int)),
+    (*tupleClass(int,int))
+  )
+);

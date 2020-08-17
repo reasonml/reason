@@ -163,8 +163,14 @@ let parenthesize_if_neg ppf fmt v isneg =
 
 
 let print_out_value ppf tree =
-  let rec print_tree_1 ppf =
-    function
+  let rec print_tree_1 ppf outcome =
+    let tag =
+      if Reason_version.print_supports Reason_version.HashVariantsColonMethodCallStarClassTypes then
+        "#"
+      else
+        "`"
+    in
+    match outcome with
     (* for the next few cases, please see context at https://github.com/facebook/reason/pull/1516#issuecomment-337069150 *)
     | Oval_constr (name, [Oval_constr ((Oide_ident { printed_name = "()" }), [])]) ->
       (* for normal variants, but sugar Foo(()) to Foo() *)
@@ -177,10 +183,10 @@ let print_out_value ppf tree =
             (print_tree_list print_tree_1 ",") params
     | Oval_variant (name, Some (Oval_constr ((Oide_ident { printed_name = "()" }), []))) ->
       (* for polymorphic variants, but sugar `foo(()) to `foo() *)
-      fprintf ppf "@[<2>`%s()@]" name
+      fprintf ppf "@[<2>%s%s()@]" tag name
     | Oval_variant (name, Some param) ->
       (* for polymorphic variants *)
-      fprintf ppf "@[<2>`%s(%a)@]" name print_constr_param param
+      fprintf ppf "@[<2>%s%s(%a)@]" tag name print_constr_param param
     | tree -> print_simple_tree ppf tree
   and print_constr_param ppf = function
     | Oval_int i -> parenthesize_if_neg ppf "%i" i (i < 0)
@@ -206,7 +212,13 @@ let print_out_value ppf tree =
     | Oval_array tl ->
         fprintf ppf "@[<2>[|%a|]@]" (print_tree_list print_tree_1 ",") tl
     | Oval_constr (name, []) -> print_ident ppf name
-    | Oval_variant (name, None) -> fprintf ppf "`%s" name
+    | Oval_variant (name, None) ->
+        let opn =
+          if Reason_version.print_supports
+            Reason_version.HashVariantsColonMethodCallStarClassTypes then "#"
+          else "`"
+        in
+        fprintf ppf "%s%s" opn name
     | Oval_stuff s -> pp_print_string ppf s
     | Oval_record fel ->
         fprintf ppf "@[<1>{%a}@]" (cautious (print_fields true)) fel
@@ -249,8 +261,12 @@ let rec print_list pr sep ppf =
   | [a] -> pr ppf a
   | a :: l -> pr ppf a; sep ppf; print_list pr sep ppf l
 
-let pr_present =
-  print_list (fun ppf s -> fprintf ppf "`%s" s) (fun ppf -> fprintf ppf "@ ")
+let pr_present () =
+  if Reason_version.print_supports
+    Reason_version.HashVariantsColonMethodCallStarClassTypes then
+    print_list (fun ppf s -> fprintf ppf "#%s" s) (fun ppf -> fprintf ppf "@ ")
+  else
+    print_list (fun ppf s -> fprintf ppf "`%s" s) (fun ppf -> fprintf ppf "@ ")
 
 let pr_vars =
   print_list (fun ppf s -> fprintf ppf "'%s" s) (fun ppf -> fprintf ppf "@ ")
@@ -266,8 +282,7 @@ let get_label lbl =
     Optional (String.sub lbl 1 @@ String.length lbl - 1)
   else Labeled lbl
 
-let rec print_out_type ppf =
-  function
+let rec print_out_type ppf outcome = match outcome with
   | Otyp_alias (ty, s) ->
       fprintf ppf "@[%a@ as '%s@]" print_out_type ty s
   | Otyp_poly (sl, ty) ->
@@ -305,7 +320,7 @@ and print_out_type_1 ~uncurried ppf =
       in
       pp_open_box ppf 0;
       let (args, result) = collect_args [] x  in
-      let should_wrap_with_parens =
+      let should_wrap =
         (* uncurried arguments are always wrapped in parens *)
         if uncurried then true
         else match args with
@@ -315,10 +330,15 @@ and print_out_type_1 ~uncurried ppf =
         | ["", _] -> false
         | _ -> true
       in
-      if should_wrap_with_parens then pp_print_string ppf "(";
+
+      let opn, close =
+        if Reason_version.print_supports AngleBracketTypes then "<", ">"
+        else "(", ")"
+      in
+      if should_wrap then pp_print_string ppf opn;
       if uncurried then fprintf ppf ".@ ";
       print_list print_arg (fun ppf -> fprintf ppf ",@ ") ppf args;
-      if should_wrap_with_parens then pp_print_string ppf ")";
+      if should_wrap then pp_print_string ppf close;
 
       pp_print_string ppf " =>";
       pp_print_space ppf ();
@@ -442,7 +462,7 @@ and print_simple_out_type ppf =
       let print_present ppf =
         function
           None | Some [] -> ()
-        | Some l -> fprintf ppf "@;<1 -2>> @[<hov>%a@]" pr_present l
+        | Some l -> fprintf ppf "@;<1 -2>> @[<hov>%a@]" (pr_present ()) l
       in
       let print_fields ppf =
         function
@@ -490,13 +510,20 @@ and print_row_field ppf (l, opt_amp, tyl) =
   let pr_of ppf =
     if opt_amp then fprintf ppf " &@ "
     else fprintf ppf "" in
+  let tag =
+    if Reason_version.print_supports Reason_version.HashVariantsColonMethodCallStarClassTypes then
+      "#"
+    else
+      "`"
+  in
   let parens = match tyl with
     | [ (Otyp_tuple _) ] -> false (* tuples already have parentheses *)
     (* [< `Ok(string & int) ] ----> string & int
      * [< `Ok(string) ] -----> string *)
     | _::_ -> true
     | _ -> false in
-  fprintf ppf "@[<hv 2>`%s%t%s%a%s@]"
+  fprintf ppf "@[<hv 2>%s%s%t%s%a%s@]"
+    tag
     l
     pr_of
     (if parens then "(" else "")
@@ -516,19 +543,23 @@ and print_out_wrap_type ppf =
   | (Otyp_constr (_, _::_)) as ty ->
       print_out_type ppf ty
   | ty -> print_simple_out_type ppf ty
-and print_typargs ppf =
-  function
-    [] -> ()
+and print_typargs ppf args =
+  let opn, close =
+    if Reason_version.print_supports AngleBracketTypes then "<", ">"
+    else "(", ")"
+  in
+  match args with
+  |  [] -> ()
   | [ty1] ->
-      pp_print_string ppf "(";
+      pp_print_string ppf opn;
       print_out_wrap_type ppf ty1;
-      pp_print_string ppf ")"
+      pp_print_string ppf close
   | tyl ->
-      pp_print_string ppf "(";
+      pp_print_string ppf opn;
       pp_open_box ppf 1;
       print_typlist print_out_wrap_type "," ppf tyl;
       pp_close_box ppf ();
-      pp_print_string ppf ")"
+      pp_print_string ppf close
 
 let out_type = ref print_out_type
 
@@ -736,14 +767,19 @@ and print_out_type_decl kwd ppf td =
       td.otype_cstrs
   in
   let type_defined ppf =
+    let opn, close =
+      if Reason_version.print_supports AngleBracketTypes then "<", ">" else "(", ")"
+    in
     match td.otype_params with
       [] -> pp_print_string ppf td.otype_name
-    | [param] -> fprintf ppf "@[%s(%a)@]" td.otype_name type_parameter param
+    | [param] -> fprintf ppf "@[%s%s%a%s@]" td.otype_name opn type_parameter param close
     | _ ->
-        fprintf ppf "@[%s(@[%a@])@]"
+        fprintf ppf "@[%s%s@[%a@]%s@]"
           td.otype_name
+          opn
           (print_list type_parameter (fun ppf -> fprintf ppf ",@ "))
           td.otype_params
+          close
   in
   let print_manifest ppf =
     function

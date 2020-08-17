@@ -1,4 +1,5 @@
-class type _module ('provider_impl) = {};
+[@reason.version 3.7];
+class type _module('provider_impl) = {};
 type t;
 class type bzz = {
   inherit _module(t);
@@ -36,3 +37,15 @@ class type t = {
 class type t = {
   open M;
 };
+
+class intTuplesTuples =
+  class tupleClass(
+    #tupleClass(int, int),
+    #tupleClass(int, int),
+  );
+
+class intTuplesTuples =
+  class tupleClass(
+    #tupleClass(int, int),
+    #tupleClass(int, int),
+  );

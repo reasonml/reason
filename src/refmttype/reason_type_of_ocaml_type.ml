@@ -5,13 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-
-let () = Reason_pprint_ast.configure
-  (* This can be made pluggable in the future. *)
-  ~width:80
-  ~assumeExplicitArity:false
-  ~constructorLists:[]
-
 let reasonFormatter = Reason_pprint_ast.createFormatter ()
 
 (* "Why would you ever pass in some of these to print into Reason?"

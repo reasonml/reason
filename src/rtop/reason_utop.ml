@@ -1,5 +1,5 @@
 (**
- * Some of this was coppied from @whitequark's m17n project.
+ * Some of this was coppied from whitequark's m17n project.
  *)
 (*
  * Portions Copyright (c) 2015-present, Facebook, Inc.
