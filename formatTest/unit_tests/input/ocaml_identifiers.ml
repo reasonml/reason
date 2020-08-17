@@ -1,4 +1,5 @@
 (* Type names (supported with PR#2342) *)
+[@@@reason.version 3.7]
 module T = struct
   type pub = unit
 end

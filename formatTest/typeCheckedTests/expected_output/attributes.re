@@ -9,6 +9,7 @@
  */;
 
 /**Floating comment text should be removed*/;
+[@reason.version 3.7];
 
 /**
  * Core language features:
