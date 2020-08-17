@@ -3,4 +3,4 @@
  (public_name reactjs_jsx_ppx_v2)
  (package reason)
  (flags (:standard -w -9))
- (libraries reason ocaml-migrate-parsetree))
+ (libraries reason reason.ocaml-migrate-parsetree))

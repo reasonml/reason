@@ -79,7 +79,7 @@
  *)
 
 open Reason_toolchain_conf
-open Migrate_parsetree
+open Reason_migrate_parsetree
 open Ast_408
 
 open Location

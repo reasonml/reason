@@ -1,11 +1,19 @@
 
-## 3.7.0
+## 3.6.1
+
 **New Feature, Non Breaking:**
-- Reason Syntax v4 [NEW-FEATURE-NON-BREAKING]: Angle Brackets Type Parameters (PARSING) (@jordwalke)[https://github.com/facebook/reason/pull/2604]
+- Reason Syntax v4 [NEW-FEATURE-NON-BREAKING]: Angle Brackets Type Parameters (PARSING) (@jordwalke)[#2604][https://github.com/facebook/reason/pull/2604]
 
 **Bug Fixes:**
 - Fix printing of externals that happen to have newlines/quotes in them (@jordwalke)[#2593](https://github.com/facebook/reason/pull/2593)
 - Fix parsing/printing of attributes on patterns (@jordwalke)[#2592](https://github.com/facebook/reason/pull/2592)
+- Fix Windows CI (@ManasJayanth) [#2611](https://github.com/facebook/reason/pull/2611)
+- Fix uncurry attribute on function application(@anmonteiro) [#2566](https://github.com/facebook/reason/pull/2566)
+- Support OCaml 4.11 (@anmonteiro) [#2582](https://github.com/facebook/reason/pull/2582)
+- Vendor ocaml-migrate-parsetree for greater compatibility (@jordwalke) [#2623](https://github.com/facebook/reason/pull/2623)
+
+**Docs:**
+- README Reason logo (@iamdarshshah)[#2609][https://github.com/facebook/reason/pull/2609]
 
 ## 3.6.0
 

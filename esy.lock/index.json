@@ -1,5 +1,5 @@
 {
-  "checksum": "559f81908b26d25a7139ff3185f8afb0",
+  "checksum": "e8e240af3b787952cf8746dcdba4ace1",
   "root": "reason-cli@link-dev:./esy.json",
   "node": {
     "reason-cli@link-dev:./esy.json": {
@@ -11,8 +11,8 @@
       "dependencies": [
         "ocaml@4.6.1000@d41d8cd9", "@opam/utop@opam:2.4.3@5dd230c9",
         "@opam/result@opam:1.5@6b753c82",
+        "@opam/ppx_derivers@opam:1.2.1@ecf0aa45",
         "@opam/ocamlfind@opam:1.8.1@ff07b0f9",
-        "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
         "@opam/merlin-extend@opam:0.6@404f814c",
         "@opam/menhir@opam:20190924@004407ff",
         "@opam/fix@opam:20200131@0ecd2f01", "@opam/dune@opam:1.11.4@e1a68403"
@@ -458,34 +458,6 @@
         "ocaml@4.6.1000@d41d8cd9", "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [ "ocaml@4.6.1000@d41d8cd9" ]
-    },
-    "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47": {
-      "id": "@opam/ocaml-migrate-parsetree@opam:1.7.3@dbcf3b47",
-      "name": "@opam/ocaml-migrate-parsetree",
-      "version": "opam:1.7.3",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/6d/6d85717bcf476b87f290714872ed4fbde0233dc899c3158a27f439d70224fb55#sha256:6d85717bcf476b87f290714872ed4fbde0233dc899c3158a27f439d70224fb55",
-          "archive:https://github.com/ocaml-ppx/ocaml-migrate-parsetree/releases/download/v1.7.3/ocaml-migrate-parsetree-v1.7.3.tbz#sha256:6d85717bcf476b87f290714872ed4fbde0233dc899c3158a27f439d70224fb55"
-        ],
-        "opam": {
-          "name": "ocaml-migrate-parsetree",
-          "version": "1.7.3",
-          "path": "esy.lock/opam/ocaml-migrate-parsetree.1.7.3"
-        }
-      },
-      "overrides": [],
-      "dependencies": [
-        "ocaml@4.6.1000@d41d8cd9", "@opam/result@opam:1.5@6b753c82",
-        "@opam/ppx_derivers@opam:1.2.1@ecf0aa45",
-        "@opam/dune@opam:1.11.4@e1a68403", "@esy-ocaml/substs@0.0.1@d41d8cd9"
-      ],
-      "devDependencies": [
-        "ocaml@4.6.1000@d41d8cd9", "@opam/result@opam:1.5@6b753c82",
-        "@opam/ppx_derivers@opam:1.2.1@ecf0aa45",
-        "@opam/dune@opam:1.11.4@e1a68403"
-      ]
     },
     "@opam/mmap@opam:1.1.0@b85334ff": {
       "id": "@opam/mmap@opam:1.1.0@b85334ff",
