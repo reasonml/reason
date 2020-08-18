@@ -32,6 +32,8 @@ steps:
     displayName: "opam pin add -y reason ."
   - script: opam pin add -y rtop .
     displayName: "opam pin add -y rtop ."
+  - script: opam install -t --deps-only ./reason-dev.opam
+    displayName: "opam install -t --deps-only ./reason-dev.opam"
   - script: eval $(opam env); make test-ci
     displayName: "make test-ci"
   - script: git diff --exit-code
