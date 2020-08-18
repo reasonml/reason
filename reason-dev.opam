@@ -7,7 +7,7 @@ build: [
 ]
 
 depends: [
-  "rely.lib"
+  "rely"
 ]
 
 pin-depends: [
