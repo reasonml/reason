@@ -6,6 +6,10 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {dev}
 ]
 
+depends: [
+  "rely"
+]
+
 pin-depends: [
   [ "rely.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
   [ "cli.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
