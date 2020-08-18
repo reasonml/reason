@@ -14,6 +14,7 @@ pin-depends: [
   [ "rely.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
   [ "cli.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
   [ "file-context-printer.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
+  [ "pastel.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
 ]
 
 synopsis: "reason-dev: The package that runs the tests"
