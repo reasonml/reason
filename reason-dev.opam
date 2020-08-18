@@ -12,7 +12,7 @@ depends: [
 
 pin-depends: [
   [ "rely.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
-  [ "cli.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
+  [ "cli.lib.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
   [ "file-context-printer.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
   [ "pastel.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
 ]
