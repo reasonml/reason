@@ -582,6 +582,35 @@ let remove_stylistic_attrs_mapper_maker super =
 let remove_stylistic_attrs_mapper =
   remove_stylistic_attrs_mapper_maker Ast_mapper.default_mapper
 
+let let_monad_symbols = [ '$'; '&'; '*'; '+'; '-'; '/'; '<'; '='; '>'; '@';
+                          '^'; '|'; '.'; '!']
+
+let is_letop s =
+  String.length s > 3
+  && s.[0] = 'l'
+  && s.[1] = 'e'
+  && s.[2] = 't'
+#if OCAML_VERSION >= (4, 8, 0)
+  && List.mem s.[3] let_monad_symbols
+#else
+  && s.[3] = '_'
+  && s.[4] = '_'
+  && List.mem s.[5] let_monad_symbols
+#endif
+
+let is_andop s =
+  String.length s > 3
+  && s.[0] = 'a'
+  && s.[1] = 'n'
+  && s.[2] = 'd'
+#if OCAML_VERSION >= (4, 8, 0)
+  && List.mem s.[3] let_monad_symbols
+#else
+  && s.[3] = '_'
+  && s.[4] = '_'
+  && List.mem s.[5] let_monad_symbols
+#endif
+
 #if OCAML_VERSION >= (4, 8, 0)
 let noop_mapper super =
   let noop = fun _mapper x -> x in
@@ -597,24 +626,54 @@ let expand_letop_identifier s = s
 #else
   (* Adapted from https://github.com/ocaml-ppx/ocaml-syntax-shims, for
    * compatibility with OCaml's own backporting. *)
-  let name = function
-    | '!' -> "bang"
-    | '$' -> "dollar"
-    | '%' -> "percent"
-    | '&' -> "ampersand"
-    | '*' -> "star"
-    | '+' -> "plus"
-    | '-' -> "minus"
-    | '/' -> "slash"
-    | ':' -> "colon"
-    | '<' -> "lesser"
-    | '=' -> "equal"
-    | '>' -> "greater"
-    | '?' -> "question"
-    | '@' -> "at"
-    | '^' -> "circumflex"
-    | '|' -> "pipe"
-    | c -> String.make 1 c
+  let letop_table, reverse_letop_table =
+    let create_hashtable n l =
+      let t = Hashtbl.create n in
+      let rev_t = Hashtbl.create n in
+      List.iter (fun (k, v) ->
+        Hashtbl.add t k v;
+      Hashtbl.add rev_t v k;
+      ) l;
+      t, rev_t
+    in
+    create_hashtable 16 [
+      '!', "bang"
+    ; '$', "dollar"
+    ; '%', "percent"
+    ; '&', "ampersand"
+    ; '*', "star"
+    ; '+', "plus"
+    ; '-', "minus"
+    ; '/', "slash"
+    ; ':', "colon"
+    ; '<', "lesser"
+    ; '=', "equal"
+    ; '>', "greater"
+    ; '?', "question"
+    ; '@', "at"
+    ; '^', "circumflex"
+    ; '|', "pipe"
+    ]
+
+  let name s =
+    try Hashtbl.find letop_table s
+    with Not_found -> String.make 1 s
+
+  let rev_name s =
+    try String.make 1 (Hashtbl.find reverse_letop_table s)
+    with Not_found -> s
+
+  let compress_letop_identifier s =
+    let buf = Buffer.create 128 in
+    (* "let" or "and" *)
+    Buffer.add_string buf (String.sub s 0 3);
+    let s = String.sub s 5 (String.length s - 5) in
+    let segments = String.split_on_char '_' s in
+    List.iter (function
+      | "" -> Buffer.add_string buf "_"
+      | segment -> Buffer.add_string buf (rev_name segment))
+      segments;
+    Buffer.contents buf
 
   let expand_letop_identifier s =
     let buf = Buffer.create 128 in

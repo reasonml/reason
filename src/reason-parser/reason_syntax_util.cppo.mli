@@ -38,6 +38,9 @@ val isLineComment : string -> bool
 
 val remove_stylistic_attrs_mapper : Ast_mapper.mapper
 
+val is_letop : string -> bool
+val is_andop : string -> bool
+val compress_letop_identifier : string -> string
 val expand_letop_identifier : string -> string
 
 val backport_letopt_mapper : Ast_mapper.mapper -> Ast_mapper.mapper

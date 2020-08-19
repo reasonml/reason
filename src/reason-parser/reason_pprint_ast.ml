@@ -469,9 +469,6 @@ let unary_plus_prefix_symbols  = ["~+"; "~+." ] ;;
 let infix_symbols = [ '='; '<'; '>'; '@'; '^'; '|'; '&'; '+'; '-'; '*'; '/';
                       '$'; '%'; '\\'; '#' ]
 (* this should match "kwdopchar" from reason_declarative_lexer.mll *)
-let let_monad_symbols = [ '$'; '&'; '*'; '+'; '-'; '/'; '<'; '='; '>'; '@';
-                          '^'; '|'; '.'; '!']
-
 let special_infix_strings =
   ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; ":="; "!="; "!=="]
 
@@ -481,20 +478,6 @@ let pipeFirstToken = "->"
 let requireIndentFor = [updateToken; ":="]
 
 let namedArgSym = "~"
-
-let letop s =
-  String.length s > 3
-  && s.[0] = 'l'
-  && s.[1] = 'e'
-  && s.[2] = 't'
-  && List.mem s.[3] let_monad_symbols
-
-let andop s =
-  String.length s > 3
-  && s.[0] = 'a'
-  && s.[1] = 'n'
-  && s.[2] = 'd'
-  && List.mem s.[3] let_monad_symbols
 
 let requireNoSpaceFor tok =
   tok = pipeFirstToken || (tok.[0] = '#' && tok <> "#=")
@@ -531,8 +514,8 @@ let printedStringAndFixity = function
       else
         AlmostSimplePrefix s
   )
-  | s when letop s -> Letop s
-  | s when andop s -> Andop s
+  | s when is_letop s -> Letop s
+  | s when is_andop s -> Andop s
   | _ -> Normal
 
 
@@ -1979,9 +1962,15 @@ let typeApplicationFinalWrapping typeApplicationItems =
 
 (* add parentheses to binders when they are in fact infix or prefix operators *)
 let protectIdentifier txt =
-  if not (needs_parens txt) then atom txt
-  else if needs_spaces txt then makeList ~wrap:("(", ")") ~pad:(true, true) [atom txt]
-  else atom ("(" ^ txt ^ ")")
+  let txt' =
+    if is_andop txt || is_letop txt then
+      Reason_syntax_util.compress_letop_identifier txt
+    else
+      txt
+  in
+  if not (needs_parens txt) then atom txt'
+  else if needs_spaces txt then makeList ~wrap:("(", ")") ~pad:(true, true) [atom txt']
+  else atom ("(" ^ txt' ^ ")")
 
 let protectLongIdentifier longPrefix txt =
   makeList [longPrefix; atom "."; protectIdentifier txt]
@@ -5482,14 +5471,14 @@ let printer = object(self:'self)
         itemsLayout
 
   method letop_bindings { let_; ands } =
-    let label = let_.pbop_op.txt in
+    let label = compress_letop_identifier (let_.pbop_op.txt) in
     let let_item = self#binding_op label let_ in
     match ands with
     | [] -> let_item
     | l ->
       let and_items = List.map (fun x ->
         let loc = extractLocBindingOp x in
-        let layout = self#binding_op x.pbop_op.txt x in
+        let layout = self#binding_op (compress_letop_identifier x.pbop_op.txt) x in
         (loc, layout)
       ) l
       in
