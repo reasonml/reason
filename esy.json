@@ -34,6 +34,14 @@
         "dune",
         "build",
         "-p",
+        "reason,rtop"
+      ]
+    ],
+    "buildDev": [
+      [
+        "dune",
+        "build",
+        "-p",
         "reason,rtop,reason-dev"
       ]
     ],
