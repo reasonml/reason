@@ -51,7 +51,7 @@ let print printtype filename parsedAsML output_chan output_formatter =
   )
   | `Binary -> fun (ast, _) ->
     let ast =
-      Reason_syntax_util.(apply_mapper_to_structure ast remove_stylistic_attrs_mapper)
+      Reason_syntax_util.(apply_mapper_to_structure ast (backport_letopt_mapper remove_stylistic_attrs_mapper))
     in
     Ast_io.to_channel output_chan filename
       (Ast_io.Impl ((module OCaml_current),

@@ -49,6 +49,9 @@ let print printtype filename parsedAsML output_chan output_formatter =
     );
   )
   | `Binary -> fun (ast, _) -> (
+      let ast =
+        Reason_syntax_util.(apply_mapper_to_signature ast remove_stylistic_attrs_mapper)
+      in
       Ast_io.to_channel output_chan filename
         (Ast_io.Intf ((module OCaml_current),
                       Reason_toolchain.To_current.copy_signature ast))
@@ -57,8 +60,6 @@ let print printtype filename parsedAsML output_chan output_formatter =
       Printast.interface output_formatter
         (Reason_toolchain.To_current.copy_signature ast)
   )
-  (* If you don't wrap the function in parens, it's a totally different
-   * meaning #thanksOCaml *)
   | `None -> (fun _ -> ())
   | `ML -> Reason_toolchain.ML.print_interface_with_comments output_formatter
   | `Reason -> Reason_toolchain.RE.print_interface_with_comments output_formatter
