@@ -8,9 +8,9 @@ build: [
 
 depends: [
   "rely" {pinned}
-  "cli.lib"
-  "file-context-printer.lib"
-  "pastel.lib"
+  "cli"
+  "file-context-printer"
+  "pastel"
 ]
 
 pin-depends: [
