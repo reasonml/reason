@@ -681,12 +681,24 @@ let compress_letop_identifier s = s
     try String.make 1 (Hashtbl.find reverse_letop_table s)
     with Not_found -> s
 
+  let split_on_char sep s =
+    let open String in
+    let r = ref [] in
+    let j = ref (length s) in
+    for i = length s - 1 downto 0 do
+      if unsafe_get s i = sep then begin
+        r := sub s (i + 1) (!j - i - 1) :: !r;
+        j := i
+      end
+    done;
+    sub s 0 !j :: !r
+
   let compress_letop_identifier s =
     let buf = Buffer.create 128 in
     (* "let" or "and" *)
     Buffer.add_string buf (String.sub s 0 3);
     let s = String.sub s 5 (String.length s - 5) in
-    let segments = String.split_on_char '_' s in
+    let segments = split_on_char '_' s in
     let identifier = String.concat "" (List.map (function
       | "" -> "_"
       | segment -> rev_name segment) segments)
