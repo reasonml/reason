@@ -579,6 +579,15 @@ let remove_stylistic_attrs_mapper_maker super =
   end;
 }
 
+let escape_stars_slashes str =
+  if String.contains str '/' then
+    replace_string "/*" "/\\*" @@
+    replace_string "*/" "*\\/" @@
+    replace_string "//" "/\\/" @@
+    str
+  else
+    str
+
 let remove_stylistic_attrs_mapper =
   remove_stylistic_attrs_mapper_maker Ast_mapper.default_mapper
 
@@ -586,7 +595,11 @@ let let_monad_symbols = [ '$'; '&'; '*'; '+'; '-'; '/'; '<'; '='; '>'; '@';
                           '^'; '|'; '.'; '!']
 
 let is_letop s =
+#if OCAML_VERSION >= (4, 8, 0)
   String.length s > 3
+#else
+  String.length s > 5
+#endif
   && s.[0] = 'l'
   && s.[1] = 'e'
   && s.[2] = 't'
@@ -599,7 +612,11 @@ let is_letop s =
 #endif
 
 let is_andop s =
+#if OCAML_VERSION >= (4, 8, 0)
   String.length s > 3
+#else
+  String.length s > 5
+#endif
   && s.[0] = 'a'
   && s.[1] = 'n'
   && s.[2] = 'd'
@@ -623,6 +640,7 @@ let noop_mapper super =
 (* Don't need to backport past 4.08 *)
 let backport_letopt_mapper = noop_mapper
 let expand_letop_identifier s = s
+let compress_letop_identifier s = s
 #else
   (* Adapted from https://github.com/ocaml-ppx/ocaml-syntax-shims, for
    * compatibility with OCaml's own backporting. *)
@@ -669,11 +687,12 @@ let expand_letop_identifier s = s
     Buffer.add_string buf (String.sub s 0 3);
     let s = String.sub s 5 (String.length s - 5) in
     let segments = String.split_on_char '_' s in
-    List.iter (function
-      | "" -> Buffer.add_string buf "_"
-      | segment -> Buffer.add_string buf (rev_name segment))
-      segments;
-    Buffer.contents buf
+    let identifier = String.concat "" (List.map (function
+      | "" -> "_"
+      | segment -> rev_name segment) segments)
+    in
+    Buffer.add_string buf identifier;
+    escape_stars_slashes (Buffer.contents buf)
 
   let expand_letop_identifier s =
     let buf = Buffer.create 128 in
@@ -748,15 +767,6 @@ let backport_letopt_mapper super =
     | _ -> super.expr mapper expr
 }
 #endif
-
-let escape_stars_slashes str =
-  if String.contains str '/' then
-    replace_string "/*" "/\\*" @@
-    replace_string "*/" "*\\/" @@
-    replace_string "//" "/\\/" @@
-    str
-  else
-    str
 
 (** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
 let escape_stars_slashes_mapper = identifier_mapper escape_stars_slashes
