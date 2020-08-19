@@ -70,10 +70,10 @@
       }
     },
     "release": {
-      "bin": {
-        "rtop": "rtop",
-        "refmt": "refmt"
-      },
+      "bin": [
+        "rtop",
+        "refmt"
+      ],
       "includePackages": [
         "root",
         "@opam/base-bytes",
