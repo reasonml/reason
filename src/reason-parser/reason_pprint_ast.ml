@@ -8313,9 +8313,10 @@ let add_explicit_arity_mapper super =
   { super with Ast_mapper. expr; pat }
 
 let preprocessing_mapper =
-  ml_to_reason_swap_operator_mapper
-    (escape_stars_slashes_mapper
-      (add_explicit_arity_mapper Ast_mapper.default_mapper))
+  backport_letopt_mapper
+    (ml_to_reason_swap_operator_mapper
+      (escape_stars_slashes_mapper
+        (add_explicit_arity_mapper Ast_mapper.default_mapper)))
 
 let core_type ppf x =
   format_layout ppf

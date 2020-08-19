@@ -583,9 +583,9 @@ let remove_stylistic_attrs_mapper =
   remove_stylistic_attrs_mapper_maker Ast_mapper.default_mapper
 
 #if OCAML_VERSION >= (4, 8, 0)
-let noop_mapper =
+let noop_mapper super =
   let noop = fun _mapper x -> x in
-  { Ast_mapper.default_mapper with
+  { super with
     expr = noop;
     structure = noop;
     structure_item = noop;
@@ -608,7 +608,7 @@ let backport_letopt_mapper = noop_mapper
  *
  * (let+)((and+)(y, b), ((x, a)) => x + a)
  *)
-let backport_letopt_mapper_maker super =
+let backport_letopt_mapper super =
   let open Ast_408 in
   let open Ast_mapper in
 { super with
@@ -654,9 +654,6 @@ let backport_letopt_mapper_maker super =
         ])}
     | _ -> super.expr mapper expr
 }
-
-let backport_letopt_mapper =
-  backport_letopt_mapper_maker Ast_mapper.default_mapper
 #endif
 
 let escape_stars_slashes str =
