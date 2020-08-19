@@ -1,6 +1,6 @@
 (executable
- (name Run)
- (public_name Run.exe)
+ (name TestRun)
+ (public_name TestRun.exe)
  (package reason-dev)
  (libraries reason-dev.test)
 )

@@ -11,7 +11,7 @@ build:
 test-ci: tests test-integration
 
 tests:
-	dune exec Run.exe
+	dune exec TestRun.exe
 
 # Can be run with esy x - no need to build beforehand.
 test-integration:
