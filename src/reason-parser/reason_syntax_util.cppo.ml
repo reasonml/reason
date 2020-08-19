@@ -594,6 +594,39 @@ let noop_mapper super =
 (* Don't need to backport past 4.08 *)
 let backport_letopt_mapper = noop_mapper
 #else
+  (* Adapted from https://github.com/ocaml-ppx/ocaml-syntax-shims, for
+   * compatibility with OCaml's own backporting. *)
+  let name = function
+    | '!' -> "bang"
+    | '$' -> "dollar"
+    | '%' -> "percent"
+    | '&' -> "ampersand"
+    | '*' -> "star"
+    | '+' -> "plus"
+    | '-' -> "minus"
+    | '/' -> "slash"
+    | ':' -> "colon"
+    | '<' -> "lesser"
+    | '=' -> "equal"
+    | '>' -> "greater"
+    | '?' -> "question"
+    | '@' -> "at"
+    | '^' -> "circumflex"
+    | '|' -> "pipe"
+    | c -> String.make 1 c
+
+  let expand s =
+    let buf = Buffer.create 128 in
+    (* "let" or "and" *)
+    Buffer.add_string buf (String.sub s 0 3);
+    Buffer.add_string buf "__";
+    for i = 3 to String.length s - 1 do
+      if i > 3 then
+        Buffer.add_char buf '_';
+      Buffer.add_string buf (name s.[i])
+    done;
+    Buffer.contents buf
+
 (** This will convert Pexp_letop into a series of `apply`s to simulate 4.08's behavior.
  *
  * For example,
@@ -634,7 +667,7 @@ let backport_letopt_mapper super =
           let (pattern, expr, op) = loop rest in
           let and_op_ident = Ast_helper.Exp.ident
             ~loc:op.loc
-            (Location.mkloc (Longident.Lident op.txt) op.loc)
+            (Location.mkloc (Longident.Lident (expand op.txt)) op.loc)
           in
           (
             Ast_helper.Pat.tuple ~loc:pbop_loc [pbop_pat; pattern],
@@ -645,7 +678,7 @@ let backport_letopt_mapper super =
       let (pattern, expr, _) = loop (let_::ands) in
       let let_op_ident = Ast_helper.Exp.ident
         ~loc:let_.pbop_op.loc
-        (Location.mkloc (Longident.Lident let_.pbop_op.txt) let_.pbop_op.loc)
+        (Location.mkloc (Longident.Lident (expand let_.pbop_op.txt)) let_.pbop_op.loc)
       in
       super.expr mapper {expr with
         pexp_desc = Pexp_apply (let_op_ident,  [
