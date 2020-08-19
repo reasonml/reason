@@ -7,7 +7,7 @@ build: [
 ]
 
 depends: [
-  "rely.lib"
+  "rely" {pinned}
   "cli.lib"
   "file-context-printer.lib"
   "pastel.lib"
