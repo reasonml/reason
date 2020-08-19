@@ -1,4 +1,6 @@
 opam-version: "2.0"
+name: "reason-dev"
+version: "dev"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 
 build: [
@@ -7,7 +9,7 @@ build: [
 ]
 
 depends: [
-  "rely" {pinned}
+  "rely"
   "cli"
   "file-context-printer"
   "pastel"
