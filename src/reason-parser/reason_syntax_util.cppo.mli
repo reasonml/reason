@@ -38,6 +38,8 @@ val isLineComment : string -> bool
 
 val remove_stylistic_attrs_mapper : Ast_mapper.mapper
 
+val expand_letop_identifier : string -> string
+
 val backport_letopt_mapper : Ast_mapper.mapper -> Ast_mapper.mapper
 
 val escape_stars_slashes : string -> string

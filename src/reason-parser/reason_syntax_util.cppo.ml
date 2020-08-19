@@ -593,6 +593,7 @@ let noop_mapper super =
     signature_item = noop; }
 (* Don't need to backport past 4.08 *)
 let backport_letopt_mapper = noop_mapper
+let expand_letop_identifier s = s
 #else
   (* Adapted from https://github.com/ocaml-ppx/ocaml-syntax-shims, for
    * compatibility with OCaml's own backporting. *)
@@ -615,7 +616,7 @@ let backport_letopt_mapper = noop_mapper
     | '|' -> "pipe"
     | c -> String.make 1 c
 
-  let expand s =
+  let expand_letop_identifier s =
     let buf = Buffer.create 128 in
     (* "let" or "and" *)
     Buffer.add_string buf (String.sub s 0 3);
@@ -667,7 +668,7 @@ let backport_letopt_mapper super =
           let (pattern, expr, op) = loop rest in
           let and_op_ident = Ast_helper.Exp.ident
             ~loc:op.loc
-            (Location.mkloc (Longident.Lident (expand op.txt)) op.loc)
+            (Location.mkloc (Longident.Lident op.txt) op.loc)
           in
           (
             Ast_helper.Pat.tuple ~loc:pbop_loc [pbop_pat; pattern],
@@ -678,7 +679,7 @@ let backport_letopt_mapper super =
       let (pattern, expr, _) = loop (let_::ands) in
       let let_op_ident = Ast_helper.Exp.ident
         ~loc:let_.pbop_op.loc
-        (Location.mkloc (Longident.Lident (expand let_.pbop_op.txt)) let_.pbop_op.loc)
+        (Location.mkloc (Longident.Lident let_.pbop_op.txt) let_.pbop_op.loc)
       in
       super.expr mapper {expr with
         pexp_desc = Pexp_apply (let_op_ident,  [
