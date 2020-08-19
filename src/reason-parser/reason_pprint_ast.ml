@@ -1962,15 +1962,16 @@ let typeApplicationFinalWrapping typeApplicationItems =
 
 (* add parentheses to binders when they are in fact infix or prefix operators *)
 let protectIdentifier txt =
-  let txt' =
+  let needs_parens = needs_parens txt in
+  let txt =
     if is_andop txt || is_letop txt then
       Reason_syntax_util.compress_letop_identifier txt
     else
       txt
   in
-  if not (needs_parens txt) then atom txt'
-  else if needs_spaces txt then makeList ~wrap:("(", ")") ~pad:(true, true) [atom txt']
-  else atom ("(" ^ txt' ^ ")")
+  if not needs_parens then atom txt
+  else if needs_spaces txt then makeList ~wrap:("(", ")") ~pad:(true, true) [atom txt]
+  else atom ("(" ^ txt ^ ")")
 
 let protectLongIdentifier longPrefix txt =
   makeList [longPrefix; atom "."; protectIdentifier txt]
