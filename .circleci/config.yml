@@ -57,6 +57,7 @@ common_steps: &common_steps
         name: 'Test'
         command: |
           eval $(opam env)
+          pwd
           make test-ci
     - run:
         name: 'Check git is clean'
