@@ -29,6 +29,8 @@ common_steps: &common_steps
           opam init --auto-setup --dot-profile=~/.bash_profile
           opam remote add ocamlorg https://opam.ocaml.org || true
           opam remote remove default || true
+          source ~/.bash_profile
+          eval `opam config env`
     - run:
         name: "Install deps"
         command: |
