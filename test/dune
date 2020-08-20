@@ -15,9 +15,6 @@
  (modules TestRun)
 )
 
-(copy_files ./../formatTest/*)
-(copy_files ./../miscTests/*)
-
 (alias
  (name runtest)
  (deps (:exe TestRun.exe) (glob_files test/_snapshots/*))

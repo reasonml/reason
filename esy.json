@@ -109,7 +109,7 @@
     }
   },
   "scripts": {
-    "test": "dune exec TestRun.exe",
+    "test": "esy dune runtest",
     "doc": "esy dune build @doc"
   }
 }
