@@ -1,6 +1,0 @@
-(executable
- (name TestRun)
- (public_name TestRun.exe)
- (package reason-dev)
- (libraries reason-dev.test)
-)

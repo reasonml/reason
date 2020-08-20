@@ -3,5 +3,23 @@
  (public_name reason-dev.test)
  (libraries reason rely.lib)
  (flags -linkall -g)
- (deps (source_tree _snapshots))
+ (ocamlopt_flags -linkall -g)
+ (modules (:standard \ TestRun))
+)
+
+(executable
+ (name TestRun)
+ (public_name TestRun.exe)
+ (package reason-dev)
+ (libraries reason-dev.test)
+ (modules TestRun)
+)
+
+(copy_files ./../formatTest/*)
+(copy_files ./../miscTests/*)
+
+(alias
+ (name runtest)
+ (deps (:exe TestRun.exe) (glob_files test/_snapshots/*))
+ (action (run %{exe}))
 )
