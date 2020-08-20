@@ -54,8 +54,6 @@ common_steps: &common_steps
     - run:
         name: 'Test'
         command: |
-          source ~/.bash_profile
-          eval `opam config env`
           make test-ci
     - run:
         name: 'Check git is clean'
