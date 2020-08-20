@@ -3,4 +3,5 @@
  (public_name reason-dev.test)
  (libraries reason rely.lib)
  (flags -linkall -g)
+ (deps (source_tree _snapshots))
 )
