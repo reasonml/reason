@@ -635,9 +635,9 @@ rule token state = parse
   | '%' operator_chars*
     { INFIXOP3 (lexeme_operator lexbuf) }
   | "let" kwdopchar dotsymbolchar *
-    { LETOP (lexeme_operator lexbuf) }
+    { LETOP (Reason_syntax_util.expand_letop_identifier (lexeme_operator lexbuf)) }
   | "and" kwdopchar dotsymbolchar *
-    { ANDOP (lexeme_operator lexbuf) }
+    { ANDOP (Reason_syntax_util.expand_letop_identifier (lexeme_operator lexbuf)) }
   | eof { EOF }
   | _
     { raise_error

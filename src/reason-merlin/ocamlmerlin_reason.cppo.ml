@@ -9,9 +9,15 @@ module Reason_reader = struct
   let load buffer = buffer
 
   let structure str =
+    let str =
+      Reason_syntax_util.(apply_mapper_to_structure str (backport_letopt_mapper remove_stylistic_attrs_mapper))
+    in
     Structure (Reason_toolchain.To_current.copy_structure str)
 
   let signature sg =
+    let sg =
+      Reason_syntax_util.(apply_mapper_to_signature sg (backport_letopt_mapper remove_stylistic_attrs_mapper))
+    in
     Signature (Reason_toolchain.To_current.copy_signature sg)
 
   let parse {text; path} =
