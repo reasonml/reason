@@ -1,0 +1,39 @@
+opam-version: "2.0"
+synopsis: "Backport new syntax to older OCaml versions"
+description: """
+This packages backports new features of the language to older
+compilers, such as let+.
+"""
+maintainer: ["jeremie@dimino.org"]
+authors: ["Jérémie Dimino <jeremie@dimino.org>"]
+license: "MIT"
+homepage: "https://github.com/ocaml-ppx/ocaml-syntax-shims"
+doc: "https://ocaml-ppx.github.io/ocaml-syntax-shims/"
+bug-reports: "https://github.com/ocaml-ppx/ocaml-syntax-shims/issues"
+depends: [
+  "dune" {>= "2.0"}
+  "ocaml" {>= "4.02.3"}
+]
+build: [
+  ["dune" "subst"] {pinned}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-ppx/ocaml-syntax-shims.git"
+url {
+  src:
+    "https://github.com/ocaml-ppx/ocaml-syntax-shims/releases/download/1.0.0/ocaml-syntax-shims-1.0.0.tbz"
+  checksum: [
+    "sha256=89b2e193e90a0c168b6ec5ddf6fef09033681bdcb64e11913c97440a2722e8c8"
+    "sha512=75c4c6b0bfa1267a8a49a82ba494d08cf0823fc8350863d6d3d4971528cb09e5a2a29e2981d04c75e76ad0f49360b05a432c9efeff9a4fbc1ec6b28960399852"
+  ]
+}

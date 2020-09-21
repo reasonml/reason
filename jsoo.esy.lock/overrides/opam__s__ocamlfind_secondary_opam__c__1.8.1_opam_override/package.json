@@ -1,0 +1,47 @@
+{
+  "build": [
+    [
+      "bash",
+      "-c",
+      "#{os == 'windows' ? 'patch -p1 < findlib-1.8.1.patch' : 'true'}"
+    ],
+    [
+      "./configure",
+      "-bindir",
+      "#{self.bin}",
+      "-sitelib",
+      "#{self.lib}",
+      "-mandir",
+      "#{self.man}",
+      "-config",
+      "#{self.lib}/findlib.conf",
+      "-no-custom",
+      "-no-topfind"
+    ]
+  ],
+  "install": [
+    [
+      "make",
+      "install-meta"
+    ],
+    "bash gen-findlib-conf.sh #{@opam/ocaml-secondary-compiler.share / 'ocaml-secondary-compiler'}",
+    "bash gen-meta.sh #{@opam/ocaml-secondary-compiler.share / 'ocaml-secondary-compiler'}",
+    "mkdir -p $cur__install/lib/findlib.conf.d/",
+    "cp ocaml-secondary-compiler.conf $cur__install/lib/findlib.conf.d/",
+    "mkdir $cur__install/lib/ocaml",
+    "cp META $cur__install/lib/ocaml"
+  ],
+  "dependencies": {
+    "@opam/ocaml-secondary-compiler": "*"
+  },
+  "exportedEnv": {
+    "OCAMLFIND_SECONDARY_PREFIX": {
+      "scope": "global",
+      "val": "#{self.install}"
+    },
+    "OCAML_SECONDARY_COMPILER_PREFIX": {
+      "scope": "global",
+      "val": "#{@opam/ocaml-secondary-compiler.install}"
+    }
+  }
+}

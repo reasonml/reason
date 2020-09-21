@@ -1,0 +1,38 @@
+opam-version: "2.0"
+synopsis:
+  "Optimised functions to read and write int16/32/64 from strings and bigarrays"
+description: """
+The library implements three modules:
+* [EndianString](https://github.com/OCamlPro/ocplib-endian/blob/master/src/endianString.mli) works directly on strings, and provides submodules BigEndian and LittleEndian, with their unsafe counter-parts;
+* [EndianBytes](https://github.com/OCamlPro/ocplib-endian/blob/master/src/endianBytes.mli) works directly on bytes, and provides submodules BigEndian and LittleEndian, with their unsafe counter-parts;
+* [EndianBigstring](https://github.com/OCamlPro/ocplib-endian/blob/master/src/endianBigstring.mli) works on bigstrings (Bigarrays of chars), and provides submodules BigEndian and LittleEndian, with their unsafe counter-parts."""
+maintainer: "pierre.chambart@ocamlpro.com"
+authors: "Pierre Chambart"
+homepage: "https://github.com/OCamlPro/ocplib-endian"
+doc: "https://ocamlpro.github.io/ocplib-endian/ocplib-endian/"
+bug-reports: "https://github.com/OCamlPro/ocplib-endian/issues"
+depends: [
+  "base-bytes"
+  "ocaml" {>= "4.02.3"}
+  "cppo" {>= "1.1.0" & build}
+  "dune" {>= "1.0"}
+]
+build: [
+  "dune"
+  "build"
+  "-p"
+  name
+  "-j"
+  jobs
+  "@install"
+  "@runtest" {with-test}
+  "@doc" {with-doc}
+]
+dev-repo: "git+https://github.com/OCamlPro/ocplib-endian.git"
+url {
+  src: "https://github.com/OCamlPro/ocplib-endian/archive/1.1.tar.gz"
+  checksum: [
+    "md5=dedf4d69c1b87b3c6c7234f632399285"
+    "sha512=39351c666d1394770696fa89ac62f7c137ad1697d99888bfba2cc8de2c61df05dd8b3aa327c117bf38f3e29e081026d2c575c5ad0022bde92b3d43aba577d3f9"
+  ]
+}

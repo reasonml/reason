@@ -1,0 +1,28 @@
+{
+    "buildEnv": {
+	"PATH": "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+    },
+    "build": [
+	[
+	    "env",
+	    "-u",
+	    "OCAMLLIB",
+	    "bash", "./esy-configure",
+	    "--disable-cfi",
+	    "--prefix", "$cur__install/share/ocaml-secondary-compiler",
+	    "--libdir", "$cur__install/share/ocaml-secondary-compiler/lib",
+	    "--disable-debugger",
+	    "--disable-installing-bytecode-programs",
+	    "--disable-debug-runtime",
+	    "--disable-instrumented-runtime",
+	    "--disable-graph-lib"
+	],
+	[
+	    "env",
+	    "-u",
+	    "OCAMLLIB",
+	    "bash", "./esy-build"
+	]
+    ],
+    "buildsInSource": true
+}
