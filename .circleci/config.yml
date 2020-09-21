@@ -117,7 +117,7 @@ jobs:
     <<: *common_steps
   esy_build:
     docker:
-      - image: ocaml/opam2:debian-9-ocaml-4.06
+      - image: ocaml/opam2:debian-10-ocaml-4.06
     environment:
       - TERM: dumb
       - NPM_CONFIG_PREFIX: "~/.npm-global"
@@ -126,7 +126,7 @@ jobs:
       - run:
           name: "Install npm"
           command: |
-            curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+            curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
             sudo apt-get install -y nodejs
             mkdir -p ~/.npm-global
             npm config set prefix $NPM_CONFIG_PREFIX
