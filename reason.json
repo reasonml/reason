@@ -12,7 +12,7 @@
     "@opam/fix": "*",
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
-    "@opam/merlin-extend": " >= 0.3",
+    "@opam/merlin-extend": " >= 0.6",
     "@opam/result": "*",
     "@opam/ppx_derivers": "< 2.0.0",
     "@opam/dune": ">= 1.4"
