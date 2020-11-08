@@ -13,7 +13,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-include Migrate_parsetree_411_410_migrate
+include Migrate_parsetree_412_411_migrate
 
 (*$ open Printf
   let fields = [
@@ -28,7 +28,8 @@ include Migrate_parsetree_411_410_migrate
     "structure_item"; "typ"; "type_declaration"; "type_extension";
     "type_kind"; "value_binding"; "value_description";
     "with_constraint"; "payload";
-    "binding_op"; "module_substitution"; "open_declaration"; "type_exception"
+    "binding_op"; "module_substitution"; "open_declaration"; "type_exception";
+    "constant"
   ]
   let foreach_field f =
     printf "\n";
@@ -85,9 +86,9 @@ let copy_mapper = fun
      constant;
      (*$*)
    } as mapper) ->
-  let _ = constant in
+
   let module Def = Migrate_parsetree_def in
-  let module R = Migrate_parsetree_410_411_migrate in
+  let module R = Migrate_parsetree_411_412_migrate in
   {
     To.Ast_mapper.
     (*$ foreach_field (fun s ->
@@ -138,5 +139,6 @@ let copy_mapper = fun
     module_substitution = (fun _ x -> copy_module_substitution (module_substitution mapper (R.copy_module_substitution x)));
     open_declaration = (fun _ x -> copy_open_declaration (open_declaration mapper (R.copy_open_declaration x)));
     type_exception = (fun _ x -> copy_type_exception (type_exception mapper (R.copy_type_exception x)));
+    constant = (fun _ x -> copy_constant (constant mapper (R.copy_constant x)));
     (*$*)
   }

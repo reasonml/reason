@@ -17,19 +17,8 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(* Ast ported on Thu Mar 21 09:50:42 GMT 2019
-   OCaml was:
-   commit 55c9ba466362f303eb4d5ed511f6fda142879137 (HEAD -> 4.08, origin/4.08)
-     Author: Nicolás Ojeda Bär <n.oje.bar@gmail.com>
-     Date:   Tue Mar 19 08:11:02 2019 +0100
-
-         Merge pull request #8521 from nojb/fix_unix_tests_408
-
-         Actually run all lib-unix tests [4.08]
-*)
-
 open Stdlib0
-open Ast_408_helper
+open Ast_409_helper
 
 module Location = Location
 module Longident = Longident
@@ -1262,18 +1251,18 @@ end = struct
   (* Warn for unused and ambiguous docstrings *)
 
   let warn_bad_docstrings () =
-    if Warnings.is_active (Warnings.Bad_docstring true) then begin
+    if Warnings.is_active (Migrate_parsetree_compiler_functions.bad_docstring true) then begin
       List.iter
         (fun ds ->
            match ds.ds_attached with
            | Info -> ()
            | Unattached ->
-             prerr_warning ds.ds_loc (Warnings.Bad_docstring true)
+             prerr_warning ds.ds_loc (Migrate_parsetree_compiler_functions.bad_docstring true)
            | Docs ->
              match ds.ds_associated with
              | Zero | One -> ()
              | Many ->
-               prerr_warning ds.ds_loc (Warnings.Bad_docstring false))
+               prerr_warning ds.ds_loc (Migrate_parsetree_compiler_functions.bad_docstring false))
         (List.rev !docstrings)
     end
 
@@ -4041,8 +4030,8 @@ module Outcometree = struct
 end
 
 module Config = struct
-  let ast_impl_magic_number = "Caml1999M025"
-  let ast_intf_magic_number = "Caml1999N025"
+  let ast_impl_magic_number = "Caml1999M026"
+  let ast_intf_magic_number = "Caml1999N026"
 end
 
 let map_signature mapper = mapper.Ast_mapper.signature mapper

@@ -13,3 +13,5 @@ let set_unboxed_types _b =
   ()
 
 let may_map = Misc.may_map
+
+let bad_docstring t = Warnings.Bad_docstring t

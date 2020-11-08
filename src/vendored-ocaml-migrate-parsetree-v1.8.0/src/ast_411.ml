@@ -29,7 +29,7 @@ module Asttypes = struct
   type constant (*IF_CURRENT = Asttypes.constant *) =
       Const_int of int
     | Const_char of char
-    | Const_string of string * string option
+    | Const_string of string * Location.t * string option
     | Const_float of string
     | Const_int32 of int32
     | Const_int64 of int64
@@ -70,7 +70,6 @@ module Asttypes = struct
 end
 
 module Parsetree = struct
-
   open Asttypes
 
   type constant (*IF_CURRENT = Parsetree.constant *) =
@@ -82,9 +81,11 @@ module Parsetree = struct
     *)
     | Pconst_char of char
     (* 'c' *)
-    | Pconst_string of string * string option
+    | Pconst_string of string * Location.t * string option
     (* "constant"
        {delim|other constant|delim}
+
+       The location span the content of the string, without the delimiters.
     *)
     | Pconst_float of string * char option
     (* 3.4 2e5 1.4e-4
@@ -1017,7 +1018,6 @@ module Parsetree = struct
     | Pdir_int of string * char option
     | Pdir_ident of Longident.t
     | Pdir_bool of bool
-
 end
 
 module Docstrings : sig
@@ -1254,18 +1254,18 @@ end = struct
   (* Warn for unused and ambiguous docstrings *)
 
   let warn_bad_docstrings () =
-    if Warnings.is_active (Warnings.Bad_docstring true) then begin
+    if Warnings.is_active (Migrate_parsetree_compiler_functions.bad_docstring true) then begin
       List.iter
         (fun ds ->
            match ds.ds_attached with
            | Info -> ()
            | Unattached ->
-               prerr_warning ds.ds_loc (Warnings.Bad_docstring true)
+               prerr_warning ds.ds_loc (Migrate_parsetree_compiler_functions.bad_docstring true)
            | Docs ->
                match ds.ds_associated with
                | Zero | One -> ()
                | Many ->
-                   prerr_warning ds.ds_loc (Warnings.Bad_docstring false))
+                   prerr_warning ds.ds_loc (Migrate_parsetree_compiler_functions.bad_docstring false))
         (List.rev !docstrings)
     end
 
@@ -1300,7 +1300,7 @@ end = struct
   let docs_attr ds =
     let open Parsetree in
     let exp =
-      { pexp_desc = Pexp_constant (Pconst_string(ds.ds_body, None));
+      { pexp_desc = Pexp_constant (Pconst_string(ds.ds_body, ds.ds_loc, None));
         pexp_loc = ds.ds_loc;
         pexp_loc_stack = [];
         pexp_attributes = []; }
@@ -1350,7 +1350,7 @@ end = struct
   let text_attr ds =
     let open Parsetree in
     let exp =
-      { pexp_desc = Pexp_constant (Pconst_string(ds.ds_body, None));
+      { pexp_desc = Pexp_constant (Pconst_string(ds.ds_body, ds.ds_loc, None));
         pexp_loc = ds.ds_loc;
         pexp_loc_stack = [];
         pexp_attributes = []; }
@@ -1657,7 +1657,8 @@ module Ast_helper : sig
 
   module Const : sig
     val char : char -> constant
-    val string : ?quotation_delimiter:string -> string -> constant
+    val string :
+      ?quotation_delimiter:string -> ?loc:Location.t -> string -> constant
     val integer : ?suffix:char -> string -> constant
     val int : ?suffix:char -> int -> constant
     val int32 : ?suffix:char -> int32 -> constant
@@ -2099,7 +2100,6 @@ module Ast_helper : sig
       label with_loc -> core_type -> object_field
     val inherit_: ?loc:loc -> core_type -> object_field
   end
-
 end = struct
   open Asttypes
   open Parsetree
@@ -2126,7 +2126,8 @@ end = struct
     let nativeint ?(suffix='n') i = integer ~suffix (Nativeint.to_string i)
     let float ?suffix f = Pconst_float (f, suffix)
     let char c = Pconst_char c
-    let string ?quotation_delimiter s = Pconst_string (s, quotation_delimiter)
+    let string ?quotation_delimiter ?(loc= !default_loc) s =
+      Pconst_string (s, loc, quotation_delimiter)
   end
 
   module Attr = struct
@@ -2748,6 +2749,7 @@ module Ast_mapper : sig
     class_type_declaration: mapper -> class_type_declaration
       -> class_type_declaration;
     class_type_field: mapper -> class_type_field -> class_type_field;
+    constant: mapper -> constant -> constant;
     constructor_declaration: mapper -> constructor_declaration
       -> constructor_declaration;
     expr: mapper -> expression -> expression;
@@ -2907,6 +2909,7 @@ end = struct
     class_type_declaration: mapper -> class_type_declaration
       -> class_type_declaration;
     class_type_field: mapper -> class_type_field -> class_type_field;
+    constant: mapper -> constant -> constant;
     constructor_declaration: mapper -> constructor_declaration
       -> constructor_declaration;
     expr: mapper -> expression -> expression;
@@ -2949,6 +2952,19 @@ end = struct
   let map_opt f = function None -> None | Some x -> Some (f x)
 
   let map_loc sub {loc; txt} = {loc = sub.location sub loc; txt}
+
+  module C = struct
+    (* Constants *)
+
+    let map sub c = match c with
+      | Pconst_integer _
+      | Pconst_char _
+      | Pconst_float _
+        -> c
+      | Pconst_string (s, loc, quotation_delimiter) ->
+          let loc = sub.location sub loc in
+          Const.string ~loc ?quotation_delimiter s
+  end
 
   module T = struct
     (* Type expressions for the core language *)
@@ -3234,7 +3250,7 @@ end = struct
       let attrs = sub.attributes sub attrs in
       match desc with
       | Pexp_ident x -> ident ~loc ~attrs (map_loc sub x)
-      | Pexp_constant x -> constant ~loc ~attrs x
+      | Pexp_constant x -> constant ~loc ~attrs (sub.constant sub x)
       | Pexp_let (r, vbs, e) ->
           let_ ~loc ~attrs r (List.map (sub.value_binding sub) vbs)
             (sub.expr sub e)
@@ -3328,7 +3344,7 @@ end = struct
       | Ppat_any -> any ~loc ~attrs ()
       | Ppat_var s -> var ~loc ~attrs (map_loc sub s)
       | Ppat_alias (p, s) -> alias ~loc ~attrs (sub.pat sub p) (map_loc sub s)
-      | Ppat_constant c -> constant ~loc ~attrs c
+      | Ppat_constant c -> constant ~loc ~attrs (sub.constant sub c)
       | Ppat_interval (c1, c2) -> interval ~loc ~attrs c1 c2
       | Ppat_tuple pl -> tuple ~loc ~attrs (List.map (sub.pat sub) pl)
       | Ppat_construct (l, p) ->
@@ -3422,6 +3438,7 @@ end = struct
 
   let default_mapper =
     {
+      constant = C.map;
       structure = (fun this l -> List.map (this.structure_item this) l);
       structure_item = M.map_structure_item;
       module_expr = M.map;
@@ -3594,13 +3611,13 @@ end = struct
     Locations.extension_of_error
       ~mk_pstr:(fun x -> PStr x)
       ~mk_extension:(fun x -> Str.extension x)
-      ~mk_string_constant:(fun x -> Str.eval (Exp.constant (Pconst_string (x, None))))
+      ~mk_string_constant:(fun x -> Str.eval (Exp.constant (Pconst_string (x, Location.none (* XXX *), None))))
       error
 
   let attribute_of_warning loc s =
     Attr.mk
       {loc; txt = "ocaml.ppwarning" }
-      (PStr ([Str.eval ~loc (Exp.constant (Pconst_string (s, None)))]))
+      (PStr ([Str.eval ~loc (Exp.constant (Pconst_string (s, loc, None)))]))
 
   include Locations.Helpers_impl
 
@@ -3625,7 +3642,7 @@ end = struct
 
     let lid name = { txt = Lident name; loc = Location.none }
 
-    let make_string x = Exp.constant (Pconst_string (x, None))
+    let make_string s = Exp.constant (Const.string s)
 
     let make_bool x =
       if x
@@ -3690,7 +3707,7 @@ end = struct
     let restore fields =
       let field name payload =
         let rec get_string = function
-          | { pexp_desc = Pexp_constant (Pconst_string (str, None)) } -> str
+          | { pexp_desc = Pexp_constant (Pconst_string (str, _, None)) } -> str
           | _ -> raise_errorf "Internal error: invalid [@@@ocaml.ppx.context \
                                { %s }] string syntax" name
         and get_bool pexp =
@@ -3919,10 +3936,10 @@ module Outcometree = struct
 
   (* These types represent messages that the toplevel displays as normal
      results or errors. The real displaying is customisable using the hooks:
-     [Toploop.print_out_value]
-     [Toploop.print_out_type]
-     [Toploop.print_out_sig_item]
-     [Toploop.print_out_phrase] *)
+      [Toploop.print_out_value]
+      [Toploop.print_out_type]
+      [Toploop.print_out_sig_item]
+      [Toploop.print_out_phrase] *)
 
   (** An [out_name] is a string representation of an identifier which can be
       rewritten on the fly to avoid name collisions *)
@@ -4051,8 +4068,8 @@ module Outcometree = struct
 end
 
 module Config = struct
-  let ast_impl_magic_number = "Caml1999M027"
-  let ast_intf_magic_number = "Caml1999N027"
+  let ast_impl_magic_number = "Caml1999M028"
+  let ast_intf_magic_number = "Caml1999N028"
 end
 
 let map_signature mapper = mapper.Ast_mapper.signature mapper
@@ -4106,6 +4123,7 @@ let shallow_identity =
     module_substitution     = id;
     open_declaration        = id;
     type_exception          = id;
+    constant                = id;
   }
 
 let failing_mapper =
@@ -4158,6 +4176,7 @@ let failing_mapper =
     module_substitution     = fail;
     open_declaration        = fail;
     type_exception          = fail;
+    constant                = fail;
   }
 
 let make_top_mapper ~signature ~structure =

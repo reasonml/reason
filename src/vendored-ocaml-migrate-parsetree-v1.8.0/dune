@@ -1,4 +1,4 @@
 ; (install
 ;  (section doc)
-;  (package reason)
+;  (package ocaml-migrate-parsetree)
 ;  (files MANUAL.md))
