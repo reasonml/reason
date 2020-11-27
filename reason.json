@@ -18,8 +18,8 @@
     "@opam/dune": "*"
   },
   "devDependencies": {
-    "@esy-ocaml/merlin": "*",
-    "ocaml": "~4.6.0"
+    "@opam/merlin": "*",
+    "ocaml": "~4.8.0"
   },
   "esy": {
     "build": [

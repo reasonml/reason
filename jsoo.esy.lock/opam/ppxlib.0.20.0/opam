@@ -1,0 +1,50 @@
+opam-version: "2.0"
+maintainer: "opensource@janestreet.com"
+authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+homepage: "https://github.com/ocaml-ppx/ppxlib"
+bug-reports: "https://github.com/ocaml-ppx/ppxlib/issues"
+dev-repo: "git+https://github.com/ocaml-ppx/ppxlib.git"
+doc: "https://ocaml-ppx.github.io/ppxlib/"
+license: "MIT"
+build: [
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+]
+run-test: [
+  ["dune" "runtest" "-p" name "-j" jobs] { ocaml:version >= "4.10" }
+]
+depends: [
+  "ocaml"                   {>= "4.04.1" & < "4.13"}
+  "dune"                    {>= "1.11"}
+  "ocaml-compiler-libs"     {>= "v0.11.0"}
+  "ocaml-migrate-parsetree" {>= "2.1.0"}
+  "ppx_derivers"            {>= "1.0"}
+  "sexplib0"
+  "stdlib-shims"
+  "ocamlfind"               {with-test}
+  "cinaps"                  {with-test & >= "v0.12.1"}
+  "base"                    {with-test}
+  "stdio"                   {with-test}
+]
+synopsis: "Standard library for ppx rewriters"
+description: """
+Ppxlib is the standard library for ppx rewriters and other programs
+that manipulate the in-memory reprensation of OCaml programs, a.k.a
+the "Parsetree".
+
+It also comes bundled with two ppx rewriters that are commonly used to
+write tools that manipulate and/or generate Parsetree values;
+`ppxlib.metaquot` which allows to construct Parsetree values using the
+OCaml syntax directly and `ppxlib.traverse` which provides various
+ways of automatically traversing values of a given type, in particular
+allowing to inject a complex structured value into generated code.
+"""
+x-commit-hash: "51b6f0bd59692712ef2af73a4f378dccc7fabac8"
+url {
+  src:
+    "https://github.com/ocaml-ppx/ppxlib/releases/download/0.20.0/ppxlib-0.20.0.tbz"
+  checksum: [
+    "sha256=1cb5903ef257de9c93e154cbb53df5979d4ad0f041d01967ea5984dd6d2cad37"
+    "sha512=fa4179e821a88b70cf874488f2f8fcc7d0d52a2df50069dd8822d57c61a88c92c40e782267dbca0a8efc2f35976eaed73f85fcbec4299585dcf7b748ccd1c19f"
+  ]
+}

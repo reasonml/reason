@@ -1,3 +1,0 @@
-description = "OCaml Secondary Compiler"
-version = "%{ocaml-secondary-compiler:version}%"
-directory = "%{ocaml-secondary-compiler:share}%/bin"
