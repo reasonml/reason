@@ -128,7 +128,7 @@ jobs:
     <<: *common_steps
   esy_build:
     docker:
-      - image: ocaml/opam2:debian-9-ocaml-4.06
+      - image: ocurrent/opam:debian-9-ocaml-4.12
     environment:
       - TERM: dumb
       - NPM_CONFIG_PREFIX: "~/.npm-global"
