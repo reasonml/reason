@@ -11,7 +11,7 @@ DEBUG=''
 RESET='\033[0m'
 VERBOSE=${VERBOSE:-}
 OCAML_VERSION=`echo $(ocaml -version) | egrep -o '[0-9]+.[0-9]+.[0-9]+' | head -1`
-OCAML_VERSION=${OCAML_VERSION:-"4.02.3"}
+OCAML_VERSION=${OCAML_VERSION:-"4.06.2"}
 
 case ${OCAML_VERSION} in
 4.08.*) OCAML_VERSION=4.08.0;;
