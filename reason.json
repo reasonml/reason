@@ -8,11 +8,11 @@
     "url": "https://github.com/facebook/reason.git"
   },
   "dependencies": {
-    "ocaml": " >= 4.2.0 < 4.11.0",
+    "ocaml": " >= 4.2.0 < 4.12.0",
     "@opam/fix": "*",
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
-    "@opam/merlin-extend": " >= 0.3",
+    "@opam/merlin-extend": " >= 0.6",
     "@opam/result": "*",
     "@opam/ppx_derivers": "< 2.0.0",
     "@opam/dune": "*"

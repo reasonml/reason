@@ -4,7 +4,7 @@
   "license": "MIT",
   "version": "3.6.2",
   "dependencies": {
-    "ocaml": " >= 4.2.0 < 4.11.0",
+    "ocaml": " >= 4.2.0 < 4.12.0",
     "@opam/fix": "*",
     "@opam/ocamlfind": "*",
     "@opam/menhir": " >= 20170418.0.0",
@@ -74,7 +74,7 @@
         "@opam/react",
         "@opam/result",
         "@opam/seq",
-	"@opam/charInfo_width",
+        "@opam/charInfo_width",
         "@opam/utop",
         "@opam/zed",
         "ocaml"
