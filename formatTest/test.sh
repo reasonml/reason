@@ -11,7 +11,7 @@ DEBUG=''
 RESET='\033[0m'
 VERBOSE=${VERBOSE:-}
 OCAML_VERSION=`echo $(ocaml -version) | egrep -o '[0-9]+.[0-9]+.[0-9]+' | head -1`
-OCAML_VERSION=${OCAML_VERSION:-"4.02.3"}
+OCAML_VERSION=${OCAML_VERSION:-"4.08.0"}
 
 case ${OCAML_VERSION} in
 4.10.*|4.11.*|4.12.*) OCAML_VERSION=4.09.0;; # Outputs from OCaml 4.10 / 4.11 are exepected to be the same as OCaml 4.09
