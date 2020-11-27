@@ -533,10 +533,17 @@ and print_typargs ppf =
 let out_type = ref print_out_type
 
 (* Class types *)
+let variance (x, y) =
+  match x,y with
+ (* co, contra *)
+ | false, false -> ""
+ | true, false -> "+"
+ | false, true -> "-"
+ | true, true -> assert false
 
-let type_parameter ppf (ty, (co, cn)) =
+let type_parameter ppf (ty, var) =
   fprintf ppf "%s%s"
-    (if not cn then "+" else if not co then "-" else "")
+    (variance var)
     (if ty = "_" then ty else "'"^ty)
 
 let print_out_class_params ppf =
