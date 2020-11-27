@@ -36,7 +36,9 @@ common_steps: &common_steps
           opam update
           opam install -y dune
           opam install -y menhir
-          opam install -y utop
+          opam pin add -y lwt --dev-repo
+          # https://github.com/ocaml-community/utop/pull/339
+          opam pin add -y utop git+https://github.com/ocaml-community/utop#e31656e72559c94bec144434f9d68e3ae801b14e
     - run:
         name: 'Clean'
         command: make clean-for-ci
@@ -118,9 +120,17 @@ jobs:
       - OCAML_VERSION: "4.10.x"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
+  4.12.0:
+    docker:
+      - image: ocurrent/opam:debian-9-ocaml-4.12
+    environment:
+      - TERM: dumb
+      - OCAML_VERSION: "4.12.x"
+      - NPM_CONFIG_PREFIX: "~/.npm-global"
+    <<: *common_steps
   esy_build:
     docker:
-      - image: ocaml/opam2:debian-9-ocaml-4.06
+      - image: ocurrent/opam:debian-9-ocaml-4.12
     environment:
       - TERM: dumb
       - NPM_CONFIG_PREFIX: "~/.npm-global"
@@ -179,4 +189,5 @@ workflows:
       - 4.08.0
       - 4.09.0
       - 4.10.0
+      - 4.12.0
       - esy_build
