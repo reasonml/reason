@@ -36,6 +36,7 @@ common_steps: &common_steps
           opam update
           opam install -y dune
           opam install -y menhir
+          opam pin add -y lwt --dev-repo
           # https://github.com/ocaml-community/utop/pull/339
           opam pin add -y utop git+https://github.com/ocaml-community/utop#e31656e72559c94bec144434f9d68e3ae801b14e
     - run:
