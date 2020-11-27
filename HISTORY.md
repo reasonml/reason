@@ -1,5 +1,10 @@
+## Future
 
-## 3.6.1
+- Add support for (limited) interop between letop + OCaml upstream (@anmonteiro) [#2624](https://github.com/facebook/reason/pull/2624)
+- Add support for OCaml 4.12 (@kit-ty-kate) [#2635](https://github.com/facebook/reason/pull/2635)
+- Remove support for OCaml 4.02.3 (@anmonteiro) [#2638](https://github.com/facebook/reason/pull/2638)
+
+## 3.6.2
 
 **New Feature, Non Breaking:**
 - Reason Syntax v4 [NEW-FEATURE-NON-BREAKING]: Angle Brackets Type Parameters (PARSING) (@jordwalke)[#2604][https://github.com/facebook/reason/pull/2604]
