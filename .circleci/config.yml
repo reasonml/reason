@@ -66,7 +66,7 @@ version: 2
 jobs:
   4.03.0:
     docker:
-      - image: ocaml/opam2:debian-9-ocaml-4.03
+      - image: ocaml/opam:debian-ocaml-4.03
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.03.0"
@@ -74,7 +74,7 @@ jobs:
     <<: *common_steps
   4.04.0:
     docker:
-      - image: ocaml/opam2:debian-9-ocaml-4.04
+      - image: ocaml/opam:debian-ocaml-4.04
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.04.0"
@@ -82,7 +82,7 @@ jobs:
     <<: *common_steps
   4.06.1:
     docker:
-      - image: ocaml/opam2:debian-9-ocaml-4.06
+      - image: ocaml/opam:debian-ocaml-4.06
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.06.1"
@@ -90,7 +90,7 @@ jobs:
     <<: *common_steps
   4.07.0:
     docker:
-      - image: ocaml/opam2:debian-9-ocaml-4.07
+      - image: ocaml/opam:debian-ocaml-4.07
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.07.x"
@@ -98,7 +98,7 @@ jobs:
     <<: *common_steps
   4.08.0:
     docker:
-      - image: ocaml/opam2:debian-9-ocaml-4.08
+      - image: ocaml/opam:debian-ocaml-4.08
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.08.x"
@@ -106,7 +106,7 @@ jobs:
     <<: *common_steps
   4.09.0:
     docker:
-      - image: ocaml/opam2:debian-9-ocaml-4.09
+      - image: ocaml/opam:debian-ocaml-4.09
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.09.x"
@@ -114,7 +114,7 @@ jobs:
     <<: *common_steps
   4.10.0:
     docker:
-      - image: ocurrent/opam:debian-9-ocaml-4.10
+      - image: ocaml/opam:debian-ocaml-4.10
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.10.x"
@@ -122,7 +122,7 @@ jobs:
     <<: *common_steps
   4.12.0:
     docker:
-      - image: ocurrent/opam:debian-9-ocaml-4.12
+      - image: ocaml/opam:debian-ocaml-4.12
     environment:
       - TERM: dumb
       - OCAML_VERSION: "4.12.x"
@@ -130,7 +130,7 @@ jobs:
     <<: *common_steps
   esy_build:
     docker:
-      - image: ocurrent/opam:debian-10-ocaml-4.12
+      - image: ocaml/opam:debian-ocaml-4.12
     environment:
       - TERM: dumb
       - NPM_CONFIG_PREFIX: "~/.npm-global"
