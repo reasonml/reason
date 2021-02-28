@@ -26,9 +26,7 @@ common_steps: &common_steps
         name: "Initialize opam"
         command: |
           sudo apt-get install -y m4
-          opam init --auto-setup --dot-profile=~/.bash_profile
-          opam remote add ocamlorg https://opam.ocaml.org || true
-          opam remote remove default || true
+          opam remote set-url default https://opam.ocaml.org
     - run:
         name: "Install deps"
         command: |
@@ -69,7 +67,7 @@ jobs:
       - image: ocaml/opam:debian-ocaml-4.03
     environment:
       - TERM: dumb
-      - OCAML_VERSION: "4.03.0"
+      - OCAML_VERSION: "4.03.x"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
   4.04.0:
@@ -77,7 +75,7 @@ jobs:
       - image: ocaml/opam:debian-ocaml-4.04
     environment:
       - TERM: dumb
-      - OCAML_VERSION: "4.04.0"
+      - OCAML_VERSION: "4.04.x"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
   4.06.1:
@@ -85,7 +83,7 @@ jobs:
       - image: ocaml/opam:debian-ocaml-4.06
     environment:
       - TERM: dumb
-      - OCAML_VERSION: "4.06.1"
+      - OCAML_VERSION: "4.06.x"
       - NPM_CONFIG_PREFIX: "~/.npm-global"
     <<: *common_steps
   4.07.0:
