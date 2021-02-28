@@ -12,7 +12,6 @@ common_steps: &common_steps
     - run:
         name: "Install npm"
         command: |
-          curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
           sudo apt-get install -y nodejs
           mkdir -p ~/.npm-global
           npm config set prefix $NPM_CONFIG_PREFIX
