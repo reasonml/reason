@@ -3,10 +3,10 @@
 <p align="center">Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems.</p>
 <p align="center">
   <a href="https://dev.azure.com/reasonml/reason/_build/latest?definitionId=2?branchName=master">
-    <img src="https://dev.azure.com/reasonml/reason/_apis/build/status/facebook.reason?branchName=master" alt="Build Status" />
+    <img src="https://dev.azure.com/reasonml/reason/_apis/build/status/reasonml.reason?branchName=master" alt="Build Status" />
   </a>
-  <a href="https://circleci.com/gh/facebook/reason/tree/master">
-    <img src="https://circleci.com/gh/facebook/reason/tree/master.svg?style=svg" alt="CircleCI" />
+  <a href="https://circleci.com/gh/reasonml/reason/tree/master">
+    <img src="https://circleci.com/gh/reasonml/reason/tree/master.svg?style=svg" alt="CircleCI" />
   </a>
   <a href="https://discord.gg/reasonml">
     <img src="https://img.shields.io/discord/235176658175262720.svg?logo=discord&colorb=blue" alt="Chat" />
