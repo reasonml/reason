@@ -31,11 +31,7 @@ common_steps: &common_steps
         command: |
           sudo apt-get install -y pkg-config libncurses5-dev
           opam update
-          opam install -y dune
-          opam install -y menhir
-          opam pin add -y lwt --dev-repo
-          # https://github.com/ocaml-community/utop/pull/339
-          opam pin add -y utop git+https://github.com/ocaml-community/utop#e31656e72559c94bec144434f9d68e3ae801b14e
+          opam install -y dune menhir utop
     - run:
         name: 'Clean'
         command: make clean-for-ci
