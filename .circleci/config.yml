@@ -12,7 +12,7 @@ common_steps: &common_steps
     - run:
         name: "Install npm"
         command: |
-          sudo apt-get install -y nodejs
+          sudo apt-get install -y nodejs npm
           mkdir -p ~/.npm-global
           npm config set prefix $NPM_CONFIG_PREFIX
     - checkout
