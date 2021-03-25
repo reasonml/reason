@@ -3496,13 +3496,12 @@ let printer = object(self:'self)
       | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
       in
       if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
-        match loc.txt with
-        | Ldot (moduleLid, "createElement") ->
-          Some (self#formatJSXComponent
-                  (String.concat "." (Longident.flatten moduleLid)) l)
-        | lid ->
-          Some (self#formatJSXComponent
-                  (String.concat "." (Longident.flatten lid)) l)
+        let moduleNameList = List.rev (List.tl (List.rev (Longident.flatten loc.txt))) in
+        if moduleNameList != [] then
+          if Longident.last loc.txt = "createElement" then
+            Some (self#formatJSXComponent (String.concat "." moduleNameList) l)
+          else None
+        else Some (self#formatJSXComponent (Longident.last loc.txt) l)
       else None
     )
     | (Pexp_apply (
