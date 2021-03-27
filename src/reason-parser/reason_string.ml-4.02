@@ -1,7 +1,0 @@
-module String = struct
-  include String
-
-  let capitalize_ascii = capitalize
-
-  let uncapitalize_ascii = capitalize
-end

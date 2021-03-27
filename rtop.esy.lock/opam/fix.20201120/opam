@@ -1,0 +1,24 @@
+opam-version: "2.0"
+maintainer: "francois.pottier@inria.fr"
+authors: [
+  "François Pottier <francois.pottier@inria.fr>"
+]
+homepage: "https://gitlab.inria.fr/fpottier/fix"
+dev-repo: "git+https://gitlab.inria.fr/fpottier/fix.git"
+bug-reports: "francois.pottier@inria.fr"
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+depends: [
+  "ocaml" { >= "4.03" }
+  "dune" {>=  "1.3" }
+]
+synopsis: "Facilities for memoization and fixed points"
+url {
+  src:
+    "https://gitlab.inria.fr/fpottier/fix/repository/20201120/archive.tar.gz"
+  checksum: [
+    "md5=7eb570b759635fe66f3556d2b1cc88e3"
+    "sha512=344dcc619f9e8b8a6c998775b6d2dab2ea5253e6a67abe4797f76dc5dd30bc776568abce1e90477422e9db447821579889737e3531c42139708f813e983ea5d4"
+  ]
+}

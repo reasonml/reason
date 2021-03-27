@@ -1,0 +1,2312 @@
+<meta charset="utf-8" vim: set filetype=Stylus: >
+<script src="../Bookmark.js"> </script>
+support-for-ie = true
+
+
+$prim = #5674FF
+$lowlight = #3f3e4d
+
+$prim-1 = rgb(blend(rgba(#000000,.40) $prim))
+$prim-2 = rgb(blend(rgba(#000000,.30) $prim))
+$prim-3 = rgb(blend(rgba(#000000,.20) $prim))
+$prim-4 = rgb(blend(rgba(#000000,.10) $prim))
+$prim-5 = $prim
+$prim-6 = rgb(blend(rgba(#FFFFFF,.10) $prim))
+$prim-7 = rgb(blend(rgba(#FFFFFF,.20) $prim))
+$prim-8 = rgb(blend(rgba(#FFFFFF,.30) $prim))
+$prim-9 = rgb(blend(rgba(#FFFFFF,.40) $prim))
+$prim-10 = rgb(blend(rgba(#FFFFFF,.50) $prim))
+$prim-11 = rgb(blend(rgba(#FFFFFF,.60) $prim))
+$prim-12 = rgb(blend(rgba(#FFFFFF,.68) $prim))
+$prim-13 = rgb(blend(rgba(#FFFFFF,.78) $prim))
+$prim-14 = rgb(blend(rgba(#FFFFFF,.86) $prim))
+$prim-15 = rgb(blend(rgba(#FFFFFF,.91) $prim))
+$prim-16 = rgb(blend(rgba(#FFFFFF,.95) $prim))
+$prim-17 = rgb(blend(rgba(#FFFFFF,.98) $prim))
+
+$prim-desat-1 = rgb(desaturate($prim-1, 50%))
+$prim-desat-2 = rgb(desaturate($prim-2, 50%))
+$prim-desat-3 = rgb(desaturate($prim-3, 50%))
+$prim-desat-4 = rgb(desaturate($prim-4, 50%))
+$prim-desat-5 = rgb(desaturate($prim-5, 50%))
+$prim-desat = $prim-desat-5
+$prim-desat-6 = rgb(desaturate($prim-6, 50%))
+$prim-desat-7 = rgb(desaturate($prim-7, 50%))
+$prim-desat-8 = rgb(desaturate($prim-8, 50%))
+$prim-desat-9 = rgb(desaturate($prim-9, 50%))
+$prim-desat-10 = rgb(desaturate($prim-10, 50%))
+$prim-desat-11 = rgb(desaturate($prim-11, 50%))
+$prim-desat-12 = rgb(desaturate($prim-12, 50%))
+$prim-desat-13 = rgb(desaturate($prim-13, 50%))
+$prim-desat-14 = rgb(desaturate($prim-14, 50%))
+$prim-desat-15 = rgb(desaturate($prim-15, 50%))
+$prim-desat-16 = rgb(desaturate($prim-16, 50%))
+$prim-desat-17 = rgb(desaturate($prim-17, 50%))
+
+$lowlight-1 = rgb(blend(rgba(#000000,.40) $lowlight))
+$lowlight-2 = rgb(blend(rgba(#000000,.30) $lowlight))
+$lowlight-3 = rgb(blend(rgba(#000000,.20) $lowlight))
+$lowlight-4 = rgb(blend(rgba(#000000,.10) $lowlight))
+$lowlight-5 = $lowlight
+$lowlight-6 = rgb(blend(rgba(#FFFFFF,.10) $lowlight))
+$lowlight-7 = rgb(blend(rgba(#FFFFFF,.20) $lowlight))
+$lowlight-8 = rgb(blend(rgba(#FFFFFF,.30) $lowlight))
+$lowlight-9 = rgb(blend(rgba(#FFFFFF,.40) $lowlight))
+$lowlight-10 = rgb(blend(rgba(#FFFFFF,.50) $lowlight))
+$lowlight-11 = rgb(blend(rgba(#FFFFFF,.60) $lowlight))
+$lowlight-12 = rgb(blend(rgba(#FFFFFF,.68) $lowlight))
+$lowlight-13 = rgb(blend(rgba(#FFFFFF,.78) $lowlight))
+$lowlight-14 = rgb(blend(rgba(#FFFFFF,.86) $lowlight))
+$lowlight-15 = rgb(blend(rgba(#FFFFFF,.91) $lowlight))
+$lowlight-16 = rgb(blend(rgba(#FFFFFF,.95) $lowlight))
+$lowlight-17 = rgb(blend(rgba(#FFFFFF,.98) $lowlight))
+
+$lowlight-desat-1 = rgb(desaturate($lowlight-1, 50%))
+$lowlight-desat-2 = rgb(desaturate($lowlight-2, 50%))
+$lowlight-desat-3 = rgb(desaturate($lowlight-3, 50%))
+$lowlight-desat-4 = rgb(desaturate($lowlight-4, 50%))
+$lowlight-desat = rgb(desaturate($lowlight-5, 50%))
+$lowlight-desat-5 = rgb(desaturate($lowlight-5, 50%))
+$lowlight-desat-6 = rgb(desaturate($lowlight-6, 50%))
+$lowlight-desat-7 = rgb(desaturate($lowlight-7, 50%))
+$lowlight-desat-8 = rgb(desaturate($lowlight-8, 50%))
+$lowlight-desat-9 = rgb(desaturate($lowlight-9, 50%))
+$lowlight-desat-10 = rgb(desaturate($lowlight-10, 50%))
+$lowlight-desat-11 = rgb(desaturate($lowlight-11, 50%))
+$lowlight-desat-12 = rgb(desaturate($lowlight-12, 50%))
+$lowlight-desat-13 = rgb(desaturate($lowlight-13, 50%))
+$lowlight-desat-14 = rgb(desaturate($lowlight-14, 50%))
+$lowlight-desat-15 = rgb(desaturate($lowlight-15, 50%))
+$lowlight-desat-16 = rgb(desaturate($lowlight-16, 50%))
+$lowlight-desat-17 = rgb(desaturate($lowlight-17, 50%))
+
+.bg-prim-1
+  background-color: $prim-1
+.bg-prim-2
+  background-color: $prim-2
+.bg-prim-3
+  background-color: $prim-3
+.bg-prim-4
+  background-color: $prim-4
+.bg-prim,
+.bg-prim-5
+  background-color: $prim-5
+.bg-prim-6
+  background-color: $prim-6
+.bg-prim-7
+  background-color: $prim-7
+.bg-prim-8
+  background-color: $prim-8
+.bg-prim-9
+  background-color: $prim-9
+.bg-prim-10
+  background-color: $prim-10
+.bg-prim-11
+  background-color: $prim-11
+.bg-prim-12
+  background-color: $prim-12
+.bg-prim-13
+  background-color: $prim-13
+.bg-prim-14
+  background-color: $prim-14
+.bg-prim-15
+  background-color: $prim-15
+.bg-prim-16
+  background-color: $prim-16
+.bg-prim-17
+  background-color: $prim-17
+  
+.bg-prim-desat-1
+  background-color: $prim-desat-1
+.bg-prim-desat-2
+  background-color: $prim-desat-2
+.bg-prim-desat-3
+  background-color: $prim-desat-3
+.bg-prim-desat-4
+  background-color: $prim-desat-4
+.bg-prim-desat-5,
+.bg-prim-desat
+  background-color: $prim-desat
+.bg-prim-desat-6
+  background-color: $prim-desat-6
+.bg-prim-desat-7
+  background-color: $prim-desat-7
+.bg-prim-desat-8
+  background-color: $prim-desat-8
+.bg-prim-desat-9
+  background-color: $prim-desat-9
+.bg-prim-desat-10
+  background-color: $prim-desat-10
+.bg-prim-desat-11
+  background-color: $prim-desat-11
+.bg-prim-desat-12
+  background-color: $prim-desat-12
+.bg-prim-desat-13
+  background-color: $prim-desat-13
+.bg-prim-desat-14
+  background-color: $prim-desat-14
+.bg-prim-desat-15
+  background-color: $prim-desat-15
+.bg-prim-desat-16
+  background-color: $prim-desat-16
+.bg-prim-desat-17
+  background-color: $prim-desat-17
+  
+.bg-lowlight-1
+  background-color: $lowlight-1
+.bg-lowlight-2
+  background-color: $lowlight-2
+.bg-lowlight-3
+  background-color: $lowlight-3
+.bg-lowlight-4
+  background-color: $lowlight-4
+.bg-lowlight-5,
+.bg-lowlight
+  background-color: $lowlight
+.bg-lowlight-6
+  background-color: $lowlight-6
+.bg-lowlight-7
+  background-color: $lowlight-7
+.bg-lowlight-8
+  background-color: $lowlight-8
+.bg-lowlight-9
+  background-color: $lowlight-9
+.bg-lowlight-10
+  background-color: $lowlight-10
+.bg-lowlight-11
+  background-color: $lowlight-11
+.bg-lowlight-12
+  background-color: $lowlight-12
+.bg-lowlight-13
+  background-color: $lowlight-13
+.bg-lowlight-14
+  background-color: $lowlight-14
+.bg-lowlight-15
+  background-color: $lowlight-15
+.bg-lowlight-16
+  background-color: $lowlight-16
+.bg-lowlight-17
+  background-color: $lowlight-17
+  
+.bg-lowlight-desat-1
+  background-color: $lowlight-desat-1
+.bg-lowlight-desat-2
+  background-color: $lowlight-desat-2
+.bg-lowlight-desat-3
+  background-color: $lowlight-desat-3
+.bg-lowlight-desat-4
+  background-color: $lowlight-desat-4
+
+.bg-lowlight-desat,
+.bg-lowlight-desat-5
+  background-color: $lowlight-desat
+.bg-lowlight-desat-6
+  background-color: $lowlight-desat-6
+.bg-lowlight-desat-7
+  background-color: $lowlight-desat-7
+.bg-lowlight-desat-8
+  background-color: $lowlight-desat-8
+.bg-lowlight-desat-9
+  background-color: $lowlight-desat-9
+.bg-lowlight-desat-10
+  background-color: $lowlight-desat-10
+.bg-lowlight-desat-11
+  background-color: $lowlight-desat-11
+.bg-lowlight-desat-12
+  background-color: $lowlight-desat-12
+.bg-lowlight-desat-13
+  background-color: $lowlight-desat-13
+.bg-lowlight-desat-14
+  background-color: $lowlight-desat-14
+.bg-lowlight-desat-15
+  background-color: $lowlight-desat-15
+.bg-lowlight-desat-16
+  background-color: $lowlight-desat-16
+.bg-lowlight-desat-17
+  background-color: $lowlight-desat-17
+
+.nodisplay
+  display: none
+
+.mock-demo
+  padding: 20px
+
+.mock-demo .swatch
+  justify-content: center
+  display:flex
+  background: white
+  padding: 10px
+  width: 100%
+
+.mock-demo .color
+  display:flex
+  flex: 1
+  min-width: 20px
+  max-width: 700px
+  height: 40px
+
+.mock-demo .swatch .button
+  margin-left: 30px
+
+
+
+// Fonts
+$body-font = PrivateWordFont, WordFont, Helvetica Neue, Open Sans, sans-serif
+$mono-font = PrivateCodingFont, CodingFont, Menlo, monospace
+$mono-font-size = 14px
+// Line height has to be exact pixels, not in terms of em because bold segments
+// of code have larger font size and their lines aren't consistently spaced.
+// Noticable when switching code tabs.
+$mono-line-height = 21px
+$kbd-font-size = 0.80em
+
+// Margins
+$pad = 40px      // Space between things
+$sidepad = 16px  // Padding to the left of the sidebar
+$minipad = 20px  // Space for mobile
+$vmarginDouble = 32px  // Margin between blocks
+$vmargin = 16px  // Margin between blocks
+$vmarginHalf = 8px  // Margin between blocks
+
+$smallHeadingVMarginMobile = $vmargin
+$smallHeadingVMarginTablet = $vmargin * 1.5
+$smallHeadingVMarginDesktop = $vmargin * 2
+
+
+// Colors
+
+
+$gradedWhiteText = $prim-15
+$gradedWhiteTextActive = $prim-16
+$gradedHeaderbg = $lowlight-desat-17 
+$gradedHeaderbgDarker = $lowlight-desat-15
+$gradedHeaderbgDarkest = $lowlight-desat-14
+$gradedTitleLightfade = #fdfdff
+$gradedTxtColor = $lowlight-desat-5
+$gradedTxtColorLight = $lowlight-desat-6
+$gradedTxtColorLighter = $lowlight-desat-8
+$gradedTxtColorLightest = $lowlight-desat-10
+$gradedLine = $lowlight-desat-14
+$gradedHeaderTextShadow = 0 1px 2px #ffffffaa
+$gradedCodebg = lighten($gradedHeaderbg, 30%)
+$gradedCodeBorder = darken($gradedCodebg, 5%)
+
+$gradedHeaderLinkColor = $gradedTxtColorLightest
+
+
+/**
+ * The main colors in the theme.
+ */
+// $accent = #577fff * 0.85 // Alternative #5468ff (purply) or #577fff(blue)
+$accent = #5674FF
+$lowlight = #3f3e4d
+
+$bigHeadPadTop = $pad * 1.5
+$offwhite = #f8f8f8
+/* $hitsbg = white */
+$hitsbg = $prim-desat-15 
+$hitsBorderColor = $prim-desat-12
+$hitsFontSize = 12px
+$hitsLineHeight = 18px
+$hitsCodeBg = $prim-desat-14 
+$hits-item-bg-cursor = $prim-desat-13
+$hits-item-bg-cursor-double = $hits-item-bg-cursor
+$hits-item-bg-hover = $prim-desat-14
+$hits-item-border = $hitsbg
+$hits-item-border-cursor = $hitsBorderColor
+$grey = #909090
+$txt = #444444
+$txtlight = #888888
+$line = #e8e8e8
+// Header != "heading". Header is the sticky bar.
+$headerPadding = 8px
+$headerLinkColor = #909090
+$headerLinkColorHover = #606060
+$headerLinkColorCurrent = $accent
+$headerLinkColorCurrentActive = darken($accent, 10%)
+$headerbgactive = #f0f0f0
+$header-height = 52px
+
+$searchInputHeight = 28px
+$searchInputIconWidth = 20px
+$searchInputBg = #fff
+$searchInputBorderColor = $hitsBorderColor
+$searchInputBorderColorFocus = darken($searchInputBorderColor, 10%)
+
+
+$button-txt-color=$gradedTxtColorLighter
+$button-txt-color-focus-active=$gradedTxtColorLight
+$button-bg = $lowlight-17
+$button-border = $lowlight-13
+$button-border-hover = $lowlight-13
+$button-border-focus = $lowlight-12
+$button-bg-hover = $lowlight-16
+$button-bg-focus = $lowlight-16
+$button-bg-active = $lowlight-15
+$button-border-active = $lowlight-13
+
+
+$button-prim-txt-color=$gradedWhiteText
+$button-prim-txt-color-focus-active=white
+$button-prim-bg = $prim
+$button-prim-border = $prim-4
+$button-prim-border-hover = $prim-3
+$button-prim-border-focus = $prim-1
+$button-prim-bg-hover = $prim-4
+$button-prim-bg-focus = $prim-4
+$button-prim-bg-active = $prim-3
+$button-prim-border-active = $prim-2
+
+
+
+// This could probably be derived from the others.
+// It's the main right column
+$rightcolumnwidth=380px
+
+// Misc
+$shadow-str = 0.1
+
+// Dimensions
+$sidebar-width = 300px
+$content-width = 480px
+// Because code blocks are rendered in search, need
+// it to be about as wide as the standard right column
+$rightdockedhitscolumnwidth = $rightcolumnwidth
+$pre-width = 480px
+
+
+
+
+$gradedBookSplitBg = $lowlight-desat-17 
+$gradedBookSplitShadow = darken($gradedBookSplitBg, 1%)
+
+.medium-zoom-image
+  z-index:100
+.medium-zoom-overlay
+  z-index:100
+
+noselect()
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+
+
+global-reset()
+  h0, h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+  html, body, div, span, applet, object, iframe,
+  del, dfn, em, img, ins, kbd, q, s, samp,
+  dl, dt, dd, ol, ul, li,
+  a, small, abbr, acronym, address, big, cite, code, caption, tbody, table, tfoot, thead, tr, th, td,
+  fieldset, form, label, legend,
+  strike, strong, sub, sup, tt, var
+    font-weight: inherit
+    font-style: inherit
+    font-family: inherit
+    font-size: 100%
+    vertical-align: baseline
+    margin: 0
+    padding: 0
+    border: 0
+    outline: 0
+  body
+    /** Needed for medium-zoom positioning */
+    position:relative;
+    line-height: 1
+    color: black
+    background: white
+  ol, ul
+    list-style: none
+  table
+    border-spacing: 0
+    border-collapse: separate
+    vertical-align: middle
+  caption, th, td
+    text-align: left
+    vertical-align: middle
+    font-weight: normal
+  a img
+    border: none
+  *
+    -webkit-box-sizing: border-box
+    box-sizing: border-box
+
+
+clearfix()
+  &:before
+  &:after
+    content: ""
+    display: table
+  &:after
+    clear: both
+  zoom: 1 if support-for-ie
+
+// ----------------------------------------------------------------------------
+// Mixins
+
+scrollbar($bg=white)
+  &
+    -webkit-overflow-scrolling: touch
+  &::-webkit-scrollbar
+    width: 15px
+    height: 15px
+  &::-webkit-scrollbar-thumb
+    background: #ddd
+    border-radius: 8px
+    border: solid 4px $bg
+  &:hover::-webkit-scrollbar-thumb
+    background: #999
+    box-shadow: inset 2px 2px 3px rgba(0, 0, 0, 0.2)
+
+antialias()
+  -webkit-font-smoothing: antialiased
+  text-rendering: optimizeLegibility
+
+/* ----------------------------------------------------------------------------
+ * Base
+ */
+
+global-reset()
+
+html
+  height: 100%
+  /* Messes up medium-zoom */
+  /* overflow-y:scroll */
+
+/*
+messes up medium-zoom
+body
+  overflow-y:scroll
+  overflow-x:hidden
+*/
+
+/*
+ * jordwalke: Continues left parallel with a right docking, until the next
+ * right docking. Requires a JS shim at document load time to
+ * fix up the elements that occur before that next right docking,
+ * because there is no CSS selector for "comes before".
+ * What about using:
+ *
+ * The following selector matches <h1> elements only if they have a <p> element
+ * directly following them:
+ *
+ *   h1:has(+ p)
+ *
+ * document.querySelectorAll(
+ *    '.bookmark-content > img + pre,' +
+ *    '.bookmark-content > img + blockquote,' +
+ *    '.bookmark-content > p + pre,' +
+ *    '.bookmark-content > p + blockquote,' +
+ *    '.bookmark-content > ul + pre,' +
+ *    '.bookmark-content > ul + blockquote,' +
+ *    '.bookmark-content > ol + pre,' +
+ *    '.bookmark-content > ol + blockquote,' +
+ *    '.bookmark-content > h0 + pre,' +
+ *    '.bookmark-content > h0 + blockquote,' +
+ *    '.bookmark-content > h1 + pre,' +
+ *    '.bookmark-content > h1 + blockquote,' +
+ *    '.bookmark-content > h2 + pre,' +
+ *    '.bookmark-content > h2 + blockquote,' +
+ *    '.bookmark-content > h3 + pre,' +
+ *    '.bookmark-content > h3 + blockquote,' +
+ *    '.bookmark-content > h4 + pre,' +
+ *    '.bookmark-content > h4 + blockquote,' +
+ *    '.bookmark-content > h5 + pre,' +
+ *    '.bookmark-content > h5 + blockquote,' +
+ *    '.bookmark-content > h6 + pre,' +
+ *    '.bookmark-content > h6 + blockquote,' +
+ *    '.bookmark-content > table + pre,' +
+ *    '.bookmark-content > table + blockquote'
+ *  ).forEach(function(e) {e.previousSibling ? (e.previousSibling.style="clear:both") : null;})
+ */
+continueRight
+ clear:left
+ float:left
+
+html
+  overflow-x: hidden
+
+body, td, textarea, input
+  font-family: $body-font
+  line-height: 1.6
+  font-size: 16px
+  color:$gradedTxtColor
+
+  @media (max-width: 480px) /* Mobile */
+    font-size: 12px
+
+a
+  color: $accent
+  text-decoration: none
+  &:hover, &:focus
+    color: $accent * 0.8
+  &:focus
+    text-decoration: underline
+
+/* ----------------------------------------------------------------------------
+ * Content styling
+ */
+
+.bookmark-content
+  img
+    margin: 0
+
+  .imageContainer
+    margin: $vmargin 0
+
+  p, ul, ol, h0, h1, h2, h3, h4, h5, h6, pre, blockquote, dl, codetabscontainer
+    padding: $vmarginHalf 0
+  blockquote
+    padding: $vmargin 0
+  dd
+    padding-left: 0.5 * $pad
+    margin-bottom: $vmargin
+  dt
+    font-size: 1.1em
+    font-weight: bold
+    padding: $vmarginHalf 0
+
+  h0, h1, h2, h3, h4, h5, h6
+    font-weight: bold
+    antialias()
+
+  pre
+    font-family: $mono-font
+    font-size: $mono-font-size
+    line-height: $mono-line-height
+
+  ul > li
+    list-style-type: disc
+
+  ol > li
+    list-style-type: decimal
+
+  ul, ol
+    margin-left: 20px
+    /* jordwalke: This margin-right is needed to allow lists to "dock" to the
+     * left of a right block that spans multiple left blocks. The padding-right
+     * is needed regardless to get the right boundary of text to be a perfect box.
+     * TODO: This is the source of funny body size in mobile dimensions.
+     */
+    margin-right: -20px
+
+  ul > li
+    list-style-type: none
+    position: relative
+    &:before
+      content: ''
+      display: block
+      position: absolute
+      left: -17px
+      top: 7px
+      width: 4px
+      height: 4px
+      border-radius: 4px
+      background: white
+      border: solid 1px $grey
+
+  li > :first-child
+    padding-top: 0
+
+  strong, b
+    font-weight: bold
+
+  i, em
+    font-style: italic
+    /*color: $grey*/
+
+  dd > code,
+  p > code
+    background: $gradedCodebg
+    border-radius: 2px;
+    border: 1px solid $gradedCodeBorder
+  kbd
+    user-select: none
+    font-family: $mono-font
+    font-size: $kbd-font-size
+    background: white
+    border-radius: 3px;
+    border-top: 1px solid darken($gradedCodeBorder, 5%)
+    border-right: 2px solid darken($gradedCodeBorder, 5%)
+    border-left: 2px solid darken($gradedCodeBorder, 5%)
+    border-bottom: 3px solid darken($gradedCodeBorder, 7%)
+    padding-left: 4px;
+    padding-right: 4px;
+    padding-top: 1px;
+    padding-bottom: 2px;
+    cursor: pointer;
+
+  kbd:active
+    position:relative
+    top: 2px
+    border-bottom: 2px solid darken($gradedCodeBorder, 5%)
+
+
+  table > code, li > code, tr > code, td > code, th > code
+    background: $gradedCodebg
+    border-radius: 2px;
+    border: 1px solid $gradedCodeBorder
+
+  // Inline code with backticks
+  code
+    font-family: $mono-font
+    padding: 1px 3px
+    font-size: $mono-font-size
+  dl > dt > code, h0 code, h1 code, h2 code, h3 code, h4 code, h5 code, h6 code
+    padding: 0px
+    font-size: 1em
+
+  pre > code
+    // But for tripple backticks we reset the padding.
+    // Most of the padding will occur on the outside pre, not code element
+    // when in literate mode, or in non-literate mode it wil need to be something
+    // different. And for code tabs it will need to be something different still,
+    // to make room for the tabs
+    padding: 0px
+    border: none;
+    background: $gradedCodebg
+    display: block
+    background: transparent
+    font-size: 0.90em
+    letter-spacing: 0px
+
+  blockquote
+    :first-child
+      padding-top: 0
+    :last-child
+      padding-bottom: 0
+
+  table
+
+    margin-top: $vmargin
+    margin-bottom: $vmargin
+    padding: 0
+    border-collapse: collapse
+    /* Tables in non split mode should not have any clearing */
+    /* clear: both */
+    /* float: left */
+
+    tbody
+      > :nth-child(2n)
+        background-color: $offwhite
+
+    tr
+      border-top: 1px solid $gradedLine
+      background-color: white
+      margin: 0
+      padding: 0
+
+      th
+        background-color: $offwhite
+        text-align: auto;
+        font-weight: bold
+        border: 1px solid $gradedLine
+        margin: 0
+        padding: 6px 13px
+
+      td
+        text-align: auto;
+        border: 1px solid $gradedLine
+        margin: 0
+        padding: 6px 13px
+
+      th, td
+        :first-child
+
+          margin-top: 0;
+        :last-child
+          margin-bottom: 0;
+
+
+
+
+/* ----------------------------------------------------------------------------
+ * Content
+ */
+
+.bookmark-content-root
+  min-height: 90%
+  position: relative
+    /*
+     * https://caniuse.com/#search=scroll-margin-top
+
+    *
+      scroll-margin-top: $header-height
+    */
+
+
+/* Shadow around image in literate right bar */
+/* Remove outline while animating open */
+/* It's still not enough to hide outline while closing */
+.medium-zoom--opened
+  .bookmark-content
+    .imageContainer
+      &:after
+        box-shadow: none !important
+
+@media (min-width: 1280px) /* Big desktop */
+  body:not(.no-literate)
+    .bookmark-content
+      blockquote
+        .imageContainer
+          /* So clicks pass through to image */
+          pointer-events: none
+          overflow:hidden;
+          display:inline-block;
+          position:relative;
+          border-radius:0px;
+          &:after
+            content: "";
+            position: absolute;
+            width: 100%; height: 100%;
+            left: 0; top: 0;
+            box-shadow: inset 0px 0px 0px 0.5px #55555511
+          img
+            vertical-align:middle;
+            /* Reenable pointer events */
+            pointer-events: auto
+
+
+.bookmark-content.current
+  display: inherit;
+
+.bookmark-content
+  display: none;
+  padding-top: $pad - $vmargin
+  padding-bottom: $pad
+  padding-left: $pad
+  padding-right: $pad
+  clearfix()
+
+  img
+    width: 100%
+
+  max-width: 700px
+
+  blockquote
+    color: $gradedTxtColorLighter
+    padding-left: 40px
+
+  h0, h1, h2, h3, h4, h5, h6
+    antialias()
+    font-family: $body-font
+    padding-bottom: $vmarginHalf
+    // Headers have an extra big margin above their padding effectively making the total
+    // space double.
+    margin-top: $vmargin
+  h0 + p, h0 + ul, h0 + ol,
+  h1 + p, h1 + ul, h1 + ol,
+  h2 + p, h2 + ul, h2 + ol,
+  h3 + p, h3 + ul, h3 + ol,
+  h4 + p, h4 + ul, h4 + ol,
+  h5 + p, h5 + ul, h5 + ol,
+  h6 + p, h6 + ul, h6 + ol
+    padding-top: $vmarginHalf  // Half because headers have the other half but this was already the default. This rule isn't needed
+
+  h0, h1, h2
+    letter-spacing: 1px
+    font-size: 1.5em
+  
+  h0
+    font-size: 2em
+
+  // The subtitle that is injected from headerProps
+  p.bookmark-content-subtitle
+    font-size: .6em;
+    font-weight: normal;
+    color: $gradedTxtColorLighter
+    padding-top: 0
+    padding-bottom: 0
+
+  h3
+    font-size: 1.2em
+
+  // Lines
+  h0, h1, h2, .big-heading
+    padding-top: $bigHeadPadTop
+    &:before
+      display: block
+      content: ''
+      background: linear-gradient(left, rgba(#ff0000, 1.0) 0%, rgba($gradedLine, 0.0) 80%)
+      box-shadow: 0 1px 0 rgba(white, 0.4)
+      height: 1px
+      position: relative
+      top: $pad * -1
+      left: $pad * -1
+
+    @media (max-width: 768px) /* Mobile and tablet */
+      padding-top: $minipad * 2
+      &:before
+        background: $gradedLine
+        left: $pad * -1
+        top: $minipad * -1
+        width: 120%
+
+  /* Small headings */
+  h4, h5, h6, .small-heading
+    /* border-bottom: solid 1px rgba(black, 0.07) */
+    color: $gradedTxtColorLighter
+    padding-top: $vmarginHalf
+    padding-bottom: $vmarginHalf
+
+  body:not(.big-h3) & h3
+    @extends .bookmark-content .small-heading
+    font-size: 0.9em
+
+  body.big-h3 & h3
+    @extends .bookmark-content .big-heading
+
+  h0:first-child,
+  h1:first-child
+    padding-top: 0
+    &, a, a:visited
+      color: $gradedTxtColor
+    &:before
+      display: none
+
+@media (max-width: 768px) /* Tablet */
+  .bookmark-content
+    h4, h5, h6, .small-heading, body:not(.big-h3) & h3
+      padding-top: $smallHeadingVMarginTablet
+      padding-bottom: $smallHeadingVMarginTablet
+
+@media (max-width: 480px) /* Mobile */
+  .bookmark-content
+    padding: $minipad
+    padding-top: $minipad * 2
+
+    h4, h5, h6, .small-heading, body:not(.big-h3) & h3
+      padding-top: $smallHeadingVMarginMobile
+      padding-bottom: $smallHeadingVMarginMobile
+
+// ----------------------------------------------------------------------------
+// Code blocks
+
+// Omits rounded corners at top to make room for the tab selection.
+inset-box-codetabs-container()
+  /* border: solid 1px $offwhite*0.95 */
+  /* border-top: solid 1px $offwhite*0.9 */
+  /* border-left: solid 1px $offwhite*0.93 */
+  display: block
+  padding: $vmargin
+  background: $gradedCodebg
+  overflow: auto
+  scrollbar($gradedCodebg)
+  border-radius-bottom: 2px
+
+inset-box()
+  inset-box-codetabs-container()
+  border-radius-top: 2px
+
+body.no-literate .bookmark-content > pre > code
+  inset-box()
+
+@media (max-width: 1280px) /* Small desktop */
+  .bookmark-content > pre > code
+    inset-box()
+
+/* Hide scrollbar but keep functionality */
+pre > code
+  &::-webkit-scrollbar
+    display: none
+
+/* Hide scrollbar for IE, Edge and Firefox */
+pre > code
+  overflow-x:scroll
+  -ms-overflow-style: none  /* IE and Edge */
+  scrollbar-width: none  /* Firefox */
+
+
+currentCodeTabButton()
+  color: $headerLinkColorCurrent
+  border-bottom: 2px solid $headerLinkColorCurrent
+  &:active
+    color: $headerLinkColorCurrentActive
+
+.bookmark-content > codetabscontainer
+  /* Last child is the tab switcher itself */
+  font-weight: bold
+  display:flex
+  color: $gradedTxtColorLightest
+  overflow: hidden
+  padding-bottom: 0
+  codetabbutton
+    text-align: center
+    min-width: 30px
+    user-select: none
+    margin-right: 20px
+    cursor: pointer;
+    font-size: 14px
+    border-bottom: 2px solid transparent
+    &:active, &:hover
+      color: $gradedTxtColorLighter
+
+/**
+ * Hide all of the code that comes after a codetabs container
+ * by default. We will selectively display them based on active tab.
+ */
+.bookmark-content > codetabscontainer.bookmark-codetabs-length1
+  &+ pre
+    display: none
+.bookmark-content > codetabscontainer.bookmark-codetabs-length2
+  &+ pre,
+  &+ pre + pre
+    display: none
+.bookmark-content > codetabscontainer.bookmark-codetabs-length3
+  &+ pre,
+  &+ pre + pre,
+  &+ pre + pre + pre
+    display: none
+.bookmark-content > codetabscontainer.bookmark-codetabs-length4
+  &+ pre,
+  &+ pre + pre,
+  &+ pre + pre + pre,
+  &+ pre + pre + pre + pre
+    display: none
+
+.bookmark-content > codetabscontainer.bookmark-codetabs-length5
+  &+ pre,
+  &+ pre + pre,
+  &+ pre + pre + pre,
+  &+ pre + pre + pre + pre,
+  &+ pre + pre + pre + pre + pre
+    display: none
+
+/**
+ * Selectively enable the visibility of following pre/code sections depending
+ * on which tab is active.
+ */
+.bookmark-content > codetabscontainer.bookmark-codetabs-active1
+  & + pre
+    display: block
+  > codetabbutton:nth-child(1)
+    currentCodeTabButton()
+.bookmark-content > codetabscontainer.bookmark-codetabs-active2
+  & + pre + pre
+    display: block
+  > codetabbutton:nth-child(2)
+    currentCodeTabButton()
+.bookmark-content > codetabscontainer.bookmark-codetabs-active3
+  & + pre + pre + pre
+    display: block
+  > codetabbutton:nth-child(3)
+    currentCodeTabButton()
+.bookmark-content > codetabscontainer.bookmark-codetabs-active4
+  & + pre + pre + pre + pre
+    display: block
+  > codetabbutton:nth-child(4)
+    currentCodeTabButton()
+.bookmark-content > codetabscontainer.bookmark-codetabs-active5
+  & + pre + pre + pre + pre + pre
+    display: block
+  > codetabbutton:nth-child(5)
+    currentCodeTabButton()
+
+/**
+ * Formatting for grey boxes under code tabs.
+ */
+insetCodeTabCodes()
+  codetabscontainer.bookmark-codetabs-active1
+    & + pre > code
+      inset-box-codetabs-container()
+  codetabscontainer.bookmark-codetabs-active2
+    & + pre + pre > code
+      inset-box-codetabs-container()
+  codetabscontainer.bookmark-codetabs-active3
+    & + pre + pre + pre > code
+      inset-box-codetabs-container()
+  codetabscontainer.bookmark-codetabs-active4
+    & + pre + pre + pre + pre > code
+      inset-box-codetabs-container()
+  codetabscontainer.bookmark-codetabs-active5
+    & + pre + pre + pre + pre + pre > code
+      inset-box-codetabs-container()
+
+@media (max-width: 1280px)
+  body .bookmark-content
+    insetCodeTabCodes()
+@media (min-width: 1280px) /* Big desktop */
+  body.no-literate .bookmark-content
+    insetCodeTabCodes()
+
+// ----------------------------------------------------------------------------
+// Buttons
+
+.button.prim
+  &, &:visited
+    background: $button-prim-bg
+    color: $button-prim-txt-color
+    border: solid 1px $button-prim-border
+
+  &:hover
+    border-color: $button-prim-border-hover
+    background: $button-prim-bg-hover
+  &:focus
+    border-color: $button-prim-border-focus
+    background: $button-prim-bg-focus
+    color: $button-prim-txt-color-focus-active
+  &:active
+    border-color: $button-prim-border-active
+    background-color: $button-prim-bg-active
+    color: $button-prim-txt-color-focus-active
+
+.button
+  antialias()
+  transition-property: color, box-shadow, background, border-color
+  transition: 32ms ease-in 0s
+  /* box-shadow: inset rgba(255,255,255, .05) 0px 3px 0 -2px, rgba(0,0,0,0.018) 0px 2px 1px */
+  box-shadow: rgba(0,0,0,0.018) 0px 2px 1px
+  noselect()
+  cursor: pointer;
+  font-family: $body-font
+  letter-spacing: 0px
+  font-weight: bold
+
+  display: inline-block
+  padding: 0px 16px
+  font-size: .9em
+
+  border: solid 1px $button-border
+  border-radius: 1px
+
+  margin: 0px
+
+  &, &:visited
+    background: $button-bg
+    color: $button-txt-color
+    text-shadow: none
+
+  &:hover, &:focus
+    text-decoration: none
+  &:hover
+    border-color: $button-border-hover
+    background: $button-bg-hover
+  &:focus
+    /* box-shadow: inset rgba(255,255,255, .05) 0px 3px 0 -2px, rgba(0,0,0,0.03) 0px 2px 1px */
+    box-shadow: rgba(0,0,0,0.03) 0px 2px 1px
+    text-decoration: none;
+    border-color: $button-border-focus
+    color: $button-txt-color-focus-active
+    background: $button-bg-focus
+  &:active
+    transition: transform 60ms ease-out 0s;
+    text-decoration: none;
+    border-color: $button-border-active
+    background-color: $button-bg-active
+    box-shadow: none;
+    color: $button-txt-color-focus-active
+
+.bookmark-content
+  .button + em
+    color: $gradedTxtColorLighter
+
+// ----------------------------------------------------------------------------
+// Literate mode content
+
+@media (min-width: 1280px) /* Big desktop */
+  body:not(.no-literate)
+    .bookmark-content-root
+      background-color: $offwhite
+      $w = ($sidebar-width + $content-width)
+      /* Shadow on the book split */
+      background: linear-gradient(90deg, transparent 776px, $gradedBookSplitShadow 776px, $gradedBookSplitBg 782px);
+
+      &:before
+        background-color: $gradedLine
+        content: "";
+        display: block;
+        width: 1px;
+        height: 100%;
+        position: absolute;
+        z-index: 0;
+        top: 0;
+        left: 776px; /* Can actually ues a calc to get stretchy split calc(50% - 1px); */
+
+// Literate mode
+@media (min-width: 1280px) /* Big desktop */
+  small-heading()
+    margin-left: $pad
+    width: $content-width - $pad * 2
+
+    padding-left: 0
+    padding-right: 0
+
+  body:not(.no-literate)
+    .bookmark-content
+      padding-left: 0
+      padding-right: 0
+      width: $content-width + $pre-width
+      max-width: none
+      >
+        .bookmark-synced-up-left
+          clear: both
+        /*.bookmark-synced-up-right
+          margin-top:$pad */
+        p, ul, ol, h0, h1, h2, h3, h4, h5, h6, pre, blockquote, dl, dt, dd
+          width: $content-width
+          padding-right: $pad
+          padding-left: $pad
+        codetabscontainer, pre, blockquote
+          width: $pre-width
+          padding-left: ($pad/2)
+          padding-right: ($pad/2)
+          float: right
+          clear: right
+          +
+            p, ul, ol
+              clear: both
+        p, ul, ol
+          float: left
+          clear: left
+
+        /* Allow content to float to the right of smaller headers, but then we need to adjust
+         * for the extra padding in headers in the items that are floated to the right of them
+         * We match the padding-tops of those floated items that appear right after a small
+         * header that is floated left.
+         * small header top-paddings only have three ranges:
+         * $smallHeadingVMarginDesktop  : Over 768px wide viewport
+         * $smallHeadingVMarginTablet : Over 480px wide viewport but under 768px.
+         * $smallHeadingVMarginMobile : Under 480px wide viewport
+         *
+         * But the floating behavior only even applies for ultra-wide (min-width: 1280px)
+         * So we only need to apply the extra padding to the top of content floated
+         * right, immediately after a small header which is marked as floating left.
+         * EDIT: Actually, we'll just make padding-top: vmarginHalf for
+         * small headers, like they're any other piece of content. This special
+         * case of + pre/blockquote isn't needed now.
+         * clear: both will cause the left column to "sync up"
+         */
+        h0, h1, h2, h3, h4, h5, h6, .small-heading, body:not(.big-h3) & h3
+          float: left
+          clear: both
+
+        h0 + pre,
+        h0 + codetabscontainer,
+        h0 + blockquote,
+        h1 + pre,
+        h1 + codetabscontainer,
+        h1 + blockquote,
+        h2 + pre,
+        h2 + codetabscontainer,
+        h2 + blockquote,
+        h3 + pre,
+        h3 + codetabscontainer,
+        h3 + blockquote
+          padding-top: $bigHeadPadTop
+          margin-top: $vmargin
+        h4 + pre,
+        h4 + codetabscontainer,
+        h4 + blockquote,
+        h5 + pre,
+        h5 + codetabscontainer,
+        h5 + blockquote,
+        h6 + pre,
+        h6 + codetabscontainer,
+        h6 + blockquote,
+        .small-heading + pre,
+        .small-heading + codetabscontainer,
+        .small-heading + blockquote,
+          /* border-bottom: solid 1px rgba(black, 0.07) */
+          margin-top: $vmargin
+
+
+
+        h4, h5, h6, .small-heading, body:not(.big-h3) & h3
+          small-heading()
+
+        table
+          /* jordwalke: Moved the clearing only to here instead of the general table rule.
+           * Otherwise, the following layout is messed up when resizing the window to be narrow:
+           *
+           *    `type Unix.error`
+           *    : Error codes for specific `Unix` module errors.
+           *
+           *    Value                | Meaning
+           *    :------------------- |:------------------------------------------
+           *    `EACCES`           | Permission denied
+           *    `EAGAIN`           | Resource temporarily unavailable; try again
+           *    `EBADF`            | Bad file descriptor
+           *    `EBUSY`            | Resource unavailable
+           *    `EEXISTS`          | File already exists
+           *    `EISDIR`           | Is a directory
+           *    `ENOENT`           | No such file or directory
+           *    `ENOTDIR`          | Not a directory
+           *    `ENOTEMPTY`        | Directory not empty
+           *    [See all](https://caml.inria.fr/pub/docs/manual-ocaml/libref/Unix.html#TYPEerror) |
+           *
+           *
+           *    `fun Unix.dup` : `(~cloexec:bool=?, ` `file_descr` `) => ` `file_descr`
+           *    : Return a new file descriptor referencing the same file as the given
+           *      descriptor. See `Unix.set_close_on_exec` for documentation on the `cloexec`
+           *      optional argument.
+           *      (Copied from stdlib docs)
+           */
+          clear: left
+          float: left
+          margin-left: $pad
+          margin-right: $pad
+          max-width: $content-width - $pad*2
+
+  body:not(.no-literate):not(.big-h3)
+    .bookmark-content > h3
+      small-heading()
+
+// ----------------------------------------------------------------------------
+// Header
+
+.medium-zoom--opened > .bookmark-header
+  /* Needs to be less than medium-zoom overlays */
+  z-index:50
+
+.bookmark-header
+  display:flex
+  flex-direction: column
+  z-index:101
+  /* text-shadow: 0 1px 0 rgba(white, 0.5) */
+  position: -webkit-sticky
+  position: sticky
+  line-height: 20px;
+  top: 0px;
+
+/**
+ * Search UI.
+ */
+@media (max-width: 768px) {
+  .bookmark-menubar {
+    display: none;
+  }
+}
+.bookmark-header {
+  height: 52px;
+/* Total header height should be 52 = vmargin*2 + line-height(20) */
+/* Total header height should be 52 = vmargin*2 + line-height(20) */
+}
+.bookmark-header .bookmark-search-form {
+  align-items: center;
+  position: relative;
+  width: 100%;
+  display: flex;
+  line-height: 100%;
+  z-index: 0;
+  padding-left:$headerPadding
+  padding-right:$headerPadding
+}
+
+$searchPillHorizontalMargin = 6px
+$searchPillMargin = 5px
+$searchPillHorzPadding = 6px
+$searchPillBorderSize = 1px
+// The search icon, or "version:" pill when in version search mode.
+$leftPillWidth = 55px;
+/* An extra minus two at the end for border */
+$searchPillHeight = $searchInputHeight - 2 * $searchPillMargin
+
+pillColor()
+  background-color: $hitsBg;
+  border: $searchPillBorderSize solid $hitsBorderColor;
+  color: $gradedTxtColorLightest
+
+searchPillDimensions()
+  height: $searchPillHeight
+  font-size: 12px
+  line-height: $searchPillHeight
+  font-size: 12px
+  text-align: center;
+  box-sizing:border-box
+
+$leftSearchIconPillWidth = 20px
+
+.bookmark-header .bookmark-search-form.mode-version-selector:before {
+  border-radius: 0.5 * $searchPillHeight
+  searchPillDimensions()
+  position: absolute;
+  pillColor()
+  padding-left: $searchPillHorzPadding;
+  padding-right: $searchPillHorzPadding;
+  content: "version:";
+  width: $leftPillWidth;
+  margin-left: $searchPillMargin;
+}
+
+.bookmark-header .bookmark-search-form:before {
+  content: "   ⚲   ";
+  searchPillDimensions()
+  /* Square */
+  width: $searchPillHeight
+  position: absolute;
+  padding-left: $searchPillHorzPadding;
+  padding-right: $searchPillHorzPadding;
+  width: $leftSearchIconPillWidth
+  margin-left: $searchPillMargin;
+  /* Does not render correctly in Chrome MacOS for some reason */
+  /* font-weight: bold */
+  font-size: 18px
+  color: $gradedTxtColorLightest
+  transform: rotate(-45deg) translateY(2px)
+  z-index: 1
+}
+
+
+
+$availableHeaderSpaceAboveSearchHits = $sidebar-width - 2*$headerPadding
+$searchInputUnfocusedWidth = .8 * $availableHeaderSpaceAboveSearchHits
+.bookmark-header .bookmark-search-input {
+  // Padding for search icon and close button
+  position: absolute;
+  right: 0px;
+  padding-right: 20px;
+  border:1px solid $searchInputBorderColor;
+  border-radius: $searchInputHeight;
+  background-color: $searchInputBg;
+  color: $gradedTxtColor
+  position: relative;
+  width: $searchInputUnfocusedWidth
+  transition: width 220ms ease-in-out 0s, border-color 220ms ease-in-out 0s
+  height: $searchInputHeight;
+  display: flex;
+  line-height: 100%;
+  z-index: 0;
+  font-size: 12px
+}
+
+.bookmark-header .bookmark-search-input {
+  padding-left: $leftSearchIconPillWidth + $searchPillHorzPadding + $searchPillHorzPadding
+}
+.bookmark-header .bookmark-search-form.mode-version-selector .bookmark-search-input {
+  padding-left: $leftPillWidth + $searchPillHorzPadding + $searchPillHorzPadding
+  transform: none
+}
+
+
+/**
+ * Keep the input expanded even if they blur, if they have entered text.
+ */
+.bookmark-header .bookmark-search-input:valid,
+.bookmark-header .bookmark-search-input:focus {
+  /* z-index: 1; */
+  outline-style: none;
+  box-shadow: none;
+  outline: none;
+  // Make it take up the whole sidebar width (when taking into account the padding)
+  /* width: $availableHeaderSpaceAboveSearchHits */
+}
+.bookmark-header .bookmark-search-input:focus {
+  /* Make it match the hits border color when focused */
+  border:1px solid $searchInputBorderColorFocus
+}
+
+.bookmark-header .bookmark-search-input::-webkit-input-placeholder
+  color: $gradedTxtColorLightest
+
+.bookmark-header .bookmark-search-input::-ms-input-placeholder
+  color: $gradedTxtColorLightest
+
+.bookmark-header .bookmark-search-input::placeholder
+  color: $gradedTxtColorLightest
+
+.bookmark-search-input:before {
+  border: 3px solid #e5e5e5;
+  border-radius: 50%;
+  content: " ";
+  display: block;
+  height: 6px;
+  left: 15px;
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-58%);
+  transform: translateY(-58%);
+  width: 6px;
+  z-index: 1
+}
+
+.bookmark-search-input:after {
+    background: #e5e5e5;
+    content: " ";
+    height: 7px;
+    left: 24px;
+    position: relative;
+    top: 55%;
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    width: 3px;
+    z-index: 1
+}
+
+.bookmark-header .bookmark-dropdown-button
+  border: none
+  color: $gradedTxtColorLightest
+  margin-left: 8px
+  height: $searchPillHeight
+  background-color: transparent;
+  display: inline-block;
+  vertical-align: middle;
+  outline: 0;
+  cursor: pointer;
+  width:0
+  padding:0
+
+.bookmark-header .bookmark-search-input-right-reset-icon {
+  searchPillDimensions()
+  /* Square */
+  width: $searchPillHeight
+  /* Unstyle the original button */
+  border: none
+  position: relative;
+  height: $searchPillHeight
+  background-color: transparent;
+  display: inline-block;
+  vertical-align: middle;
+  outline: 0;
+  cursor: pointer;
+  width:0
+  padding:0
+}
+
+$closeIconDiameter = 14px
+
+/**
+ * The / icon to indicate / can focus search.
+ */
+.bookmark-header .bookmark-search-input-right-reset-icon:before
+  searchPillDimensions()
+  /* Square */
+  width: $searchPillHeight
+  position:absolute
+  top: 0px
+  left: 0px
+  left: 0 - $searchPillMargin - $searchPillHeight - 1px
+  content: "/";
+  pillColor()
+  border-radius: 5px
+  pointer-events: none
+  transition: opacity 100ms
+  opacity: 0
+
+.bookmark-header .bookmark-search-input:not(:valid):focus ~ .bookmark-search-input-right-reset-icon:before,
+.bookmark-header .bookmark-search-input:not(:valid):not(:focus) ~ .bookmark-search-input-right-reset-icon:before {
+  opacity: .7
+}
+
+
+
+/**
+ * The close icon when there is content in the box.
+ */
+.bookmark-header .bookmark-search-input-right-reset-icon:after
+  searchPillDimensions()
+  /* Square */
+  width: $searchPillHeight
+  position:absolute
+  top: 0px
+  left: 0px
+  content: "\00d7";
+  left: 0 - $searchPillMargin - $searchPillHeight - 1px
+  transition: opacity 100ms
+  opacity: 0
+
+.bookmark-header .bookmark-search-input:valid ~ .bookmark-search-input-right-reset-icon:after {
+  opacity: .7
+}
+
+.bookmark-header .bookmark-version-menu 
+  transition: color 100ms
+  font-weight:bold
+  margin-left: $searchPillHorzPadding
+  searchPillDimensions()
+  color: $gradedTxtColorLightest
+  outline: none
+  border: 0
+  -moz-appearance: none;
+  -webkit-appearance: none
+  padding: 0;
+  border: none;
+  background: none;
+  
+.bookmark-header .bookmark-version-menu:hover,
+.bookmark-header .bookmark-version-menu:focus
+  border:none
+  color: $headerLinkColorHover
+  
+.bookmark-header .bookmark-version-menu:after
+  text-decoration: none
+  searchPillDimensions()
+  font-size:14px
+  content: '▾'
+
+@media (min-width: 500px) {
+  .bookmark-hits-scroll {
+    width: $sidebar-width
+  }
+}
+@media (max-width: 500px) {
+  .bookmark-hits-scroll {
+    width: 100%;
+  }
+}
+.bookmark-hits-noresults-list {
+  display: flex;
+  justify-content: center;
+  margin-top: 30vh;
+  font-size: 20px;
+  color: $gradedTxtColorLightest
+  text-align: center
+}
+.bookmark-hits-scroll.bookmark-hits-scroll-hidden {
+  /* Hide the box shadow so it doesn't bleed into the view */
+  box-shadow: none
+  transition: all 0s ease-in-out
+  transform-origin: center top
+  transform: scale(0.95)     /* translateX(100%) */
+  opacity:0
+  visibility:hidden
+}
+.bookmark-hits-scroll {
+  border-right: 1px solid $hitsBorderColor
+  box-shadow: 0 2px 15px 0 rgba(0,0,0,0.05);
+  /* transform: translateX(0px); */
+  transition: all 0s ease-in-out
+/* Make it be as big as the viewport minus header height */
+/* Keep this in sync with the $header-height (can't use dollar in calc with stylus) */
+  height: calc(100vh - 52px);
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  bottom: 0px;
+  z-index: 2;
+  overflow-x: scroll;
+  -ms-overflow-style: none /* IE and Edge */;
+  scrollbar-width: none /* Firefox */;
+  line-height: 20px !important;
+  font-size: 14px !important;
+  background-color: $hitsbg
+  // color: $gradedTxtColor
+  color: $gradedTxtColor
+  line-height: 20px !important;
+  font-size: 14px !important;
+  overflow: auto;
+/* Bottom: 100% makes it grow upwards */
+/* Total header height should be 52 = vmargin*2 + line-height(20) */
+/* Minus one because of the top border of the header doesn't count for top */
+  -webkit-overflow-scrolling: touch;
+}
+.bookmark-hits-scroll::-webkit-scrollbar {
+  display: none;
+}
+.bookmark-in-doc-highlight {
+  background-color: rgba(255,241,168,0.333);
+  transition: background-color .2s ease-out .2s;
+  background-clip: content-box
+}
+pre.bookmark-in-doc-highlight {
+  background-clip: border-box
+}
+.bookmark-hits-scroll::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+.bookmark-hits-scroll::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 8px;
+  border: solid 4px #f8f8f8;
+}
+.bookmark-hits-scroll:hover::-webkit-scrollbar-thumb {
+  background: #999;
+  box-shadow: inset 2px 2px 3px rgba(0,0,0,0.2);
+}
+.bookmark-hits-scroll .bookmark-hits-list {
+  flex-wrap: nowrap;
+  flex-direction: column;
+  margin: 0;
+  border-top: none;
+  font-size: $hitsFontSize
+  line-height: $hitsLineHeight
+}
+.bookmark-hits-scroll .bookmark-hits-item {
+  cursor: pointer;
+  transition: border-color 0ms ease-out 0s, background-color 0ms ease-out 0s;
+  border-top: 1px solid $hits-item-border;
+  padding: $vmargin
+  border-bottom:1px solid $hits-item-border;
+/* By default is: */
+/* width: calc(25% - 1rem) */
+  width: 100%;
+  margin: 0;
+  box-shadow: none;
+}
+.bookmark-hits-scroll .bookmark-hits-item:hover
+  transition: border-color 50ms ease-out 0s, background-color 50ms ease-out 0s;
+  background-color: $hits-item-bg-hover
+  border-top: 1px solid $hits-item-bg-hover
+  border-bottom: 1px solid $hits-item-bg-hover
+
+.bookmark-hits-scroll .bookmark-hits-item.cursor
+  background-color: $hits-item-bg-cursor
+
+.bookmark-hits-scroll .bookmark-hits-item.cursor
+  border-top: 1px solid $hits-item-border-cursor
+  border-bottom: 1px solid $hits-item-border-cursor
+
+.bookmark-hits-scroll .bookmark-hits-item:first-child,
+.bookmark-hits-scroll .bookmark-hits-item.cursor:first-child,
+.bookmark-hits-scroll .bookmark-hits-item:hover:first-child
+  border-top:none
+
+.bookmark-hits-scroll .bookmark-hits-item:active,
+.bookmark-hits-scroll .bookmark-hits-item.cursor:hover
+  background-color: $hits-item-bg-cursor-double
+  /* border-left: 1px solid darken($hits-item-bg-cursor-double, 2%) */
+
+.bookmark-hits-scroll .bookmark-hits-item:active .bookmark-hits-item-button-contents {
+  user-select: none;
+  transition: transform 60ms ease-out 0s;
+  transform: scale(0.98);
+}
+
+.bookmark-hits-scroll .bookmark-hits-item-button-contents a {
+  pointer-events: none
+}
+.bookmark-hits-scroll .bookmark-hits-item .bookmark-hits-item-button-contents {
+  opacity: 0.9
+  transform: scale(1);
+  transition: transform 0.05s ease-out 0s
+}
+.bookmark-hits-scroll .bookmark-hits-item li {
+  list-style-type: none;
+  position: relative;
+  margin-left: 2px;
+}
+
+.bookmark-hits-scroll .bookmark-hits-item h0,
+.bookmark-hits-scroll .bookmark-hits-item h1,
+.bookmark-hits-scroll .bookmark-hits-item h2,
+.bookmark-hits-scroll .bookmark-hits-item h3,
+.bookmark-hits-scroll .bookmark-hits-item h4,
+.bookmark-hits-scroll .bookmark-hits-item h5
+  font-weight:bold
+  
+.bookmark-hits-scroll .bookmark-hits-item
+  strong, b
+    font-weight: 500   // Don't want to overshadow the crumb boldness so temper this.
+
+.bookmark-hits-scroll .bookmark-hits-item li:before {
+  content: '';
+  display: block;
+  position: absolute;
+  left: -11px;
+  top: 7px;
+  width: 2px;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+  border: solid 1px #ccc;
+}
+
+/* Minikeys */
+.bookmark-hits-scroll .bookmark-hits-item kbd
+  user-select: none
+  font-family: $mono-font
+  font-size: $kbd-font-size
+  background: white
+  border-radius: 3px;
+  border-top: 1px solid darken($gradedCodeBorder, 5%)
+  border-right: 2px solid darken($gradedCodeBorder, 5%)
+  border-left: 2px solid darken($gradedCodeBorder, 5%)
+  border-bottom: 3px solid darken($gradedCodeBorder, 7%)
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-top: 1px;
+  padding-bottom: 2px;
+  cursor: pointer;
+
+.bookmark-hits-scroll .bookmark-hits-item table > code,
+.bookmark-hits-scroll .bookmark-hits-item li > code,
+.bookmark-hits-scroll .bookmark-hits-item tr > code,
+.bookmark-hits-scroll .bookmark-hits-item td > code,
+.bookmark-hits-scroll .bookmark-hits-item th > code,
+.bookmark-hits-scroll .bookmark-hits-item p > code {
+  font-family: $mono-font
+  font-size: 0.9em;
+  background: $hitsCodeBg
+  border: 1px solid darken($hitsCodeBg, 7%)
+  border-radius: 2px;
+  padding: 1px 3px;
+}
+.bookmark-hits-scroll .bookmark-hits-item pre {
+  font-family: $mono-font;
+  background: $hitsCodeBg
+  display: block;
+  padding: 10px;
+  border-radius: 2px;
+  overflow-x: scroll;
+  -ms-overflow-style: none /* IE and Edge */;
+  scrollbar-width: none /* Firefox */;
+}
+.bookmark-hits-scroll .bookmark-hits-item pre code {
+  color: $gradedTxtColor
+  font-size: 0.9em;
+}
+.bookmark-hits-scroll .bookmark-hits-item pre::-webkit-scrollbar {
+  display: none;
+}
+.bookmark-hits-scroll .bookmark-hits-item search-highlight {
+  color: $gradedTxtColor
+  background-color: rgba(255,212,0,0.276);
+  border-radius: 2px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 3px;
+  padding-right: 3px;
+/* Now remove the padding - but also remove one for the border */
+/* This is so that when typing the text around it doesn't move */
+  margin-left: -4px;
+  margin-right: -4px;
+  border: 1px solid rgba(211,176,0,0.402);
+}
+
+.bookmark-hits-scroll .bookmark-hits-item-button-contents-top-row
+  color: $gradedTxtColor
+  margin-top: 0
+  margin-bottom: 4px
+  display:flex
+  justify-content: space-between
+
+  
+/*
+.bookmark-hits-item-contents-crumb-top-row-crumb
+*/
+.bookmark-hits-item-contents-top-row-tags .bookmark-hits-item-contents-top-row-tags-tag
+  position:relative
+  padding-left: $searchPillHorzPadding;
+  padding-right: $searchPillHorzPadding;
+
+
+tagColor()
+  content: 'x'
+  text-align: center;
+  /* This is needed because it's not accomplished by the * rule */
+  box-sizing:border-box
+  top:0
+  left: 0
+  bottom: 0
+  right: 0
+  border-radius: 0.5 * $searchPillHeight
+
+tagColor()
+  content: 'x'
+  text-align: center;
+  /* This is needed because it's not accomplished by the * rule */
+  box-sizing:border-box
+  top:0
+  left: 0
+  bottom: 0
+  right: 0
+  border-radius: 0.5 * $searchPillHeight
+
+pill()
+  content: ' '
+  text-align: center;
+  /* This is needed because it's not accomplished by the * rule */
+  box-sizing:border-box
+  top:0
+  left: 0
+  bottom: 0
+  right: 0
+  /* This way it works with any height that occurs */
+  border-radius: 99px
+
+redPill()
+  background-color: $redBg
+  border: 1px solid $redBorder
+
+/**
+ * By inserting the "pill" background as a :before, we avoid disrupting the perceived size of the tags.
+ */
+.bookmark-hits-item-contents-top-row-tags .bookmark-hits-item-contents-top-row-tags-tag:before
+  pill()
+
+
+
+.bookmark-hits-scroll .bookmark-hits-item-button-contents-crumb-sep
+  color: $gradedTxtColorLighter
+  margin-left: 4px
+  margin-right: 4px
+
+.bookmark-hits-scroll .bookmark-hits-item-button-contents-top-row .bookmark-hits-item-button-contents-crumb-row-first {
+  font-weight:bold
+}
+.bookmark-hits-scroll .bookmark-hits-item-button-contents-top-row .bookmark-hits-item-button-contents-crumb-row-second {
+  font-weight:bold
+}
+.bookmark-hits-scroll .bookmark-hits-item-button-contents-top-row .bookmark-hits-item-button-contents-crumb-row-third {
+  font-weight:bold
+}
+
+// ----------------------------------------------------------------------------
+// Sidebar
+
+.bookmark-menubar
+  visibility: hidden
+.bookmark-menubar.current
+  visibility: visible
+.bookmark-menubar
+  antialias()
+  .section
+    padding-right: 0
+    padding-left: $sidepad
+    padding-bottom: $sidepad
+    padding-top: 2 * $sidepad
+
+  .section + .section
+    border-top: solid 1px $gradedLine
+
+  .section.no-line
+    border-top: 0
+    padding-top: 0
+  code
+    white-space:pre
+    font-family:$mono-font
+
+a.big.button
+  display: block
+  width: 100%
+  padding: 10px 20px
+  text-align: center
+
+  font-weight: bold
+  font-size: 1.1em
+
+  background: transparent
+  border: solid 3px $accent
+  border-radius: 30px
+  font-family: $body-font
+
+  &, &:visited
+    color: $accent
+    text-decoration: none
+
+  &:hover, &:focus
+    text-decoration: none
+    background: $accent
+    &, &:visited
+      color: white
+
+@media (max-width: 480px) /* Mobile */
+  .bookmark-menubar
+    padding: $minipad
+    border-bottom: solid 1px $gradedLine
+
+@media (max-width: 768px) /* Mobile and tablet */
+  .bookmark-menubar
+    display: none
+
+@media (min-width: 768px) /* Desktop */
+  .bookmark-content-root
+    padding-left: $sidebar-width
+
+  .bookmark-menubar
+    position: absolute
+    left: 0
+    top: 0
+    bottom: 0
+    width: $sidebar-width
+    /*border-right: solid 1px $gradedLine */
+
+  .bookmark-menubar.fixed
+    position: fixed
+
+    scrollbar()
+    overflow-y: auto
+
+.bookmark-menubar
+  font-size: 0.8em
+
+// Sticky left menu:
+.bookmark-menu.section
+  position: -webkit-sticky
+  position: sticky
+  /* header height */
+  top: 35px
+.bottom.section
+  position: -webkit-sticky
+  position: sticky
+  /* header height */
+  top: 35px
+
+// Menu items
+.bookmark-menu
+  ul.level-1 > li + li
+    margin-top: 20px
+
+  a
+    position: relative
+
+    display: block
+    padding-top: 4px
+    padding-bottom: 4px
+    margin-right: ($sidepad * -1)
+
+    color: $gradedTxtColorLighter
+    font-weight: 500!important
+    &:hover, &:focus
+      text-decoration: none
+      color: $accent*0.8
+
+  a.level-1
+    font-family: $body-font
+    text-transform: uppercase
+    font-size: 1em
+    font-weight: bold
+    &, &:visited
+      color: $gradedTxtColorLighter
+    &:hover, &:focus
+      color: $gradedTxtColorLighter*0.6
+
+  a.level-2
+    font-size: 1em
+    font-weight: normal
+
+  a.level-3
+    font-weight: normal
+    font-size: 1em
+    /* padding-left: 8px */
+
+  a.active
+    &, &:visited, &:hover, &:focus
+      color: $accent
+
+    // Indicator
+    &:after
+      visibility: hidden
+      content: ''
+      display: block
+
+      position: absolute
+      top: 10px
+      right: $sidepad
+
+      width: 9px
+      height: 3px
+      border-radius: 2px
+      background: $accent
+
+// ----------------------------------------------------------------------------
+// Syntax highlighting
+
+code
+  .string, .number
+    color: #3ac
+  .init
+    color: #383
+  .keyword
+    font-weight: bold
+  .comment
+    color: $gradedTxtColorLighter * 1.2
+
+// ----------------------------------------------------------------------------
+
+.bookmark-content
+  .large-brief & > h0:first-child + p,
+  .large-brief & > h1:first-child + p,
+  > p.brief
+    font-size: 1.3em
+    font-family: $body-font
+    font-weight: 300
+
+
+// ----------------------------------------------------------------------------
+
+.title-area
+
+  background: linear-gradient(0deg, $gradedHeaderbg 0%, $lowlight-desat-17 100%)
+  box-sizing: border-box
+  antialias()
+  text-align: center
+  overflow: hidden
+  img
+    noselect()
+    pointer-events: none
+    
+
+  > img.bg
+    z-index: 0
+
+    // Start it off screen
+    position: absolute
+    left: -9999px
+
+  > div
+    position: relative
+    z-index: 1
+
+
+// ----------------- Styles just for "this page" -----------------------------
+.title-card
+  max-height: 70vh;
+  min-height: 60vh;
+  text-rendering: optimizeLegibility !important
+  -webkit-font-smoothing: antialiased !important
+  -moz-osx-font-smoothing: grayscale
+
+.title-card
+  /* background: #1d3b47; */
+  /* background-position: center center; */
+  /* background-size: cover; */
+  color: $gradedTxtColorLightest
+  text-align: center
+
+  position: relative
+  z-index: 1
+
+  width: 100%
+  display: table
+
+.title-card > .in
+  display: table-cell
+  vertical-align: middle
+
+.title-card p
+  font-family: $body-font
+  color: $gradedTxtColorLightest
+  letter-spacing: 2px
+  margin-top: -20px
+  font-size: 1.3em
+
+
+@media (max-width: 768px) /* Tablet */
+  .title-card h5
+    margin-top: 100px
+
+@media (max-width: 480px) /* Mobile */
+  .title-card
+    padding: 50px 0
+  .title-card p
+    font-size: 1em
+    margin-top: -30px
+
+
+.fixedHeaderContainer {
+  background: $gradedHeaderbg
+  border-bottom: solid 1px $gradedLine
+  border-top: solid 1px $gradedHeaderbg
+  color: $gradedHeaderLinkColor;
+  min-height: 50px;
+  height: 52px
+  padding: $headerPadding 0;
+  width: 100%;
+  z-index: 9999;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0)
+
+  display: flex;
+  position: relative;
+  right: auto;
+  top: auto;
+  width: auto
+}
+
+
+/*
+ * I have no idea why this makes the search input dock right but that's what we
+ * want.
+ * Notes: It's the width 100% on the second child (form) that makes this work.
+ * Nice!
+ */
+.fixedHeaderContainer ul.nav,
+  margin-left: auto
+
+.fixedHeaderContainer .bookmark-search-input
+  margin-right: auto
+
+@media only screen and (min-width: 1280px) {
+  .fixedHeaderContainer {
+      flex-shrink:0
+  }
+}
+
+.fixedHeaderContainer a {
+  -webkit-box-align: center;
+  align-items: center;
+  border: 0;
+  color: $gradedHeaderLinkColor;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  flex-flow: row nowrap;
+  height: 34px;
+  z-index: 10000
+  text-shadow: $gradedHeaderTextShadow
+}
+
+.fixedHeaderContainer h3 {
+  color: #fff;
+  font-size: 16px;
+  margin: 0 0 0 10px;
+  text-decoration: underline
+}
+
+.fixedHeaderContainer a > img {
+    display: none
+}
+
+.fixedHeaderContainer ul {
+  align-items: center;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: flex;
+  flex-wrap: nowrap;
+  list-style: none;
+  padding: 0;
+  width: 100%
+}
+
+.fixedHeaderContainer ul li {
+  -webkit-box-flex: 1;
+  flex: 1 1 auto;
+  margin: 0;
+  text-align: center;
+  white-space: nowrap
+}
+
+.fixedHeaderContainer ul li a {
+  -webkit-box-align: center;
+  align-items: center;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: flex;
+  font-size: .9em;
+  height: auto;
+  -webkit-box-pack: center;
+  justify-content: center;
+  margin: 0;
+  padding: 10px;
+  -webkit-transition: background-color .3s;
+  transition: background-color .3s
+}
+
+.fixedHeaderContainer ul.nav li.site-nav-group-active > a
+  color: $headerLinkColorCurrent
+  font-weight:bold
+
+.fixedHeaderContainer ul.nav li > a:focus,
+.fixedHeaderContainer ul.nav li > a:hover
+  color: $headerLinkColorHover
+
+.dropdown {
+  border-bottom: 1px solid $gradedLine
+  pointer-events: none;
+  position: absolute;
+  width: 100%
+  left: 0;
+  top: $header-height - 2
+}
+
+.dropdown.visible {
+  display: -webkit-box;
+  display: flex
+}
+
+.dropdown.hide {
+ display: none
+}
+
+.dropdown-items a {
+  background-color: $gradedHeaderbgDarker
+  border-top: 1px solid $gradedHeaderbgDarker
+  border-left: 1px solid $gradedHeaderbgDarker
+  border-right: 1px solid $gradedHeaderbgDarker
+}
+
+.dropdown-items a:hover,
+.dropdown-items a:focus,
+.dropdown-items a:active {
+  background-color: $gradedHeaderbgDarkest
+}
+.dropdown-items {
+  border-bottom: 1px solid $gradedLine
+  margin-top:$headerPadding + 1px
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  flex-direction: column;
+  min-width: 120px;
+  pointer-events: all
+
+  margin-top: 0
+  border: none
+  background-color: $gradedHeaderbgDarker
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  flex-direction: row
+}
+
+@media only screen and (min-width: 1280px) {
+  .fixedHeaderContainer ul.nav {
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    flex-flow: row nowrap;
+    margin: 0;
+    padding: 0;
+    width: auto
+  }
+
+  .fixedHeaderContainer ul.nav li a {
+    border: 0;
+    color: $gradedHeaderLinkColor
+    display: -webkit-box;
+    display: flex;
+    margin: 0;
+  }
+
+}
+
+@media only screen and (max-width: 735px) {
+  .fixedHeaderContainer ul {
+    overflow-x:auto
+  }
+
+  .fixedHeaderContainer ul::-webkit-scrollbar {
+    display: none
+  }
+}
+
+
+input[type=search] {
+  -moz-appearance: none;
+  -webkit-appearance: none
+}
+
+.edit-page-link {
+  float: right;
+  font-size: 10px;
+  font-weight: 400;
+  margin-top: 3px;
+  text-decoration: none
+}
+
+@media only screen and (max-width: 1023px) {
+  .edit-page-link {
+    display:none
+  }
+}
+
+.hide {
+  display: none
+}
+
+
+/**
+Text clipping:
+    background: linear-gradient(to bottom, #fff 0px, #fff 49px, #555 50px, #555 51px);
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text;
+    background-attachment: fixed;
+}
+*/

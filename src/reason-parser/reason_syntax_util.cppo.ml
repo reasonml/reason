@@ -579,13 +579,59 @@ let remove_stylistic_attrs_mapper_maker super =
   end;
 }
 
+let escape_stars_slashes str =
+  if String.contains str '/' then
+    replace_string "/*" "/\\*" @@
+    replace_string "*/" "*\\/" @@
+    replace_string "//" "/\\/" @@
+    str
+  else
+    str
+
 let remove_stylistic_attrs_mapper =
   remove_stylistic_attrs_mapper_maker Ast_mapper.default_mapper
 
+let let_monad_symbols = [ '$'; '&'; '*'; '+'; '-'; '/'; '<'; '='; '>'; '@';
+                          '^'; '|'; '.'; '!']
+
+let is_letop s =
 #if OCAML_VERSION >= (4, 8, 0)
-let noop_mapper =
+  String.length s > 3
+#else
+  String.length s > 5
+#endif
+  && s.[0] = 'l'
+  && s.[1] = 'e'
+  && s.[2] = 't'
+#if OCAML_VERSION >= (4, 8, 0)
+  && List.mem s.[3] let_monad_symbols
+#else
+  && s.[3] = '_'
+  && s.[4] = '_'
+  && List.mem s.[5] let_monad_symbols
+#endif
+
+let is_andop s =
+#if OCAML_VERSION >= (4, 8, 0)
+  String.length s > 3
+#else
+  String.length s > 5
+#endif
+  && s.[0] = 'a'
+  && s.[1] = 'n'
+  && s.[2] = 'd'
+#if OCAML_VERSION >= (4, 8, 0)
+  && List.mem s.[3] let_monad_symbols
+#else
+  && s.[3] = '_'
+  && s.[4] = '_'
+  && List.mem s.[5] let_monad_symbols
+#endif
+
+#if OCAML_VERSION >= (4, 8, 0)
+let noop_mapper super =
   let noop = fun _mapper x -> x in
-  { Ast_mapper.default_mapper with
+  { super with
     expr = noop;
     structure = noop;
     structure_item = noop;
@@ -593,7 +639,85 @@ let noop_mapper =
     signature_item = noop; }
 (* Don't need to backport past 4.08 *)
 let backport_letopt_mapper = noop_mapper
+let expand_letop_identifier s = s
+let compress_letop_identifier s = s
 #else
+  (* Adapted from https://github.com/ocaml-ppx/ocaml-syntax-shims, for
+   * compatibility with OCaml's own backporting. *)
+  let letop_table, reverse_letop_table =
+    let create_hashtable n l =
+      let t = Hashtbl.create n in
+      let rev_t = Hashtbl.create n in
+      List.iter (fun (k, v) ->
+        Hashtbl.add t k v;
+      Hashtbl.add rev_t v k;
+      ) l;
+      t, rev_t
+    in
+    create_hashtable 16 [
+      '!', "bang"
+    ; '$', "dollar"
+    ; '%', "percent"
+    ; '&', "ampersand"
+    ; '*', "star"
+    ; '+', "plus"
+    ; '-', "minus"
+    ; '/', "slash"
+    ; ':', "colon"
+    ; '<', "lesser"
+    ; '=', "equal"
+    ; '>', "greater"
+    ; '?', "question"
+    ; '@', "at"
+    ; '^', "circumflex"
+    ; '|', "pipe"
+    ]
+
+  let name s =
+    try Hashtbl.find letop_table s
+    with Not_found -> String.make 1 s
+
+  let rev_name s =
+    try String.make 1 (Hashtbl.find reverse_letop_table s)
+    with Not_found -> s
+
+  let split_on_char sep s =
+    let open String in
+    let r = ref [] in
+    let j = ref (length s) in
+    for i = length s - 1 downto 0 do
+      if unsafe_get s i = sep then begin
+        r := sub s (i + 1) (!j - i - 1) :: !r;
+        j := i
+      end
+    done;
+    sub s 0 !j :: !r
+
+  let compress_letop_identifier s =
+    let buf = Buffer.create 128 in
+    (* "let" or "and" *)
+    Buffer.add_string buf (String.sub s 0 3);
+    let s = String.sub s 5 (String.length s - 5) in
+    let segments = split_on_char '_' s in
+    let identifier = String.concat "" (List.map (function
+      | "" -> "_"
+      | segment -> rev_name segment) segments)
+    in
+    Buffer.add_string buf identifier;
+    escape_stars_slashes (Buffer.contents buf)
+
+  let expand_letop_identifier s =
+    let buf = Buffer.create 128 in
+    (* "let" or "and" *)
+    Buffer.add_string buf (String.sub s 0 3);
+    Buffer.add_string buf "__";
+    for i = 3 to String.length s - 1 do
+      if i > 3 then
+        Buffer.add_char buf '_';
+      Buffer.add_string buf (name s.[i])
+    done;
+    Buffer.contents buf
+
 (** This will convert Pexp_letop into a series of `apply`s to simulate 4.08's behavior.
  *
  * For example,
@@ -608,7 +732,7 @@ let backport_letopt_mapper = noop_mapper
  *
  * (let+)((and+)(y, b), ((x, a)) => x + a)
  *)
-let backport_letopt_mapper_maker super =
+let backport_letopt_mapper super =
   let open Ast_408 in
   let open Ast_mapper in
 { super with
@@ -654,19 +778,7 @@ let backport_letopt_mapper_maker super =
         ])}
     | _ -> super.expr mapper expr
 }
-
-let backport_letopt_mapper =
-  backport_letopt_mapper_maker Ast_mapper.default_mapper
 #endif
-
-let escape_stars_slashes str =
-  if String.contains str '/' then
-    replace_string "/*" "/\\*" @@
-    replace_string "*/" "*\\/" @@
-    replace_string "//" "/\\/" @@
-    str
-  else
-    str
 
 (** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
 let escape_stars_slashes_mapper = identifier_mapper escape_stars_slashes

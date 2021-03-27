@@ -13,11 +13,11 @@
     "@opam/dune": "*",
     "@esy-ocaml/reason": "^3.2.0",
     "@opam/utop": " >= 1.17.0",
-    "ocaml": ">= 4.2.0 < 4.11.0"
+    "ocaml": ">= 4.2.0 < 4.12.0"
   },
   "devDependencies": {
-    "@esy-ocaml/merlin": "*",
-    "ocaml": "~4.6.0"
+    "@opam/merlin": "*",
+    "ocaml": "~4.8.0"
   },
   "esy": {
     "build": [

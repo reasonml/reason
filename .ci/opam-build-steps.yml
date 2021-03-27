@@ -10,7 +10,7 @@ steps:
     displayName: 'brew install opam'
   - script: opam --version
     displayName: 'Check opam version'
-  - script: opam init --auto-setup --dot-profile=~/.bash_profile
+  - script: opam init --bare --auto-setup --dot-profile=~/.bash_profile
     displayName: 'opam init'
   - script: opam remote add ocamlorg https://opam.ocaml.org || true
     displayName: 'opam remote add ocamlorg'
