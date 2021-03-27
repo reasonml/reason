@@ -14,7 +14,7 @@ tests:
 	dune runtest --verbose
 
 test-integration:
-	./miscTests/rtopIntegrationTest.sh
+	./test/rtopIntegrationTest.sh
 
 .PHONY: coverage
 coverage:
