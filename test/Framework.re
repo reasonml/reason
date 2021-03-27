@@ -1,9 +1,7 @@
-let oldpwd = Unix.getenv("OLDPWD");
-
 include Rely.Make({
   let config =
     Rely.TestFrameworkConfig.initialize({
-      snapshotDir: oldpwd ++ "/snapshots",
+      snapshotDir: "test/_snapshots",
       projectDir: "",
     });
 });

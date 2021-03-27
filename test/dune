@@ -3,20 +3,23 @@
  (public_name reason-dev.test)
  (libraries reason rely.lib)
  (flags -linkall -g)
- (ocamlopt_flags -linkall -g)
- (modules (:standard \ TestRun))
+ (modules (:standard \ Run))
 )
 
 (executable
- (name TestRun)
- (public_name TestRun.exe)
+ (name Run)
+ (public_name Run.exe)
  (package reason-dev)
  (libraries reason-dev.test)
- (modules TestRun)
+ (modules Run)
 )
 
 (alias
  (name runtest)
- (deps (:exe TestRun.exe) (glob_files test/_snapshots/*))
+ (deps
+  (:exe Run.exe)
+  (glob_files _snapshots/*)
+  (source_tree fixtures)
+ )
  (action (run %{exe}))
 )

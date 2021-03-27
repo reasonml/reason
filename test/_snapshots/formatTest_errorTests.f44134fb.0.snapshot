@@ -1,4 +1,0 @@
-formatTest › errorTests › ./formatTest/errorTests/comments1.re
-File \"./formatTest/errorTests/comments1.re\", line 1, characters 0-2:
-Error: Comment not terminated
-
