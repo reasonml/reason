@@ -4,6 +4,9 @@ SHELL=bash -o pipefail
 
 default: build
 
+install:
+	opam pin add reason . -y
+
 build:
 	dune build
 
