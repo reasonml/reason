@@ -8,18 +8,11 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {dev}
 ]
 
-depends: [
-  "rely"
-  "cli"
-  "file-context-printer"
-  "pastel"
-]
-
 pin-depends: [
-  [ "pastel" "https://github.com/reasonml/reason-native.git" ]
-  [ "cli" "https://github.com/reasonml/reason-native.git" ]
-  [ "file-context-printer" "https://github.com/reasonml/reason-native.git" ]
-  [ "rely" "https://github.com/reasonml/reason-native.git" ]
+  ["pastel" "https://github.com/reasonml/reason-native.git"]
+  ["cli" "https://github.com/reasonml/reason-native.git"]
+  ["file-context-printer" "https://github.com/reasonml/reason-nativ.git" ]
+  ["rely" "https://github.com/reasonml/reason-native.git"]
 ]
 
 synopsis: "reason-dev: The package that runs the tests"
