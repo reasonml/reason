@@ -16,10 +16,10 @@ depends: [
 ]
 
 pin-depends: [
-  [ "cli.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
-  [ "file-context-printer.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
-  [ "pastel.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
-  [ "rely.dev" "git+ssh://git@github.com/facebookexperimental/reason-native.git" ]
+  [ "pastel" "https://github.com/reasonml/reason-native.git" ]
+  [ "cli" "https://github.com/reasonml/reason-native.git" ]
+  [ "file-context-printer" "https://github.com/reasonml/reason-native.git" ]
+  [ "rely" "https://github.com/reasonml/reason-native.git" ]
 ]
 
 synopsis: "reason-dev: The package that runs the tests"
