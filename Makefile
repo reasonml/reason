@@ -6,6 +6,13 @@ default: build
 
 install:
 	opam pin add reason . -y
+	opam pin add -y rtop .
+	opam install -y --deps-only ./reason-dev.opam
+	opam install -y dune menhir utop
+	opam pin add -y pastel https://github.com/reasonml/reason-native.git
+	opam pin add -y cli https://github.com/reasonml/reason-native.git
+	opam pin add -y file-context-printer https://github.com/reasonml/reason-native.git
+	opam pin add -y rely https://github.com/reasonml/reason-native.git
 
 build:
 	dune build
