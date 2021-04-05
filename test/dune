@@ -15,12 +15,15 @@
  (modules Run)
 )
 
-(alias
- (name runtest)
- (deps
-  (:exe Run.exe)
-  (glob_files _snapshots/*)
-  (source_tree fixtures)
- )
- (action (run %{exe}))
-)
+;(alias
+ ;(name runtest)
+ ;(deps
+  ;(:exe Run.exe)
+  ;(glob_files fixtures/*)
+ ;)
+ ;(action
+  ;(setenv PROJECT_ROOT %{project_root} (
+   ;setenv OCAML_BIM %{ocaml_bin} (run %{exe})
+  ;))
+ ;)
+;)

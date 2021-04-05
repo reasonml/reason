@@ -134,7 +134,7 @@ describe("formatTest", ({describe, _}) => {
 
   /* if (isOcamlVersion("4.08.0")) {
     describe("features OCaml 4.08", ({test, _}) =>
-      lsDir("./test/fixtures/formatTest/features4.08")
+      lsDir("./fixtures/formatTest/features4.08")
       |> List.filter(isSourcefile)
       |> List.iter(filename =>
            test(

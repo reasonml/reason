@@ -1,5 +1,4 @@
 let lsDir = dir => {
-  Sys.getcwd() |> print_endline;
   Sys.readdir(dir) |> Array.to_list |> List.map(Filename.concat(dir));
 };
 
