@@ -160,7 +160,7 @@ jobs:
       - run:
           name: 'esy test'
           command: |
-            REFMT=$(esy which refmt) ~/.npm-global/bin/esy test
+            REFMT=$(~/.npm-global/bin/esy which refmt) ~/.npm-global/bin/esy test
       # Use both pre and post build caches so that we're more likely
       # to have dependencies cached. `esy build` is more likely to fail,
       # so this will make the push that fixes the build faster
