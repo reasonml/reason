@@ -9,7 +9,7 @@ build: [
 ]
 
 pin-depends: [
-  ["pastel" "https://github.com/reasonml/reason-native.git"]
+  ["pastel" "https://github.com/davesnx/reason-native.git#8b24180f48c22fa6551fc7610a56a347e128ae1e"]
   ["cli" "https://github.com/reasonml/reason-native.git"]
   ["file-context-printer" "https://github.com/reasonml/reason-nativ.git" ]
   ["rely" "https://github.com/reasonml/reason-native.git"]
