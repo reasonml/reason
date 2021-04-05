@@ -21,7 +21,7 @@ build:
 test-ci: tests test-integration
 
 tests:
-	dune runtest --verbose
+	dune exec test/Run.exe
 
 test-integration:
 	./test/rtopIntegrationTest.sh
