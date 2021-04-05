@@ -44,8 +44,7 @@ common_steps: &common_steps
         name: 'Test'
         command: |
           eval `opam config env`
-          export REFMT=$(opam exec -- which refmt)
-          opam exec -- REFMT=(which refmt) dune exec test/Run.exe
+          REFMT=$(opam exec -- which refmt) opam exec -- dune exec test/Run.exe
     - run:
         name: 'Check git is clean'
         command: git diff --exit-code
@@ -161,8 +160,7 @@ jobs:
       - run:
           name: 'esy test'
           command: |
-            export REFMT=$(esy which refmt)
-            ~/.npm-global/bin/esy test
+            REFMT=$(esy which refmt) ~/.npm-global/bin/esy test
       # Use both pre and post build caches so that we're more likely
       # to have dependencies cached. `esy build` is more likely to fail,
       # so this will make the push that fixes the build faster
