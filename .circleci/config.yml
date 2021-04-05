@@ -44,7 +44,7 @@ common_steps: &common_steps
         name: 'Test'
         command: |
           eval `opam config env`
-          make test-ci
+          opam exec -- dune exec test/Run.exe
     - run:
         name: 'Check git is clean'
         command: git diff --exit-code
