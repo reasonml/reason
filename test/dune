@@ -14,16 +14,3 @@
  (libraries reason-dev.test)
  (modules Run)
 )
-
-;(alias
- ;(name runtest)
- ;(deps
-  ;(:exe Run.exe)
-  ;(glob_files fixtures/*)
- ;)
- ;(action
-  ;(setenv PROJECT_ROOT %{project_root} (
-   ;setenv OCAML_BIM %{ocaml_bin} (run %{exe})
-  ;))
- ;)
-;)

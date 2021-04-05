@@ -9,7 +9,7 @@ let isSourcefile = filename =>
   );
 
 let isOcamlVersion = minVersion => minVersion < Sys.ocaml_version;
-
+let refmtBin = getRefmtBin();
 let buildRefmtArgs = (filename, extension) => {
   let args =
     switch (extension) {

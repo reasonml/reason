@@ -24,5 +24,11 @@ let syscall = (~env=[||], cmd) => {
   (Buffer.contents(buf1), Buffer.contents(buf2));
 };
 
-let refmtBin = "refmt";
+let getRefmtBin = () => {
+  try (Unix.getenv("REFMT")) {
+    | _ =>
+      print_endline("'REFMT' var not found, using refmt from $PATH");
+      "refmt";
+  }
+};
 let oprintTestBin = "testOprint.exe";
