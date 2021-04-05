@@ -24,5 +24,5 @@ let syscall = (~env=[||], cmd) => {
   (Buffer.contents(buf1), Buffer.contents(buf2));
 };
 
-let refmtBin = "_esy/default/build/install/default/bin/refmt";
-let oprintTestBin = "_esy/default/build/install/default/bin/testOprint.exe";
+let refmtBin = "refmt";
+let oprintTestBin = "testOprint.exe";
