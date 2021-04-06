@@ -44,7 +44,7 @@ common_steps: &common_steps
         name: 'Test'
         command: |
           eval `opam config env`
-          REFMT=$(opam exec -- which refmt) opam exec -- dune exec test/Run.exe
+          REFMT=$(opam exec -- which refmt) opam exec -- make test-ci
     - run:
         name: 'Check git is clean'
         command: git diff --exit-code

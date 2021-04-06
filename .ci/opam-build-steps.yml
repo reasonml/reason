@@ -24,7 +24,7 @@ steps:
     displayName: 'make clean-for-ci'
   - script: make install
     displayName: "make install"
-  - script: eval $(opam env); make test-ci
+  - script: eval $(opam env); REFMT=$(opam exec -- which refmt) opam exec -- make test-ci;
     displayName: "make test-ci"
   - script: git diff --exit-code
     displayName: "Check git is clean"
