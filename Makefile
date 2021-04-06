@@ -9,7 +9,7 @@ install:
 	opam pin add -y rtop .
 	opam install -y --deps-only ./reason-dev.opam
 	opam install -y dune menhir utop
-	opam pin add -y pastel https://github.com/davesnx/reason-native.git#8b24180f48c22fa6551fc7610a56a347e128ae1e
+	opam pin add -y pastel https://github.com/reasonml/reason-native.git
 	opam pin add -y cli https://github.com/reasonml/reason-native.git
 	opam pin add -y file-context-printer https://github.com/reasonml/reason-native.git
 	opam pin add -y rely https://github.com/reasonml/reason-native.git
