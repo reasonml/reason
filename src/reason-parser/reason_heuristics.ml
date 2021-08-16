@@ -49,7 +49,7 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
         | Optional s ->
             aux (len - (identLen + 3 + String.length s)) args
         end
-      | (label, {pexp_desc = Pexp_constant (Pconst_string (str, _))}) ->
+      | (label, {pexp_desc = Pexp_constant (Pconst_string (str, _, _))}) ->
         let strLen = String.length str in
         begin match label with
         | Nolabel -> aux (len - strLen) args
