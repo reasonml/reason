@@ -48,8 +48,7 @@
 (* The parser definition *)
 
 %{
-open Reason_migrate_parsetree
-open OCaml_408.Ast
+open Migrate_parsetree.Ast_408
 open Reason_syntax_util
 open Location
 open Asttypes
@@ -1074,7 +1073,7 @@ let add_brace_attr expr =
 
 %[@recover.prelude
 
-  open Reason_migrate_parsetree.OCaml_408.Ast
+  open Migrate_parsetree.Ast_408
   open Parsetree
   open Ast_helper
 
@@ -1371,19 +1370,19 @@ conflicts.
 (* Entry points *)
 
 %start implementation                   (* for implementation files *)
-%type <Reason_migrate_parsetree.Ast_408.Parsetree.structure> implementation
+%type <Migrate_parsetree.Ast_408.Parsetree.structure> implementation
 %start interface                        (* for interface files *)
-%type <Reason_migrate_parsetree.Ast_408.Parsetree.signature> interface
+%type <Migrate_parsetree.Ast_408.Parsetree.signature> interface
 %start toplevel_phrase                  (* for interactive use *)
-%type <Reason_migrate_parsetree.Ast_408.Parsetree.toplevel_phrase> toplevel_phrase
+%type <Migrate_parsetree.Ast_408.Parsetree.toplevel_phrase> toplevel_phrase
 %start use_file                         (* for the #use directive *)
-%type <Reason_migrate_parsetree.Ast_408.Parsetree.toplevel_phrase list> use_file
+%type <Migrate_parsetree.Ast_408.Parsetree.toplevel_phrase list> use_file
 %start parse_core_type
-%type <Reason_migrate_parsetree.Ast_408.Parsetree.core_type> parse_core_type
+%type <Migrate_parsetree.Ast_408.Parsetree.core_type> parse_core_type
 %start parse_expression
-%type <Reason_migrate_parsetree.Ast_408.Parsetree.expression> parse_expression
+%type <Migrate_parsetree.Ast_408.Parsetree.expression> parse_expression
 %start parse_pattern
-%type <Reason_migrate_parsetree.Ast_408.Parsetree.pattern> parse_pattern
+%type <Migrate_parsetree.Ast_408.Parsetree.pattern> parse_pattern
 
 (* Instead of reporting an error directly, productions specified
  * below will be reduced first and popped up in the stack to a higher

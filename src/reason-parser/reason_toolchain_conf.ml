@@ -1,8 +1,13 @@
-open Reason_migrate_parsetree
+open Migrate_parsetree
 include Ast_408
 
-module From_current = Convert(OCaml_current)(OCaml_408)
-module To_current = Convert(OCaml_408)(OCaml_current)
+
+module Conv = Ppxlib_ast.Select_ast (Ppxlib_ast__.Versions.OCaml_408)
+module To_ppxlib = Conv.Of_ocaml
+
+
+module From_current = Conv.Of_ocaml
+module To_current = Conv.To_ocaml
 
 module type Toolchain = sig
   (* Parsing *)

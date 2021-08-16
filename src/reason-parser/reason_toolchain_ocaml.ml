@@ -1,3 +1,4 @@
+open Migrate_parsetree.Ast_408
 open Reason_toolchain_conf
 
 (* The OCaml parser keep doc strings in the comment list.

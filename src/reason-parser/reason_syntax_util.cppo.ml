@@ -15,7 +15,7 @@
 *)
 
 #ifdef BS_NO_COMPILER_PATCH
-open Reason_migrate_parsetree
+open Migrate_parsetree
 open Ast_408
 #endif
 
