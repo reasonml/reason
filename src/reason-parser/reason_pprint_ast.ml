@@ -734,6 +734,11 @@ let type_variance = function
   | Covariant -> "+"
   | Contravariant -> "-"
 
+let moduleIdent ident =
+  match ident.txt with
+  | None -> "_"
+  | Some name -> name
+
 type construct =
   [ `cons of expression list
   | `list of expression list
@@ -3290,9 +3295,12 @@ let printer = object(self:'self)
       | [], Ppat_constraint (p, ct) ->
           let (pat, typ) = begin match (p, ct) with
           | (
-              {ppat_desc = Ppat_unpack({ txt = Some unpack; _})},
+              {ppat_desc = Ppat_unpack(unpack)},
               {ptyp_desc = Ptyp_package (lid, cstrs)}
             ) ->
+              let unpack = match unpack.txt with
+                | None -> "_"
+                | Some unpack -> unpack in
               (makeList ~postSpace:true [atom "module"; atom unpack],
                self#typ_package ~mod_prefix:false lid cstrs)
           | _ ->
@@ -3400,8 +3408,9 @@ let printer = object(self:'self)
             source_map ~loc (protectIdentifier txt)
           | Ppat_array l ->
               self#patternArray l
-          | Ppat_unpack { txt = Some unpack; _ } ->
-              makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom unpack]
+          | Ppat_unpack s ->
+              let s = match s.txt with | None -> "_" | Some s -> s in
+              makeList ~wrap:("(", ")") ~break:IfNeed ~postSpace:true [atom "module"; atom s]
           | Ppat_open (lid, pat) ->
             (* let someFn Qualified.{ record } = ... *)
             let needsParens = match pat.ppat_desc with
@@ -5054,8 +5063,9 @@ let printer = object(self:'self)
         let firstOne =
           match fp with
             | Unit -> atom "()"
-            | Named ({ txt = Some s; _ }, mt') -> self#module_type (makeList [atom s; atom ":"]) mt'
-            | Named ({ txt = None; _ }, mt') -> self#module_type (atom ":") mt'
+            | Named (s, mt') ->
+              let s = moduleIdent s in
+              self#module_type (makeList [atom s; atom ":"]) mt'
         in
         let (functorArgsRecurse, returnStructure) = (self#curriedFunctorPatternsAndReturnStruct me2) in
         (firstOne::functorArgsRecurse, returnStructure)
@@ -5550,7 +5560,7 @@ let printer = object(self:'self)
           processLetList ((loc, layout)::acc) e
         | ([], Pexp_letmodule (s, me, e)) ->
             let prefixText = "module" in
-            let bindingName = atom ~loc:s.loc (match s.txt with None -> "" | Some s -> s) in
+            let bindingName = atom ~loc:s.loc (moduleIdent s) in
             let moduleExpr = me in
             let letModuleLayout =
               (self#let_module_binding prefixText bindingName moduleExpr) in
@@ -7220,7 +7230,7 @@ let printer = object(self:'self)
                  (class_description ~class_keyword:true x)::
                  (List.map class_description xs)
             )
-        | Psig_module {pmd_name = { txt = Some pmd_name; loc = pmd_name_loc }; pmd_type={pmty_desc=Pmty_alias alias}; pmd_attributes} ->
+        | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}; pmd_attributes} ->
             let {stdAttrs; docAttrs} =
               partitionAttributes ~partDoc:true pmd_attributes
             in
@@ -7229,7 +7239,7 @@ let printer = object(self:'self)
               label ~space:true
                 (makeList ~postSpace:true [
                    atom "module";
-                   atom pmd_name;
+                   atom (moduleIdent pmd_name);
                    atom "="
                  ])
                 (self#longident_loc alias)
@@ -7237,7 +7247,7 @@ let printer = object(self:'self)
             self#attachDocAttrsToLayout
               ~stdAttrs
               ~docAttrs
-              ~loc:pmd_name_loc
+              ~loc:pmd_name.loc
               ~layout
               ()
         | Psig_module pmd ->
@@ -7246,7 +7256,7 @@ let printer = object(self:'self)
             in
             let letPattern =
               makeList
-                [makeList ~postSpace:true [atom "module"; (atom (match pmd.pmd_name.txt with None -> "" | Some s -> s))];
+                [makeList ~postSpace:true [atom "module"; (atom (moduleIdent pmd.pmd_name))];
                  atom ":"]
             in
             let layout =
@@ -7318,7 +7328,7 @@ let printer = object(self:'self)
                 makeList [
                   makeList ~postSpace:true [
                     atom (if i == 0 then "module rec" else "and");
-                    atom (match xx.pmd_name.txt with None -> "" | Some s -> s)
+                    atom (moduleIdent xx.pmd_name)
                   ];
                  atom ":"
                 ]
@@ -7443,11 +7453,11 @@ let printer = object(self:'self)
         (* The segments that should be separated by arrows. *)
         let rec extract_args args xx = match xx.pmty_desc with
           | Pmty_functor (Unit, mt2) -> extract_args (`Unit :: args) mt2
-          | Pmty_functor (Named ({ txt = Some s; _ }, mt1), mt2) ->
+          | Pmty_functor (Named ({ txt = s; _ }, mt1), mt2) ->
             let arg =
-              if s = "_"
-              then self#module_type ~space:false (atom "") mt1
-              else self#module_type ~space (makeList [(atom s); atom ":"]) mt1
+              match s with
+              | None -> self#module_type ~space:false (atom "") mt1
+              | Some s -> self#module_type ~space (makeList [(atom s); atom ":"]) mt1
             in
             extract_args (`Arg arg :: args) mt2
           | _ ->
@@ -7699,7 +7709,7 @@ let printer = object(self:'self)
             { ed.ptyexn_constructor
               with pext_attributes = ed.ptyexn_attributes @ ed.ptyexn_constructor.pext_attributes}
         | Pstr_module x ->
-            let bindingName = atom ~loc:x.pmb_name.loc (match x.pmb_name.txt with None -> "" | Some s -> s) in
+            let bindingName = atom ~loc:x.pmb_name.loc (moduleIdent x.pmb_name) in
             self#attach_std_item_attrs x.pmb_attributes @@
             self#let_module_binding "module" bindingName x.pmb_expr
         | Pstr_open od ->
@@ -7736,7 +7746,7 @@ let printer = object(self:'self)
                 self#attach_std_item_attrs stdAttrs @@
                 self#let_module_binding
                   (if i == 0 then "module rec" else "and")
-                  (atom (match xx.pmb_name.txt with None -> "" | Some s -> s))
+                  (atom (moduleIdent xx.pmb_name))
                   xx.pmb_expr
               in
               let layoutWithDocAttrs =
