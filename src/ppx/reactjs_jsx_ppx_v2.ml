@@ -44,7 +44,7 @@
 (* #if defined BS_NO_COMPILER_PATCH then *)
 open Reason_migrate_parsetree
 open Ast_411
-module To_current = Convert(OCaml_408)(OCaml_current)
+module To_current = Convert(OCaml_411)(OCaml_current)
 
 let nolabel = Ast_411.Asttypes.Nolabel
 let labelled str = Ast_411.Asttypes.Labelled str
