@@ -8,14 +8,13 @@ license:      "MIT"
 build: [
   ["dune" "subst"] {dev}
   ["dune" "build" "-p" name "-j" jobs]
-  ["dune" "runtest" "-p" "merlin,dot-merlin-reader" "-j" "1"] {with-test & ocaml:version >= "4.03"}
+  ["dune" "runtest" "-p" "merlin,dot-merlin-reader" "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml" {>= "4.02.3" & < "4.12"}
-  "dune" {>= "1.8.0"}
-  "dot-merlin-reader" {>= "3.4.2"}
+  "ocaml" {>= "4.12" & < "4.13"}
+  "dune" {>= "2.9.0"}
+  "dot-merlin-reader" {>= "4.0"}
   "yojson" {>= "1.6.0"}
-  "mdx" {with-test & >= "1.3.0"}
   "conf-jq" {with-test}
   "csexp" {>= "1.2.3"}
   "result" {>= "1.5"}
@@ -67,12 +66,12 @@ See https://github.com/OCamlPro/opam-user-setup
 "
   {success & !user-setup:installed}
 ]
-x-commit-hash: "9f6504e9585f8e67101d869494f9efb6dc348c9d"
+x-commit-hash: "ba8ec63cf40b8999238c4639d111ca3bdb1e34cf"
 url {
   src:
-    "https://github.com/ocaml/merlin/releases/download/v3.6.1/merlin-v3.6.1.tbz"
+    "https://github.com/ocaml/merlin/releases/download/v4.3.1-412/merlin-v4.3.1-412.tbz"
   checksum: [
-    "sha256=b611b2b0bdc424629d2f6aa625fca81bb7734cb10c997eedc184c922d95cb9f6"
-    "sha512=47764d6b9483eee7e51da67d04c83b19a3b0dd406911eeef20a59dab88ab7d11ba45ae43131c61de69e3d88c65a204e76110000020871d64a2abe9cdcd361a61"
+    "sha256=59030191e223ac5daf9cf1e406c60275cfa5e521d0414b6e77394318e4fa022a"
+    "sha512=48b02307b074db5af4cae400fd7d257153f3ec2463d01a05df1bb8cb0deafc8db597163c2e0d7adf6a6c720989aac4501f7a338948b35c8b6adad4626abe178c"
   ]
 }
