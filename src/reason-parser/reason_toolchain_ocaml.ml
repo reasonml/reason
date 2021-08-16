@@ -10,7 +10,7 @@ let doc_comments_filter () =
   let attribute mapper = function
     | { attr_name = { Location. txt = ("ocaml.doc" | "ocaml.text")};
         attr_payload =
-          PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(_text, None)) } , _);
+          PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(_text, _loc, None)) } , _);
                   pstr_loc = loc }]} as attribute ->
        (* Workaround: OCaml 4.02.3 kept an initial '*' in docstrings.
         * For other versions, we have to put the '*' back. *)
