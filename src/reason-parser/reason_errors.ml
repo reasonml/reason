@@ -134,7 +134,7 @@ let str_eval_message text = {
   pstr_loc = Location.none;
   pstr_desc = Pstr_eval (
       { pexp_loc = Location.none;
-        pexp_desc = Pexp_constant (Parsetree.Pconst_string (text, None));
+        pexp_desc = Pexp_constant (Parsetree.Pconst_string (text, Location.none, None));
         pexp_attributes = [];
         pexp_loc_stack = [];
       },
