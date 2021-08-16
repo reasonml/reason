@@ -1,0 +1,51 @@
+opam-version: "2.0"
+synopsis: "LSP Server for OCaml"
+description: "An LSP server for OCaml."
+maintainer: ["Rudi Grinberg <me@rgrinerg.com>"]
+authors: [
+  "Andrey Popp <8mayday@gmail.com>"
+  "Rusty Key <iam@stfoo.ru>"
+  "Louis Roché <louis@louisroche.net>"
+  "Oleksiy Golovko <alexei.golovko@gmail.com>"
+  "Rudi Grinberg <me@rgrinberg.com>"
+  "Sacha Ayoun <sachaayoun@gmail.com>"
+  "cannorin <cannorin@gmail.com>"
+]
+license: "ISC"
+homepage: "https://github.com/ocaml/ocaml-lsp"
+bug-reports: "https://github.com/ocaml/ocaml-lsp/issues"
+depends: [
+  "dune" {>= "2.5"}
+  "yojson"
+  "stdlib-shims"
+  "ppx_yojson_conv_lib"
+  "dune-build-info"
+  "dot-merlin-reader"
+  "csexp" {>= "1.2.3"}
+  "result" {>= "1.5"}
+  "ocamlformat" {with-test}
+  "ocamlfind" {>= "1.5.2"}
+  "odoc" {with-doc}
+  "ocaml" {>= "4.06" & < "4.12"}
+]
+dev-repo: "git+https://github.com/ocaml/ocaml-lsp.git"
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-j"
+    jobs
+    "ocaml-lsp-server.install"
+    "--release"
+  ]
+]
+x-commit-hash: "154ccd7142651807d40eb851969f318b873b7fb4"
+url {
+  src:
+    "https://github.com/ocaml/ocaml-lsp/releases/download/1.4.1/jsonrpc-1.4.1.tbz"
+  checksum: [
+    "sha256=cee8371e7048e24c90e916c373ef6f3aba6f474d8a5fcf507ab6650fd8575eeb"
+    "sha512=150ebf71d3484d3beec1a145877cf30d84581bd072dd20159e878ed07cc4fc647b019b98bb0c9fede839b87f7bd13de4a64b534c0760a2ec57d0e4a4deac6f0f"
+  ]
+}
