@@ -330,24 +330,12 @@ let mkuminus name arg =
       let name = {name with txt = "~" ^ txt} in
       mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
-let prepare_functor_arg = function
-  | Some name, mty -> (name, mty)
-  | None, (Some {pmty_loc} as mty) ->
-      (mkloc "_" (make_ghost_loc pmty_loc), mty)
-  | None, None -> assert false
-
 let mk_functor_mod args body =
-  let folder arg acc =
-    let name, mty = prepare_functor_arg arg.txt in
-    mkmod ~loc:arg.loc (Pmod_functor(name, mty, acc))
-  in
+  let folder arg acc = mkmod ~loc:arg.loc (Pmod_functor(arg.txt, acc)) in
   List.fold_right folder args body
 
 let mk_functor_mty args body =
-  let folder arg acc =
-    let name, mty = prepare_functor_arg arg.txt in
-    mkmty ~loc:arg.loc (Pmty_functor(name, mty, acc))
-  in
+  let folder arg acc = mkmty ~loc:arg.loc (Pmty_functor(arg.txt, acc)) in
   List.fold_right folder args body
 
 let mkuplus name arg =
@@ -915,7 +903,7 @@ let rewriteFunctorApp module_name elt loc =
     | Lapply (m1, m2) -> mkmod ~loc (Pmod_apply (mkModExp m1, mkModExp m2)) in
   if applies module_name then
     let flat = flattenModName module_name in
-    mkexp ~loc (Pexp_letmodule({txt=flat; loc},
+    mkexp ~loc (Pexp_letmodule({txt=Some flat; loc},
                          mkModExp module_name,
                          mkexp(Pexp_ident {txt=Ldot (Lident flat, elt); loc})))
   else
@@ -975,7 +963,7 @@ let doc_attr text loc =
   (* Here is where we will convert from markdown to odoc - transform the "text" *)
   let open Parsetree in
   let exp =
-    { pexp_desc = Pexp_constant (Pconst_string(text, None));
+    { pexp_desc = Pexp_constant (Pconst_string(text, loc, None));
       pexp_loc = loc;
       pexp_attributes = [];
       pexp_loc_stack = [];
@@ -1074,7 +1062,7 @@ let add_brace_attr expr =
 
 %[@recover.prelude
 
-  open Reason_migrate_parsetree.OCaml_408.Ast
+  open Reason_migrate_parsetree.OCaml_411.Ast
   open Parsetree
   open Ast_helper
 
@@ -1464,11 +1452,11 @@ parse_pattern:
 module_parameter:
 as_loc
   ( LPAREN RPAREN
-    { (Some (mkloc "*" (mklocation $startpos $endpos)), None) }
-  | as_loc(UIDENT {$1} | UNDERSCORE {"_"}) COLON module_type
-    { (Some $1, Some $3) }
-  | module_type
-    { (None, Some $1) }
+    { Unit }
+  | as_loc(mod_ident) COLON module_type
+    { Named ($1, $3) }
+  | as_loc(module_type)
+    { Named ({ txt = None; loc = $1.loc}, $1.txt) }
 ) {$1};
 
 %inline two_or_more_module_parameters_comma_list:
@@ -1478,7 +1466,7 @@ as_loc
 functor_parameters:
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
-      [mkloc (Some (mkloc "*" loc), None) loc]
+      [mkloc Unit loc]
     }
   (* This single parameter case needs to be explicitly specified so that
    * menhir can automatically remove the conflict between sigature:
@@ -1646,15 +1634,15 @@ structure:
 ;
 
 opt_LET_MODULE_ident:
-  | opt_LET_MODULE as_loc(UIDENT) { $2 }
+  | opt_LET_MODULE as_loc(mod_ident) { $2 }
   | opt_LET_MODULE as_loc(LIDENT)
-    { syntax_error $2.loc lowercase_module_msg; $2 }
+    { syntax_error $2.loc lowercase_module_msg; { $2 with txt = Some $2.txt } }
 ;
 
 opt_LET_MODULE_REC_ident:
-  | opt_LET_MODULE REC as_loc(UIDENT) { $3 }
+  | opt_LET_MODULE REC as_loc(mod_ident) { $3 }
   | opt_LET_MODULE REC as_loc(LIDENT)
-    { syntax_error $3.loc lowercase_module_msg; $3 }
+    { syntax_error $3.loc lowercase_module_msg; { $3 with txt = Some $3.txt } }
 ;
 
 structure_item:
@@ -1733,7 +1721,7 @@ module_binding_body:
 ;
 
 and_module_bindings:
-  item_attributes AND as_loc(UIDENT) module_binding_body
+  item_attributes AND as_loc(mod_ident) module_binding_body
   { Mb.mk $3 $4 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
 ;
 
@@ -1759,7 +1747,7 @@ simple_module_type:
 mark_position_mty
   ( parenthesized(module_parameter)
     { match $1.txt with
-      | (None, Some x) -> x
+      | Named ({ txt = None; _ }, x) -> x
       | _ -> syntax_error_mty $1.loc "Expecting a simple module type"
     }
   | module_type_signature { $1 }
@@ -1967,7 +1955,7 @@ module_type_body(DELIM):
 ;
 
 and_module_rec_declaration:
-  item_attributes AND as_loc(UIDENT) module_type_body(COLON)
+  item_attributes AND as_loc(mod_ident) module_type_body(COLON)
   { Md.mk $3 $4 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
 ;
 
@@ -3776,7 +3764,7 @@ mark_position_pat
       | [hd] -> hd
       | _ :: _ -> mkpat (Ppat_tuple $2)
     }
-  | LPAREN MODULE as_loc(UIDENT) RPAREN
+  | LPAREN MODULE as_loc(mod_ident) RPAREN
     { mkpat(Ppat_unpack($3)) }
   | simple_pattern_not_ident_
     { $1 }
@@ -3833,7 +3821,7 @@ mark_position_pat
    * The `module` keyword after the colon is optional, because `module X`
    * clearly indicates that we're dealing with a Ppat_unpack here.
    *)
-  | MODULE as_loc(UIDENT) COLON mark_position_typ(preceded(MODULE?, package_type))
+  | MODULE as_loc(mod_ident) COLON mark_position_typ(preceded(MODULE?, package_type))
     { mkpat (Ppat_constraint (mkpat (Ppat_unpack $2), $4)) }
   ) {$1};
 ;
@@ -4646,21 +4634,21 @@ tag_field:
 (* Constants *)
 
 constant:
-  | INT          { let (n, m) = $1 in ([], Pconst_integer (n, m)) }
-  | CHAR         { ([], Pconst_char $1) }
-  | FLOAT        { let (f, m) = $1 in ([], Pconst_float (f, m)) }
-  | STRING       {
-    let (s, raw, d) = $1 in
+  | INT            { let (n, m) = $1 in ([], Pconst_integer (n, m)) }
+  | CHAR           { ([], Pconst_char $1) }
+  | FLOAT          { let (f, m) = $1 in ([], Pconst_float (f, m)) }
+  | as_loc(STRING) {
+    let { txt = (s, raw, d); loc } = $1 in
     let attr = match raw with
       | None -> []
       | Some raw ->
-        let constant = Ast_helper.Exp.constant (Pconst_string (raw, None)) in
-        [ { attr_name = Location.mknoloc "reason.raw_literal";
+        let constant = Exp.constant (Pconst_string (raw, loc, None)) in
+        [ { attr_name = Location.mkloc "reason.raw_literal" loc;
             attr_payload = PStr [mkstrexp constant []];
             attr_loc = Location.none
           } ]
     in
-    (attr, Pconst_string (s, d))
+    (attr, Pconst_string (s, loc, d))
   }
 ;
 
@@ -4675,6 +4663,10 @@ signed_constant:
 (* Identifiers and long identifiers *)
 
 ident: UIDENT | LIDENT { $1 };
+
+mod_ident:
+  | UIDENT { Some $1 }
+  | UNDERSCORE { None }
 
 val_ident:
   | LIDENT                 { $1 }
