@@ -621,9 +621,10 @@ let is_rec_next = function
 
 let rec print_out_functor ppf =
   function
-    Omty_functor (_, None, mty_res) ->
+    Omty_functor (None, mty_res) ->
       fprintf ppf "() %a" print_out_functor mty_res
-  | Omty_functor (name , Some mty_arg, mty_res) ->
+  | Omty_functor (Some (name, mty_arg), mty_res) ->
+      let name = match name with | None -> "_" | Some name -> name in
       fprintf ppf "(%s : %a) => %a" name
         print_out_module_type mty_arg print_out_functor mty_res
   | m -> fprintf ppf "%a" print_out_module_type m

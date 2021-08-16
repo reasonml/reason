@@ -21,8 +21,8 @@
 
 open Reason_migrate_parsetree
 
-module Convert = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_408) (Reason_migrate_parsetree.OCaml_current)
-module ConvertBack = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_current) (Reason_migrate_parsetree.OCaml_408)
+module Convert = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_411) (Reason_migrate_parsetree.OCaml_current)
+module ConvertBack = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_current) (Reason_migrate_parsetree.OCaml_411)
 
 let main () =
   let filename = "./TestTest.ml" in
