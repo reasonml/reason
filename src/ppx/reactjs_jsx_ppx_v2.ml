@@ -43,15 +43,17 @@
 
 (* #if defined BS_NO_COMPILER_PATCH then *)
 open Reason_migrate_parsetree
-open Ast_408
+open Ast_411
 module To_current = Convert(OCaml_408)(OCaml_current)
 
-let nolabel = Ast_408.Asttypes.Nolabel
-let labelled str = Ast_408.Asttypes.Labelled str
+let nolabel = Ast_411.Asttypes.Nolabel
+let labelled str = Ast_411.Asttypes.Labelled str
 let argIsKeyRef = function
   | (Asttypes.Labelled ("key" | "ref"), _) | (Asttypes.Optional ("key" | "ref"), _) -> true
   | _ -> false
-let constantString ~loc str = Ast_helper.Exp.constant ~loc (Parsetree.Pconst_string (str, None))
+let constantString ~loc str =
+  Ast_helper.Exp.constant ~loc (Parsetree.Pconst_string (str, loc, None))
+
 (* #else
 let nolabel = ""
 let labelled str = str

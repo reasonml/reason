@@ -49,7 +49,7 @@
 module Easy_format = Vendored_easy_format
 
 open Reason_migrate_parsetree
-open Ast_408
+open Ast_411
 open Asttypes
 open Location
 open Longident
@@ -179,7 +179,7 @@ let add_extension_sugar keyword = function
 
 let string_equal : string -> string -> bool = (=)
 
-let string_loc_equal: string Ast_408.Asttypes.loc -> string Ast_408.Asttypes.loc -> bool =
+let string_loc_equal: string Ast_411.Asttypes.loc -> string Ast_411.Asttypes.loc -> bool =
   fun l1 l2 -> l1.txt = l2.txt
 
 let longident_same l1 l2 =
@@ -302,7 +302,7 @@ let expandLocation pos ~expand:(startPos, endPos) =
  * 2| let f = ...           by the attr on line 1, not the lnum of the `let`
  *)
 let rec firstAttrLoc loc = function
-  | ({ attr_name = attrLoc; _} : Ast_408.Parsetree.attribute) ::attrs ->
+  | ({ attr_name = attrLoc; _} : Ast_411.Parsetree.attribute) ::attrs ->
       if attrLoc.loc.loc_start.pos_lnum < loc.loc_start.pos_lnum
          && not attrLoc.loc.loc_ghost
       then
@@ -5220,9 +5220,9 @@ let printer = object(self:'self)
    *)
   method attachDocAttrsToLayout
     (* all std attributes attached on the ast node backing the layout *)
-    ~stdAttrs:(stdAttrs : Ast_408.Parsetree.attributes)
+    ~stdAttrs:(stdAttrs : Ast_411.Parsetree.attributes)
     (* all doc comments attached on the ast node backing the layout *)
-    ~docAttrs:(docAttrs : Ast_408.Parsetree.attributes)
+    ~docAttrs:(docAttrs : Ast_411.Parsetree.attributes)
     (* location of the layout *)
     ~loc
     (* layout to attach the doc comments to *)
@@ -5245,7 +5245,7 @@ let printer = object(self:'self)
     | [] -> loc
     in
     let rec aux prevLoc layout = function
-      | ({ attr_name = x; _} as attr : Ast_408.Parsetree.attribute)::xs ->
+      | ({ attr_name = x; _} as attr : Ast_411.Parsetree.attribute)::xs ->
         let newLayout =
           let range = Range.makeRangeBetween x.loc prevLoc in
           let layout =

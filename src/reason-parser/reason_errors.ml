@@ -127,7 +127,7 @@ let () =
       | _ -> None
     )
 
-open Reason_migrate_parsetree.Ast_408
+open Reason_migrate_parsetree.Ast_411
 
 let str_eval_message text = {
   Parsetree.

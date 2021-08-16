@@ -43,7 +43,7 @@ let main () =
   let env = Compmisc.initial_env() in
   let (typedtree, _) = Typemod.type_implementation modulename modulename modulename env ast in
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
-  let phrase = (Ast_408.Outcometree.Ophr_signature
+  let phrase = (Ast_411.Outcometree.Ophr_signature
     (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)
   ) in
   let fmt = Format.str_formatter in
