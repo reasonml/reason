@@ -6,12 +6,12 @@ bug-reports: "https://github.com/let-def/merlin-extend"
 license: "MIT"
 dev-repo: "git+https://github.com/let-def/merlin-extend.git"
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
   "dune" {>= "1.0"}
-  "cppo" {build}
+  "cppo" {build & >= "1.1.0"}
   "ocaml" {>= "4.02.3"}
 ]
 synopsis: "A protocol to provide custom frontend to Merlin"

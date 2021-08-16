@@ -1,0 +1,42 @@
+opam-version: "2.0"
+synopsis: "A library for building correct HTML and SVG documents"
+description:
+  "TyXML provides a set of convenient combinators that uses the OCaml type system to ensure the validity of the generated documents. TyXML can be used with any representation of HTML and SVG: the textual one, provided directly by this package, or DOM trees (`js_of_ocaml-tyxml`) virtual DOM (`virtual-dom`) and reactive or replicated trees (`eliom`). You can also create your own representation and use it to instantiate a new set of combinators."
+maintainer: ["dev@ocsigen.org"]
+authors: ["The ocsigen team"]
+license: "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
+homepage: "https://github.com/ocsigen/tyxml"
+doc: "https://ocsigen.org/tyxml/latest/manual/intro"
+bug-reports: "https://github.com/ocsigen/tyxml/issues"
+depends: [
+  "dune" {>= "2.0"}
+  "ocaml" {>= "4.02"}
+  "alcotest" {with-test}
+  "re" {>= "1.5.0"}
+  "seq"
+  "uutf" {>= "1.0.0"}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocsigen/tyxml.git"
+x-commit-hash: "ef431a4bceaefb2d9248e79092e6c1a1a9420095"
+url {
+  src:
+    "https://github.com/ocsigen/tyxml/releases/download/4.5.0/tyxml-4.5.0.tbz"
+  checksum: [
+    "sha256=c69accef5df4dd89d38f6aa0baad01e8fda4e9e98bb7dad61bec1452c5716068"
+    "sha512=772535441b09c393d53c27152e65f404a0a541aa0cea1bda899a8d751ab64d1729237e583618c3ff33d75e3865d53503d1ea413c6bbc8c68c413347efd1709b3"
+  ]
+}

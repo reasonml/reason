@@ -7,7 +7,7 @@ collation and locale-sensitive case mappings, and more. The library is currently
 designed for Unicode Standard 3.2."""
 maintainer: ["yoriyuki.y@gmail.com"]
 authors: ["Yoriyuki Yamagata"]
-license: "LGPL-2.1-or-later with OCaml-LGPL-linking-exception"
+license: "LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
 homepage: "https://github.com/yoriyuki/Camomile"
 doc: "https://yoriyuki.github.io/Camomile/"
 bug-reports: "https://github.com/yoriyuki/Camomile/issues"
@@ -18,7 +18,7 @@ depends: [
 dev-repo: "git+https://github.com/yoriyuki/Camomile.git"
 build: [
   ["ocaml" "configure.ml" "--share" "%{share}%/camomile"]
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   ["dune" "build" "-p" name "-j" jobs
     "@install"
     "@doc" {with-doc}

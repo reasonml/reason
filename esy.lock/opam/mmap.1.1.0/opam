@@ -5,7 +5,7 @@ homepage: "https://github.com/mirage/mmap"
 bug-reports: "https://github.com/mirage/mmap/issues"
 doc: "https://mirage.github.io/mmap/"
 dev-repo: "git+https://github.com/mirage/mmap.git"
-license: "LGPL-2.1-only with OCaml-LGPL-linking-exception"
+license: "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
 build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
