@@ -1020,7 +1020,7 @@ open Parsetree
 
 (** {1 A generic Parsetree mapper} *)
 
-type mapper = {
+type mapper (*IF_CURRENT = Ast_mapper.mapper *) = {
   attribute: mapper -> attribute -> attribute;
   attributes: mapper -> attribute list -> attribute list;
   binding_op: mapper -> binding_op -> binding_op;
@@ -1179,7 +1179,7 @@ end = struct
 
   module String = Misc.Stdlib.String
 
-  type mapper = {
+  type mapper (*IF_CURRENT = Ast_mapper.mapper *) = {
     attribute: mapper -> attribute -> attribute;
     attributes: mapper -> attribute list -> attribute list;
     binding_op: mapper -> binding_op -> binding_op;
