@@ -41,7 +41,7 @@ let main () =
   let ast = impl lexbuf in
   let ast = Convert.copy_structure ast in
   let env = Compmisc.initial_env() in
-#if OCAML_VERSION >= (4,9,0)
+#if OCAML_VERSION >= (4,13,0)
   let { Typedtree.structure = typedtree; _ } =
 #else
   let (typedtree, _) =
