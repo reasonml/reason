@@ -60,6 +60,14 @@ type missing_feature =
   (** 4.10 -> 4.09: module _ = ... *)
   | Anonymous_module_declaration
   (** 4.10 -> 4.09: module _ = struct ... end *)
+  | ExistentialsInPatternMatching
+  (** 4.13 -> 4.12: match ... with Cstr (type a) (x, y : int * a) -> ... *)
+  | With_modtype
+  (** 4.13 -> 4.12: M with module type N = O *)
+  | With_modtypesubst
+  (** 4.13 -> 4.12: M with module type N := O *)
+  | Psig_modtypesubst
+  (** 4.13 -> 4.12: module M := sig ... end *)
 
 exception Migration_error of missing_feature * Location.t
 
@@ -87,6 +95,10 @@ let missing_feature_description = function
   | Anonymous_unpack -> "anynymous unpack"
   | Anonymous_module_binding -> "anonymous module binding"
   | Anonymous_module_declaration -> "anonymous module declaration"
+  | ExistentialsInPatternMatching -> "existentials in pattern-matching"
+  | With_modtype -> "module type substitution"
+  | With_modtypesubst -> "destructive module type substitution"
+  | Psig_modtypesubst -> "local module type substitution"
 
 (** [missing_feature_minimal_version x] is the OCaml version where x was
     introduced. *)
@@ -113,6 +125,10 @@ let missing_feature_minimal_version = function
   | Anonymous_unpack -> "OCaml 4.10"
   | Anonymous_module_binding -> "OCaml 4.10"
   | Anonymous_module_declaration -> "OCaml 4.10"
+  | ExistentialsInPatternMatching -> "OCaml 4.13"
+  | With_modtype -> "OCaml 4.13"
+  | With_modtypesubst -> "OCaml 4.13"
+  | Psig_modtypesubst -> "OCaml 4.13"
 
 (** Turn a missing feature into a reasonable error message. *)
 let migration_error_message x =

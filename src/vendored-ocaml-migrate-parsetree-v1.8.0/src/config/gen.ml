@@ -21,8 +21,9 @@ let () =
      | (4, 10) -> "410"
      | (4, 11) -> "411"
      | (4, 12) -> "412"
+     | (4, 13) -> "413"
      | _ ->
-       Printf.eprintf "Unkown OCaml version %s\n" ocaml_version_str;
+       Printf.eprintf "Unknown OCaml version %s\n" ocaml_version_str;
        exit 1);
   write "compiler-functions-file"
     (if ocaml_version < (4, 06) then
