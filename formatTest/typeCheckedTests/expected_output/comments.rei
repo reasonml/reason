@@ -1,8 +1,8 @@
 /* **** comment */
 /*** comment */
-/*** docstring */
+/** docstring */;
 /* comment */
-/*** docstring */
+/** docstring */;
 /*** comment */
 /**** comment */
 /***** comment */

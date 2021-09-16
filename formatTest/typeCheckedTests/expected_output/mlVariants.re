@@ -24,4 +24,4 @@ let x: s = `Poly;
  * duplicating the core_type.
  * https://caml.inria.fr/mantis/view.php?id=7758
  * https://caml.inria.fr/mantis/view.php?id=7344 */
-let x: s = `Poly;
+let x: s = (`Poly: s);
