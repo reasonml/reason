@@ -2148,7 +2148,7 @@ let with_default_loc l f =
 
 module Const = struct
   let integer ?suffix i = Pconst_integer (i, suffix)
-  let int ?suffix i = integer ?suffix (Int.to_string i)
+  let int ?suffix i = integer ?suffix (string_of_int i)
   let int32 ?(suffix='l') i = integer ~suffix (Int32.to_string i)
   let int64 ?(suffix='L') i = integer ~suffix (Int64.to_string i)
   let nativeint ?(suffix='n') i = integer ~suffix (Nativeint.to_string i)
