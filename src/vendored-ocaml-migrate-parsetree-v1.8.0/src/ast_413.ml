@@ -3979,6 +3979,13 @@ let register name f = !register_function name f
 
 end
 
+module Type_immediacy = struct
+  type t (*IF_CURRENT = Type_immediacy.t *) =
+    | Unknown
+    | Always
+    | Always_on_64bits
+end
+
 module Outcometree = struct
 (* Module [Outcometree]: results displayed by the toplevel *)
 
