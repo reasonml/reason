@@ -15,7 +15,7 @@ OCAML_VERSION=${OCAML_VERSION:-"4.06.2"}
 
 case ${OCAML_VERSION} in
 4.08.*) OCAML_VERSION=4.08.0;;
-4.09.*|4.10.*|4.11.*|4.12.*) OCAML_VERSION=4.12.0;; # Outputs from OCaml 4.10 / 4.11 are exepected to be the same as OCaml 4.09
+4.09.*|4.10.*|4.11.*|4.12.*|4.13.*) OCAML_VERSION=4.09.0;; # Outputs from OCaml 4.10 / 4.11 are exepected to be the same as OCaml 4.09
 esac
 
 unameOut="$(uname -s)"
