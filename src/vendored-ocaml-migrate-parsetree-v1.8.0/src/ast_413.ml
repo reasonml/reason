@@ -2926,10 +2926,7 @@ open Parsetree
 open Ast_helper
 open Location
 
-module String = struct
-  include String
-  module Map = Map.Make(String)
-end
+module String = Misc.Stdlib.String
 
   type mapper (*IF_CURRENT = Ast_mapper.mapper *) = {
   attribute: mapper -> attribute -> attribute;
