@@ -3704,7 +3704,7 @@ end = struct
           lid "recursive_types", make_bool !Clflags.recursive_types;
           lid "principal", make_bool !Clflags.principal;
           lid "transparent_modules", make_bool !Clflags.transparent_modules;
-          lid "unboxed_types", make_bool !Clflags.unboxed_types;
+          lid "unboxed_types", make_bool (Migrate_parsetree_compiler_functions.get_unboxed_types ());
           lid "unsafe_string", make_bool !Clflags.unsafe_string;
           get_cookies ()
         ]
@@ -3784,7 +3784,7 @@ end = struct
         | "transparent_modules" ->
             Clflags.transparent_modules := get_bool payload
         | "unboxed_types" ->
-            Clflags.unboxed_types := get_bool payload
+            Migrate_parsetree_compiler_functions.set_unboxed_types (get_bool payload)
         | "unsafe_string" ->
             Clflags.unsafe_string := get_bool payload
         | "cookies" ->
