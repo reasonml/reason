@@ -3725,7 +3725,7 @@ module PpxContext = struct
       [
         lid "tool_name",    make_string tool_name;
         lid "include_dirs", make_list make_string !Clflags.include_dirs;
-        lid "load_path",    make_list make_string (Load_path.get_paths ());
+        lid "load_path",    make_list make_string (Migrate_parsetree_compiler_functions.get_load_paths ());
         lid "open_modules", make_list make_string !Clflags.open_modules;
         lid "for_package",  make_option make_string !Clflags.for_package;
         lid "debug",        make_bool !Clflags.debug;
@@ -3795,7 +3795,7 @@ module PpxContext = struct
       | "include_dirs" ->
           Clflags.include_dirs := get_list get_string payload
       | "load_path" ->
-          Load_path.init (get_list get_string payload)
+          Migrate_parsetree_compiler_functions.load_path_init (get_list get_string payload)
       | "open_modules" ->
           Clflags.open_modules := get_list get_string payload
       | "for_package" ->
