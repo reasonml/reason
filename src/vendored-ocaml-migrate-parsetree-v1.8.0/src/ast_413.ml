@@ -3653,19 +3653,12 @@ let default_mapper =
       );
   }
 
-let extension_of_error {kind; main; sub} =
-  if kind <> Location.Report_error then
-    raise (Invalid_argument "extension_of_error: expected kind Report_error");
-  let str_of_pp pp_msg = Format.asprintf "%t" pp_msg in
-  let extension_of_sub sub =
-    { loc = sub.loc; txt = "ocaml.error" },
-    PStr ([Str.eval (Exp.constant
-                       (Pconst_string (str_of_pp sub.txt, sub.loc, None)))])
-  in
-  { loc = main.loc; txt = "ocaml.error" },
-  PStr (Str.eval (Exp.constant
-                    (Pconst_string (str_of_pp main.txt, main.loc, None))) ::
-        List.map (fun msg -> Str.extension (extension_of_sub msg)) sub)
+let extension_of_error error =
+  Locations.extension_of_error
+    ~mk_pstr:(fun x -> PStr x)
+    ~mk_extension:(fun x -> Str.extension x)
+    ~mk_string_constant:(fun x -> Str.eval (Exp.constant (Pconst_string (x, Location.none (* XXX *), None))))
+    error
 
 let attribute_of_warning loc s =
   Attr.mk
