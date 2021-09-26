@@ -3839,13 +3839,7 @@ end
 
 let ppx_context = PpxContext.make
 
-let extension_of_exn exn =
-  match error_of_exn exn with
-  | Some (`Ok error) -> extension_of_error error
-  | Some `Already_displayed ->
-      { loc = Location.none; txt = "ocaml.error" }, PStr []
-  | None -> raise exn
-
+let extension_of_exn exn = extension_of_error (Locations.location_error_of_exn exn)
 
 let apply_lazy ~source ~target mapper =
   let implem ast =
