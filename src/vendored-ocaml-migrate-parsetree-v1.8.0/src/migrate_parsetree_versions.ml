@@ -770,6 +770,8 @@ include Register_migration(OCaml_410)(OCaml_411)
     (Migrate_parsetree_410_411)(Migrate_parsetree_411_410)
 include Register_migration(OCaml_411)(OCaml_412)
     (Migrate_parsetree_411_412)(Migrate_parsetree_412_411)
+include Register_migration(OCaml_412)(OCaml_413)
+    (Migrate_parsetree_412_413)(Migrate_parsetree_413_412)
 (*$*)
 
 module OCaml_current = OCaml_OCAML_VERSION
