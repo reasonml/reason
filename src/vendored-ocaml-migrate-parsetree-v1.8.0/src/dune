@@ -5,10 +5,13 @@
  ; omp and reason itself.
  (wrapped true)
  ; (wrapped
-  ; (transition "Access modules via the Migrate_parsetree toplevel module"))
+ ; (transition "Access modules via the Migrate_parsetree toplevel module"))
  (libraries compiler-libs.common result ppx_derivers)
  (modules :standard \ migrate_parsetree_driver_main)
- (preprocess (action (run %{exe:../tools/pp.exe} %{read:ast-version} %{input-file})))
+ (preprocess
+  (action
+   (run %{exe:../tools/pp.exe} %{read:ast-version} %{input-file})))
+ (flags :standard -w -9)
  ; (ppx.driver
  ;  (main       Migrate_parsetree.Driver.run_main)
  ;  (flags      --dump-ast)
@@ -30,4 +33,5 @@
 
 (rule
  (targets ast-version compiler-functions-file)
- (action  (run %{ocaml} %{dep:config/gen.ml} %{ocaml_version})))
+ (action
+  (run %{ocaml} %{dep:config/gen.ml} %{ocaml_version})))

@@ -1,0 +1,53 @@
+opam-version: "2.0"
+
+homepage: "http://github.com/ocaml/odoc"
+doc: "https://ocaml.github.io/odoc/"
+bug-reports: "https://github.com/ocaml/odoc/issues"
+license: "ISC"
+
+authors: [
+  "Thomas Refis <trefis@janestreet.com>"
+  "David Sheets <sheets@alum.mit.edu>"
+  "Leo White <leo@lpw25.net>"
+  "Anton Bachin <antonbachin@yahoo.com>"
+  "Jon Ludlam <jon@recoil.org>"
+]
+maintainer: "Jon Ludlam <jon@recoil.org>"
+dev-repo: "git+https://github.com/ocaml/odoc.git"
+
+synopsis: "OCaml documentation generator"
+description: """
+Odoc is a documentation generator for OCaml. It reads doc comments,
+delimited with `(** ... *)`, and outputs HTML. 
+"""
+
+depends: [
+  "astring"
+  "cmdliner" {>= "1.0.0"}
+  "cppo" {build & >= "1.1.0"}
+  "dune"
+  "fpath"
+  "ocaml" {>= "4.02.0"}
+  "result"
+  "tyxml" {>= "4.3.0"}
+
+  "alcotest" {dev & >= "0.8.3" & with-test}
+  "markup" {dev & >= "1.0.0" & with-test}
+  "ocamlfind" {dev}
+  "sexplib" {dev & >= "113.33.00" & with-test}
+
+  "bisect_ppx" {with-test & >= "1.3.0"}
+]
+
+build: [
+  ["dune" "subst"] {dev}
+  ["dune" "build" "-p" name "-j" jobs]
+]
+url {
+  src: "https://github.com/ocaml/odoc/releases/download/1.5.3/odoc-1.5.3.tbz"
+  checksum: [
+    "sha256=f2b76f811658c4b52cb48ac4ffc2ec37cedd2a805111c7f8ec20f8f36b8bbf45"
+    "sha512=9e069590e0737c94813d25235b5cfe27feb5a0298a17ff9b9ee446c69827c3a0ea3b7da5d05b278639cd1f0202e0d83356707979edfaa2af73876fc000c23c4d"
+  ]
+}
+x-commit-hash: "8de4a36814533b25b461373fe5c0f54db55e5e7c"

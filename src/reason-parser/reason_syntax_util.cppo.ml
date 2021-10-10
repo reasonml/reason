@@ -16,7 +16,7 @@
 
 #ifdef BS_NO_COMPILER_PATCH
 open Reason_migrate_parsetree
-open Ast_408
+open Ast_411
 #endif
 
 open Asttypes
@@ -554,7 +554,7 @@ let map_label label = map_arg_label f label in
 }
 
 let remove_stylistic_attrs_mapper_maker super =
-  let open Ast_408 in
+  let open Ast_411 in
   let open Ast_mapper in
 { super with
   expr = begin fun mapper expr ->
@@ -733,7 +733,7 @@ let compress_letop_identifier s = s
  * (let+)((and+)(y, b), ((x, a)) => x + a)
  *)
 let backport_letopt_mapper super =
-  let open Ast_408 in
+  let open Ast_411 in
   let open Ast_mapper in
 { super with
   expr = fun mapper expr ->

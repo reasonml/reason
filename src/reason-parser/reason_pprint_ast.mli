@@ -1,5 +1,5 @@
 open Reason_migrate_parsetree
-open Ast_408.Parsetree
+open Ast_411.Parsetree
 
 val configure :
   width:int ->

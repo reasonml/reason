@@ -21,8 +21,8 @@
 
 open Reason_migrate_parsetree
 
-module Convert = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_408) (Reason_migrate_parsetree.OCaml_current)
-module ConvertBack = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_current) (Reason_migrate_parsetree.OCaml_408)
+module Convert = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_411) (Reason_migrate_parsetree.OCaml_current)
+module ConvertBack = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_current) (Reason_migrate_parsetree.OCaml_411)
 
 let main () =
   let filename = "./TestTest.ml" in
@@ -41,9 +41,14 @@ let main () =
   let ast = impl lexbuf in
   let ast = Convert.copy_structure ast in
   let env = Compmisc.initial_env() in
-  let (typedtree, _) = Typemod.type_implementation modulename modulename modulename env ast in
+#if OCAML_VERSION >= (4,13,0)
+  let { Typedtree.structure = typedtree; _ } =
+#else
+  let (typedtree, _) =
+#endif
+    Typemod.type_implementation modulename modulename modulename env ast in
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
-  let phrase = (Ast_408.Outcometree.Ophr_signature
+  let phrase = (Ast_411.Outcometree.Ophr_signature
     (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)
   ) in
   let fmt = Format.str_formatter in

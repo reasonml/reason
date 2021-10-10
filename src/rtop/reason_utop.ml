@@ -17,7 +17,7 @@ module ToploopBackup = struct
   let print_out_sig_item = !Toploop.print_out_sig_item
   let print_out_signature = !Toploop.print_out_signature
   let print_out_phrase = !Toploop.print_out_phrase
-  let current_show = Hashtbl.find Toploop.directive_table "show"
+  let[@ocaml.warning "-3"] current_show = Hashtbl.find Toploop.directive_table "show"
 end
 
 let rec lident_operator_map mapper li =
@@ -79,7 +79,7 @@ let init_reason () =
     | Toploop.Directive_ident fn -> fn
     | _ -> assert false
     in
-    Hashtbl.replace Toploop.directive_table "show"
+    Hashtbl.replace (Toploop.directive_table [@ocaml.warning "-3"]) "show"
       (Toploop.Directive_ident (fun li ->
            let li' = lident_operator_map Reason_syntax_util.reason_to_ml_swap li in
            current_show_fn li'));
@@ -103,7 +103,7 @@ let init_ocaml () =
   Toploop.print_out_sig_item := ToploopBackup.print_out_sig_item;
   Toploop.print_out_signature := ToploopBackup.print_out_signature;
   Toploop.print_out_phrase := ToploopBackup.print_out_phrase;
-  Hashtbl.replace Toploop.directive_table "show" ToploopBackup.current_show
+  Hashtbl.replace (Toploop.directive_table [@ocaml.warning "-3"]) "show" ToploopBackup.current_show
 
 let toggle_syntax () =
   match !current_top with
@@ -111,6 +111,6 @@ let toggle_syntax () =
   | UTop -> init_reason ()
 
 let _ =
-  Hashtbl.add Toploop.directive_table "toggle_syntax"
+  Hashtbl.add (Toploop.directive_table [@ocaml.warning "-3"]) "toggle_syntax"
     (Toploop.Directive_none toggle_syntax);
   init_reason ()

@@ -1,0 +1,58 @@
+opam-version: "2.0"
+synopsis: "Pretty-printing library"
+description: """
+
+This library provides a lean alternative to the Format [1] module of
+the OCaml standard library. It aims to make it easy for users to do
+the right thing. If you have tried Format before but find its API
+complicated and difficult to use, then Pp might be a good choice for
+you.
+
+Pp uses the same concepts of boxes and break hints, and the final
+rendering is done to formatter from the Format module. However it
+defines its own algebra which some might find easier to work with and
+reason about. No previous knowledge is required to start using this
+library, however the various guides for the Format module such as this
+one [2] should be applicable to Pp as well.
+
+[1]: https://caml.inria.fr/pub/docs/manual-ocaml/libref/Format.html
+[2]: http://caml.inria.fr/resources/doc/guides/format.en.html
+"""
+maintainer: ["Jeremie Dimino <jeremie@dimino.org>"]
+authors: [
+  "Jane Street Group, LLC"
+  "Jeremie Dimino <jeremie@dimino.org>"
+]
+license: "MIT"
+homepage: "https://github.com/ocaml-dune/pp"
+doc: "https://ocaml-dune.github.io/pp/"
+bug-reports: "https://github.com/ocaml-dune/pp/issues"
+depends: [
+  "dune" {>= "2.0"}
+  "ocaml" {>= "4.08.0"}
+  "ppx_expect" {with-test}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-dune/pp.git"
+x-commit-hash: "395b95c89cfe2c6d538dad9d56721b6a7278d46c"
+url {
+  src:
+    "https://github.com/ocaml-dune/pp/releases/download/1.1.2/pp-1.1.2.tbz"
+  checksum: [
+    "sha256=e4a4e98d96b1bb76950fcd6da4e938c86d989df4d7e48f02f7a44595f5af1d56"
+    "sha512=58f78b083483006b40814be9aac33c895349eb1c6427d2762b4d760192613401262478bd5deff909763517560b06af7bf013c6a6f87d549aafa77b26345303f2"
+  ]
+}

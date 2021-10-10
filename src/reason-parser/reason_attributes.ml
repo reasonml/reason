@@ -1,5 +1,5 @@
 open Reason_migrate_parsetree
-open Ast_408
+open Ast_411
 open Location
 open Parsetree
 
@@ -53,7 +53,7 @@ let extract_raw_literal attrs =
   let rec loop acc = function
     | { attr_name = {txt="reason.raw_literal"};
         attr_payload =
-          PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant(Pconst_string(text, None))}, _)}]}
+          PStr [{pstr_desc = Pstr_eval({pexp_desc = Pexp_constant(Pconst_string(text, _, None))}, _)}]}
       :: rest ->
       (Some text, List.rev_append acc rest)
     | [] -> (None, List.rev acc)
