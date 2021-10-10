@@ -4,7 +4,7 @@
 	"description": "Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/facebook/reason.git"
+		"url": "https://github.com/reasonml/reason.git"
 	},
 	"main": "refmt.js",
 	"keywords": [
@@ -15,7 +15,7 @@
 		"won't you look at all these nice types"
 	],
 	"license": "MIT",
-	"homepage": "https://github.com/facebook/reason",
+	"homepage": "https://github.com/reasonml/reason",
 	"dependencies": {},
 	"devDependencies": {
 		"bs-platform": "1.9.3"

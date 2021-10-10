@@ -2,17 +2,17 @@ opam-version: "2.0"
 maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "MIT"
-homepage: "https://github.com/facebook/reason"
+homepage: "https://github.com/reasonml/reason"
 doc: "http://reasonml.github.io/"
-bug-reports: "https://github.com/facebook/reason/issues"
-dev-repo: "git://github.com/facebook/reason.git"
+bug-reports: "https://github.com/reasonml/reason/issues"
+dev-repo: "git://github.com/reasonml/reason.git"
 tags: [ "syntax" ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml"  {>= "4.02" & < "4.13"}
+  "ocaml"  {>= "4.02" & < "4.14"}
   "dune"   {>= "1.4"}
   "reason"
   "utop"   {>= "1.17"}

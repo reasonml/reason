@@ -5,7 +5,7 @@
   "description": "Native Compiler Support for Reason: Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems",
   "repository": {
     "type": "git",
-    "url": "https://github.com/facebook/reason.git"
+    "url": "https://github.com/reasonml/reason.git"
   },
   "dependencies": {
     "ocaml": " >= 4.2.0 < 4.13.0",
