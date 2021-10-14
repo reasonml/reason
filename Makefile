@@ -78,8 +78,8 @@ release: release_check pre_release
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."
 	# Push first the objects, then the tag.
-	git push "git@github.com:facebook/Reason.git"
-	git push "git@github.com:facebook/Reason.git" tag $(version)
+	git push "git@github.com:reasonml/reason.git"
+	git push "git@github.com:reasonml/reason.git" tag $(version)
 	git clean -fdx
 	./scripts/opam-release.sh
 

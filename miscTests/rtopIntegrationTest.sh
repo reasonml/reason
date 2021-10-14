@@ -1,5 +1,5 @@
 #!/bin/sh
-# Context: https://github.com/facebook/reason/pull/674
+# Context: https://github.com/reasonml/reason/pull/674
 
 # We can't directly call `rtop -stdin` because it circumvents what we're trying to
 # test. See rtop.sh for the reason. We want to make sure utop's reason
