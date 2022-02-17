@@ -26,7 +26,7 @@ let rec copy_out_type_extension :
       Ast_413.Outcometree.otyext_constructors =
         (List.map
            (fun x ->
-              let (x0, x1, x2) = x in
+              let Ast_414.Outcometree.{ ocstr_name = x0; ocstr_args = x1; ocstr_return_type = x2 } = x in
               (x0, (List.map copy_out_type x1),
                 (Option.map copy_out_type x2))) otyext_constructors);
       Ast_413.Outcometree.otyext_private = (copy_private_flag otyext_private)
@@ -232,7 +232,7 @@ and copy_out_type :
       Ast_413.Outcometree.Otyp_sum
         (List.map
            (fun x ->
-              let (x0, x1, x2) = x in
+            let Ast_414.Outcometree.{ ocstr_name = x0; ocstr_args = x1; ocstr_return_type = x2 } = x in
               (x0, (List.map copy_out_type x1),
                 (Option.map copy_out_type x2))) x0)
   | Ast_414.Outcometree.Otyp_tuple x0 ->
@@ -249,8 +249,7 @@ and copy_out_type :
   | Ast_414.Outcometree.Otyp_module (x0, x1) ->
       Ast_413.Outcometree.Otyp_module
         ((copy_out_ident x0),
-        (List.map fst x1),
-          (List.map (fun (_, x) -> (copy_out_type x)) x1))
+          (List.map (fun (x0, x1) -> x0, (copy_out_type x1)) x1))
   | Ast_414.Outcometree.Otyp_attribute (x0, x1) ->
       Ast_413.Outcometree.Otyp_attribute
         ((copy_out_type x0), (copy_out_attribute x1))
@@ -587,8 +586,8 @@ and copy_pattern_desc :
         ((copy_loc copy_Longident_t x0),
           (Option.map
              (fun x ->
-                let (_, x1) = x in
-                copy_pattern x1) x1))
+                let (x0, x1) = x in
+                x0, copy_pattern x1) x1))
   | Ast_414.Parsetree.Ppat_variant (x0, x1) ->
       Ast_413.Parsetree.Ppat_variant
         ((copy_label x0), (Option.map copy_pattern x1))
@@ -1337,9 +1336,11 @@ and copy_extension_constructor_kind :
     Ast_413.Parsetree.extension_constructor_kind
   =
   function
-  | Ast_414.Parsetree.Pext_decl (x0, x1) ->
-      Ast_413.Parsetree.Pext_decl
-        ((copy_constructor_arguments x0), (Option.map copy_core_type x1))
+  | Ast_414.Parsetree.Pext_decl (x0, x1, x2) ->
+    (match x0 with
+    | [] -> Ast_413.Parsetree.Pext_decl
+      ((copy_constructor_arguments x1), (Option.map copy_core_type x2))
+    | hd :: _ -> migration_error hd.loc Extension_constructor)
   | Ast_414.Parsetree.Pext_rebind x0 ->
       Ast_413.Parsetree.Pext_rebind (copy_loc copy_Longident_t x0)
 and copy_type_declaration :

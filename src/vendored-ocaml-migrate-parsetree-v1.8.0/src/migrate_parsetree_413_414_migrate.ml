@@ -19,8 +19,10 @@ let rec copy_out_type_extension :
         (List.map
            (fun x ->
               let (x0, x1, x2) = x in
-              (x0, (List.map copy_out_type x1),
-                (Option.map copy_out_type x2))) otyext_constructors);
+              let x1 = (List.map copy_out_type x1) in
+              let x2 = (Option.map copy_out_type x2) in
+              Ast_414.Outcometree.{ ocstr_name = x0; ocstr_args = x1; ocstr_return_type = x2 })
+            otyext_constructors);
       Ast_414.Outcometree.otyext_private = (copy_private_flag otyext_private)
     }
 and copy_out_phrase :
@@ -225,8 +227,10 @@ and copy_out_type :
         (List.map
            (fun x ->
               let (x0, x1, x2) = x in
-              (x0, (List.map copy_out_type x1),
-                (Option.map copy_out_type x2))) x0)
+              let x1 = (List.map copy_out_type x1) in
+              let x2 = (Option.map copy_out_type x2) in
+              Ast_414.Outcometree.{ ocstr_name = x0; ocstr_args = x1; ocstr_return_type = x2 })
+            x0)
   | Ast_413.Outcometree.Otyp_tuple x0 ->
       Ast_414.Outcometree.Otyp_tuple (List.map copy_out_type x0)
   | Ast_413.Outcometree.Otyp_var (x0, x1) ->
@@ -238,9 +242,9 @@ and copy_out_type :
   | Ast_413.Outcometree.Otyp_poly (x0, x1) ->
       Ast_414.Outcometree.Otyp_poly
         ((List.map (fun x -> x) x0), (copy_out_type x1))
-  | Ast_413.Outcometree.Otyp_module (x0, x1, x2) ->
+  | Ast_413.Outcometree.Otyp_module (x0, x1) ->
       Ast_414.Outcometree.Otyp_module
-        ((copy_out_ident x0), (List.map2 (fun x y -> x, copy_out_type y) x1 x2))
+        ((copy_out_ident x0), (List.map (fun (x, y) -> x, copy_out_type y) x1))
   | Ast_413.Outcometree.Otyp_attribute (x0, x1) ->
       Ast_414.Outcometree.Otyp_attribute
         ((copy_out_type x0), (copy_out_attribute x1))
@@ -574,7 +578,7 @@ and copy_pattern_desc :
       Ast_414.Parsetree.Ppat_tuple (List.map copy_pattern x0)
   | Ast_413.Parsetree.Ppat_construct (x0, x1) ->
       Ast_414.Parsetree.Ppat_construct
-        ((copy_loc copy_Longident_t x0), (Option.map (fun x -> [], copy_pattern x) x1))
+        ((copy_loc copy_Longident_t x0), (Option.map (fun (x0, x1) -> x0, copy_pattern x1) x1))
   | Ast_413.Parsetree.Ppat_variant (x0, x1) ->
       Ast_414.Parsetree.Ppat_variant
         ((copy_label x0), (Option.map copy_pattern x1))
@@ -979,6 +983,12 @@ and copy_with_constraint :
   | Ast_413.Parsetree.Pwith_module (x0, x1) ->
       Ast_414.Parsetree.Pwith_module
         ((copy_loc copy_Longident_t x0), (copy_loc copy_Longident_t x1))
+  | Ast_413.Parsetree.Pwith_modtype (x0, x1) ->
+      Ast_414.Parsetree.Pwith_modtype
+        ((copy_loc copy_Longident_t x0), (copy_module_type x1))
+  | Ast_413.Parsetree.Pwith_modtypesubst (x0, x1) ->
+      Ast_414.Parsetree.Pwith_modtypesubst
+        ((copy_loc copy_Longident_t x0), (copy_module_type x1))
   | Ast_413.Parsetree.Pwith_typesubst (x0, x1) ->
       Ast_414.Parsetree.Pwith_typesubst
         ((copy_loc copy_Longident_t x0), (copy_type_declaration x1))
@@ -1022,6 +1032,8 @@ and copy_signature_item_desc :
       Ast_414.Parsetree.Psig_recmodule (List.map copy_module_declaration x0)
   | Ast_413.Parsetree.Psig_modtype x0 ->
       Ast_414.Parsetree.Psig_modtype (copy_module_type_declaration x0)
+  | Ast_413.Parsetree.Psig_modtypesubst x0 ->
+      Ast_414.Parsetree.Psig_modtypesubst (copy_module_type_declaration x0)
   | Ast_413.Parsetree.Psig_open x0 ->
       Ast_414.Parsetree.Psig_open (copy_open_description x0)
   | Ast_413.Parsetree.Psig_include x0 ->
@@ -1319,7 +1331,7 @@ and copy_extension_constructor_kind :
   function
   | Ast_413.Parsetree.Pext_decl (x0, x1) ->
       Ast_414.Parsetree.Pext_decl
-        ((copy_constructor_arguments x0), (Option.map copy_core_type x1))
+        ([], (copy_constructor_arguments x0), (Option.map copy_core_type x1))
   | Ast_413.Parsetree.Pext_rebind x0 ->
       Ast_414.Parsetree.Pext_rebind (copy_loc copy_Longident_t x0)
 and copy_type_declaration :
@@ -1384,6 +1396,7 @@ and copy_constructor_declaration :
     ->
     {
       Ast_414.Parsetree.pcd_name = (copy_loc (fun x -> x) pcd_name);
+      Ast_414.Parsetree.pcd_vars = [];
       Ast_414.Parsetree.pcd_args = (copy_constructor_arguments pcd_args);
       Ast_414.Parsetree.pcd_res = (Option.map copy_core_type pcd_res);
       Ast_414.Parsetree.pcd_loc = (copy_location pcd_loc);

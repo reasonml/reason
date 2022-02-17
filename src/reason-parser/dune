@@ -5,15 +5,33 @@
 
 (rule
  (targets ocaml_util.ml)
- (deps ../generate/select.exe ocaml_util.ml-4.13 ocaml_util.ml-4.12 ocaml_util.ml-4.11 ocaml_util.ml-4.10
-   ocaml_util.ml-4.09 ocaml_util.ml-4.08 ocaml_util.ml-4.07
-   ocaml_util.ml-4.06 ocaml_util.ml-default)
+ (deps
+  ../generate/select.exe
+  ocaml_util.ml-4.14
+  ocaml_util.ml-4.13
+  ocaml_util.ml-4.12
+  ocaml_util.ml-4.11
+  ocaml_util.ml-4.10
+  ocaml_util.ml-4.09
+  ocaml_util.ml-4.08
+  ocaml_util.ml-4.07
+  ocaml_util.ml-4.06
+  ocaml_util.ml-default)
  (action
   (with-stdout-to
    %{targets}
-   (run ../generate/select.exe ocaml_util.ml-4.13 ocaml_util.ml-4.12 ocaml_util.ml-4.11 ocaml_util.ml-4.10
-     ocaml_util.ml-4.09 ocaml_util.ml-4.08 ocaml_util.ml-4.07
-     ocaml_util.ml-4.06 ocaml_util.ml-default))))
+   (run
+    ../generate/select.exe
+    ocaml_util.ml-4.14
+    ocaml_util.ml-4.13
+    ocaml_util.ml-4.12
+    ocaml_util.ml-4.11
+    ocaml_util.ml-4.10
+    ocaml_util.ml-4.09
+    ocaml_util.ml-4.08
+    ocaml_util.ml-4.07
+    ocaml_util.ml-4.06
+    ocaml_util.ml-default))))
 
 (menhir
  (flags --strict --inspection --unused-tokens --table --cmly)
@@ -55,22 +73,43 @@
  (targets reason_oprint.ml)
  (deps reason_oprint.cppo.ml)
  (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{deps}
-    -o %{targets})))
+  (run
+   %{bin:cppo}
+   -V
+   OCAML:%{ocaml_version}
+   -D
+   BS_NO_COMPILER_PATCH
+   %{deps}
+   -o
+   %{targets})))
 
 (rule
  (targets reason_syntax_util.ml)
  (deps reason_syntax_util.cppo.ml)
  (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{deps}
-    -o %{targets})))
+  (run
+   %{bin:cppo}
+   -V
+   OCAML:%{ocaml_version}
+   -D
+   BS_NO_COMPILER_PATCH
+   %{deps}
+   -o
+   %{targets})))
 
 (rule
  (targets reason_syntax_util.mli)
  (deps reason_syntax_util.cppo.mli)
  (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} -D BS_NO_COMPILER_PATCH %{deps}
-    -o %{targets})))
+  (run
+   %{bin:cppo}
+   -V
+   OCAML:%{ocaml_version}
+   -D
+   BS_NO_COMPILER_PATCH
+   %{deps}
+   -o
+   %{targets})))
 
 (library
  (name reason)
@@ -81,12 +120,32 @@
  (wrapped false)
  (flags
   (:standard -w -9-52 -safe-string))
- (modules ocaml_util reason_syntax_util reason_comment reason_attributes
-   reason_layout reason_heuristics reason_location reason_toolchain_conf
-   reason_toolchain_reason reason_toolchain_ocaml reason_toolchain
-   reason_config reason_pprint_ast reason_errors reason_parser_def
-   reason_parser reason_single_parser reason_multi_parser merlin_recovery
-   reason_recover_parser reason_declarative_lexer reason_lexer reason_oprint
-   reason_parser_explain_raw reason_parser_explain reason_parser_recover
-   reason_string)
+ (modules
+  ocaml_util
+  reason_syntax_util
+  reason_comment
+  reason_attributes
+  reason_layout
+  reason_heuristics
+  reason_location
+  reason_toolchain_conf
+  reason_toolchain_reason
+  reason_toolchain_ocaml
+  reason_toolchain
+  reason_config
+  reason_pprint_ast
+  reason_errors
+  reason_parser_def
+  reason_parser
+  reason_single_parser
+  reason_multi_parser
+  merlin_recovery
+  reason_recover_parser
+  reason_declarative_lexer
+  reason_lexer
+  reason_oprint
+  reason_parser_explain_raw
+  reason_parser_explain
+  reason_parser_recover
+  reason_string)
  (libraries reason.ocaml-migrate-parsetree menhirLib reason.easy_format))

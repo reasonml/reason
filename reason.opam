@@ -12,7 +12,7 @@ build: [
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
-  "ocaml"         {>= "4.03" & < "4.14"}
+  "ocaml"         {>= "4.03" & < "4.15"}
   "dune"          {>= "1.4"}
   "ocamlfind"     {build}
   "menhir"        {>= "20170418"}
