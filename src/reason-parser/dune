@@ -7,6 +7,7 @@
  (targets ocaml_util.ml)
  (deps
   ../generate/select.exe
+  ocaml_util.ml-5.00
   ocaml_util.ml-4.14
   ocaml_util.ml-4.13
   ocaml_util.ml-4.12
@@ -22,6 +23,7 @@
    %{targets}
    (run
     ../generate/select.exe
+    ocaml_util.ml-5.00
     ocaml_util.ml-4.14
     ocaml_util.ml-4.13
     ocaml_util.ml-4.12
