@@ -424,8 +424,8 @@ module Help = struct
   | `M_choice -> str "%s%c%s" (fst ei.main).name sep (fst ei.term).name
 
   let title ei =
-    let prog = String.capitalize (fst ei.main).name in
-    let name = String.uppercase (invocation ~sep:'-' ei) in
+    let prog = String.capitalize_ascii (fst ei.main).name in
+    let name = String.uppercase_ascii (invocation ~sep:'-' ei) in
     let left_footer = prog ^ match (fst ei.main).version with
       | None -> "" | Some v -> str " %s" v
     in
@@ -504,7 +504,7 @@ module Help = struct
     let subst = function
     | "docv" -> str "$(i,%s)" a.docv
     | "opt" when is_opt a ->
-        let k = String.lowercase (List.hd (List.sort compare a.o_names)) in
+        let k = String.lowercase_ascii (List.hd (List.sort compare a.o_names)) in
         str "$(b,%s)" k
     | "env" when a.env_info <> None ->
         begin match a.env_info with
@@ -526,12 +526,12 @@ module Help = struct
       match is_opt a, is_opt a' with
       | true, true ->
           let key names =
-            let k = String.lowercase (List.hd (List.sort rev_compare names)) in
+            let k = String.lowercase_ascii (List.hd (List.sort rev_compare names)) in
             if k.[1] = '-' then String.sub k 1 (String.length k - 1) else k
           in
           compare (key a.o_names) (key a'.o_names)
       | false, false ->
-          compare (String.lowercase a.docv) (String.lowercase a'.docv)
+          compare (String.lowercase_ascii a.docv) (String.lowercase_ascii a'.docv)
       | true, false -> -1
       | false, true -> 1
     in
@@ -914,7 +914,7 @@ module Arg = struct
       p_kind = All; o_kind = Flag; o_names = List.rev_map dash names;
       o_all = false; }
 
-  let env_bool_parse s = match String.lowercase s with
+  let env_bool_parse s = match String.lowercase_ascii s with
   | "" | "false" | "no" | "n" | "0" -> `Ok false
   | "true" | "yes" | "y" | "1" -> `Ok true
   | s -> `Error (Err.invalid_val s (alts_str ["true"; "yes"; "false"; "no" ]))
