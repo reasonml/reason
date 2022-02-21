@@ -62,6 +62,6 @@ let () =
   List.iter
     (fun term ->
        let symbol = T (terminal_find term) in
-       let name = (String.lowercase term) [@ocaml.warning "-3"] in
+       let name = (String.lowercase_ascii term) [@ocaml.warning "-3"] in
        print_transitions_on name ((=) symbol))
     [ "LIDENT"; "UIDENT"; "SEMI"; "RBRACKET"; "RPAREN"; "RBRACE" ]

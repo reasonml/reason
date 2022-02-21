@@ -3778,8 +3778,7 @@ module Ast_mapper: sig
           lid "recursive_types", make_bool !Clflags.recursive_types;
           lid "principal", make_bool !Clflags.principal;
           lid "transparent_modules", make_bool !Clflags.transparent_modules;
-          lid "unboxed_types", make_bool (Migrate_parsetree_compiler_functions.get_unboxed_types ());
-          lid "unsafe_string", make_bool !Clflags.unsafe_string;
+          lid "unboxed_types", make_bool !Clflags.unboxed_types;
           get_cookies ()
         ]
       in
@@ -3858,9 +3857,7 @@ module Ast_mapper: sig
           | "transparent_modules" ->
               Clflags.transparent_modules := get_bool payload
           | "unboxed_types" ->
-              Migrate_parsetree_compiler_functions.set_unboxed_types (get_bool payload)
-          | "unsafe_string" ->
-              Clflags.unsafe_string := get_bool payload
+              Clflags.unboxed_types := get_bool payload
           | "cookies" ->
               let l = get_list (get_pair get_string (fun x -> x)) payload in
               cookies :=
@@ -3884,6 +3881,12 @@ module Ast_mapper: sig
   let ppx_context = PpxContext.make
 
   let extension_of_exn exn = extension_of_error (Locations.location_error_of_exn exn)
+  (* let extension_of_exn exn = *)
+    (* match error_of_exn exn with *)
+    (* | Some (`Ok error) -> extension_of_error error *)
+    (* | Some `Already_displayed -> *)
+        (* { loc = Location.none; txt = "ocaml.error" }, PStr [] *)
+    (* | None -> raise exn *)
 
   let apply_lazy ~source ~target mapper =
     let implem ast =
@@ -3927,12 +3930,12 @@ module Ast_mapper: sig
       let fields = PpxContext.update_cookies fields in
       Sig.attribute (PpxContext.mk fields) :: ast
     in
-  
+
     let ic = open_in_bin source in
     let magic =
       really_input_string ic (String.length Config.ast_impl_magic_number)
     in
-  
+
     let rewrite transform =
       Location.input_name := input_value ic;
       let ast = input_value ic in
@@ -3947,13 +3950,13 @@ module Ast_mapper: sig
       close_in ic;
       failwith "Ast_mapper: OCaml version mismatch or malformed input";
     in
-  
+
     if magic = Config.ast_impl_magic_number then
       rewrite (implem : structure -> structure)
     else if magic = Config.ast_intf_magic_number then
       rewrite (iface : signature -> signature)
     else fail ()
-  
+
   let drop_ppx_context_str ~restore = function
     | {pstr_desc = Pstr_attribute
                     {attr_name = {Location.txt = "ocaml.ppx.context"};
@@ -3964,7 +3967,7 @@ module Ast_mapper: sig
           PpxContext.restore (PpxContext.get_fields a);
         items
     | items -> items
-  
+
   let drop_ppx_context_sig ~restore = function
     | {psig_desc = Psig_attribute
                     {attr_name = {Location.txt = "ocaml.ppx.context"};
@@ -3975,17 +3978,17 @@ module Ast_mapper: sig
           PpxContext.restore (PpxContext.get_fields a);
         items
     | items -> items
-  
+
   let add_ppx_context_str ~tool_name ast =
     Ast_helper.Str.attribute (ppx_context ~tool_name ()) :: ast
-  
+
   let add_ppx_context_sig ~tool_name ast =
     Ast_helper.Sig.attribute (ppx_context ~tool_name ()) :: ast
-  
-  
+
+
   let apply ~source ~target mapper =
     apply_lazy ~source ~target (fun () -> mapper)
-  
+
   let run_main mapper =
     try
       let a = Sys.argv in
@@ -4007,7 +4010,7 @@ module Ast_mapper: sig
     with exn ->
       prerr_endline (Printexc.to_string exn);
       exit 2
-  
+
   let register_function = ref (fun _name f -> run_main f)
   let register name f = !register_function name f
 end
