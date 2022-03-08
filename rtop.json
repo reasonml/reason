@@ -10,14 +10,14 @@
     "@esy-ocaml/substs": "^0.0.1",
     "@opam/ocamlfind": "*",
     "@opam/result": "*",
-    "@opam/dune": "*",
+    "@opam/dune": "2.9.3",
     "@esy-ocaml/reason": "^3.2.0",
     "@opam/utop": " >= 1.17.0",
     "ocaml": ">= 4.2.0 < 4.14.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",
-    "ocaml": "~4.8.0"
+    "ocaml": "~4.12.0"
   },
   "esy": {
     "build": [
