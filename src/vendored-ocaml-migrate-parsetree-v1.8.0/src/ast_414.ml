@@ -3769,7 +3769,7 @@ module Ast_mapper: sig
         [
           lid "tool_name",    make_string tool_name;
           lid "include_dirs", make_list make_string !Clflags.include_dirs;
-          lid "load_path",    make_list make_string (Load_path.get_paths ());
+          lid "load_path",    make_list make_string (Migrate_parsetree_compiler_functions.get_load_paths ());
           lid "open_modules", make_list make_string !Clflags.open_modules;
           lid "for_package",  make_option make_string !Clflags.for_package;
           lid "debug",        make_bool !Clflags.debug;
@@ -3778,7 +3778,7 @@ module Ast_mapper: sig
           lid "recursive_types", make_bool !Clflags.recursive_types;
           lid "principal", make_bool !Clflags.principal;
           lid "transparent_modules", make_bool !Clflags.transparent_modules;
-          lid "unboxed_types", make_bool !Clflags.unboxed_types;
+          lid "unboxed_types", make_bool (Migrate_parsetree_compiler_functions.get_unboxed_types ());
           lid "unsafe_string", make_bool !Clflags.unsafe_string;
           get_cookies ()
         ]
@@ -3839,6 +3839,8 @@ module Ast_mapper: sig
           | "include_dirs" ->
               Clflags.include_dirs := get_list get_string payload
           | "load_path" ->
+              Migrate_parsetree_compiler_functions.load_path_init (get_list get_string payload)
+          | "load_path" ->
               Load_path.init (get_list get_string payload)
           | "open_modules" ->
               Clflags.open_modules := get_list get_string payload
@@ -3858,7 +3860,7 @@ module Ast_mapper: sig
           | "transparent_modules" ->
               Clflags.transparent_modules := get_bool payload
           | "unboxed_types" ->
-              Clflags.unboxed_types := get_bool payload
+              Migrate_parsetree_compiler_functions.set_unboxed_types (get_bool payload)
           | "unsafe_string" ->
               Clflags.unsafe_string := get_bool payload
           | "cookies" ->
