@@ -3840,8 +3840,6 @@ module Ast_mapper: sig
               Clflags.include_dirs := get_list get_string payload
           | "load_path" ->
               Migrate_parsetree_compiler_functions.load_path_init (get_list get_string payload)
-          | "load_path" ->
-              Load_path.init (get_list get_string payload)
           | "open_modules" ->
               Clflags.open_modules := get_list get_string payload
           | "for_package" ->
