@@ -26,7 +26,7 @@ let rec copy_out_type_extension :
       Ast_413.Outcometree.otyext_constructors =
         (List.map
            (fun x ->
-              let Ast_414.Outcometree.{ ocstr_name = x0; ocstr_args = x1; ocstr_return_type = x2 } = x in
+              let { Ast_414.Outcometree.ocstr_name = x0; ocstr_args = x1; ocstr_return_type = x2 } = x in
               (x0, (List.map copy_out_type x1),
                 (Option.map copy_out_type x2))) otyext_constructors);
       Ast_413.Outcometree.otyext_private = (copy_private_flag otyext_private)
