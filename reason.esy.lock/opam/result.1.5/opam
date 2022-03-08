@@ -1,6 +1,6 @@
 opam-version: "2.0"
-maintainer: "opensource@janestreet.com"
-authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+maintainer: "Jane Street developers"
+authors: ["Jane Street Group, LLC"]
 homepage: "https://github.com/janestreet/result"
 dev-repo: "git+https://github.com/janestreet/result.git"
 bug-reports: "https://github.com/janestreet/result/issues"

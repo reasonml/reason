@@ -4,7 +4,7 @@ authors: [ "ZAN DoYe" ]
 homepage: "https://github.com/kandu/charinfo_width/"
 bug-reports: "https://github.com/kandu/charinfo_width/issues"
 license: "MIT"
-dev-repo: "git://github.com/kandu/charinfo_width.git"
+dev-repo: "git+https://github.com/kandu/charinfo_width.git"
 build: [
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test & (ocaml:version >= "4.04.0")}
