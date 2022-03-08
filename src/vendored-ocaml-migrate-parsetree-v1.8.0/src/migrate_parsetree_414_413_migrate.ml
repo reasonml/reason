@@ -232,7 +232,7 @@ and copy_out_type :
       Ast_413.Outcometree.Otyp_sum
         (List.map
            (fun x ->
-            let Ast_414.Outcometree.{ ocstr_name = x0; ocstr_args = x1; ocstr_return_type = x2 } = x in
+            let { Ast_414.Outcometree.ocstr_name = x0; ocstr_args = x1; ocstr_return_type = x2 } = x in
               (x0, (List.map copy_out_type x1),
                 (Option.map copy_out_type x2))) x0)
   | Ast_414.Outcometree.Otyp_tuple x0 ->
