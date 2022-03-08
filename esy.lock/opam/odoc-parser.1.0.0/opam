@@ -1,0 +1,46 @@
+opam-version: "2.0"
+synopsis: "Parser for ocaml documentation comments"
+description: """
+Odoc_parser is a library for parsing the contents of OCaml documentation
+comments, formatted using 'odoc' syntax, an extension of the language
+understood by ocamldoc."""
+maintainer: ["Jon Ludlam <jon@recoil.org>"]
+authors: ["Anton Bachin <antonbachin@yahoo.com>"]
+license: "ISC"
+homepage: "https://github.com/ocaml-doc/odoc-parser"
+bug-reports: "https://github.com/ocaml-doc/odoc-parser/issues"
+dev-repo: "git+https://github.com/ocaml-doc/odoc-parser.git"
+# This template exists because without it dune pop is dependencies and build rules
+# involving odoc. Since odoc depends on this package, this doesn't work.
+doc: "https://ocaml-doc.github.io/odoc-parser/"
+depends: [
+  "dune" {>= "2.8"}
+  "ocaml" {>= "4.02.0"}
+  "astring"
+  "result"
+  "ppx_expect" {with-test}
+  ("ocaml" {< "4.04.1" & with-test} | "sexplib0" {with-test})
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+  ]
+]
+url {
+  src:
+    "https://github.com/ocaml-doc/odoc-parser/releases/download/1.0.0/odoc-parser-1.0.0.tbz"
+  checksum: [
+    "sha256=b6aa08ea71a9ebad9b2bebc4da1eda0d713cf3674e6d57d10459d934286e7aa1"
+    "sha512=b5caee3a0d288aeaa95e3f32de8e5f75f169ad2691d75f8d6c932e4fb0e6cb188813ac2d92d4076fe75b12217130e6999c46e7890cf0fa765070870f85a96d63"
+  ]
+}
+x-commit-hash: "b13ffc2f30ca20ca5bb733be4f630d46bd274fd6"
+

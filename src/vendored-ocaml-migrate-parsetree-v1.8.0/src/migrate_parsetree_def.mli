@@ -41,6 +41,8 @@ type missing_feature =
   | With_modtype
   | With_modtypesubst
   | Psig_modtypesubst
+  | Extension_constructor
+  | Pcd_vars
 
 (** Exception thrown by migration functions when a feature is not supported. *)
 exception Migration_error of missing_feature * Location.t

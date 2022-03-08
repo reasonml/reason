@@ -1,5 +1,5 @@
 (executables
- (names add_special_comments pp gencopy)
+ (names add_special_comments pp)
  (libraries compiler-libs.common compiler-libs.bytecomp)
  (flags :standard -w -3))
 

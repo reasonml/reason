@@ -68,6 +68,10 @@ type missing_feature =
   (** 4.13 -> 4.12: M with module type N := O *)
   | Psig_modtypesubst
   (** 4.13 -> 4.12: module M := sig ... end *)
+  | Extension_constructor
+  (** 4.14 -> 4.13: C: 'a... . T1... -> T0 *)
+  | Pcd_vars
+  (** 4.14 -> 4.13: 'a1 ... 'an. T *)
 
 exception Migration_error of missing_feature * Location.t
 
@@ -99,6 +103,8 @@ let missing_feature_description = function
   | With_modtype -> "module type substitution"
   | With_modtypesubst -> "destructive module type substitution"
   | Psig_modtypesubst -> "local module type substitution"
+  | Extension_constructor -> "type parameters in extension constructors"
+  | Pcd_vars -> "pcd_vars in constructor declarations"
 
 (** [missing_feature_minimal_version x] is the OCaml version where x was
     introduced. *)
@@ -129,6 +135,8 @@ let missing_feature_minimal_version = function
   | With_modtype -> "OCaml 4.13"
   | With_modtypesubst -> "OCaml 4.13"
   | Psig_modtypesubst -> "OCaml 4.13"
+  | Extension_constructor -> "OCaml 4.14"
+  | Pcd_vars -> "OCaml 4.14"
 
 (** Turn a missing feature into a reasonable error message. *)
 let migration_error_message x =

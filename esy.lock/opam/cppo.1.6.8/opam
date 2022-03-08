@@ -1,0 +1,37 @@
+opam-version: "2.0"
+maintainer: "martin@mjambon.com"
+authors: "Martin Jambon"
+license: "BSD-3-Clause"
+homepage: "https://github.com/ocaml-community/cppo"
+doc: "https://ocaml-community.github.io/cppo/"
+bug-reports: "https://github.com/ocaml-community/cppo/issues"
+depends: [
+  "ocaml" {>= "4.02.3"}
+  "dune" {>= "1.0"}
+  "base-unix"
+]
+build: [
+  ["dune" "subst"] {dev}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]
+dev-repo: "git+https://github.com/ocaml-community/cppo.git"
+synopsis: "Code preprocessor like cpp for OCaml"
+description: """
+Cppo is an equivalent of the C preprocessor for OCaml programs.
+It allows the definition of simple macros and file inclusion.
+
+Cppo is:
+
+* more OCaml-friendly than cpp
+* easy to learn without consulting a manual
+* reasonably fast
+* simple to install and to maintain
+"""
+url {
+  src: "https://github.com/ocaml-community/cppo/archive/v1.6.8.tar.gz"
+  checksum: [
+    "md5=fed401197d86f9089e89f6cbdf1d660d"
+    "sha512=069bbe0ef09c03b0dc4b5795f909c3ef872fe99c6f1e6704a0fa97594b1570b3579226ec67fe11d696ccc349a4585055bbaf07c65eff423aa45af28abf38c858"
+  ]
+}
