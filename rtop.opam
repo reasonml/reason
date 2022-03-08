@@ -14,7 +14,7 @@ depends: [
   "ocaml"  {>= "4.02" & < "4.15"}
   "dune"   {>= "1.4"}
   "reason" {=version}
-  "utop"   {>= "1.17"}
+  "utop"   {>= "2.0"}
 ]
 synopsis: "Reason toplevel"
 description:
