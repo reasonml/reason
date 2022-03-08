@@ -6,7 +6,7 @@ homepage: "https://github.com/ocaml-community/utop"
 bug-reports: "https://github.com/ocaml-community/utop/issues"
 doc: "https://ocaml-community.github.io/utop/"
 depends: [
-  "ocaml" {>= "4.03.0"}
+  "ocaml" {>= "4.03.0" & < "4.14"}
   "base-unix"
   "base-threads"
   "ocamlfind" {>= "1.7.2"}

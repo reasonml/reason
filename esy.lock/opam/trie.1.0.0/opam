@@ -4,7 +4,7 @@ authors: [ "ZAN DoYe" ]
 homepage: "https://github.com/kandu/trie/"
 bug-reports: "https://github.com/kandu/trie/issues"
 license: "MIT"
-dev-repo: "git://github.com/kandu/trie.git"
+dev-repo: "git+https://github.com/kandu/trie.git"
 build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]

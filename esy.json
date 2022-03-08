@@ -11,7 +11,7 @@
     "@opam/utop": " >= 1.17.0",
     "@opam/merlin-extend": " >= 0.6",
     "@opam/result": "*",
-    "@opam/dune": "*",
+    "@opam/dune": "2.9.3",
     "@opam/ppx_derivers": "< 2.0.0"
   },
   "devDependencies": {
