@@ -3,7 +3,7 @@ maintainer: "Jordan Walke <jordojw@gmail.com>"
 authors: [ "Jordan Walke <jordojw@gmail.com>" ]
 license: "MIT"
 homepage: "https://github.com/reasonml/reason"
-doc: "http://reasonml.github.io/"
+doc: "https://reasonml.github.io/"
 bug-reports: "https://github.com/reasonml/reason/issues"
 dev-repo: "git://github.com/reasonml/reason.git"
 tags: [ "syntax" ]

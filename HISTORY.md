@@ -1,5 +1,12 @@
 ## Future
 
+## 3.8.0
+
+- Add support for OCaml 4.13 (@EduardoRFS and @anmonteiro) [#2657](https://github.com/reasonml/reason/pull/2657)
+- Add support for OCaml 4.14 (@EduardoRFS and @anmonteiro) [#2662](https://github.com/reasonml/reason/pull/2662)
+
+## 3.7.0
+
 - Add support for (limited) interop between letop + OCaml upstream (@anmonteiro) [#2624](https://github.com/facebook/reason/pull/2624)
 - Add support for OCaml 4.12 (@kit-ty-kate) [#2635](https://github.com/facebook/reason/pull/2635)
 - Remove support for OCaml 4.02.3 (@anmonteiro) [#2638](https://github.com/facebook/reason/pull/2638)
