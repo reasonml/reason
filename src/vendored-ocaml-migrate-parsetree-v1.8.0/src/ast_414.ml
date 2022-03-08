@@ -1269,18 +1269,18 @@ end = struct
   (* Warn for unused and ambiguous docstrings *)
 
   let warn_bad_docstrings () =
-    if Warnings.is_active (Warnings.Unexpected_docstring true) then begin
+    if Warnings.is_active (Migrate_parsetree_compiler_functions.bad_docstring true) then begin
       List.iter
         (fun ds ->
           match ds.ds_attached with
           | Info -> ()
           | Unattached ->
-            prerr_warning ds.ds_loc (Warnings.Unexpected_docstring true)
+            prerr_warning ds.ds_loc (Migrate_parsetree_compiler_functions.bad_docstring true)
           | Docs ->
               match ds.ds_associated with
               | Zero | One -> ()
               | Many ->
-                prerr_warning ds.ds_loc (Warnings.Unexpected_docstring false))
+                prerr_warning ds.ds_loc (Migrate_parsetree_compiler_functions.bad_docstring true))
         (List.rev !docstrings)
   end
 
@@ -3878,7 +3878,7 @@ module Ast_mapper: sig
               ()
         in
         List.iter (function ({txt=Lident name}, x) -> field name x | _ -> ()) fields
-    
+
       let update_cookies fields =
         let fields =
           List.filter
