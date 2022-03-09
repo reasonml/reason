@@ -7,7 +7,7 @@
     "ocaml": " >= 4.2.0 < 4.15.0",
     "@opam/fix": "*",
     "@opam/ocamlfind": "*",
-    "@opam/menhir": " >= 20170418.0.0",
+    "@opam/menhir": " >= 20180523.0.0",
     "@opam/utop": " >= 1.17.0",
     "@opam/merlin-extend": " >= 0.6",
     "@opam/result": "*",

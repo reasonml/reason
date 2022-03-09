@@ -11,15 +11,15 @@
     "ocaml": " >= 4.2.0 < 4.15.0",
     "@opam/fix": "*",
     "@opam/ocamlfind": "*",
-    "@opam/menhir": " >= 20170418.0.0",
+    "@opam/menhir": " >= 20180523.0.0",
     "@opam/merlin-extend": " >= 0.6",
     "@opam/result": "*",
     "@opam/ppx_derivers": "< 2.0.0",
-    "@opam/dune": "*"
+    "@opam/dune": "2.9.3"
   },
   "devDependencies": {
     "@opam/merlin": "*",
-    "ocaml": "~4.8.0"
+    "ocaml": "~4.12.0"
   },
   "esy": {
     "build": [["dune", "build", "-p", "reason"]]

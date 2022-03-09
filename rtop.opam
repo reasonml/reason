@@ -13,8 +13,8 @@ build: [
 depends: [
   "ocaml"  {>= "4.02" & < "4.15"}
   "dune"   {>= "1.4"}
-  "reason"
-  "utop"   {>= "1.17"}
+  "reason" {=version}
+  "utop"   {>= "2.0"}
 ]
 synopsis: "Reason toplevel"
 description:

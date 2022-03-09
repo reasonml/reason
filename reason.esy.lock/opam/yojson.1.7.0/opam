@@ -6,7 +6,7 @@ bug-reports: "https://github.com/ocaml-community/yojson/issues"
 dev-repo: "git+https://github.com/ocaml-community/yojson.git"
 doc: "https://ocaml-community.github.io/yojson/"
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   ["dune" "build" "-p" name "-j" jobs]
 ]
 run-test: [["dune" "runtest" "-p" name "-j" jobs]]
