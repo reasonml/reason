@@ -1,4 +1,4 @@
-open Reason_migrate_parsetree
+open Reason_omp
 include Ast_411
 
 module From_current = Convert(OCaml_current)(OCaml_411)

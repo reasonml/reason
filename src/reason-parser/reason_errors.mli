@@ -8,7 +8,7 @@
      was too fine to be captured by the grammar rules
 *)
 
-open Reason_migrate_parsetree.Ast_411
+open Reason_omp.Ast_411
 
 type lexing_error =
   | Illegal_character of char

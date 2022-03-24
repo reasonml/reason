@@ -85,7 +85,7 @@
 *)
 
 #ifdef BS_NO_COMPILER_PATCH
-open Reason_migrate_parsetree
+open Reason_omp
 open Ast_411
 #endif
 
