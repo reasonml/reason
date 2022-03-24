@@ -1,4 +1,4 @@
-open Reason_migrate_parsetree
+open Reason_omp
 open Ast_411
 
 type t = Parsetree.signature

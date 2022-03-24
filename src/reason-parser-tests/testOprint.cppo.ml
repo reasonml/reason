@@ -19,10 +19,10 @@
  * not a super easy path to "test it out", but this setup is hopefully not too complicated.
  *)
 
-open Reason_migrate_parsetree
+open Reason_omp
 
-module Convert = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_411) (Reason_migrate_parsetree.OCaml_current)
-module ConvertBack = Reason_migrate_parsetree.Convert (Reason_migrate_parsetree.OCaml_current) (Reason_migrate_parsetree.OCaml_411)
+module Convert = Reason_omp.Convert (Reason_omp.OCaml_411) (Reason_omp.OCaml_current)
+module ConvertBack = Reason_omp.Convert (Reason_omp.OCaml_current) (Reason_omp.OCaml_411)
 
 let main () =
   let filename = "./TestTest.ml" in

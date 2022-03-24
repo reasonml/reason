@@ -48,7 +48,7 @@
 
 module Easy_format = Vendored_easy_format
 
-open Reason_migrate_parsetree
+open Reason_omp
 open Ast_411
 open Asttypes
 open Location

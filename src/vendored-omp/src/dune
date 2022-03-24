@@ -1,5 +1,5 @@
 (library
- (name reason_migrate_parsetree)
+ (name reason_omp)
  (public_name reason.ocaml-migrate-parsetree)
  ; Changed for reason to avoid conflicting modules at link time between
  ; omp and reason itself.

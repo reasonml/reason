@@ -1,4 +1,4 @@
-open Reason_migrate_parsetree
+open Reason_omp
 
 let is_punned_labelled_expression e lbl =
   let open Ast_411.Parsetree in

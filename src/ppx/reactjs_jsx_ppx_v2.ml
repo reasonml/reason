@@ -42,7 +42,7 @@
 *)
 
 (* #if defined BS_NO_COMPILER_PATCH then *)
-open Reason_migrate_parsetree
+open Reason_omp
 open Ast_411
 module To_current = Convert(OCaml_411)(OCaml_current)
 
