@@ -211,18 +211,32 @@ struct
   *)
   let set_escape fmt escape =
     let print0, flush0 = pp_get_formatter_output_functions fmt () in
-    let tagf0 = (pp_get_formatter_stag_functions [@warning "-3"]) fmt () in
+    let tagf0 =
+#if OCAML_VERSION >= (5, 0, 0)
+      pp_get_formatter_stag_functions
+#else
+      (pp_get_formatter_tag_functions [@warning "-3"])
+#endif
+      fmt () in
 
     let is_tag = ref false in
 
     let mot tag =
       is_tag := true;
+#if OCAML_VERSION >= (5, 0, 0)
       tagf0.mark_open_stag tag
+#else
+      tagf0.mark_open_tag tag
+#endif
     in
 
     let mct tag =
       is_tag := true;
+#if OCAML_VERSION >= (5, 0, 0)
       tagf0.mark_close_stag tag
+#else
+      tagf0.mark_close_tag tag
+#endif
     in
 
     let print s p n =
@@ -235,12 +249,22 @@ struct
 
     let tagf = {
       tagf0 with
+#if OCAML_VERSION >= (5, 0, 0)
         mark_open_stag = mot;
         mark_close_stag = mct
+#else
+        mark_open_tag = mot;
+        mark_close_tag = mct
+#endif
     }
     in
     pp_set_formatter_output_functions fmt print flush0;
-    (pp_set_formatter_stag_functions [@warning "-3"]) fmt tagf
+#if OCAML_VERSION >= (5, 0, 0)
+    pp_set_formatter_stag_functions
+#else
+    (pp_set_formatter_tag_functions [@warning "-3"])
+#endif
+    fmt tagf
 
 
   let set_escape_string fmt esc =
@@ -262,6 +286,7 @@ struct
           Hashtbl.add tbl1 style_name style.tag_open;
           Hashtbl.add tbl2 style_name style.tag_close
       ) l;
+#if OCAML_VERSION >= (5, 0, 0)
       let mark_open_tag = function
         | Format.String_tag style_name ->
             (try Hashtbl.find tbl1 style_name
@@ -274,15 +299,42 @@ struct
              with Not_found -> "")
         | _ ->
             ""
+#else
+      let mark_open_tag style_name =
+        try Hashtbl.find tbl1 style_name
+        with Not_found -> ""
+      in
+      let mark_close_tag style_name =
+        try Hashtbl.find tbl2 style_name
+        with Not_found -> ""
+#endif
+
       in
 
       let tagf = {
-        ((pp_get_formatter_stag_functions [@warning "-3"]) fmt ()) with
+        (
+#if OCAML_VERSION >= (5, 0, 0)
+          pp_get_formatter_stag_functions
+#else
+          (pp_get_formatter_tag_functions [@warning "-3"])
+#endif
+          fmt ()
+        ) with
+#if OCAML_VERSION >= (5, 0, 0)
           mark_open_stag = mark_open_tag;
           mark_close_stag = mark_close_tag;
+#else
+          mark_open_tag = mark_open_tag;
+          mark_close_tag = mark_close_tag;
+#endif
       }
       in
-      (pp_set_formatter_stag_functions [@warning "-3"]) fmt tagf
+#if OCAML_VERSION >= (5, 0, 0)
+      pp_set_formatter_stag_functions
+#else
+      (pp_set_formatter_tag_functions [@warning "-3"])
+#endif
+      fmt tagf
     );
 
     (match escape with
@@ -335,19 +387,39 @@ struct
 
   let open_tag fmt = function
       None -> ()
-    | Some s -> (pp_open_stag [@warning "-3"]) fmt s
+    | Some s ->
+#if OCAML_VERSION >= (5, 0, 0)
+        pp_open_stag
+#else
+        (pp_open_tag [@warning "-3"])
+#endif
+        fmt s
 
   let close_tag fmt = function
       None -> ()
-    | Some _ -> (pp_close_stag [@warning "-3"]) fmt ()
+    | Some _ ->
+#if OCAML_VERSION >= (5, 0, 0)
+        pp_close_stag
+#else
+        (pp_close_tag [@warning "-3"])
+#endif
+        fmt ()
 
   let tag_string fmt o s =
     match o with
         None -> pp_print_string fmt s
       | Some tag ->
-          (pp_open_stag [@warning "-3"]) fmt (Format.String_tag tag);
+#if OCAML_VERSION >= (5, 0, 0)
+          pp_open_stag fmt (Format.String_tag tag);
+#else
+          (pp_open_tag [@warning "-3"]) fmt (Format.String_tag tag);
+#endif
           pp_print_string fmt s;
-          (pp_close_stag [@warning "-3"]) fmt ()
+#if OCAML_VERSION >= (5, 0, 0)
+          pp_close_stag fmt ()
+#else
+          (pp_close_tag [@warning "-3"]) fmt ()
+#endif
 
   let rec fprint_t fmt = function
       Atom (s, p) ->

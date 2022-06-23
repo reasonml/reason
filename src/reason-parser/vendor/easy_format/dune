@@ -1,5 +1,6 @@
 (library
  (name ReasonEasyFormat)
  (public_name reason.easy_format)
+ (preprocess (action (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
   (wrapped false)
   (flags (:standard -w -9-27-32-50)))
