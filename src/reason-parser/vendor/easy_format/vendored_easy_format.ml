@@ -412,7 +412,7 @@ struct
 #if OCAML_VERSION >= (5, 0, 0)
           pp_open_stag fmt (Format.String_tag tag);
 #else
-          (pp_open_tag [@warning "-3"]) fmt (Format.String_tag tag);
+          (pp_open_tag [@warning "-3"]) fmt tag;
 #endif
           pp_print_string fmt s;
 #if OCAML_VERSION >= (5, 0, 0)
@@ -426,7 +426,11 @@ struct
         tag_string fmt p.atom_style s;
 
     | List ((_, _, _, p) as param, l) ->
+#if OCAML_VERSION >= (5, 0, 0)
         open_tag fmt (match p.list_style with Some ls -> Some (Format.String_tag ls) | None -> None);
+#else
+        open_tag fmt p.list_style;
+#endif
         if p.align_closing then
           fprint_list fmt None param l
         else
@@ -437,7 +441,11 @@ struct
     | Custom f -> f fmt
 
   and fprint_list_body_stick_left fmt p sep hd tl =
+#if OCAML_VERSION >= (5, 0, 0)
     open_tag fmt (match p.body_style with Some bs -> Some (Format.String_tag bs) | None -> None);
+#else
+    open_tag fmt p.body_style;
+#endif
     fprint_t fmt hd;
     List.iter (
       fun x ->
@@ -453,7 +461,11 @@ struct
     close_tag fmt p.body_style
 
   and fprint_list_body_stick_right fmt p sep hd tl =
+#if OCAML_VERSION >= (5, 0, 0)
     open_tag fmt (match p.body_style with Some bs -> Some (Format.String_tag bs) | None -> None);
+#else
+    open_tag fmt p.body_style;
+#endif
     fprint_t fmt hd;
     List.iter (
       fun x ->
@@ -471,7 +483,11 @@ struct
   and fprint_opt_label fmt = function
       None -> ()
     | Some (lab, lp) ->
+#if OCAML_VERSION >= (5, 0, 0)
         open_tag fmt (match lp.label_style with Some ls -> Some (Format.String_tag ls) | None -> None);
+#else
+        open_tag fmt lp.label_style;
+#endif
         fprint_t fmt lab;
         close_tag fmt lp.label_style;
         if lp.space_after_label then
@@ -602,7 +618,11 @@ struct
           let indent = lp.indent_after_label in
           pp_open_hvbox fmt 0;
 
+#if OCAML_VERSION >= (5, 0, 0)
           open_tag fmt (match lp.label_style with Some ls -> Some (Format.String_tag ls) | None -> None);
+#else
+          open_tag fmt lp.label_style;
+#endif
           fprint_t fmt lab;
           close_tag fmt lp.label_style;
 
