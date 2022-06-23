@@ -3857,7 +3857,7 @@ module Ast_mapper: sig
           | "transparent_modules" ->
               Clflags.transparent_modules := get_bool payload
           | "unboxed_types" ->
-              Clflags.unboxed_types := get_bool payload
+              Migrate_parsetree_compiler_functions.set_unboxed_types (get_bool payload)
           | "cookies" ->
               let l = get_list (get_pair get_string (fun x -> x)) payload in
               cookies :=
