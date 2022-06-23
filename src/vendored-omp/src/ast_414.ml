@@ -3778,7 +3778,7 @@ module Ast_mapper: sig
           lid "recursive_types", make_bool !Clflags.recursive_types;
           lid "principal", make_bool !Clflags.principal;
           lid "transparent_modules", make_bool !Clflags.transparent_modules;
-          lid "unboxed_types", make_bool !Clflags.unboxed_types;
+          lid "unboxed_types", make_bool (Migrate_parsetree_compiler_functions.get_unboxed_types ());
           get_cookies ()
         ]
       in
