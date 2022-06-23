@@ -23,6 +23,7 @@ let () =
      | (4, 12) -> "412"
      | (4, 13) -> "413"
      | (4, 14) -> "414"
+     | (5, 0) -> "500"
      | _ ->
        Printf.eprintf "Unknown OCaml version %s\n" ocaml_version_str;
        exit 1);
@@ -35,4 +36,8 @@ let () =
        "ge_408_and_lt_410.ml"
      else if ocaml_version < (4, 12) then
        "ge_410_and_lt_412.ml"
-     else "ge_412.ml")
+     else if ocaml_version < (5, 00) then
+      "ge_412.ml"
+     else
+       "ge_50.ml"
+     )

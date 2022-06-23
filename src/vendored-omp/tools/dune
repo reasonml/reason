@@ -1,6 +1,17 @@
 (executables
  (names add_special_comments pp)
+ (modules add_special_comments pp pp_rewrite)
  (libraries compiler-libs.common compiler-libs.bytecomp)
  (flags :standard -w -3))
 
 (ocamllex pp_rewrite)
+
+(executable
+ (name gencopy)
+ (enabled_if
+  (and
+   (>= %{ocaml_version} 4.13)
+   (< %{ocaml_version} 4.14)))
+ (modules gencopy)
+ (libraries compiler-libs.common compiler-libs.bytecomp)
+ (flags :standard -w -3))
