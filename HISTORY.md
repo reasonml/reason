@@ -1,5 +1,10 @@
 ## Future
 
+## 3.8.1
+
+- (Internal) Rename: Reason_migrate_parsetree -> Reason_omp (@ManasJayanth) [#2666](https://github.com/reasonml/reason/pull/2666)
+- Add support for OCaml 5.0 (@EduardoRFS and @anmonteiro) [#2667](https://github.com/reasonml/reason/pull/2667)
+
 ## 3.8.0
 
 - Add support for OCaml 4.13 (@EduardoRFS and @anmonteiro) [#2657](https://github.com/reasonml/reason/pull/2657)
