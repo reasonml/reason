@@ -11,8 +11,8 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml"         {>= "4.03" & < "4.15"}
-  "dune"          {>= "1.4"}
+  "ocaml"         {>= "4.03" & < "5.1"}
+  "dune"          {>= "2.3"}
   "ocamlfind"     {build}
   "menhir"        {>= "20180523"}
   "merlin-extend" {>= "0.6"}

@@ -13,7 +13,7 @@
     "@opam/dune": "2.9.3",
     "@opam/reason": "^3.8.0",
     "@opam/utop": " >= 1.17.0",
-    "ocaml": ">= 4.2.0 < 4.14.0"
+    "ocaml": ">= 4.2.0 < 5.1.0"
   },
   "devDependencies": {
     "@opam/merlin": "*",
@@ -21,7 +21,12 @@
   },
   "esy": {
     "build": [
-      [ "dune", "build", "-p", "rtop"]
+      [
+        "dune",
+        "build",
+        "-p",
+        "rtop"
+      ]
     ]
   }
 }
