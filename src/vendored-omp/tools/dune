@@ -1,6 +1,17 @@
+(executable
+ (name add_special_comments)
+ (modules add_special_comments)
+ (libraries compiler-libs.common compiler-libs.bytecomp)
+ (flags :standard -w -3)
+  (enabled_if
+  (and
+   (>= %{ocaml_version} 4.13)
+   (< %{ocaml_version} 4.14))))
+
+
 (executables
- (names add_special_comments pp)
- (modules add_special_comments pp pp_rewrite)
+ (names pp)
+ (modules pp pp_rewrite)
  (libraries compiler-libs.common compiler-libs.bytecomp)
  (flags :standard -w -3))
 
