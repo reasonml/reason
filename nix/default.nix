@@ -1,4 +1,4 @@
-{ pkgs ? import ./sources.nix { } }:
+{ pkgs }:
 
 let
   inherit (pkgs) stdenv lib ocamlPackages;
@@ -17,7 +17,7 @@ ocamlPackages.buildDunePackage {
 
   useDune2 = true;
 
-  propagatedBuildInputs = with pkgs.ocamlPackages; [
+  propagatedBuildInputs = with ocamlPackages; [
     merlin-extend
     menhir
     menhirSdk
