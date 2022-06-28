@@ -43,7 +43,7 @@ let collect_insertions structure =
                     (String.concat ~sep:", " (List.map l ~f:to_string))
               in
               Printf.ksprintf (add_after ~loc:name.loc)
-                " (*IF_CURRENT = %s%s.%s *)" params (Option.value module_name.txt ~default:"X") name.txt)
+                " (*IF_CURRENT = %s%s.%s *)" params (match module_name.txt with None -> "X" | Some x -> x) name.txt)
         | _ -> ())
     | _ -> ());
   List.sort !insertions ~cmp:(fun (a, _) (b, _) -> compare a b)
