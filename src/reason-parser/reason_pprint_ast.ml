@@ -6587,7 +6587,7 @@ let printer = object(self:'self)
       | [] -> toThis
       | _::_ -> makeList ~postSpace:true (List.concat [self#attributes l; [toThis]])
 
-  method attach_std_item_attrs ?(allowUncurry=true) ?extension l toThis =
+  method attach_std_item_attrs ?(break=Layout.Always_rec) ?(allowUncurry=true) ?extension l toThis =
     let l = (partitionAttributes ~allowUncurry l).stdAttrs in
     match extension, l with
     | None, [] -> toThis
@@ -6597,7 +6597,7 @@ let printer = object(self:'self)
         | Some id -> [atom ("%" ^ id.txt)]
       in
       makeList
-        ~postSpace:true ~indent:0 ~break:Layout.IfNeed ~inline:(true, true)
+        ~postSpace:true ~indent:0 ~break ~inline:(true, true)
         (extension @ List.map self#item_attribute l @ [toThis])
 
   method exception_declaration ed =
@@ -7776,7 +7776,7 @@ let printer = object(self:'self)
                 in
                 let item = self#structure_item item in
                 let layout =
-                  self#attach_std_item_attrs ~extension stdAttrs item
+                  self#attach_std_item_attrs ~break:Layout.IfNeed ~extension stdAttrs item
                 in
                 makeList ~wrap:("[", "]") ((List.map self#attribute docAttrs) @ [layout])
           end
