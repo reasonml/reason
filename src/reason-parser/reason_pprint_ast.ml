@@ -6597,7 +6597,7 @@ let printer = object(self:'self)
         | Some id -> [atom ("%" ^ id.txt)]
       in
       makeList
-        ~postSpace:true ~indent:0 ~break:Layout.Always_rec ~inline:(true, true)
+        ~postSpace:true ~indent:0 ~break:Layout.IfNeed ~inline:(true, true)
         (extension @ List.map self#item_attribute l @ [toThis])
 
   method exception_declaration ed =
@@ -7737,7 +7737,6 @@ let printer = object(self:'self)
             self#moduleExpressionToFormattedApplicationItems
               ~prefix:"include"
               moduleExpr
-
         | Pstr_recmodule decls -> (* 3.07 *)
             let items = List.mapi (fun i xx ->
               let {stdAttrs; docAttrs} =
@@ -7768,19 +7767,18 @@ let printer = object(self:'self)
                 ~comments:self#comments
                 items)
         | Pstr_attribute a -> self#floating_attribute a
-        | Pstr_extension ((extension, PStr [item]), a) ->
+        | Pstr_extension ((extension, PStr [item]), attrs) ->
           begin match item.pstr_desc with
             | Pstr_value (rf, l) -> self#bindings ~extension (rf, l)
             | _ ->
                 let {stdAttrs; docAttrs} =
-                  partitionAttributes ~partDoc:true a
+                  partitionAttributes ~partDoc:true attrs
                 in
+                let item = self#structure_item item in
                 let layout =
-                  self#attach_std_item_attrs ~extension stdAttrs
-                     (self#structure_item item)
+                  self#attach_std_item_attrs ~extension stdAttrs item
                 in
-                makeList ~inline:(true, true) ~break:Always
-                  ((List.map self#attribute docAttrs)@[layout])
+                makeList ~wrap:("[", "]") ((List.map self#attribute docAttrs) @ [layout])
           end
         | Pstr_extension (e, a) ->
           (* Notice how extensions have attributes - but not every structure
