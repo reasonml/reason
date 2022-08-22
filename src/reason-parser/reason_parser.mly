@@ -58,7 +58,6 @@ open Parsetree
 open Ast_helper
 open Ast_mapper
 open Reason_parser_def
-open Reason_string
 open Reason_errors
 
 let raise_error error loc =

@@ -60,8 +60,6 @@ let print printtype filename parsedAsML output_chan output_formatter =
     Printast.implementation output_formatter
       (Reason_toolchain.To_current.copy_structure ast)
   )
-  (* If you don't wrap the function in parens, it's a totally different
-   * meaning #thanksOCaml *)
   | `None -> (fun _ -> ())
   | `ML -> Reason_toolchain.ML.print_implementation_with_comments output_formatter
   | `Reason -> Reason_toolchain.RE.print_implementation_with_comments output_formatter
