@@ -1,0 +1,26 @@
+From f53247f546375972789b96c3f612cd7f524bf2aa Mon Sep 17 00:00:00 2001
+From: Louis Gesbert <louis.gesbert@ocamlpro.com>
+Date: Mon, 11 Jul 2022 18:12:18 +0200
+Subject: [PATCH] Fix bug when installing with a system compiler
+
+See https://discuss.ocaml.org/t/problem-installing-ocamlfind-on-latest-ocamlpro-alpine-docker-image/10147
+---
+ src/findlib/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/findlib/Makefile b/src/findlib/Makefile
+index 84514b6f22..ea23f4a10c 100644
+--- a/src/findlib/Makefile
++++ b/src/findlib/Makefile
+@@ -123,7 +123,7 @@ clean:
+ install: all
+ 	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_SITELIB)/$(NAME)"
+ 	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAMLFIND_BIN)"
+-	$(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_CORE_STDLIB)"
++	test $(INSTALL_TOPFIND) -eq 0 || $(INSTALLDIR) "$(DESTDIR)$(prefix)$(OCAML_CORE_STDLIB)"
+ 	test $(INSTALL_TOPFIND) -eq 0 || $(INSTALLFILE) topfind "$(DESTDIR)$(prefix)$(OCAML_CORE_STDLIB)/"
+ 	files=`$(SH) $(TOP)/tools/collect_files $(TOP)/Makefile.config \
+ 	findlib.cmi findlib.mli findlib.cma findlib.cmxa findlib$(LIB_SUFFIX) findlib.cmxs \
+-- 
+2.35.1
+

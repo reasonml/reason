@@ -15,6 +15,7 @@ maintainer: "Anton Bachin <antonbachin@yahoo.com>"
 dev-repo: "git+https://github.com/ocsigen/lwt_log.git"
 
 depends: [
+  "ocaml" {< "5.0"}
   "dune" {>= "1.0"}
   "lwt" {>= "4.0.0"}
 ]

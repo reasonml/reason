@@ -19,12 +19,12 @@ description: """
 This protocol allows to replace the OCaml frontend of Merlin.
 It extends what used to be done with the `-pp' flag to handle a few more cases."""
 doc: "https://let-def.github.io/merlin-extend"
-x-commit-hash: "640620568a5f5c7798239ecf7c707c813e3df3cf"
 url {
   src:
-    "https://github.com/let-def/merlin-extend/releases/download/v0.6/merlin-extend-v0.6.tbz"
+    "https://github.com/let-def/merlin-extend/releases/download/v0.6.1/merlin-extend-0.6.1.tbz"
   checksum: [
-    "sha256=c2f236ae97feb6ba0bc90f33beb7b7343e42f9871b66de9ba07974917e256c43"
-    "sha512=4c64a490e2ece04fc89aef679c1d9202175df4fe045b5fdc7a37cd7cebe861226fddd9648c1bf4f06175ecfcd2ed7686c96bd6a8cae003a5096f6134c240f857"
+    "sha256=5ec84b355ddb2d129a5948b132bfacc93adcbde2158c7de695f7bfc3650bead7"
+    "sha512=631fc96aab2f35e12a078c9b4907ca7b0db9f1e3a4026040e6c23b82e0171c256a89fb5d4c887f1d156eb9e3152783cdf7a546b2496051007a1bcf5777417396"
   ]
 }
+x-commit-hash: "cf2707bbe8e034c6ecf5d0fecd3fd889f6ab14bf"
