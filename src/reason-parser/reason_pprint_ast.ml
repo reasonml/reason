@@ -162,9 +162,8 @@ let expression_immediate_extension_sugar x =
   | None -> (None, x)
   | Some (name, expr) ->
     match expr.pexp_desc with
-    | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _
-    | Pexp_function _ | Pexp_newtype _
-    | Pexp_try _ | Pexp_match _ ->
+    | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _ | Pexp_function _
+    | Pexp_newtype _ | Pexp_try _ | Pexp_match _ ->
       (Some name, expr)
     | _ -> (None, x)
 
@@ -5391,7 +5390,6 @@ let printer = object(self:'self)
         self#formatSimplePatternBinding prefixText layoutPattern None appTerms
     in
     let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true attrs in
-
     let body = makeList ~inline:(true, true) [body] in
     let layout = self#attach_std_item_attrs stdAttrs (source_map ~loc:loc body) in
     self#attachDocAttrsToLayout
@@ -5516,6 +5514,9 @@ let printer = object(self:'self)
         partitionAttributes ~allowUncurry:false expr.pexp_attributes
       in
       match (stdAttrs, expr.pexp_desc) with
+        | ([], Pexp_extension desc ) ->
+          let layout = self#extension desc in
+          (expr.pexp_loc, layout)::acc
         | ([], Pexp_let (rf, l, e)) ->
           (* For "letList" bindings, the start/end isn't as simple as with
            * module value bindings. For "let lists", the sequences were formed
@@ -6520,7 +6521,7 @@ let printer = object(self:'self)
     let pad = (true, false) in
     let postSpace = true in
     match e with
-    | PStr [] -> atom ("[" ^ ppxToken  ^ ppxId.txt  ^ "]")
+    | PStr [] -> atom ("[" ^ ppxToken ^ ppxId.txt ^ "]")
     | PStr [itm] -> makeList ~break ~wrap ~pad [self#structure_item itm]
     | PStr (_::_ as items) ->
       let rows = List.map self#structure_item items in
@@ -6529,7 +6530,7 @@ let printer = object(self:'self)
       let wrap = wrap_prefix ":" wrap in
       makeList ~wrap ~break ~pad [self#core_type x]
     (* Signatures in attributes were added recently *)
-    | PSig [] -> atom ("[" ^ ppxToken ^ ppxId.txt ^":]")
+    | PSig [] -> atom ("[" ^ ppxToken ^ ppxId.txt ^ ":]")
     | PSig [x] ->
       let wrap = wrap_prefix ":" wrap in
       makeList ~break ~wrap ~pad [self#signature_item x]
@@ -6547,6 +6548,7 @@ let printer = object(self:'self)
         label ~space:true (atom "when") (self#unparseExpr e)
       ]
 
+  (* [% ...] *)
   method extension (s, p) =
     match s.txt with
     (* We special case "bs.obj" for now to allow for a nicer interop with
@@ -6556,7 +6558,6 @@ let printer = object(self:'self)
     | _ -> (self#payload "%" s p)
 
   method item_extension (s, e) = (self#payload "%%" s e)
-
 
   (* [@ ...] Simple attributes *)
   method attribute = function
