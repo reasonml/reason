@@ -7554,7 +7554,7 @@ let printer = object(self:'self)
             s
         in
         makeList
-          ~break:Always_rec
+          ~break:Layout.IfNeed
           ~inline:(true, false)
           ~wrap
           ~postSpace:true
@@ -7769,6 +7769,7 @@ let printer = object(self:'self)
         | Pstr_attribute a -> self#floating_attribute a
         | Pstr_extension ((extension, PStr [item]), attrs) ->
           begin match item.pstr_desc with
+            (* In case of bindings, the extension gets inlined `let%lwt a = 1` *)
             | Pstr_value (rf, l) -> self#bindings ~extension (rf, l)
             | _ ->
                 let {stdAttrs; docAttrs} =

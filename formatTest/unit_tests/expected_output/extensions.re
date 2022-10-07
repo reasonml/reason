@@ -1,13 +1,10 @@
 /* Extension sugar */
 
-%extend
-open M;
+[%extend open M];
 
-%extend
-module M = {};
+[%extend module M = {}];
 
-%extend
-module type M = {};
+[%extend module type M = {}];
 
 type a = [%extend int];
 
