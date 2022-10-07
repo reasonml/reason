@@ -2001,7 +2001,7 @@ let tyvar ppf str =
  *)
 let constant ?raw_literal ?(parens=true) ppf = function
   | Pconst_char i ->
-    Format.fprintf ppf "%C"  i
+    Format.fprintf ppf "%C" i
   | Pconst_string (i, _, None) ->
     begin match raw_literal with
       | Some text ->
@@ -5005,7 +5005,6 @@ let printer = object(self:'self)
     argsAndReturn [] cl
 
 
-
   (*
     Returns the arguments list (if any, that occur before the =>), and the
     final expression (that is either returned from the function (after =>) or
@@ -5514,9 +5513,6 @@ let printer = object(self:'self)
         partitionAttributes ~allowUncurry:false expr.pexp_attributes
       in
       match (stdAttrs, expr.pexp_desc) with
-        | ([], Pexp_extension desc ) ->
-          let layout = self#extension desc in
-          (expr.pexp_loc, layout)::acc
         | ([], Pexp_let (rf, l, e)) ->
           (* For "letList" bindings, the start/end isn't as simple as with
            * module value bindings. For "let lists", the sequences were formed
@@ -5599,6 +5595,9 @@ let printer = object(self:'self)
             let loc = e1.pexp_loc in
             let layout = source_map ~loc e1Layout in
             processLetList ((loc, layout)::acc) e2
+        | ([], Pexp_apply (e, _)) ->
+          let layout = self#attach_std_item_attrs [] (self#unparseExpr e) in
+            (expr.pexp_loc, layout)::acc
         | _ ->
           let expr = { expr with pexp_attributes = (arityAttrs @ stdAttrs @ jsxAttrs) }
           in
@@ -5609,8 +5608,9 @@ let printer = object(self:'self)
             let layout = source_map ~loc:bindingsLoc bindingsLayout in
             processLetList ((extractLocationFromValBindList expr l, layout)::acc) e
           | Some (extension, e) ->
-            let layout = self#attach_std_item_attrs ~extension [] (self#unparseExpr e) in
-            (expr.pexp_loc, layout)::acc
+            let layout = self#attach_std_item_attrs ~break:Layout.IfNeed ~extension [] (self#unparseExpr e) in
+            let inline_extension = makeList ~wrap:("[", "]") [layout] in
+            (expr.pexp_loc, inline_extension)::acc
           | None ->
             (* Should really do something to prevent infinite loops here. Never
                allowing a top level call into letList to recurse back to
@@ -6634,7 +6634,7 @@ let printer = object(self:'self)
    *)
   method method_sig_flags_for s = function
     | Virtual -> [atom "virtual"; atom s]
-    | Concrete ->  [atom s]
+    | Concrete -> [atom s]
 
   method value_type_flags_for s = function
     | (Virtual, Mutable) -> [atom "virtual"; atom "mutable"; atom s]
@@ -7529,7 +7529,8 @@ let printer = object(self:'self)
     in
     source_map ~loc:x.pmty_loc pmty
 
-  method simple_module_expr ?(hug=false) x = match x.pmod_desc with
+  method simple_module_expr ?(hug=false) x =
+    match x.pmod_desc with
     | Pmod_unpack e ->
         let exprLayout = match e.pexp_desc with
         | Pexp_constraint (e, {ptyp_desc = Ptyp_package(lid, cstrs)}) ->
