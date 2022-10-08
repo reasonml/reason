@@ -7898,7 +7898,7 @@ let printer = object(self:'self)
                 let layout =
                   self#attach_std_item_attrs ~break:Layout.IfNeed ~extension stdAttrs item
                 in
-                makeList ~wrap:("[", "]") ((List.map self#attribute docAttrs) @ [layout])
+                makeList ((List.map self#attribute docAttrs) @ [layout])
           end
         | Pstr_extension (e, a) ->
           (* Notice how extensions have attributes - but not every structure
