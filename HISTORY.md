@@ -1,3 +1,7 @@
+## 3.8.2
+
+- Fix magic numbers for OCaml 5.0 (@anmonteiro) [#2671](https://github.com/reasonml/reason/pull/2671)
+
 ## 3.8.1
 
 - (Internal) Rename: Reason_migrate_parsetree -> Reason_omp (@ManasJayanth) [#2666](https://github.com/reasonml/reason/pull/2666)

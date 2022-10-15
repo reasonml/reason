@@ -1,1 +1,1 @@
-(ignored_subdirs (node_modules js))
+(dirs :standard \ node_modules js)
