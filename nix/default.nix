@@ -1,4 +1,4 @@
-{ pkgs }:
+{ pkgs, nix-filter }:
 
 let
   inherit (pkgs) stdenv lib ocamlPackages;
@@ -9,10 +9,9 @@ ocamlPackages.buildDunePackage {
   pname = "reason";
   version = "0.0.1-dev";
 
-  src = lib.filterGitSource {
-    src = ./..;
-    dirs = [ "scripts" "src" "formatTest" ];
-    files = [ "dune" "dune-project" "reason.opam" "rtop.opam" ];
+  src = nix-filter.filter {
+    root = ./..;
+    include = [ "dune" "dune-project" "reason.opam" "rtop.opam" "scripts" "src" "formatTest" ];
   };
 
   useDune2 = true;
