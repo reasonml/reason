@@ -5594,9 +5594,6 @@ let printer = object(self:'self)
             let loc = e1.pexp_loc in
             let layout = source_map ~loc e1Layout in
             processLetList ((loc, layout)::acc) e2
-        | ([], Pexp_apply (e, _)) ->
-          let layout = self#attach_std_item_attrs [] (self#unparseExpr e) in
-            (expr.pexp_loc, layout)::acc
         | _ ->
           let expr = { expr with pexp_attributes = (arityAttrs @ stdAttrs @ jsxAttrs) }
           in
