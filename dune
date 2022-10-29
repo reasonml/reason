@@ -1,1 +1,1 @@
-(data_only_dirs node_modules js)
+(dirs :standard \ node_modules js)
