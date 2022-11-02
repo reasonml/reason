@@ -3772,7 +3772,7 @@ let printer = object(self:'self)
     | Simple itm, false -> itm
 
 
-  method unparseResolvedRule  = function
+  method unparseResolvedRule = function
     | LayoutNode layoutNode -> layoutNode
     | InfixTree _ as infixTree ->
       formatComputedInfixChain (computeInfixChain infixTree)
@@ -6587,12 +6587,12 @@ let printer = object(self:'self)
     match extension, attrs.stdAttrs with
     | None, [] -> toThis
     | _, _ ->
-      let extension = match extension with
-        | None -> []
-        | Some id -> [atom ("%" ^ id.txt)]
+      let (extension, wrap) = match extension with
+        | None -> ([], ("", ""))
+        | Some id -> ([atom ("%" ^ id.txt)], ("[", "]"))
       in
       makeList
-        ~wrap:("[", "]")
+        ~wrap
         ~postSpace:true ~indent:0 ~break ~inline:(true, true)
         (extension @ List.map self#item_attribute l @ [toThis])
 
@@ -7765,7 +7765,7 @@ let printer = object(self:'self)
         | Pstr_attribute a -> self#floating_attribute a
         | Pstr_extension ((extension, PStr [item]), attrs) ->
           begin match item.pstr_desc with
-            (* In case of bindings, the extension gets inlined `let%lwt a = 1` *)
+            (* In case of a value, the extension gets inlined `let%lwt a = 1` *)
             | Pstr_value (rf, l) -> self#bindings ~extension (rf, l)
             | _ ->
                 let {stdAttrs; docAttrs} =
