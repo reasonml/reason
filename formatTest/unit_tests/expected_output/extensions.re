@@ -366,3 +366,7 @@ let predicate =
     : fun%extend
       | None => false
       | Some(exn) => predicate(exn);
+
+/* Attributes shoudn't be inlined and always break */
+[@warning "-8"]
+let a = 3;

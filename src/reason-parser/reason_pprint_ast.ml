@@ -6586,15 +6586,15 @@ let printer = object(self:'self)
     let attrs = partitionAttributes ~allowUncurry l in
     match extension, attrs.stdAttrs with
     | None, [] -> toThis
-    | _, _ ->
-      let (extension, wrap) = match extension with
-        | None -> ([], ("", ""))
-        | Some id -> ([atom ("%" ^ id.txt)], ("[", "]"))
-      in
+    | Some id, _ ->
       makeList
-        ~wrap
+        ~wrap:("[", "]")
         ~postSpace:true ~indent:0 ~break ~inline:(true, true)
-        (extension @ List.map self#item_attribute l @ [toThis])
+        ([atom ("%" ^ id.txt)] @ List.map self#item_attribute l @ [toThis])
+    | None, _ ->
+      makeList
+        ~postSpace:true ~indent:0 ~break:Always ~inline:(true, true)
+        (List.map self#item_attribute l @ [toThis])
 
   method exception_declaration ed =
     let pcd_name = ed.pext_name in
