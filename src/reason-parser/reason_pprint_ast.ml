@@ -6520,7 +6520,7 @@ let printer = object(self:'self)
     | PStr [itm] -> makeList ~break ~wrap ~pad [self#structure_item itm]
     | PStr (_::_ as items) ->
       let rows = List.map self#structure_item items in
-      makeList ~wrap ~break ~pad ~postSpace ~sep:(Layout.Sep ";") rows
+      makeList ~wrap ~break:Layout.Always ~pad ~postSpace ~sep:(Layout.Sep ";") rows
     | PTyp x ->
       let wrap = wrap_prefix ":" wrap in
       makeList ~wrap ~break ~pad [self#core_type x]
