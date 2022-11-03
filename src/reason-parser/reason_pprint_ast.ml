@@ -7705,10 +7705,10 @@ let printer = object(self:'self)
           self#exception_declaration
             { ed.ptyexn_constructor
               with pext_attributes = ed.ptyexn_attributes @ ed.ptyexn_constructor.pext_attributes}
-        | Pstr_module x ->
-            let bindingName = atom ~loc:x.pmb_name.loc (moduleIdent x.pmb_name) in
-            self#attach_std_item_attrs x.pmb_attributes @@
-            self#let_module_binding "module" bindingName x.pmb_expr
+        | Pstr_module binding ->
+            let bindingName = atom ~loc:binding.pmb_name.loc (moduleIdent binding.pmb_name) in
+            let module_binding = self#let_module_binding "module" bindingName binding.pmb_expr in
+            self#attach_std_item_attrs binding.pmb_attributes module_binding
         | Pstr_open od ->
             self#attach_std_item_attrs od.popen_attributes @@
             makeList ~postSpace:true [
