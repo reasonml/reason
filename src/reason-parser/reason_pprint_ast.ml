@@ -7550,7 +7550,7 @@ let printer = object(self:'self)
             s
         in
         makeList
-          ~break:Layout.IfNeed
+          ~break:Layout.Always
           ~inline:(true, false)
           ~wrap
           ~postSpace:true
