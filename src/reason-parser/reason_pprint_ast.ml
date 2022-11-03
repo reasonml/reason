@@ -6512,34 +6512,33 @@ let printer = object(self:'self)
   method payload ppxToken ppxId e =
     let wrap = ("[" ^ ppxToken ^ ppxId.txt, "]") in
     let wrap_prefix str (x,y) = (x^str, y) in
-    let break = Layout.IfNeed in
     let pad = (true, false) in
     let postSpace = true in
     match e with
     | PStr [] -> atom ("[" ^ ppxToken ^ ppxId.txt ^ "]")
     | PStr [itm] ->
-      makeList ~break ~wrap ~pad [self#structure_item itm]
+      makeList ~break:Layout.IfNeed ~wrap ~pad [self#structure_item itm]
     | PStr (_::_ as items) ->
       let rows = List.map self#structure_item items in
-      makeList ~wrap ~break ~pad ~postSpace ~sep:(Layout.Sep ";") rows
+      makeList ~wrap ~break:Layout.Always ~pad ~postSpace ~sep:(Layout.Sep ";") rows
     | PTyp x ->
       let wrap = wrap_prefix ":" wrap in
-      makeList ~wrap ~break ~pad [self#core_type x]
+      makeList ~wrap ~break:Layout.IfNeed ~pad [self#core_type x]
     (* Signatures in attributes were added recently *)
     | PSig [] -> atom ("[" ^ ppxToken ^ ppxId.txt ^ ":]")
     | PSig [x] ->
       let wrap = wrap_prefix ":" wrap in
-      makeList ~break ~wrap ~pad [self#signature_item x]
+      makeList ~break:Layout.IfNeed ~wrap ~pad [self#signature_item x]
     | PSig items ->
       let wrap = wrap_prefix ":" wrap in
       let rows = List.map self#signature_item items in
-      makeList ~wrap ~break ~pad ~postSpace ~sep:(Layout.Sep ";") rows
+      makeList ~wrap ~break:Layout.IfNeed ~pad ~postSpace ~sep:(Layout.Sep ";") rows
     | PPat (x, None) ->
       let wrap = wrap_prefix "?" wrap in
-      makeList ~wrap ~break ~pad [self#pattern_at_least_as_simple_as_alias_or_or x]
+      makeList ~wrap ~break:Layout.IfNeed ~pad [self#pattern_at_least_as_simple_as_alias_or_or x]
     | PPat (x, Some e) ->
       let wrap = wrap_prefix "?" wrap in
-      makeList ~wrap ~break ~pad ~postSpace [
+      makeList ~wrap ~break:Layout.IfNeed ~pad ~postSpace [
         self#pattern_at_least_as_simple_as_alias_or_or x;
         label ~space:true (atom "when") (self#unparseExpr e)
       ]
@@ -7764,9 +7763,9 @@ let printer = object(self:'self)
                 ~comments:self#comments
                 items)
         | Pstr_attribute a -> self#floating_attribute a
-        | Pstr_extension ((_extension, PStr []) as e, attrs) ->
-          (* Extension with attributes and without any PStr gets printed inline *)
-          self#attach_std_attrs attrs (self#item_extension e)
+        | Pstr_extension ((_extension, PStr []) as extension, attrs) ->
+          (* Extension with attributes and without PStr gets printed inline *)
+          self#attach_std_attrs attrs (self#item_extension extension)
         | Pstr_extension ((extension, PStr [item]), attrs) ->
           begin match item.pstr_desc with
             (* In case of a value, the extension gets inlined `let%lwt a = 1` *)
