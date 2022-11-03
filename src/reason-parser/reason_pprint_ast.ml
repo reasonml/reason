@@ -4799,7 +4799,7 @@ let printer = object(self:'self)
       } ->
         let modIdent = source_map ~loc:m1.pmod_loc (self#simple_module_expr m1) in
         let name = if prefix <> "" then
-          makeList ~postSpace:true[atom prefix; modIdent]
+          makeList ~postSpace:true [atom prefix; modIdent]
           else modIdent
         in
         let arg = source_map ~loc:m2.pmod_loc (self#simple_module_expr ~hug:true m2) in
