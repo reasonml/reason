@@ -6517,10 +6517,11 @@ let printer = object(self:'self)
     let postSpace = true in
     match e with
     | PStr [] -> atom ("[" ^ ppxToken ^ ppxId.txt ^ "]")
-    | PStr [itm] -> makeList ~break ~wrap ~pad [self#structure_item itm]
+    | PStr [itm] ->
+      makeList ~break ~wrap ~pad [self#structure_item itm]
     | PStr (_::_ as items) ->
       let rows = List.map self#structure_item items in
-      makeList ~wrap ~break:Layout.Always ~pad ~postSpace ~sep:(Layout.Sep ";") rows
+      makeList ~wrap ~break ~pad ~postSpace ~sep:(Layout.Sep ";") rows
     | PTyp x ->
       let wrap = wrap_prefix ":" wrap in
       makeList ~wrap ~break ~pad [self#core_type x]
@@ -6582,14 +6583,14 @@ let printer = object(self:'self)
       | [] -> toThis
       | _::_ -> makeList ~postSpace:true (List.concat [self#attributes l; [toThis]])
 
-  method attach_std_item_attrs ?(break=Layout.IfNeed) ?(allowUncurry=true) ?extension l toThis =
+  method attach_std_item_attrs ?(allowUncurry=true) ?extension l toThis =
     let attrs = partitionAttributes ~allowUncurry l in
     match extension, attrs.stdAttrs with
     | None, [] -> toThis
     | Some id, _ ->
       makeList
         ~wrap:("[", "]")
-        ~postSpace:true ~indent:0 ~break ~inline:(true, true)
+        ~postSpace:true ~indent:0 ~break:Layout.IfNeed ~inline:(true, true)
         ([atom ("%" ^ id.txt)] @ List.map self#item_attribute l @ [toThis])
     | None, _ ->
       makeList
@@ -7763,6 +7764,9 @@ let printer = object(self:'self)
                 ~comments:self#comments
                 items)
         | Pstr_attribute a -> self#floating_attribute a
+        | Pstr_extension ((_extension, PStr []) as e, attrs) ->
+          (* Extension with attributes and without any PStr gets printed inline *)
+          self#attach_std_attrs attrs (self#item_extension e)
         | Pstr_extension ((extension, PStr [item]), attrs) ->
           begin match item.pstr_desc with
             (* In case of a value, the extension gets inlined `let%lwt a = 1` *)
