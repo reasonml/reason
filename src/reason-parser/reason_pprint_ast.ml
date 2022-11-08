@@ -7432,7 +7432,7 @@ let printer = object(self:'self)
               (source_map
                  ~loc:x.pmty_loc
                  (makeList
-                    ~break:(if List.length s > 1 then Always else IfNeed)
+                    ~break:Always_rec
                     ~inline:(true, true)
                     ~postSpace:true
                     ~sep:(SepFinal (";", ";"))
