@@ -196,7 +196,9 @@ class extendedStack
   pub implementMe = (i, j) => (i, j);
 };
 
-module type HasType = {type t;};
+module type HasType = {
+  type t;
+};
 module type HasType2 = {
   type t;
   type q;
