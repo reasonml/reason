@@ -160,7 +160,6 @@ let x = {
   ignore;
 };
 
-};
 let x = {
   ignore();
   [%extend1
