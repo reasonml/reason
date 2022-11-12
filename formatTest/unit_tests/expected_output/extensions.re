@@ -2,7 +2,9 @@
 
 [%extend open M];
 
-[%extend module M = {}];
+[%extend
+  module M = {}
+];
 
 [%extend module type M = {}];
 
@@ -157,7 +159,7 @@ let x = {
    try%extend2() {
    | _ => ()
    }];
-  ignore;
+  ignore();
 };
 
 let x = {
@@ -166,7 +168,7 @@ let x = {
    switch%extend2 () {
    | _ => ()
    }];
-  ignore;
+  ignore();
 };
 
 let x = {
@@ -175,12 +177,13 @@ let x = {
   ignore();
 };
 
+let x = {
   ignore();
   [%extend1
    for%extend2 (i in 1 to 10) {
      ();
    }];
-  ignore;
+  ignore();
 };
 
 let x = {
@@ -189,7 +192,7 @@ let x = {
    while%extend2 (false) {
      ();
    }];
-  ignore;
+  ignore();
 };
 
 let x = {
@@ -214,7 +217,7 @@ let x = {
    try%extend2() {
    | _ => ()
    }];
-  ignore;
+  ignore();
 };
 
 let x = {
@@ -223,7 +226,7 @@ let x = {
    switch%extend2 () {
    | _ => ()
    }];
-  ignore;
+  ignore();
 };
 
 let x = {
@@ -238,7 +241,7 @@ let x = {
    for%extend2 (i in 1 to 10) {
      ();
    }];
-  ignore;
+  ignore();
 };
 
 let x = {
@@ -247,7 +250,7 @@ let x = {
    while%extend2 (false) {
      ();
    }];
-  ignore;
+  ignore();
 };
 
 let x = {
@@ -262,7 +265,7 @@ let x = {
    fun%extend2
    | None => ()
    | Some(1) => ()];
-  ignore;
+  ignore();
 };
 
 /* With two extensions, second in sequence */
@@ -329,8 +332,8 @@ let _ =
 let () = {
   /* 1. comment attached to extension */
   [%defer
-    /* 2. comment attached to expr in extension */
-    cleanup()];
+   /* 2. comment attached to expr in extension */
+   cleanup()];
   /* 3. comment attached to next expr */
   something_else();
 };
@@ -341,8 +344,8 @@ let () = {
   let x = 1;
   /* 1. comment attached to extension */
   [%defer
-    /* 2. comment attached to expr in extension */
-    cleanup()];
+   /* 2. comment attached to expr in extension */
+   cleanup()];
   /* 3. comment attached to next expr */
   something_else();
 };

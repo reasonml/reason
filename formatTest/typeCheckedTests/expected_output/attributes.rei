@@ -78,7 +78,5 @@ type ttttt = {
   x: int,
 };
 
-module Foo: {
-  [@someattr]
-  let foo: int => int;
-};
+module Foo: {[@someattr]
+             let foo: int => int;};
