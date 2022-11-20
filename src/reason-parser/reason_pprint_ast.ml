@@ -7419,7 +7419,7 @@ let printer = object(self:'self)
           ~comments:self#comments
           s
         in
-        let shouldBreakLabel = if List.length s > 1 then `Always else `Auto in
+        let shouldBreakLabel = if List.length s > 0 then `Always else `Auto in
         label
           ~indent:0
           ~break:shouldBreakLabel
