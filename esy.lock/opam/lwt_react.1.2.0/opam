@@ -17,17 +17,18 @@ dev-repo: "git+https://github.com/ocsigen/lwt.git"
 depends: [
   "dune" {>= "1.8.0"}
   "lwt" {>= "3.0.0"}
-  "ocaml"
+  "ocaml" {>= "4.08"}
   "react" {>= "1.0.0"}
+  "cppo" {build & >= "1.1.0"}
 ]
 
 build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 url {
-  src: "https://github.com/ocsigen/lwt/archive/refs/tags/5.5.0.tar.gz"
+  src: "https://github.com/ocsigen/lwt/archive/5.6.0.tar.gz"
   checksum: [
-    "md5=94272fac89c5bf21a89c102b8a8f35a5"
-    "sha512=8951b94555e930634375816d71815b9d85daad6ffb7dab24864661504d11be26575ab0b237196c54693efa372a9b69cdc1d5068a20a250dc0bbb4a3c03c5fda1"
+    "md5=e63979ee40a80d5b9e9e5545f33323b4"
+    "sha512=d616389bc9e0da11f25843ab7541ac2d40c9543700a89455f14115b339bbe58cef2b8acf0ae97fd54e15a4cb93149cfe1ebfda301aa93933045f76b7d9344160"
   ]
 }

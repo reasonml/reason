@@ -8,19 +8,19 @@ authors: [
   "Rudi Grinberg"
   "Gabriel Radanne"
 ]
-license: "LGPL-2.0 with OCaml linking exception"
+license: "LGPL-2.0-or-later WITH OCaml-LGPL-linking-exception"
 homepage: "https://github.com/ocaml/ocaml-re"
 bug-reports: "https://github.com/ocaml/ocaml-re/issues"
 dev-repo: "git+https://github.com/ocaml/ocaml-re.git"
 
 build: [
-  ["dune" "subst"] {pinned}
+  ["dune" "subst"] {dev}
   ["dune" "build" "-p" name "-j" jobs]
   ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 
 depends: [
-  "ocaml" {>= "4.02"}
+  "ocaml" {>= "4.03"}
   "dune" {>= "2.0"}
   "ounit" {with-test}
   "seq"
@@ -37,10 +37,10 @@ Pure OCaml regular expressions with:
 """
 url {
   src:
-    "https://github.com/ocaml/ocaml-re/releases/download/1.10.3/re-1.10.3.tbz"
+    "https://github.com/ocaml/ocaml-re/releases/download/1.10.4/re-1.10.4.tbz"
   checksum: [
-    "sha256=846546967f3fe31765935dd40a6460a9424337ecce7b12727fcba49480790ebb"
-    "sha512=d02103b7b8b8d8bc797341dcc933554745427f3c1b51b54b4ac9ff81badfd68c94726c57548b08e00ca99f3e09741b54b6500e97c19fc0e8fcefd6dfbe71da7f"
+    "sha256=83eb3e4300aa9b1dc7820749010f4362ea83524742130524d78c20ce99ca747c"
+    "sha512=92b05cf92c389fa8c753f2acca837b15dd05a4a2e8e2bec7a269d2e14c35b1a786d394258376648f80b4b99250ba1900cfe68230b8385aeac153149d9ce56099"
   ]
 }
-x-commit-hash: "c5d5df80e128c3d7646b7d8b1322012c5fcc35f3"
+x-commit-hash: "e9a4cecb8294c1839db18b1d0c30e755ec85ed5e"

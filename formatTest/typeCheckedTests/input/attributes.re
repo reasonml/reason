@@ -358,7 +358,10 @@ external readFileSync2 : (
   ]) => string = "";
 
 /* Ensure that attributes on extensions are printed */
-[@test [@attr] [%%extension]];
+[@test
+  [@attr]
+  [%%extension]
+];
 
 external debounce : (int, [@bs.meth] unit) => unit;
 

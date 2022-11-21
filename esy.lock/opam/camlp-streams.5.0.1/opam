@@ -1,0 +1,59 @@
+opam-version: "2.0"
+synopsis: "The Stream and Genlex libraries for use with Camlp4 and Camlp5"
+description: """
+
+This package provides two library modules:
+- Stream: imperative streams, with in-place update and memoization
+  of the latest element produced.
+- Genlex: a small parameterized lexical analyzer producing streams
+  of tokens from streams of characters.
+
+The two modules are designed for use with Camlp4 and Camlp5:
+- The stream patterns and stream expressions of Camlp4/Camlp5 consume
+  and produce data of type 'a Stream.t.
+- The Genlex tokenizer can be used as a simple lexical analyzer for
+  Camlp4/Camlp5-generated parsers.
+
+The Stream module can also be used by hand-written recursive-descent
+parsers, but is not very convenient for this purpose.
+
+The Stream and Genlex modules have been part of the OCaml standard library
+for a long time, and have been distributed as part of the core OCaml system.
+They will be removed from the OCaml standard library at some future point,
+but will be maintained and distributed separately in this camlpstreams package.
+"""
+maintainer: [
+  "Florian Angeletti <florian.angeletti@inria.fr>"
+  "Xavier Leroy <xavier.leroy@college-de-france.fr>"
+]
+authors: ["Daniel de Rauglaudre" "Xavier Leroy"]
+license: "LGPL-2.1-only WITH OCaml-LGPL-linking-exception"
+homepage: "https://github.com/ocaml/camlp-streams"
+bug-reports: "https://github.com/ocaml/camlp-streams/issues"
+depends: [
+  "dune" {>= "2.7"}
+  "ocaml" {>= "4.02.3"}
+  "odoc" {with-doc}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml/camlp-streams.git"
+url {
+  src: "https://github.com/ocaml/camlp-streams/archive/v5.0.1.tar.gz"
+  checksum: [
+    "md5=afc874b25f7a1f13e8f5cfc1182b51a7"
+    "sha512=2efa8dd4a636217c8d49bac1e4e7e5558fc2f45cfea66514140a59fd99dd08d61fb9f1e17804997ff648b71b13820a5d4a1eb70fed9d848aa2abd6e41f853c86"
+  ]
+}

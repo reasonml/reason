@@ -34,11 +34,14 @@ install: [
   [make "install"]
   ["install" "-m" "0755" "ocaml-stub" "%{bin}%/ocaml"] {ocaml:preinstalled}
 ]
+extra-files: ["0001-Fix-bug-when-installing-with-a-system-compiler.patch" "md5=130d3d6fe399948ed7991b7756f50dc3"]
+patches: ["0001-Fix-bug-when-installing-with-a-system-compiler.patch"]
 dev-repo: "git+https://github.com/ocaml/ocamlfind.git"
 url {
-  src: "http://download.camlcity.org/download/findlib-1.9.3.tar.gz"
+  src: "http://download.camlcity.org/download/findlib-1.9.5.tar.gz"
   checksum: [
-    "md5=24047dd8a0da5322253de9b7aa254e42"
-    "sha512=27cc4ce141576bf477fb9d61a82ad65f55478740eed59fb43f43edb794140829fd2ff89ad27d8a890cfc336b54c073a06de05b31100fc7c01cacbd7d88e928ea"
+    "md5=8b893525ce36cb3d4d4952483bcc7cf4"
+    "sha512=03514c618a16b02889db997c6c4789b3436b3ad7d974348d2c6dea53eb78898ab285ce5f10297c074bab4fd2c82931a8b7c5c113b994447a44abb30fca74c715"
   ]
 }
+

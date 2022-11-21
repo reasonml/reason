@@ -237,7 +237,10 @@ class boxB ('a) (init: 'a) =
 
 /* To be able to put an attribute on just the return in that case, use
  * parens. */
-[@onBoxC x; y]
+[@onBoxC
+  x;
+  y
+]
 class boxC ('a) =
   [@onEntireFunction] (
     fun (init: 'a) =>
@@ -453,10 +456,7 @@ external readFileSync2:
   string;
 
 /* Ensure that attributes on extensions are printed */
-[@test
-  [@attr]
-  [%%extension]
-];
+[@test [@attr] [%%extension]];
 
 external debounce:
   (int, [@bs.meth] unit) => unit;
