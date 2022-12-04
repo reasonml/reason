@@ -187,46 +187,42 @@ let jsxMapper () =
       args
   in
 
-  let transformJsxCall mapper callExpression callArguments attrs =
-    (match callExpression.pexp_desc with
-     | Pexp_ident caller ->
-       (match caller with
-        | {txt = Lident "createElement"} ->
-          raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
+ let transformJsxCall mapper callExpression callArguments attrs =
+  match callExpression.pexp_desc with
+  | Pexp_ident caller ->
+    (match caller with
+     | {txt = Lident "createElement"} ->
+       raise (Invalid_argument "JSX: `createElement` should be preceeded by a module name.")
 
-        (* Foo.createElement(~prop1=foo, ~prop2=bar, ~children=[], ()) *)
-        | {loc; txt = Ldot (modulePath, ("createElement" | "make"))} ->
-          (match !jsxVersion with
-          | None
-          | Some 2 -> transformUppercaseCall modulePath mapper loc attrs callExpression callArguments
-          | Some _ -> raise (Invalid_argument "JSX: the JSX version must be 2"))
+     | {loc; txt = Ldot (modulePath, ("createElement" | "make"))} ->
+       (match !jsxVersion with
+        | None | Some 2 ->
+          transformUppercaseCall modulePath mapper loc attrs callExpression callArguments
+        | Some _ ->
+          raise (Invalid_argument "JSX: the JSX version must be 2"))
 
-        (* div(~prop1=foo, ~prop2=bar, ~children=[bla], ()) *)
-        (* turn that into
-          ReactDOMRe.createElement(~props=ReactDOMRe.props(~props1=foo, ~props2=bar, ()), [|bla|]) *)
-        | {loc; txt = Lident id} ->
-          transformLowercaseCall mapper loc attrs callArguments id
+     | {loc; txt = Lident id} ->
+       transformLowercaseCall mapper loc attrs callArguments id
 
-        | {txt = Ldot (_, anythingNotCreateElementOrMake)} ->
-          raise (
-            Invalid_argument
-              ("JSX: the JSX attribute should be attached to a `YourModuleName.createElement` or `YourModuleName.make` call. We saw `"
-               ^ anythingNotCreateElementOrMake
-               ^ "` instead"
-              )
-          )
-
-        | {txt = Lapply _} ->
-          (* don't think there's ever a case where this is reached *)
-          raise (
-            Invalid_argument "JSX: encountered a weird case while processing the code. Please report this!"
-          )
-       )
-     | _ ->
+     | {txt = Ldot (_, anythingNotCreateElementOrMake)} ->
        raise (
-         Invalid_argument "JSX: `createElement` should be preceeded by a simple, direct module name."
+         Invalid_argument
+           ("JSX: the JSX attribute should be attached to a `YourModuleName.createElement` or `YourModuleName.make` call. We saw `"
+            ^ anythingNotCreateElementOrMake
+            ^ "` instead"
+           )
        )
-    ) in
+
+     | {txt = Lapply _} ->
+       (* don't think there's ever a case where this is reached *)
+       raise (
+         Invalid_argument "JSX: encountered a weird case while processing the code. Please report this!"
+       )
+    )
+  | _ ->
+    raise (
+      Invalid_argument "JSX: `createElement` should be preceeded by a simple, direct module name."
+    )
 
   let structure =
     (fun mapper structure -> match structure with
