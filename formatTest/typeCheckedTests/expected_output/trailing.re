@@ -41,10 +41,8 @@ let (i, j) = myTuple;
 
 type foo_('a, 'b) = ('a, 'b);
 type foo__ = foo_(int, int);
-type foo('a, 'b) =
-  | Foo('a, 'b);
-type tupVariant('a, 'b) =
-  | Tup(('a, 'b));
+type foo('a, 'b) = | Foo('a, 'b);
+type tupVariant('a, 'b) = | Tup(('a, 'b));
 
 /* Won't wrap so removes trailing comma */
 let noWrap = (a, b) => {
@@ -55,11 +53,10 @@ let noWrap = (a, b) => {
 let res = noWrap(0, 0);
 let reallyLongIdentifierCausesWrap = 0;
 let wrap = noWrap;
-let res =
-  wrap(
-    reallyLongIdentifierCausesWrap,
-    reallyLongIdentifierCausesWrap,
-  );
+let res = wrap(
+  reallyLongIdentifierCausesWrap,
+  reallyLongIdentifierCausesWrap,
+);
 
 /* Won't wrap so removes trailing comma */
 let noWrap = (~a, ~b) => {
@@ -73,12 +70,11 @@ let noWrap = (~a=0, ~b=0, ()) => {
   x + x;
 };
 
-let res =
-  noWrap(
-    ~a=reallyLongIdentifierCausesWrap,
-    ~b=reallyLongIdentifierCausesWrap,
-    (),
-  );
+let res = noWrap(
+  ~a=reallyLongIdentifierCausesWrap,
+  ~b=reallyLongIdentifierCausesWrap,
+  (),
+);
 
 /* Won't wrap so removes trailing comma */
 let noWrap = (~a=0, ~b: int=0, ()) => {
@@ -86,12 +82,11 @@ let noWrap = (~a=0, ~b: int=0, ()) => {
   x + x;
 };
 
-let res =
-  noWrap(
-    ~a=reallyLongIdentifierCausesWrap,
-    ~b=reallyLongIdentifierCausesWrap,
-    (),
-  );
+let res = noWrap(
+  ~a=reallyLongIdentifierCausesWrap,
+  ~b=reallyLongIdentifierCausesWrap,
+  (),
+);
 
 /* Long enough to wrap the args and therefore remove trail */
 let wrap = (long, enough, toWrap, args) => {
@@ -103,11 +98,10 @@ let takesPattern = (d, Foo(x, y)) => {
   /* won't wrap */
   let _ = Foo(y, x);
   /* will wrap */
-  let ret =
-    Foo(
-      y + y + y + y,
-      x + x + x + x + x + x + x + x + x,
-    );
+  let ret = Foo(
+    y + y + y + y,
+    x + x + x + x + x + x + x + x + x,
+  );
   ret;
 };
 
@@ -115,11 +109,10 @@ let takesPattern = (d, Tup((x, y))) => {
   /* won't wrap */
   let _ = Tup((y, x));
   /* will wrap */
-  let ret =
-    Tup((
-      y + y + y + y,
-      x + x + x + x + x + x + x + x + x,
-    ));
+  let ret = Tup((
+    y + y + y + y,
+    x + x + x + x + x + x + x + x + x,
+  ));
   ret;
 };
 
@@ -134,19 +127,17 @@ let takesPattern =
   /* won't wrap */
   let _ = Tup((d, d));
   /* will wrap */
-  let ret =
-    Tup((
-      d + d + d + d,
-      d + d + d + d + d + d + d + d + d,
-    ));
+  let ret = Tup((
+    d + d + d + d,
+    d + d + d + d + d + d + d + d + d,
+  ));
   ret;
 };
 
 let myFunc = (type t, ()) => ();
 
 type funcType = (int, int) => int;
-type v =
-  | Func((int, int) => int);
+type v = | Func((int, int) => int);
 
 type params('a, 'b) = ('a, 'b);
 
@@ -161,13 +152,12 @@ class virtual
         'anotherReallyLongIdentifier,
       )
       (init, init2) = {
-  val mutable v:
-    list(
-      (
-        'reallyLongIdentifier,
-        'anotherReallyLongIdentifier,
-      ),
-    ) = [
+  val mutable v: list(
+    (
+      'reallyLongIdentifier,
+      'anotherReallyLongIdentifier,
+    ),
+  ) = [
     (init, init2),
   ];
   pub virtual implementMe:
@@ -183,16 +173,15 @@ class extendedStack
         'anotherReallyLongIdentifier,
       )
       (init, init2) = {
-  inherit
-    (
-      class tupleStack(
-        'reallyLongIdentifier,
-        'anotherReallyLongIdentifier,
-      )
-    )(
-      init,
-      init2,
-    );
+  inherit (
+    class tupleStack(
+      'reallyLongIdentifier,
+      'anotherReallyLongIdentifier,
+    )
+  )(
+    init,
+    init2,
+  );
   pub implementMe = (i, j) => (i, j);
 };
 
@@ -205,17 +194,16 @@ module type ReallyReallyReallyLongIdentifierModuleType = {
   type t;
 };
 module type F = (HasType) => HasType2;
-module FInstance = (HasType: HasType) => {
+module FInstance = (HasType : HasType) => {
   type t = HasType.t;
   type q = HasType.t;
 };
 module ReallyReallyReallyLongIdentifierModuleName = {
   type t = int;
 };
-module FResult =
-  FInstance(
-    ReallyReallyReallyLongIdentifierModuleName,
-  );
+module FResult = FInstance(
+  ReallyReallyReallyLongIdentifierModuleName,
+);
 
 module Component = {
   let createElement = (~arg, ~children, ()) => [

@@ -1,5 +1,108 @@
 open Format
 
+(**
+
+Input:
+
+    --b--b--
+
+hbox (always):
+
+    --b--b--
+
+vbox (always):
+
+    --b
+    --b
+    --
+
+within a “hv” box (only if not enough room):
+
+    ---b
+    ---b
+    ---
+
+ALSO:
+
+
+hov_box (packing) (only if not enough room):
+
+    ---b---b
+    ---
+
+  Also: If input: [(---[(----[(---b)]b)]b)]
+
+    (---
+     (----
+      (---)))
+
+box (structural) (only if not enough room):
+
+    ---b---b
+    ---
+
+  But the difference from hov_box is:
+  If input: [(---[(----[(---b)]b)]b)]
+
+    (---
+     (----
+      (---
+      )
+     )
+    )
+
+
+    NOTE: open_hvbox breaks every breakhint in the immediate box but only if
+    necessary, and for labels that would only be one breakhing (usually).
+
+   lbl (lbl (lbl A B) C) D
+
+
+
+          -------R-------------
+   lbl(L, lbl(lbl(RLL, RLR), RR))
+              -----RL------
+
+   (Assume break `Auto)
+   Without the joinFollowingLabel property on A, you would end up doing:
+
+     open_hovbox
+
+   (* For L *)
+ + pp_open_hvbox fmt 0;
+ | fprint_t fmt L;
+ | pp_print_break;
+ | fprint_t fmt R;
+ |   + pp_open_hvbox fmt 0;
+ |   | fprint_t fmt RL;
+ |   |  + pp_open_hvbox fmt 0
+ |   |  |
+ |   |  |
+ |   |  |
+ |   |  +
+ |   | pp_print_break;
+ |   | fprint_t fmt RR;
+ |   |
+ |   + pp_close_box fmt ()
+ |
+ + pp_close_box fmt ()
+
+ Or, with the hvbox syntax:
+
+   [L<br> [[[RLL<br> RLR], RR]]]
+
+ In other words, every label is wrapped in a box which makes it impossible for
+ labels to group together on the same line with high priority.
+ The joinFollowingLabel property on the outermost label would turn the boxes
+ into (still hov_boxes)
+
+   [[[[L<br> RLL<br> RLR], RR]]]
+
+ Or more simply:
+
+   [[L<br> RLL<br> RLR], RR]
+*)
+
 (** Shadow map and split with tailrecursive variants. *)
 module List = struct
   include List
@@ -344,7 +447,13 @@ struct
           pp_print_string fmt s;
           (pp_close_tag [@warning "-3"]) fmt ()
 
-  let rec fprint_t fmt = function
+  let rec fprint_t fmt x = match x with
+      Label (label_left, x) -> fprint_t_join_labels ~rev_label_lefts:[label_left] fmt x
+    | Atom _
+    | List _
+    | Custom _ -> fprint_t_labels_already_joined fmt x
+
+  and fprint_t_labels_already_joined fmt = function
       Atom (s, p) ->
         tag_string fmt p.atom_style s;
 
@@ -355,9 +464,18 @@ struct
         else
           fprint_list2 fmt param l;
         close_tag fmt p.list_style
-
-    | Label (label, x) -> fprint_pair fmt label x
+    | Label (label_left, x) -> fprint_pair fmt label_left x
     | Custom f -> f fmt
+
+
+  and fprint_t_join_labels ~rev_label_lefts fmt right = match right with
+    | Label (label_left, right) -> fprint_t_join_labels ~rev_label_lefts:(label_left :: rev_label_lefts) fmt right
+    | Atom (_, _)
+    | List ((_, _, _, _), _)
+    | Custom _ ->
+        let compressed_labels = compress_labels ~rev_label_lefts right in
+        fprint_t_labels_already_joined fmt compressed_labels
+
 
   and fprint_list_body_stick_left fmt p sep hd tl =
     open_tag fmt p.body_style;
@@ -396,6 +514,7 @@ struct
     | Some (lab, lp) ->
         open_tag fmt lp.label_style;
         fprint_t fmt lab;
+        (* pp_print_string fmt (String.make 1 ','); *)
         close_tag fmt lp.label_style;
         if lp.space_after_label then
           pp_print_string fmt " "
@@ -403,18 +522,22 @@ struct
   (* Either horizontal or vertical list *)
   and fprint_list fmt label ((op, sep, cl, p) as param) = function
       [] ->
+        (* pp_print_string fmt (String.make 1 '<'); *)
         fprint_opt_label fmt label;
         tag_string fmt p.opening_style op;
         if p.space_after_opening || p.space_before_closing then
           pp_print_string fmt " ";
         tag_string fmt p.closing_style cl
+        (* pp_print_string fmt (String.make 1 '<') *)
 
     | hd :: tl as l ->
 
-        if tl = [] || p.separators_stick_left then
+        (* pp_print_string fmt (String.make 1 '<'); *)
+        (if tl = [] || p.separators_stick_left then
           fprint_list_stick_left fmt label param hd tl l
         else
-          fprint_list_stick_right fmt label param hd tl l
+          fprint_list_stick_right fmt label param hd tl l)
+        (* pp_print_string fmt (String.make 1 '>'); *)
 
 
   and fprint_list_stick_left fmt label (op, sep, cl, p) hd tl l =
@@ -442,6 +565,7 @@ struct
     pp_close_box fmt ()
 
   and fprint_list_stick_right fmt label (op, sep, cl, p) hd tl l =
+    (* pp_print_string fmt (String.make 1 '['); *)
     let base_indent = p.indent_body in
     let sep_indent =
       String.length sep + (if p.space_after_separator then 1 else 0)
@@ -482,6 +606,7 @@ struct
       pp_print_break fmt 0 (-indent);
     tag_string fmt p.closing_style cl;
     pp_close_box fmt ()
+    (* pp_print_string fmt (String.make 1 ']'); *)
 
 
 
@@ -519,13 +644,14 @@ struct
   and fprint_pair fmt ((lab, lp) as label) x =
     match x with
         List ((op, sep, cl, p), l) when p.stick_to_label && p.align_closing ->
-          fprint_list fmt (Some label) (op, sep, cl, p) l
+          fprint_list fmt (Some label) (op, sep, cl, p) l;
 
       | _ ->
           let indent = lp.indent_after_label in
           pp_open_hvbox fmt 0;
 
           open_tag fmt lp.label_style;
+          (* pp_print_string fmt (String.make 1 '<'); *)
           fprint_t fmt lab;
           close_tag fmt lp.label_style;
 
@@ -545,8 +671,71 @@ struct
                else
                  ()
           );
+          (* pp_print_string fmt (String.make 1 ','); *)
           fprint_t fmt x;
           pp_close_box fmt ()
+          (* pp_print_string fmt (String.make 1 '>') *)
+
+  (*
+     Rewrites labels of the following:
+
+          (y, (z, q))
+
+     Into:
+
+          ((y, z), q)
+
+     Rewrites labels of the following:
+
+          (x, (y, (z, q))
+
+     Into:
+
+          (((x, y), z), q)
+
+     Where x, y, and z are all left elements of labels.
+     (z, q)'s original break/space config is transfered to the outermost label,
+     (y, ...)'s break/space config is transfered to ((x, y), ...)'s and so on.
+
+     Computes the list (z :: y :: x) along with q
+
+     We create a new Label next:
+
+     Label(
+       (
+         Label(
+           (
+             ...,
+             (y, (..))'s original params
+           ),
+           z
+         ),
+         (z,q)'s original params
+        ),
+        q
+     )
+
+
+     Even traverses deeply left to accomplish the same:
+
+     Rewrites labels of the following:
+
+          (x, (((q, r), s), (z, q)))
+
+     Into:
+
+          (x, (((q, r), s), (z, q)))
+
+
+  *)
+  and compress_labels ~rev_label_lefts right =
+    match rev_label_lefts with
+    | [] -> right
+    | (last_left_content, left_param) :: tl ->
+        Label(
+          ((compress_labels ~rev_label_lefts:tl last_left_content), left_param),
+          right
+        )
 
   let to_formatter fmt x =
     let x = rewrite x in

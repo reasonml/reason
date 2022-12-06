@@ -148,46 +148,41 @@ type t2 = (int, int); /* End of line on (int, int) */
 
 type t3 = (int, int); /* End of line on (int, int) */
 
-type variant =
-  | X(int, int) /* End of line on X */
-  | Y(int, int); /* End of line on Y */ /* Comment on entire type def for variant */
+type variant = | X(int, int) /* End of line on X */
+               | Y(int, int); /* End of line on Y */ /* Comment on entire type def for variant */
 
 /* Before let */
-let res =
-  /* Before switch */
-  switch (X(2, 3)) {
-  /* Above X line */
-  | X(_) => "result of X" /* End of arrow and X line */
-  /* Above Y line */
-  | Y(_) => "result of Y" /* End of arrow and Y line */
-  }; /* After final semi in switch */
+let res = /* Before switch */
+          switch (X(2, 3)) {
+          /* Above X line */
+          | X(_) => "result of X" /* End of arrow and X line */
+          /* Above Y line */
+          | Y(_) => "result of Y" /* End of arrow and Y line */
+          }; /* After final semi in switch */
 
-let res =
-  switch (X(2, 3)) {
-  | X(0, 0) =>
-    /* After X arrow */
-    "result of X" /* End of X body line */
-  | X(1, 0) /* Before X's arrow */ => "result of X" /* End of X body line */
-  | X(_) =>
-    /* After X _ arrow */
-    "result of X" /* End of X body line */
-  /* Above Y line */
-  | Y(_) =>
-    /* Comment above Y body */
-    "result of Y"
-  };
+let res = switch (X(2, 3)) {
+| X(0, 0) =>
+  /* After X arrow */
+  "result of X" /* End of X body line */
+| X(1, 0) /* Before X's arrow */ => "result of X" /* End of X body line */
+| X(_) =>
+  /* After X _ arrow */
+  "result of X" /* End of X body line */
+/* Above Y line */
+| Y(_) =>
+  /* Comment above Y body */
+  "result of Y"
+};
 
-type variant2 =
-  /* Comment above X */
-  | X(int, int) /* End of line on X */
-  /* Comment above Y */
-  | Y(int, int);
+type variant2 = /* Comment above X */
+                | X(int, int) /* End of line on X */
+                /* Comment above Y */
+                | Y(int, int);
 
-type variant3 =
-  /* Comment above X */
-  | X(int, int) /* End of line on X */
-  /* Comment above Y */
-  | Y(int, int); /* End of line on Y  */
+type variant3 = /* Comment above X */
+                | X(int, int) /* End of line on X */
+                /* Comment above Y */
+                | Y(int, int); /* End of line on Y  */
 
 type x = {
   /* not attached *above* x */
@@ -209,47 +204,44 @@ and y2 = {
   fieldTwo: int,
 };
 
-let result =
-  switch (None) {
-  | Some({fieldOne: 20, fieldA: a}) =>
-    /* Where does this comment go? */
-    let tmp = 0;
-    2 + tmp;
-  | Some({fieldOne: n, fieldA: a}) =>
-    /* How about this one */
-    let tmp = n;
-    n + tmp;
-  | None => 20
-  };
+let result = switch (None) {
+| Some({fieldOne: 20, fieldA: a}) =>
+  /* Where does this comment go? */
+  let tmp = 0;
+  2 + tmp;
+| Some({fieldOne: n, fieldA: a}) =>
+  /* How about this one */
+  let tmp = n;
+  n + tmp;
+| None => 20
+};
 
-let res =
-  /* Before switch */
-  switch (X(2, 3)) {
-  /* Above X line */
-  | X(_) => "result of X" /* End of arrow and X line */
-  /* Above Y line */
-  | Y(_) => "result of Y" /* End of arrow and Y line */
-  };
+let res = /* Before switch */
+          switch (X(2, 3)) {
+          /* Above X line */
+          | X(_) => "result of X" /* End of arrow and X line */
+          /* Above Y line */
+          | Y(_) => "result of Y" /* End of arrow and Y line */
+          };
 
 /*
  * Now these end of line comments *should* be retained.
  */
-let result =
-  switch (None) {
-  | Some({
-      fieldOne: 20, /* end of line */
-      fieldA: a /* end of line */
-    }) =>
-    let tmp = 0;
-    2 + tmp;
-  | Some({
-      fieldOne: n, /* end of line */
-      fieldA: a /* end of line */
-    }) =>
-    let tmp = n;
-    n + tmp;
-  | None => 20
-  };
+let result = switch (None) {
+| Some({
+    fieldOne: 20, /* end of line */
+    fieldA: a /* end of line */
+  }) =>
+  let tmp = 0;
+  2 + tmp;
+| Some({
+    fieldOne: n, /* end of line */
+    fieldA: a /* end of line */
+  }) =>
+  let tmp = n;
+  n + tmp;
+| None => 20
+};
 
 /*
  * These end of line comments *should* be retained.
@@ -257,38 +249,35 @@ let result =
  * implement label breaking eol behavior much like we did with sequences.
  * Otherwise, right now they are not idempotent.
  */
-let res =
-  switch (
-    /* Retain this */
-    X(2, 3)
-  ) {
-  /* Above X line */
-  | X(
-      _, /* retain this */
-      _ /* retain this */
-    ) => "result of X"
+let res = switch (
+  /* Retain this */
+  X(2, 3)
+) {
+/* Above X line */
+| X(
+    _, /* retain this */
+    _ /* retain this */
+  ) => "result of X"
 
-  /* Above Y line */
-  | Y(_) => "result of Y" /* End of arrow and Y line */
-  };
+/* Above Y line */
+| Y(_) => "result of Y" /* End of arrow and Y line */
+};
 
-type optionalTuple =
-  | OptTup(
-      option(
-        (
-          int, /* First int */
-          int /* Second int */
-        ),
-      ),
-    );
+type optionalTuple = | OptTup(
+                         option(
+                           (
+                             int, /* First int */
+                             int /* Second int */
+                           ),
+                         ),
+                       );
 
-type optionTuple =
-  option(
-    (
-      int, /* First int */
-      int /* Second int */
-    ),
-  );
+type optionTuple = option(
+  (
+    int, /* First int */
+    int /* Second int */
+  ),
+);
 
 type intPair = (
   int, /* First int */
@@ -301,11 +290,10 @@ type intPair2 = (
   int,
 );
 
-let result =
-  /**/
-  {
-    2 + 3;
-  };
+let result = /**/
+             {
+               2 + 3;
+             };
 
 /* This is not yet idempotent */
 /* { */
@@ -324,35 +312,38 @@ if (true) {
   ()
 };
 
-type color =
-  | Red(int) /* After red end of line */
-  | Black(int) /* After black end of line */
-  | Green(int); /* After green end of line */ /* On next line after color type def */
+type color = | Red(int) /* After red end of line */
+             | Black(int) /* After black end of line */
+             | Green(int); /* After green end of line */ /* On next line after color type def */
 
-let blahCurriedX = x =>
-  fun
-  | Red(10)
-  | Black(20)
-  | Green(10) => 1 /* After or pattern green */
-  | Red(x) => 0 /* After red */
-  | Black(x) => 0 /* After black */
-  | Green(x) => 0; /* After second green */ /* On next line after blahCurriedX def */
+let blahCurriedX = x => fun
+                        | Red(10)
+                        | Black(20)
+                        | Green(10) => 1 /* After or pattern green */
+                        | Red(x) => 0 /* After red */
+                        | Black(x) => 0 /* After black */
+                        | Green(x) => 0; /* After second green */ /* On next line after blahCurriedX def */
 
 let name_equal = (x, y) => {
   x == y;
 };
 
-let equal = (i1, i2) =>
-  i1.contents === i2.contents && true; /* most unlikely first */
+let equal = (i1, i2) => i1.contents
+                         === i2.contents
+                         && true; /* most unlikely first */
 
-let equal = (i1, i2) =>
-  compare(compare(0, 0), compare(1, 1)); /* END OF LINE HERE */
+let equal = (i1, i2) => compare(
+  compare(0, 0),
+  compare(1, 1),
+); /* END OF LINE HERE */
 
 let tuple_equal = ((i1, i2)) => i1 == i2;
 
-let tuple_equal = ((csu, mgd)) =>
-  /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
-  tuple_equal((csu, mgd));
+let tuple_equal = ((csu, mgd)) => /* Some really long comments, see https://github.com/facebook/reason/issues/811 */
+                                    tuple_equal((
+                                      csu,
+                                      mgd,
+                                    ));
 
 /** Comments inside empty function bodies
  * See https://github.com/facebook/reason/issues/860
@@ -580,35 +571,35 @@ ignore((_xxx, _yyy) => {
   /* Closing comment */
 });
 
-type tester('a, 'b) =
-  | TwoArgsConstructor('a, 'b)
-  | OneTupleArgConstructor(('a, 'b));
+type tester('a, 'b) = | TwoArgsConstructor(
+                           'a,
+                           'b,
+                         )
+                       | OneTupleArgConstructor(
+                           ('a, 'b),
+                         );
 let callFunctionTwoArgs = (a, b) => ();
 let callFunctionOneTuple = tuple => ();
 
-let y =
-  TwoArgsConstructor(
-    1, /*eol1*/
-    2 /* eol2 */
-  );
+let y = TwoArgsConstructor(
+  1, /*eol1*/
+  2 /* eol2 */
+);
 
-let y =
-  callFunctionTwoArgs(
-    1, /*eol1*/
-    2 /* eol2 */
-  );
+let y = callFunctionTwoArgs(
+  1, /*eol1*/
+  2 /* eol2 */
+);
 
-let y =
-  OneTupleArgConstructor((
-    1, /*eol1*/
-    2 /* eol2 */
-  ));
+let y = OneTupleArgConstructor((
+  1, /*eol1*/
+  2 /* eol2 */
+));
 
-let y =
-  callFunctionOneTuple((
-    1, /*eol1*/
-    2 /* eol2 */
-  ));
+let y = callFunctionOneTuple((
+  1, /*eol1*/
+  2 /* eol2 */
+));
 
 type polyRecord('a, 'b) = {
   fieldOne: 'a,
@@ -625,29 +616,25 @@ let r = {
   fieldTwo: 2 /* eol2 with trailing comma */
 };
 
-let y =
-  TwoArgsConstructor(
-    "1", /*eol1*/
-    "2" /* eol2 */
-  );
+let y = TwoArgsConstructor(
+  "1", /*eol1*/
+  "2" /* eol2 */
+);
 
-let y =
-  callFunctionTwoArgs(
-    "1", /*eol1*/
-    "2" /* eol2 */
-  );
+let y = callFunctionTwoArgs(
+  "1", /*eol1*/
+  "2" /* eol2 */
+);
 
-let y =
-  OneTupleArgConstructor((
-    "1", /*eol1*/
-    "2" /* eol2 */
-  ));
+let y = OneTupleArgConstructor((
+  "1", /*eol1*/
+  "2" /* eol2 */
+));
 
-let y =
-  callFunctionOneTuple((
-    "1", /*eol1*/
-    "2" /* eol2 */
-  ));
+let y = callFunctionOneTuple((
+  "1", /*eol1*/
+  "2" /* eol2 */
+));
 
 let r = {
   fieldOne: "1", /*eol1*/
@@ -661,29 +648,25 @@ let r = {
 
 let identifier = "hello";
 
-let y =
-  TwoArgsConstructor(
-    identifier, /*eol1*/
-    identifier /* eol2 */
-  );
+let y = TwoArgsConstructor(
+  identifier, /*eol1*/
+  identifier /* eol2 */
+);
 
-let y =
-  callFunctionTwoArgs(
-    identifier, /*eol1*/
-    identifier /* eol2 */
-  );
+let y = callFunctionTwoArgs(
+  identifier, /*eol1*/
+  identifier /* eol2 */
+);
 
-let y =
-  OneTupleArgConstructor((
-    identifier, /*eol1*/
-    identifier /* eol2 */
-  ));
+let y = OneTupleArgConstructor((
+  identifier, /*eol1*/
+  identifier /* eol2 */
+));
 
-let y =
-  callFunctionOneTuple((
-    identifier, /*eol1*/
-    identifier /* eol2 */
-  ));
+let y = callFunctionOneTuple((
+  identifier, /*eol1*/
+  identifier /* eol2 */
+));
 
 let r = {
   fieldOne: identifier, /*eol1*/
@@ -695,29 +678,25 @@ let r = {
   fieldTwo: identifier /* eol2 with trailing comma */
 };
 
-let y =
-  TwoArgsConstructor(
-    identifier: string, /*eol1*/
-    identifier: string /* eol2 */
-  );
+let y = TwoArgsConstructor(
+  identifier: string, /*eol1*/
+  identifier: string /* eol2 */
+);
 
-let y =
-  callFunctionTwoArgs(
-    identifier: string, /*eol1*/
-    identifier: string /* eol2 */
-  );
+let y = callFunctionTwoArgs(
+  identifier: string, /*eol1*/
+  identifier: string /* eol2 */
+);
 
-let y =
-  OneTupleArgConstructor((
-    identifier: string, /*eol1*/
-    identifier: string /* eol2 */
-  ));
+let y = OneTupleArgConstructor((
+  identifier: string, /*eol1*/
+  identifier: string /* eol2 */
+));
 
-let y =
-  callFunctionOneTuple((
-    identifier: string, /*eol1*/
-    identifier: string /* eol2 */
-  ));
+let y = callFunctionOneTuple((
+  identifier: string, /*eol1*/
+  identifier: string /* eol2 */
+));
 
 let r = {
   fieldOne: (identifier: string), /*eol1*/

@@ -4,10 +4,9 @@ module Foo = {
 
 let foo = (Foo.{name}) => ();
 
-let f =
-  fun
-  | Foo.{name} => ()
-  | _ => ();
+let f = fun
+        | Foo.{name} => ()
+        | _ => ();
 
 let x = {Foo.name: "Reason"};
 let Foo.{name} = x;

@@ -131,7 +131,14 @@ and tokenFixity =
   (* Such as !simple_expr and ~!simple_expr. These function applications are
      considered *almost* "simple" because they may be allowed anywhere a simple
      expression is accepted, except for when on the left hand side of a
-     dot/send. *)
+     dot/send. It would be better to refer to the "level" of simplicity (aka
+     precedence level).
+     - dot level precedence (highest, including send)
+     - prefix level precedence (mid)
+     - application level precedence (such as x(y))
+     - infix level precedence: (multiple levels within this one)
+     - sequence level precedence ( such as the commas in (x, y) and [x, y])
+     *)
   | AlmostSimplePrefix of string
   | UnaryPlusPrefix of string
   | UnaryMinusPrefix of string
@@ -1933,31 +1940,31 @@ let formatAttachmentApplication finalWrapping (attachTo: (bool * Layout.t) optio
         match (appTermItems, attachTo) with
           | ([], _) -> raise (NotPossible "No app terms")
           | ([hd], None) -> source_map ?loc hd
-          | ([hd], (Some (useSpace, toThis))) -> label ~space:useSpace toThis (source_map ?loc hd)
+          | ([hd], (Some (useSpace, toThis))) -> label ~break:`Never ~space:useSpace toThis (source_map ?loc hd)
           | (hd::tl, None) ->
             source_map ?loc (formatIndentedApplication hd tl)
           | (hd::tl, (Some (useSpace, toThis))) ->
             label
-              ~space:useSpace
+              ~break:`Never ~space:useSpace
               toThis
               (source_map ?loc (formatIndentedApplication hd tl))
       )
     | Some (attachedList, wrappedListy) -> (
         match (attachedList, attachTo) with
         | ([], Some (useSpace, toThis)) ->
-          label ~space:useSpace toThis (source_map ?loc wrappedListy)
+          label ~break:`Never ~space:useSpace toThis (source_map ?loc wrappedListy)
         | ([], None) ->
           (* Not Sure when this would happen *)
           source_map ?loc wrappedListy
         | (_::_, Some (useSpace, toThis)) ->
           (* TODO: Can't attach location to this - maybe rewrite anyways *)
           let attachedArgs = makeAppList attachedList in
-          label ~space:useSpace toThis
-            (label ~space:true attachedArgs wrappedListy)
+          label ~break:`Never ~space:useSpace toThis
+            (label ~break:`Never ~space:true attachedArgs wrappedListy)
         | (_::_, None) ->
           (* Args that are "attached to nothing" *)
           let appList = makeAppList attachedList in
-          source_map ?loc (label ~space:true appList wrappedListy)
+          source_map ?loc (label ~break:`Never ~space:true appList wrappedListy)
       )
 
 (*
@@ -2985,7 +2992,7 @@ let printer = object(self:'self)
          (Ptype_variant _, _, Some _)} *)
       | (Ptype_variant lst, scope, Some mani) -> [
           [self#core_type mani];
-          let variant = makeList ~break:IfNeed ~postSpace:true ~inline:(true, true) (self#type_variant_list lst) in
+          let variant = makeList ~break:IfNeed ~postSpace:true ~inline:(true, false) (self#type_variant_list lst) in
           privatize scope [variant];
         ]
 
@@ -4246,7 +4253,7 @@ let printer = object(self:'self)
           let rightItm = self#unparseResolvedRule (
             self#ensureContainingRule ~withPrecedence:prec ~reducesAfterRight:rightExpr ()
           ) in
-          let expr = label ~space:forceSpace (atom printedIdent) rightItm in
+          let expr = label ~break:`Never ~space:forceSpace (atom printedIdent) rightItm in
           SpecificInfixPrecedence ({reducePrecedence=prec; shiftPrecedence=Token printedIdent}, LayoutNode expr)
         (* Will need to be rendered in self#expression as (~-) x y z. *)
         | (_, _) ->
@@ -4852,7 +4859,7 @@ let printer = object(self:'self)
         | None -> letPattern
         | Some tc -> formatTypeConstraint letPattern tc
     in
-    let includingEqual = makeList ~postSpace:true [upUntilEqual; atom "="] in
+    let includingEqual = label ~space:true ~break:`Never upUntilEqual (atom "=") in
     formatAttachmentApplication applicationFinalWrapping (Some (true, includingEqual)) appTerms
 
   (*
@@ -5071,7 +5078,7 @@ let printer = object(self:'self)
         let firstOne =
           match mt with
             | None -> atom "()"
-            | Some mt' -> self#module_type (makeList [atom s.txt; atom ":"]) mt'
+            | Some mt' -> self#module_type (label ~space: true (atom s.txt) (atom ":")) mt'
         in
         let (functorArgsRecurse, returnStructure) = (self#curriedFunctorPatternsAndReturnStruct me2) in
         (firstOne::functorArgsRecurse, returnStructure)
@@ -5169,13 +5176,10 @@ let printer = object(self:'self)
            ...
          }
    *)
-  method wrappedBinding prefixText ~arrow pattern patternAux expr =
+  method wrappedBinding prefixText ~arrow pattern expr =
     let expr = self#process_underscore_application expr in
     let (argsList, return) = self#curriedPatternsAndReturnVal expr in
-    let patternList = match patternAux with
-      | [] -> pattern
-      | _::_ -> makeList ~postSpace:true ~inline:(true, true) ~break:IfNeed (pattern::patternAux)
-    in
+    let patternList = pattern in
     match (argsList, return.pexp_desc) with
       | ([], Pexp_constraint (e, ct)) ->
           let typeLayout =
@@ -5196,12 +5200,12 @@ let printer = object(self:'self)
           self#formatSimplePatternBinding prefixText patternList None appTerms
       | (_::_, _) ->
           let (argsWithConstraint, actualReturn) = self#normalizeFunctionArgsConstraint argsList return in
-          let fauxArgs =
-            List.concat [patternAux; argsWithConstraint] in
+          let fauxArgs = argsWithConstraint in
           let returnedAppTerms = self#unparseExprApplicationItems actualReturn in
            (* Attaches the `=` to `f` to recreate javascript function syntax in
             * let f = (a, b) => a + b; *)
-          let lbl = makeList ~sep:(Sep " ") ~break:Layout.Never [pattern; atom "="] in
+           (* TRY A LABEL BREAK NEVER PSACE TRUE HERE *)
+          let lbl = label ~space:true ~break:`Never pattern (atom "=") in
           self#wrapCurriedFunctionBinding prefixText ~arrow lbl fauxArgs returnedAppTerms
 
   (* Similar to the above method. *)
@@ -5291,7 +5295,7 @@ let printer = object(self:'self)
       | [], (Ppat_var _) ->
         self#wrappedBinding prefixText ~arrow:"=>"
           (source_map ~loc:pat.ppat_loc (self#simple_pattern pat))
-          [] expr
+          expr
       (*
          Ppat_constraint is used in bindings of the form
 
@@ -5912,7 +5916,7 @@ let printer = object(self:'self)
                  switchWith
                  (source_map ~loc:estimatedBracePoint
                     (makeList ~indent:settings.trySwitchIndent ~wrap:("{", "}")
-                       ~break:Always_rec ~postSpace:true cases))
+                       ~break:IfNeed ~postSpace:true cases))
              in
              Some lbl
           | Pexp_ifthenelse (e1, e2, eo) ->
@@ -6952,9 +6956,7 @@ let printer = object(self:'self)
               (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed privateVirtualName) in
             label ~space:true (atom "pri") openingTokens
           | Public ->
-            let virtualName = [atom "virtual"; atom s.txt] in
-            let openingTokens =
-              (makeList ~postSpace:true ~inline:(false, true) ~break:IfNeed virtualName) in
+            let openingTokens = label ~space:true (atom "virtual") (atom s.txt) in
             label ~space:true (atom "pub") openingTokens
         in
         formatTypeConstraint opening (self#core_type ct)
@@ -7004,7 +7006,7 @@ let printer = object(self:'self)
               (self#unparseExprApplicationItems e)
           (* This form means that there is no type constraint - it's a strange node name.*)
           | Pexp_poly (e, None) ->
-            self#wrappedBinding methodText ~arrow:"=>" (atom s.txt) [] e
+            self#wrappedBinding methodText ~arrow:"=>" (atom s.txt) e
           | _ -> failwith "Concrete methods should only ever have Pexp_poly."
         )
       | Pcf_constraint (ct1, ct2) ->
