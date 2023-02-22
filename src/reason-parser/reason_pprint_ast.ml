@@ -5060,7 +5060,7 @@ let printer = object(self:'self)
     | { pmod_desc = Pmod_functor(fp, me2) } ->
         let firstOne =
           match fp with
-            | Unit -> atom "()"
+            | Unit -> atom ""
             | Named (s, mt') ->
               let s = moduleIdent s in
               self#module_type (makeList [atom s; atom ":"]) mt'
