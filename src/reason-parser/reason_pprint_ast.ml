@@ -7541,7 +7541,12 @@ let printer = object(self:'self)
         in
         formatPrecedence (self#module_type letPattern mt)
     | Pmod_structure s ->
-        let wrap = if hug then ("({", "})") else ("{", "}") in
+        let wrap = if hug then
+          if List.length s = 0 then 
+            ("(", ")") 
+          else 
+            ("({", "})")
+        else ("{", "}") in
         let items =
           groupAndPrint
             ~xf:self#structure_item

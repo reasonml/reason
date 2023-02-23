@@ -496,3 +496,7 @@ module Lola1 = () => {
 module Lola2 = (C: Cat, D: Dog, L: Lion) => {
   let a = 33;
 }
+
+module L = Lola1();
+
+module L2 = Lola2(Cat, Dog, Foo);

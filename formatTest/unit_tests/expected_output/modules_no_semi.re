@@ -314,7 +314,7 @@ module CurriedNoSugarFunctorResultInline =
 module ResultFromNonSimpleFunctorArg =
   CurriedNoSugar(
     (
-      MakeAModule({})
+      MakeAModule()
     ),
     BMod,
   );
