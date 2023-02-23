@@ -7563,7 +7563,7 @@ let printer = object(self:'self)
           items
     | _ ->
         (* For example, functor application will be wrapped. *)
-        formatPrecedence (self#module_expr x)
+        formatPrecedence ~wrap:("", "") (self#module_expr x)
 
   method module_expr x =
     match x.pmod_desc with

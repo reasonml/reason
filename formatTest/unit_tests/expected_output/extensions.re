@@ -2,9 +2,7 @@
 
 [%extend open M];
 
-[%extend
-  module M = {}
-];
+[%extend module M = {}];
 
 [%extend module type M = {}];
 
