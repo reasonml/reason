@@ -7555,7 +7555,7 @@ let printer = object(self:'self)
             s
         in
         makeList
-          ~break:Layout.Always_rec
+          ~break:(if List.length s = 0 then Layout.IfNeed else Layout.Always_rec)
           ~inline:(true, false)
           ~wrap
           ~postSpace:true
