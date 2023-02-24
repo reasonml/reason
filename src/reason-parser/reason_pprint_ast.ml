@@ -5296,6 +5296,34 @@ let printer = object(self:'self)
          forms of explicit polymorphic annotations in the parse tree, and how
          we must recover them here.
        *)
+      | [], (Ppat_open (lid, {ppat_desc = Ppat_record(l, closed); _})) -> 
+        (* 
+         Special case handling for: 
+
+         let Foo.{
+           destruct1,
+           destruct2,
+           destruct3,
+           destruct4,
+           destruct5,
+         } = bar;
+        *)
+
+        let upUntilEqual =
+          let pat = self#patternRecord l closed in
+          label
+            (label ~space:true 
+              (atom "let") 
+              (label 
+                (self#longident_loc lid) 
+                (atom ("."))
+              )
+            )
+            pat
+        in
+        let appTerms = self#unparseExprApplicationItems expr in
+        let includingEqual = makeList ~postSpace:true [upUntilEqual; atom "="] in
+        formatAttachmentApplication applicationFinalWrapping (Some (true, includingEqual)) appTerms
       | [], (Ppat_constraint(p, ty)) -> (
           (* Locally abstract forall types are *seriously* mangled by the parsing
              stage, and we have to be very smart about how to recover it.
