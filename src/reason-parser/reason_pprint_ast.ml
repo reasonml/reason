@@ -406,7 +406,7 @@ let rec sequentialIfBlocks x =
 
 (*
     Table 2.1. Precedence and associativity.
-    Precedence from highest to lowest: From RWOC, modified to include !=
+    Precedence from highest to lowest: From RWOC, modified to include !=, and modified to make &, &&, or and || left associative.
     ---------------------------------------
 
     Operator prefix	Associativity
@@ -424,8 +424,8 @@ let rec sequentialIfBlocks x =
     =..., <..., >..., |..., &..., $...              Left associative (INFIXOP0)
     =, <, >                                         Left associative (IN SAME row as INFIXOP0 listed after)
 ---
-    &, &&                                           Right associative
-    or, ||                                          Right associative
+    &, &&                                           Left associative
+    or, ||                                          Left associative
     ,                                               -
     :=, =                                         	Right associative
     if                                              -
@@ -590,12 +590,12 @@ let rules = [
     (TokenPrecedence, (fun s -> (Left, s = "!" )));
   ];
   [
-    (TokenPrecedence, (fun s -> (Right, s = "::")));
+    (TokenPrecedence, (fun s -> (Left, s = "::")));
   ];
   [
     (TokenPrecedence, (fun s -> (Right, s.[0] == '@')));
     (TokenPrecedence, (fun s -> (Right, s.[0] == '^')));
-    (TokenPrecedence, (fun s -> (Right, String.length s > 1 && s.[0] == '+' && s.[1] == '+')));
+    (TokenPrecedence, (fun s -> (Left, String.length s > 1 && s.[0] == '+' && s.[1] == '+')));
   ];
   [
     (TokenPrecedence, (fun s -> (Left, s.[0] == '=' && not (s = "=") && not (s = "=>"))));
@@ -615,12 +615,12 @@ let rules = [
     (CustomPrecedence, (fun s -> (Left, s = funToken)));
   ];
   [
-    (TokenPrecedence, (fun s -> (Right, s = "&")));
-    (TokenPrecedence, (fun s -> (Right, s = "&&")));
+    (TokenPrecedence, (fun s -> (Left, s = "&")));
+    (TokenPrecedence, (fun s -> (Left, s = "&&")));
   ];
   [
-    (TokenPrecedence, (fun s -> (Right, s = "or")));
-    (TokenPrecedence, (fun s -> (Right, s = "||")));
+    (TokenPrecedence, (fun s -> (Left, s = "or")));
+    (TokenPrecedence, (fun s -> (Left, s = "||")));
   ];
   [
     (* The Left shouldn't ever matter in practice. Should never get in a

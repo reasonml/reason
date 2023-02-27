@@ -606,8 +606,8 @@ rule token state = parse
       | "^" -> POSTFIXOP "^"
       | op -> INFIXOP1 (unescape_operator op)
     }
-  | "++" operator_chars*
-    { INFIXOP1 (lexeme_operator lexbuf) }
+  | "++"
+    { PLUSPLUS }
   | '\\'? ['+' '-'] operator_chars*
     { INFIXOP2 (lexeme_operator lexbuf) }
   (* SLASHGREATER is an INFIXOP3 that is handled specially *)

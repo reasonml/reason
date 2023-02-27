@@ -1174,6 +1174,7 @@ let add_brace_attr expr =
 (* %token PARSER *)
 %token PERCENT
 %token PLUS
+%token PLUSPLUS
 %token PLUSDOT
 %token PLUSEQ
 %token <string> PREFIXOP [@recover.expr ""] [@recover.cost 2]
@@ -1244,13 +1245,13 @@ conflicts.
 %nonassoc below_BAR                     (* Allows "building up" of many bars *)
 %left     BAR                           (* pattern (p|p|p) *)
 
-%right    OR BARBAR                     (* expr (e || e || e) *)
-%right    AMPERSAND AMPERAMPER          (* expr (e && e && e) *)
+%left     OR BARBAR                     (* expr (e || e || e) *)
+%left     AMPERSAND AMPERAMPER          (* expr (e && e && e) *)
 %left     INFIXOP0 LESS GREATER GREATERDOTDOTDOT (* expr (e OP e OP e) *)
 %left     LESSDOTDOTGREATER (* expr (e OP e OP e) *)
 %right    INFIXOP1                      (* expr (e OP e OP e) *)
-%right    COLONCOLON                    (* expr (e :: e :: e) *)
-%left     INFIXOP2 PLUS PLUSDOT MINUS MINUSDOT PLUSEQ (* expr (e OP e OP e) *)
+%left     COLONCOLON                    (* expr (e :: e :: e) *)
+%left     INFIXOP2 PLUS PLUSDOT PLUSPLUS MINUS MINUSDOT PLUSEQ (* expr (e OP e OP e) *)
 %left     PERCENT INFIXOP3 SLASHGREATER STAR          (* expr (e OP e OP e) *)
 %right    INFIXOP4                      (* expr (e OP e OP e) *)
 
@@ -4681,6 +4682,7 @@ val_ident:
   (* SLASHGREATER is INFIXOP3 but we needed to call it out specially *)
   | SLASHGREATER      { "/>" }
   | INFIXOP4          { $1 }
+  | PLUSPLUS          { "++"  }
   | PLUS          { "+"  }
   | PLUSDOT       { "+." }
   | MINUS         { "-"  }
