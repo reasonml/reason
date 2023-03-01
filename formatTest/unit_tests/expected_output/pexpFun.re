@@ -87,3 +87,7 @@ Mod.Update(
   "",
   lst,
 );
+
+let foo = () => {
+  x((): string => "foo");
+};
