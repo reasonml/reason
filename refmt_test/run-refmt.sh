@@ -6,7 +6,9 @@
 
 set -e
 
-if [[ -n $CI ]]; then
+# $CI is set by CircleCI
+# TF_BUILD is set by Azure Pipelines
+if [[ -n $CI || -n $TF_BUILD ]]; then
   refmt "$@"
 else
   esy x refmt "$@"

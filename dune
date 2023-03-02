@@ -1,5 +1,1 @@
 (dirs :standard \ node_modules js)
-
-; Need to add "refmt_test" to the list of directories to dune be aware to copy
-; "refmt_test/run-refmt.sh" to the build directory so tests can be run with it.
-(data_only_dirs refmt_test)
