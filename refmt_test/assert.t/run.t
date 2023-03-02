@@ -7,8 +7,7 @@ Format assert.re file
   };
   
   let root = {
-    let root =
-    Doc.rootNode(doc);
+    let root = Doc.rootNode(doc);
     assert(root.type_ == "expression");
     assert(Node.namedChildCount(root) == 1);
     assert(Node.childCount(root) == 1);
