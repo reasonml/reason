@@ -51,6 +51,11 @@ common_steps: &common_steps
           eval `opam config env`
           make test-ci
     - run:
+        name: 'Cram test'
+        command: |
+          eval `opam config env`
+          dune runtest
+    - run:
         name: 'Check git is clean'
         command: git diff --exit-code
 
