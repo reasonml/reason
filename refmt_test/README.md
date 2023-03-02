@@ -1,3 +1,21 @@
 # refmt cram test suite
 
-This folder contains the cram tests from dune, more information on how they work and how to create them in [here](https://discuss.ocaml.org/t/cram-tests-on-short-notice/6256)
+This folder contains cram tests from dune.
+
+## Run them locally use
+
+```bash
+esy dune runtest
+# or in watch mode
+esy dune runtest -w
+```
+
+## Update snapshot
+
+The usual workflow is to run the test once, let it fail and then update the snapshot with the output you expect with promotion:
+
+```bash
+esy dune promote
+```
+
+More information on how they work and how to create them in [dune's documentation](https://dune.readthedocs.io/en/stable/tests.html#cram-tests)
