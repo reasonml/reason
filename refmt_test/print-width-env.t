@@ -4,12 +4,12 @@ Create a file with a long line
   > EOF
 
 Set the print width to 120 characters via env "REFMT_PRINT_WIDTH"
-  $ REFMT_PRINT_WIDTH=120 esy x refmt test.re
+  $ REFMT_PRINT_WIDTH=120 ./refmt_test/run-refmt.sh test.re
   let initialState =
     uiStateFromValidated(~ownership=RemoteData.NotAsked, ~limits=initialLimits, SiteAuditSettings.default);
 
 Set the print width to 80 characters via env "REFMT_PRINT_WIDTH"
-  $ REFMT_PRINT_WIDTH=80 esy x refmt test.re
+  $ REFMT_PRINT_WIDTH=80 ./refmt_test/run-refmt.sh test.re
   let initialState =
     uiStateFromValidated(
       ~ownership=RemoteData.NotAsked,
