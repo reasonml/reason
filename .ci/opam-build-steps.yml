@@ -34,5 +34,7 @@ steps:
     displayName: "opam pin add -y rtop ."
   - script: eval $(opam env); make test-ci
     displayName: "make test-ci"
+  - script: eval $(opam env); dune runtest
+    displayName: "dune runtest"
   - script: git diff --exit-code
     displayName: "Check git is clean"
