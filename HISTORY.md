@@ -1,3 +1,7 @@
+## 3.9
+
+- Improve printing of destructuring with local open.
+
 ## 3.8.2
 
 - Fix magic numbers for OCaml 5.0 (@anmonteiro) [#2671](https://github.com/reasonml/reason/pull/2671)
