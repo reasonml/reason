@@ -1,4 +1,7 @@
 (cram
+ ; We want to rely on refmt from src, here we tell dune where to find
+ ; the executable so is available in the tests under
+ ; `_build/default/src/refmt/refmt_impl.exe`
  (deps %{project_root}/src/refmt/refmt_impl.exe))
 
 (data_only_dirs failing)
