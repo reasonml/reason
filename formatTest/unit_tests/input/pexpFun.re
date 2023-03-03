@@ -43,7 +43,8 @@ Mod.Update(
 );
 
 Mod.Update(
-  [@foo] [@bar] (acc, curr) => {
+  [@foo] [@bar]
+  (acc, curr) => {
     let x = 1;
     string_of_int(curr);
   },
@@ -51,7 +52,12 @@ Mod.Update(
   lst,
 );
 
-Mod.Update([@foo] [@bar] curr => string_of_int(curr), "", lst);
+Mod.Update(
+  [@foo] [@bar]
+  (curr) => string_of_int(curr),
+  "",
+  lst,
+);
 
 Mod.Update(
   [@foo] [@bar] [@baz] [@something] [@do] curr => string_of_int(curr),
@@ -60,7 +66,7 @@ Mod.Update(
 );
 
 Mod.Update(
-  (acc, curr, lkdjf, lskdfj, sdfljk, slkdjf, skdjf, sdlkfj): string => {
+   (acc, curr, lkdjf, lskdfj, sdfljk, slkdjf, skdjf, sdlkfj): string => {
     let x = 1;
     string_of_int(curr);
   },

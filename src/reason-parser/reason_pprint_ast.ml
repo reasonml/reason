@@ -44,8 +44,6 @@
  *
  *)
 
-let () = Printexc.record_backtrace true
-
 (* TODO more fine-grained precedence pretty-printing *)
 
 module Easy_format = Vendored_easy_format
