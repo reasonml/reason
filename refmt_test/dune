@@ -1,4 +1,4 @@
 (cram
- (deps ./run-refmt.sh %{project_root}/src/refmt/refmt_impl.exe))
+ (deps %{project_root}/src/refmt/refmt_impl.exe))
 
 (data_only_dirs failing)
