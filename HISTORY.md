@@ -1,3 +1,7 @@
+## 3.9
+
+- Reduce the amount of parentheses around functor usage.
+
 ## 3.8.2
 
 - Fix magic numbers for OCaml 5.0 (@anmonteiro) [#2671](https://github.com/reasonml/reason/pull/2671)
