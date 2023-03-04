@@ -242,3 +242,25 @@ switch (None) {
 type aOrB = A(int) | B(int);
 let ((nestedAnnotation: int) : int) = 0;
 let ((A(i) | B(i): aOrB)) = A(0);
+
+
+type test_foo = 
+  | VariantType1 
+  | VariantType2
+
+let branch_with_variant_and_annotation =
+  fun
+  | (VariantType1: test_foo) => true
+  | VariantType2 => false;
+
+type intRange = {
+  from: option(string),
+  to_: option(string)
+}  
+
+type optIntRange = option(intRange)
+
+let optIntRangeOfIntRange =
+  fun
+  | ({from: None, to_: None}: intRange) => (None: optIntRange)
+  | {from, to_} => Some({from, to_});
