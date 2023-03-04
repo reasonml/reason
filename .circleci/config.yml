@@ -12,8 +12,7 @@ common_steps: &common_steps
     - run:
         name: "Install npm"
         command: |
-          sudo apt-get update && apt-get upgrade
-          sudo apt-get install -y nodejs npm
+          sudo apt install -y nodejs npm
           mkdir -p ~/.npm-global
           npm config set prefix $NPM_CONFIG_PREFIX
     - checkout
@@ -25,12 +24,12 @@ common_steps: &common_steps
     - run:
         name: "Initialize opam"
         command: |
-          sudo apt-get install -y m4
+          sudo apt install -y m4
           opam remote set-url default https://opam.ocaml.org
     - run:
         name: "Install deps"
         command: |
-          sudo apt-get install -y pkg-config libncurses5-dev
+          sudo apt install -y pkg-config libncurses5-dev
           opam update
           opam install -y dune menhir utop
     - run:
@@ -149,13 +148,13 @@ jobs:
           name: "Install npm"
           command: |
             curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-            sudo apt-get install -y nodejs
+            sudo apt install -y nodejs
             mkdir -p ~/.npm-global
             npm config set prefix $NPM_CONFIG_PREFIX
       - run:
           name: "Install m4"
           command: |
-            sudo apt-get install -y m4
+            sudo apt install -y m4
       - restore_cache:
           <<: *esy_cache_key
       - restore_cache:
