@@ -7893,6 +7893,10 @@ let printer = object(self:'self)
         | [] -> []
         | hd::tl ->
           let formattedHd = self#pattern hd in
+          let formattedHd = match hd.ppat_desc with 
+          | Ppat_constraint _ -> formatPrecedence formattedHd
+          | _ -> formattedHd
+          in
           let formattedHd =
             if tl == [] then appendWhereAndArrow formattedHd else formattedHd
           in
