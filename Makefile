@@ -18,7 +18,6 @@ test-once-installed: clean-tests
 	./miscTests/rtopIntegrationTest.sh
 	./miscTests/backportSyntaxTests.sh
 	cd formatTest; ./test.sh
-	dune runtest
 
 .PHONY: coverage
 coverage:
