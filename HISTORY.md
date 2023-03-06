@@ -1,6 +1,7 @@
 ## 3.9 (unreleased)
 
 - Fix missing patterns around contraint pattern (a pattern with a type annotation).
+- Make &, &&, |, ||, ++, and :: operators left associative.
 
 ## 3.8.2
 
