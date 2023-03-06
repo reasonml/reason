@@ -7576,29 +7576,36 @@ let printer = object(self:'self)
     | Pmod_constraint _
     | Pmod_structure _ -> self#simple_module_expr x
 
+  (* We print differently top level extensions than other extensions
+    in structure_items or expressions. In this case we print it with %%name *)
+  method top_level_structure_item item =
+    match item.pstr_desc with
+      | Pstr_extension (e, a) ->
+        self#attach_std_item_attrs a (self#item_extension e)
+      | _ -> self#structure_item item
 
   method structure structureItems =
     match structureItems with
     | [] -> atom ""
-    | first::_ as structureItems ->
+    | first :: _ as structureItems ->
       let last = match (List.rev structureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.pstr_loc.loc_start in
       let loc_end = last.pstr_loc.loc_end in
       let items =
         groupAndPrint
-          ~xf:self#structure_item
+          ~xf:self#top_level_structure_item
           ~getLoc:(fun x -> x.pstr_loc)
           ~comments:self#comments
           structureItems
       in
       source_map ~loc:{loc_start; loc_end; loc_ghost = false}
         (makeList
-           ~postSpace:true
-           ~break:Always_rec
-           ~indent:0
-           ~inline:(true, false)
-           ~sep:(SepFinal (";", ";"))
-           items)
+          ~postSpace:true
+          ~break:Always_rec
+          ~indent:0
+          ~inline:(true, false)
+          ~sep:(SepFinal (";", ";"))
+          items)
 
   (*
      How do modules become parsed?

@@ -357,7 +357,7 @@ let work = () => {
 };
 
 /** header */
-[%raw "console.log(42)"];
+[%%raw "console.log(42)"];
 
 /* https://github.com/facebook/reason/issues/2032 */
 let predicate =
