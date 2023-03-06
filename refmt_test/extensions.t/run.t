@@ -352,7 +352,7 @@ Format extensions
     something_else();
   };
   
-  [%bs.raw x => x];
+  let f = [%bs.raw x => x];
   
   let work = () => {
     open Syntax;
