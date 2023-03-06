@@ -12,7 +12,7 @@ Format extensions
   
   type a = [%extend int];
   
-  [%%extend let x = "hi"];
+  let%extend x = "hi";
   
   let x = {
     let%extend x = ();

@@ -7580,8 +7580,12 @@ let printer = object(self:'self)
     in structure_items or expressions. In this case we print it with %%name *)
   method top_level_structure_item item =
     match item.pstr_desc with
-      | Pstr_extension ((style_name, payload), attributes) ->
-        self#attach_std_item_attrs attributes (self#payload "%%" style_name payload)
+      | Pstr_extension ((extension, PStr [item]), attrs) ->
+          begin match item.pstr_desc with
+            (* In case of a value, the extension gets inlined `let%private a = 1` *)
+            | Pstr_value (rf, vb_list) -> self#bindings ~extension (rf, vb_list)
+            | _ -> self#attach_std_item_attrs attrs (self#payload "%%" extension (PStr [item]))
+          end
       | _ -> self#structure_item item
 
   method structure structureItems =
