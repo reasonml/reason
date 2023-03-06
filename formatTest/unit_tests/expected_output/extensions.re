@@ -10,7 +10,7 @@
 
 type a = [%extend int];
 
-let%extend x = "hi";
+[%%extend let x = "hi"];
 
 let x = {
   let%extend x = ();
