@@ -1,5 +1,5 @@
 Format function expressipns (pexpFun)
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ ./run-refmt.sh --print-width 50 ./input.re
   let x =
     switch (x) {
     | Bar =>

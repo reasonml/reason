@@ -1,5 +1,5 @@
 Format wrapping in .re files
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ ./run-refmt.sh --print-width 50 ./input.re
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
   
   /* Run the formatting pretty printer with width 50 */

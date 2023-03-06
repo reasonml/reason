@@ -1,5 +1,5 @@
 Format basics
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re > ./formatted.re
+  $ ./run-refmt.sh --print-width 50 ./input.re > ./formatted.re
 
   $ cat ./formatted.re
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
@@ -141,4 +141,4 @@ Format basics
   let better = foo => !foo ? 42 : not(41, 2);
 
 Type-check basics
-  $ ocamlc -c -pp "../../src/refmt/refmt_impl.exe --print binary" -o print.out -impl formatted.re
+  $ ./run-ocamlc.sj -o print.out -impl formatted.re

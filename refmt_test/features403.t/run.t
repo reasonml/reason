@@ -1,5 +1,5 @@
 Format features from OCaml 4.03
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ ./run-refmt.sh --print-width 50 ./input.re
   type t =
     | A({a: int})
     | B;
