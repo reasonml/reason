@@ -69,23 +69,21 @@ let minParens = a1 := a2 := b1 === ((b2 === y) !== x !== z);
 
 let formatted = a1 := a2 := b1 === ((b2 === y) !== x !== z);
 
-/* &...(left) is higher than &(right). &(right) is equal to &&(right) */
-let parseTree = a1 && (a2 && (b1 & b2 & y &|| x &|| z));
+let parseTree = ((b1 & b2 & y &|| x &|| z) && a2) && a1;
 
-let minParens = a1 && a2 && (b1 & b2 & y &|| x &|| z);
+let minParens = (b1 & b2 & y &|| x &|| z) && a2 && a1;
 
-let formatted = a1 && a2 && (b1 & b2 & y &|| x &|| z);
+let formatted = (b1 & b2 & y &|| x &|| z) && a2 && a1;
 
 /**
  * Now, let's try an example that resembles the above, yet would require
  * parenthesis everywhere.
  */
-/* &...(left) is higher than &(right). &(right) is equal to &&(right) */
-let parseTree = ((((a1 && a2) && b1) & b2) & y) &|| (x &|| z);
+let parseTree = (x &|| z) &|| (y & (b2 & (b1 && ((a1 && a2)))));
 
-let minParens = ((((a1 && a2) && b1) & b2) & y) &|| (x &|| z);
+let minParens = (x &|| z) &|| (y & (b2 & (b1 && ((a1 && a2)))));
 
-let formatted = ((((a1 && a2) && b1) & b2) & y) &|| (x &|| z);
+let formatted = (x &|| z) &|| (y & (b2 & (b1 && ((a1 && a2)))));
 
 /* **...(right) is higher than *...(left) */
 let parseTree = ((b1 *| b2) *| (y *\*| (x *\*| z)));
@@ -124,13 +122,13 @@ first + second + third;
 first & second & third;
 
 /* This one *shouldn't* */
-(first & second) & third;
+first & (second & third);
 
 /* || is basically the same as &/&& */
 first || second || third;
 
 /* This one *shouldn't* */
-(first || second) || third;
+first || (second || third);
 
 /* No parens should be added/removed from the following when formatting */
 let seeWhichCharacterHasHigherPrecedence = (first |> second |> third) ^> fourth;
@@ -267,9 +265,9 @@ let shouldSimplifyAnythingExceptApplicationAndConstruction = call("hi") ++ (swit
                                                                     | _ => "hi"
                                                                     }) ++ "yo";
 let shouldRemoveParens = (ident + ident) + ident;
-let shouldRemoveParens = ident ++ (ident ++ ident);
+let shouldRemoveParens = (ident ++ ident) ++ ident;
 let shouldPreserveParens = ident + (ident + ident);
-let shouldPreserveParens = (ident ++ ident) ++ ident;
+let shouldPreserveParens = ident ++ (ident ++ ident);
 /**
  * Since ++ is now INFIXOP1, it should have lower priority than INFIXOP2 (which
  * includes the single plus sign). That means no parens are required in the
@@ -304,11 +302,11 @@ let parensRequired = ident + (ident +++ ident);
 let parensRequired = ident + (ident ++- ident);
 let parensRequired = ident +$ (ident ++- ident);
 
-/* ++ and +++ have the same parsing precedence, so it's right associative.
- * Parens are required if you want to group to the left, even when the tokens
+/* ++ and +++ have the same parsing precedence, so it's left associative.
+ * Parens are required if you want to group to the right, even when the tokens
  * are different.*/
-let parensRequired = (ident ++ ident) +++ ident;
-let parensRequired = (ident +++ ident) ++ ident;
+let parensRequired = ident ++ (ident +++ ident);
+let parensRequired = ident +++ (ident ++ ident);
 
 /* Add tests with IF/then mixed with infix/constructor application on left and right sides */
 /**
