@@ -1,5 +1,5 @@
 Format externals
-  $ ./run-refmt.sh --print-width 50 ./input.re
+  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
   /**
    * Tests external formatting.
    */

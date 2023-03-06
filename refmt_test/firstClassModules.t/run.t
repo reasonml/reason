@@ -1,5 +1,5 @@
 Format first class modules
-  $ ./run-refmt.sh --print-width 50 ./input.re
+  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
   module Modifier = (
     val Db.Hashtbl.create():
       Db.Sig with type t = Mods.t

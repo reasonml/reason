@@ -1,5 +1,5 @@
 Format sharp operator
-  $ ./run-refmt.sh --print-width 50 ./input.re
+  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
   foo #= bar[0];
   
   foo##bar[0] = 3;

@@ -1,5 +1,5 @@
 Format basics
-  $ ./run-refmt.sh --print-width 50 ./input.re > ./formatted.re
+  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re > ./formatted.re
 
   $ cat ./formatted.re
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */

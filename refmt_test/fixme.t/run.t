@@ -1,5 +1,5 @@
 Format fixme
-  $ ./run-refmt.sh --print-width 50 ./input.re
+  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
   /**
    * Problem: In thise example, the comment should have a space after it.
    */

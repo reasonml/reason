@@ -1,5 +1,5 @@
 Ensures refmt_iml.exe is in the right place
-  $ ./run-refmt.sh --version;
+  $ ../src/refmt/refmt_impl.exe test.re --version;
   Reason 3.7.0 @ b66ed1b
 
   $ ./run-ocamlc.sh --version;

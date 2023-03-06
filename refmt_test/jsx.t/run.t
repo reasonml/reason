@@ -1,5 +1,5 @@
 Format JSX
-  $ ./run-refmt.sh --print-width 50 ./input.re
+  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
   let x =
     <Window
       style={
