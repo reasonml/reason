@@ -208,16 +208,16 @@ Format whitespace in .rei files
   [@id];
   
   /** doc attr attached */
-  [%%obj {a: 1}];
+  [%obj {a: 1}];
   
   /** doc attr attached with newline */
   
-  [%%obj {a: 1}];
+  [%obj {a: 1}];
   
   /** doc attr attached with newline and comment */
   
   /* test */
-  [%%obj {a: 1}];
+  [%obj {a: 1}];
   
   /** doc attached */
   class reason: ocaml;
