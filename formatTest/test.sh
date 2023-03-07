@@ -84,9 +84,7 @@ function info() {
 }
 
 function debug() {
-    if [ ! -z "$VERBOSE" ]; then
-        printf "${DEBUG}$1${RESET}\n"
-    fi
+  printf "${DEBUG}$1${RESET}\n"
 }
 
 function notice() {
