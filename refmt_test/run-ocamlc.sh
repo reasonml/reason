@@ -9,4 +9,4 @@ case "${unameOut}" in
     *)          REFMT_PATH="$SCRIPT_DIR/../src/refmt/refmt_impl.exe"
 esac
 
-ocamlc -c -pp $REFMT_PATH "$@"
+ocamlc -c -pp "$REFMT_PATH --print binary" "$@"
