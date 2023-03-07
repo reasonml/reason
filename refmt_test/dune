@@ -12,7 +12,7 @@
  (alias assign-local-refmt-to-REFMT)
  (action
   (progn
-   (system "export REFMT=$($REFMT)"))))
+   (bash "export REFMT=$($REFMT)"))))
 
 (env
  (_
