@@ -7576,10 +7576,12 @@ let printer = object(self:'self)
     | Pmod_constraint _
     | Pmod_structure _ -> self#simple_module_expr x
 
-  (* We print differently top level extensions than other extensions
-    in structure_items or expressions. In this case we print it with %%name *)
-  method top_level_structure_item item =
-    match item.pstr_desc with
+  method structure structureItems =
+    (* We print differently top level extensions than other extensions
+    in structure_items or expressions. In this case we print it with %%name.
+    That's why this fn is needed. *)
+    let structure_item item =
+      match item.pstr_desc with
       | Pstr_extension ((extension, PStr [item]), attrs) ->
           begin match item.pstr_desc with
             (* In case of a value, the extension gets inlined `let%private a = 1` *)
@@ -7587,8 +7589,7 @@ let printer = object(self:'self)
             | _ -> self#attach_std_item_attrs attrs (self#payload "%%" extension (PStr [item]))
           end
       | _ -> self#structure_item item
-
-  method structure structureItems =
+    in
     match structureItems with
     | [] -> atom ""
     | first :: _ as structureItems ->
@@ -7597,7 +7598,7 @@ let printer = object(self:'self)
       let loc_end = last.pstr_loc.loc_end in
       let items =
         groupAndPrint
-          ~xf:self#top_level_structure_item
+          ~xf:structure_item
           ~getLoc:(fun x -> x.pstr_loc)
           ~comments:self#comments
           structureItems
