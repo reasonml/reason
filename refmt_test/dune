@@ -3,5 +3,3 @@
  ; the executable so is available in the tests under
  ; `_build/default/src/refmt/refmt_impl.exe`
  (deps %{project_root}/src/refmt/refmt_impl.exe %{bin:ocamlc} run-ocamlc.sh))
-
-(data_only_dirs failing)
