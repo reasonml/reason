@@ -5,4 +5,41 @@
  (deps
   %{project_root}/src/refmt/refmt_impl.exe
   %{bin:ocamlc}
-  %{bin:ocamlopt}))
+  %{bin:ocamlopt}
+  (alias assign-local-refmt-to-REFMT)))
+
+(rule
+ (alias assign-local-refmt-to-REFMT)
+ (action
+  (progn
+   (system "export REFMT=$($REFMT)"))))
+
+(env
+ (_
+  (env-vars
+   (REFMT "../../src/refmt/refmt_impl.exe"))))
+
+; (REFMT
+;(action "readlink -f ./../../src/refmt/refmt_impl.exe")
+
+;  (enabled_if
+;  (< %{ocaml_version} "4.08"))
+
+; (applies_to :whole_subtree)
+
+; setenv LD_LIBRARY_PATH foo (run ${<})
+
+; (env (_
+; (binaries merlin-wrapper)
+; (env-vars
+; (MERLIN merlin-wrapper)
+; (OCAMLC ocamlc))))
+;
+; (cram
+; (package merlin)
+; (applies_to :whole_subtree)
+; (deps
+; %{bin:merlin-wrapper}
+; %{bin:ocamlmerlin-server}
+; %{bin:ocamlmerlin}
+; %{bin:dot-merlin-reader}))
