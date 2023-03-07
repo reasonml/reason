@@ -7577,9 +7577,10 @@ let printer = object(self:'self)
     | Pmod_structure _ -> self#simple_module_expr x
 
   method structure structureItems =
-    (* We print differently top level extensions than other extensions
-    in structure_items or expressions. In this case we print it with %%name.
-    That's why this fn is needed. *)
+    (* We don't have any way to know if an extension is placed at the top level by the parsetree
+    while there's a difference syntactically (% for structure_items/expressons and %% for top_level).
+    This small fn detects this particular case (structure > structure_item > extension > value) and 
+    prints with double % *)
     let structure_item item =
       match item.pstr_desc with
       | Pstr_extension ((extension, PStr [item]), attrs) ->
