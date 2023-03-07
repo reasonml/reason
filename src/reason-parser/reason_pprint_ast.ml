@@ -6552,7 +6552,7 @@ let printer = object(self:'self)
     | "bs.obj" -> self#formatBsObjExtensionSugar p
     | _ -> (self#payload "%" s p)
 
-  method item_extension (s, e) = (self#payload "%" s e)
+  method item_extension (s, e) = (self#payload "%%" s e)
 
   (* [@ ...] Simple attributes *)
   method attribute = function
