@@ -4,7 +4,7 @@ set -eu
 
 unameOut="$(uname -s)"
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 case "${unameOut}" in
     MINGW*)     REFMT_PATH=$(cygpath --mixed --absolute $(which refmt.exe));;
