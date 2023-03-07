@@ -141,4 +141,4 @@ Format basics
   let better = foo => !foo ? 42 : not(41, 2);
 
 Type-check basics
-  $ ../run-ocamlc.sh -o print.out -impl formatted.re
+  $ ../run-ocamlc.sh -intf-suffix .rei -impl formatted.re
