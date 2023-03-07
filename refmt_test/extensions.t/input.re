@@ -350,6 +350,13 @@ let () = {
 
 let f = [%bs.raw x => x];
 
+/* Extensions can have % or %% at the top-level.
+While only % at expression/structure-item level */
+
+[%bs.raw x => x];
+
+[%%bs.raw x => x];
+
 let work = () => {
   open Syntax;
   let%bind name = x;
