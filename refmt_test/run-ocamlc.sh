@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -eu
-
 unameOut="$(uname -s)"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
