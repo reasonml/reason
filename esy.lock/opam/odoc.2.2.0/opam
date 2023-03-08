@@ -23,11 +23,11 @@ delimited with `(** ... *)`, and outputs HTML.
 """
 
 depends: [
-  "odoc-parser" {>= "0.9.0" & < "2.0.0"}
+  "odoc-parser" {>= "2.0.0"}
   "astring"
   "cmdliner" {>= "1.0.0"}
   "cppo" {build & >= "1.1.0"}
-  "dune" {>= "2.9.1"}
+  "dune" {>= "3.0.2"}
   "fpath"
   "ocaml" {>= "4.02.0"}
   "result"
@@ -41,9 +41,10 @@ depends: [
 
   "ppx_expect" {with-test}
   "bos" {with-test}
+  "crunch" {with-test}
 
-  "bisect_ppx" {dev & > "2.5.0"}
-  ("ocaml" {< "4.03.0" & dev} | "mdx" {dev})
+  ("ocaml" {< "4.07.0" & with-test} | "bisect_ppx" {with-test & > "2.5.0"})
+  ("ocaml" {< "4.03.0" & with-test} | "mdx" {with-test})
 ]
 
 build: [
@@ -51,10 +52,10 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 url {
-  src: "https://github.com/ocaml/odoc/releases/download/2.1.1/odoc-2.1.1.tbz"
+  src: "https://github.com/ocaml/odoc/releases/download/2.2.0/odoc-2.2.0.tbz"
   checksum: [
-    "sha256=f574dbd28cd0fc3a2b95525c4bb95ddf6d1f6408bb4fe12157fa537884f987fd"
-    "sha512=1c545c281a7022a167f028fff8cec6fb3f2f82da0881431be74e7a4281c5353ed83bfbdb4d9d9e08af6755dbe3505c052c5e5b58cdeb08c57aed5e89c0f15e91"
+    "sha256=6818c971fc0c3eed9d3d143389f80739b1618af70b9fdb443b35bd7f0121740c"
+    "sha512=9f8fc2ee6b25629474e8aa69dd460becab9277261578af0f7b97f7f779cc5f1056d1b5f14ab583b9b94ea097e5df2d6e35040f2a4887021209705486f9d44a22"
   ]
 }
-x-commit-hash: "f556f10aa67f80e83d1e3e66c4b478e8efe4e18d"
+x-commit-hash: "103dac4c370aa2ad5aca7ba54f02f8e06adb941b"

@@ -1,22 +1,6 @@
 opam-version: "2.0"
-synopsis: """The transitory OCaml software packager"""
-maintainer: ["Daniel Bünzli <daniel.buenzl i@erratique.ch>"]
-authors: ["The topkg programmers"]
-homepage: "https://erratique.ch/software/topkg"
-doc: "https://erratique.ch/software/topkg/doc"
-dev-repo: "git+https://erratique.ch/repos/topkg.git"
-bug-reports: "https://github.com/dbuenzli/topkg/issues"
-license: ["ISC"]
-tags: ["packaging" "ocamlbuild" "org:erratique"]
-depends: ["ocaml" {>= "4.05.0"}
-          "ocamlfind" {build & >= "1.6.1"}
-          "ocamlbuild"]
-build: [["ocaml" "pkg/pkg.ml" "build" "--pkg-name" name
-                                      "--dev-pkg" "%{dev}%"]]
-url {
-  src: "https://erratique.ch/software/topkg/releases/topkg-1.0.5.tbz"
-  checksum: "sha512=9450e9139209aacd8ddb4ba18e4225770837e526a52a56d94fd5c9c4c9941e83e0e7102e2292b440104f4c338fabab47cdd6bb51d69b41cc92cc7a551e6fefab"}
-description: """
+synopsis: "The transitory OCaml software packager"
+description: """\
 Topkg is a packager for distributing OCaml software. It provides an
 API to describe the files a package installs in a given build
 configuration and to specify information about the package's
@@ -42,3 +26,22 @@ Topkg-care is distributed under the ISC license it depends on
 [webbrowser]: http://erratique.ch/software/webbrowser
 
 Home page: http://erratique.ch/software/topkg"""
+maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
+authors: "The topkg programmers"
+license: "ISC"
+tags: ["packaging" "ocamlbuild" "org:erratique"]
+homepage: "https://erratique.ch/software/topkg"
+doc: "https://erratique.ch/software/topkg/doc"
+bug-reports: "https://github.com/dbuenzli/topkg/issues"
+depends: [
+  "ocaml" {>= "4.05.0"}
+  "ocamlfind" {build & >= "1.6.1"}
+  "ocamlbuild"
+]
+build: ["ocaml" "pkg/pkg.ml" "build" "--pkg-name" name "--dev-pkg" "%{dev}%"]
+dev-repo: "git+https://erratique.ch/repos/topkg.git"
+url {
+  src: "https://erratique.ch/software/topkg/releases/topkg-1.0.7.tbz"
+  checksum:
+    "sha512=09e59f1759bf4db8471f02d0aefd8db602b44932a291c05c312b1423796e7a15d1598d3c62a0cec7f083eff8e410fac09363533dc4bd2120914bb9664efea535"
+}

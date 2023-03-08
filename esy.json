@@ -5,11 +5,11 @@
   "license": "MIT",
   "version": "3.8.1",
   "dependencies": {
-    "@opam/dune": "2.9.3",
+    "@opam/dune": "3.6.2",
     "@opam/fix": "*",
     "@opam/menhir": " >= 20180523.0.0",
     "@opam/merlin-extend": " >= 0.6",
-    "@opam/ocamlfind": "*",
+    "@opam/ocamlfind": "1.9.5",
     "@opam/ppx_derivers": "< 2.0.0",
     "@opam/result": "*",
     "@opam/utop": " >= 1.17.0",

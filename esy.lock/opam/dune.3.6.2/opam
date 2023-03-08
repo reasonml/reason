@@ -29,29 +29,28 @@ conflicts: [
   "merlin" {< "3.4.0"}
   "ocaml-lsp-server" {< "1.3.0"}
   "dune-configurator" {< "2.3.0"}
-  "odoc" {< "1.3.0"}
+  "odoc" {< "2.0.1"}
   "dune-release" {< "1.3.0"}
   "js_of_ocaml-compiler" {< "3.6.0"}
   "jbuilder" {= "transition"}
 ]
 dev-repo: "git+https://github.com/ocaml/dune.git"
 build: [
-  ["ocaml" "bootstrap.ml" "-j" jobs]
-  ["./dune.exe" "build" "-p" name "--profile" "dune-bootstrap" "-j" jobs]
+  ["ocaml" "boot/bootstrap.ml" "-j" jobs]
+  ["./_boot/dune.exe" "build" "dune.install" "--release" "--profile" "dune-bootstrap" "-j" jobs]
 ]
 depends: [
   # Please keep the lower bound in sync with .github/workflows/workflow.yml,
   # dune-project and min_ocaml_version in bootstrap.ml
-  ("ocaml" {>= "4.08" & < "5.0"} | ("ocaml" {< "4.08~~"} & "ocamlfind-secondary"))
+  ("ocaml" {>= "4.08"} | ("ocaml" {< "4.08~~"} & "ocamlfind-secondary"))
   "base-unix"
   "base-threads"
 ]
 url {
-  src:
-    "https://github.com/ocaml/dune/releases/download/2.9.3/dune-site-2.9.3.tbz"
+  src: "https://github.com/ocaml/dune/releases/download/3.6.2/dune-3.6.2.tbz"
   checksum: [
-    "sha256=3e65ec73ab2c80d50d4ffd6c46cbfb22eacd0e5587a4be8af8ae69547d5f88d6"
-    "sha512=04b48501ac16c3608e3b6bfbdbabf810df0fb844ea3b7d25ba50f03b9d6cb1d2c933cf747d694029d82a9777a774e48e5c38ab010fe53ce1eae367da0ed04d6d"
+    "sha256=b6d4ab848efb04aa2a325d0015d32ed4414ed7130ec7aa12f98158eff445cf3c"
+    "sha512=d0dd69ada2f1583319a2d6f679b8d49998059117c3258805ee69ae3e71d47bfab7a9c646f19b5fc43a6ccdef934eb87de5bb81205fcd60968bed8bf1790cf0a3"
   ]
 }
-x-commit-hash: "dea03875affccc0620e902d28fed8d6b4351e112"
+x-commit-hash: "c939c2b0f7a470cedd189988c61cd307a3cedace"
