@@ -1,5 +1,5 @@
 Format trailing
-  $ refmt_impl --print-width 50 ./input.re
+  $ refmt_impl ./input.re
   let x = {"obj": obj};
   
   let x = {"key": key, "keyTwo": keyTwo};

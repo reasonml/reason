@@ -1,5 +1,5 @@
 Format JSX functors
-  $ refmt_impl --print-width 50 ./input.re
+  $ refmt_impl ./input.re
   type elt =
     | Text(string)
     | Group(list(elt));

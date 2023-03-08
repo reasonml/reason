@@ -1,5 +1,5 @@
 Format whitespace in .rei files
-  $ refmt_impl --print-width 50 ./input.rei
+  $ refmt_impl ./input.rei
   /** Interleave whitespace intelligently in signatures */
   
   /* a */

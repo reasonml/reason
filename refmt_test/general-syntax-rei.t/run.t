@@ -1,5 +1,5 @@
 Format general interface syntax
-  $ refmt_impl --print-width 50 ./input.rei
+  $ refmt_impl ./input.rei
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
   
   /**

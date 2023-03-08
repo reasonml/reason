@@ -1,5 +1,5 @@
 Format fixme
-  $ refmt_impl --print-width 50 ./input.re
+  $ refmt_impl ./input.re
   /**
    * Problem: In thise example, the comment should have a space after it.
    */

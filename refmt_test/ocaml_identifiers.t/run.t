@@ -1,5 +1,5 @@
 Format OCaml identifiers file
-  $ refmt_impl --print-width 50 ./input.ml --print re
+  $ refmt_impl ./input.ml --print re
   /* Type names (supported with PR#2342) */
   module T = {
     type pub_ = unit;
