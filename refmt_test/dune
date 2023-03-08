@@ -1,9 +1,9 @@
-(cram
- (deps %{bin:ocamlc} %{bin:refmt_impl}))
-
 (env
  (_
   (env-vars
    (REFMT_PRINT_WIDTH 50))
   (binaries
    (%{project_root}/src/refmt/refmt_impl.exe as refmt_impl))))
+
+(cram
+ (deps %{bin:ocamlc} %{bin:refmt_impl}))
