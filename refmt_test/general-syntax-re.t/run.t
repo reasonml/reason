@@ -1,5 +1,5 @@
 Format general implementation syntax
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
   
   [@autoFormat

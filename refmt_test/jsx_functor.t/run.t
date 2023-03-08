@@ -1,5 +1,5 @@
 Format JSX functors
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   type elt =
     | Text(string)
     | Group(list(elt));

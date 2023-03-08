@@ -25,6 +25,7 @@
     "5. Copy ./scripts/esy-prepublish.js in to your repo and change packages= to your set of packages."
   ],
   "esy": {
+    "buildsInSource": true,
     "build": [ [ "dune", "build", "-p", "reason,rtop" ] ],
     "install": [
       [ "esy-installer", "reason.install" ],
@@ -37,7 +38,7 @@
       "SYSTEM_PULLREQUEST_MERGEDAT": { "scope": "global", "val": "d" }
     },
     "release": {
-      "bin": { "rtop": "rtop", "refmt": "refmt" },
+      "bin": ["rtop", "refmt"],
       "includePackages": [
         "root", "@opam/base-bytes", "@opam/base-threads", "@opam/base-unix",
         "@opam/camomile", "@opam/lambda-term", "@opam/lwt", "@opam/lwt_log",

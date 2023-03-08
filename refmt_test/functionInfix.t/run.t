@@ -1,5 +1,5 @@
 Format function infix
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   let entries = ref([]);
   
   let all = ref(0);

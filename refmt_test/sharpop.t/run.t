@@ -1,5 +1,5 @@
 Format sharp operator
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   foo #= bar[0];
   
   foo##bar[0] = 3;

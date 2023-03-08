@@ -1,5 +1,5 @@
 Format type declarations
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   /* === test wrapping for arrows === */
   type foo = option(int => int);
   type foo = option((int, int) => int);

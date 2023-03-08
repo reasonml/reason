@@ -1,5 +1,5 @@
 Format externals
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   /**
    * Tests external formatting.
    */

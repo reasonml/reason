@@ -1,5 +1,5 @@
 Format assertions
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   switch (true) {
   | true => ()
   | false => assert(false)

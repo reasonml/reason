@@ -1,5 +1,5 @@
 Format bucklescript
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   bla #= 10;
   
   bla #= Some(10);

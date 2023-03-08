@@ -1,5 +1,5 @@
 Format whitespace in .re files
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   module Test = {
     open Belt;
     open React;

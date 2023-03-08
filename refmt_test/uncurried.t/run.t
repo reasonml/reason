@@ -1,5 +1,5 @@
 Format uncurried
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   f(.);
   
   [@attr]

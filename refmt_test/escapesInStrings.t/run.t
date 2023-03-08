@@ -1,5 +1,5 @@
 Format escapes in strings
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
   
   /*

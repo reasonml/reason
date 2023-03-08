@@ -1,5 +1,5 @@
 Format pipe first (->)
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   foo->f->g->h;
   
   bar->f->g->h;

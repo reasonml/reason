@@ -1,5 +1,5 @@
 Format line comments
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   3; // -
   3; //-
   

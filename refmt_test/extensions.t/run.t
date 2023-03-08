@@ -1,5 +1,5 @@
 Format extensions
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   /* Extension sugar */
   
   [%extend open M];

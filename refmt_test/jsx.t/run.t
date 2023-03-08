@@ -1,5 +1,5 @@
 Format JSX
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   let x =
     <Window
       style={

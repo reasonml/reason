@@ -1,5 +1,5 @@
 Format fixme
-  $ refmt_impl ./input.re
+  $ refmt ./input.re
   /**
    * Problem: In thise example, the comment should have a space after it.
    */
