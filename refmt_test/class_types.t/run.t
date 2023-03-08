@@ -1,5 +1,5 @@
 Format class and class type
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt_impl --print-width 50 ./input.re
   class type _module ('provider_impl) = {};
   type t;
   class type bzz = {

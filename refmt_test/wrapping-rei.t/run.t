@@ -1,5 +1,5 @@
 Format wrapping in .rei files
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.rei
+  $ refmt_impl --print-width 50 ./input.rei
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
   
   let named: (~a: int, ~b: int) => int;

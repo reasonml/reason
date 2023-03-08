@@ -1,5 +1,5 @@
 Format type declarations
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt_impl --print-width 50 ./input.re
   /* === test wrapping for arrows === */
   type foo = option(int => int);
   type foo = option((int, int) => int);

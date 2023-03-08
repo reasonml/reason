@@ -1,5 +1,5 @@
 Format bucklescript
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt_impl --print-width 50 ./input.re
   bla #= 10;
   
   bla #= Some(10);
