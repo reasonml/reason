@@ -1,3 +1,3 @@
 Ensures refmt is in the right place
-  $ refmt test.re --version
+  $ refmt --version
   Reason 3.7.0 @ b66ed1b
