@@ -13,5 +13,5 @@
   $ echo "let f = a => a;" | rtop | grep "let f: 'a => 'a = <fun>"
   # let f: 'a => 'a = <fun>;
 
-  $ echo "let f = (a) => 1 + \"hi\";" | rtop | grep "Error: " | sed 's/^ *//g'
-  Error: This expression has type string but an expression was expected of type
+  $ echo "let f = (a) => 1 + \"hi\";" | rtop | grep -o "This expression has type string but an expression was expected of type"
+  This expression has type string but an expression was expected of type

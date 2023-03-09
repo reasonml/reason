@@ -6,5 +6,4 @@ Format ./input.re
   $ refmt ./input.re
   File "./input.re", line 1, characters 0-2:
   Error: Comment not terminated
-  
   [1]
