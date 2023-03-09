@@ -4,4 +4,4 @@
    (REFMT_PRINT_WIDTH 50))))
 
 (cram
- (deps %{bin:ocamlc} %{bin:refmt} %{bin:testOprint}))
+ (deps %{bin:ocamlc} %{bin:refmt} %{bin:testOprint} %{bin:rtop}))
