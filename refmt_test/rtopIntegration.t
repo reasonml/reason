@@ -10,8 +10,8 @@
 
 # Given the above, we're gonna test that utop integration works by piping code
 # into it and asserting the existence of some output.
-  $ echo "let f = a => a;" | rtop | grep "let f: 'a => 'a = <fun>"
-  # let f: 'a => 'a = <fun>;
+  $ echo "let f = a => a;" | rtop | grep -o "let f: 'a => 'a = <fun>;"
+  let f: 'a => 'a = <fun>;
 
   $ echo "let f = (a) => 1 + \"hi\";" | rtop | grep -o "This expression has type string but an expression was expected of type"
   This expression has type string but an expression was expected of type
