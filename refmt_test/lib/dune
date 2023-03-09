@@ -1,0 +1,11 @@
+(rule
+ (targets typedtreePrinter.ml)
+ (deps typedtreePrinter.cppo.ml)
+ (action
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
+
+(executable
+ (public_name typedtree_printer)
+ (name typedtreePrinter)
+ (package rtop)
+ (libraries reason))

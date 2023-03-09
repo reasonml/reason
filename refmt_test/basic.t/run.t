@@ -1,5 +1,5 @@
 Run oprint
-  $ cat ./input.re | testOprint
+  $ cat ./input.re | typedtree_printer
   let x1: unit => int;
   let x2: 'a => int;
   let x3: (int, 'a) => int;
