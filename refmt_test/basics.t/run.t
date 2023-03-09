@@ -1,8 +1,11 @@
+Format basic
+  $ refmt --print re ./input.re > ./formatted.re
+
 Type-check basics
-  $ refmt --version
-  Reason 3.7.0 @ b66ed1b
+  $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
 
-  $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl input.re
+Format the formatted file back
+  $ refmt --print re ./formatted.re > ./formatted_back.re
 
-$ refmt --heuristics-file $INPUT/arity.txt  --print re $INPUT/$FILE 2>&1 > $OUTPUT/$REFILE
-$ refmt  --print re $OUTPUT/$FILE 2>&1 > $OUTPUT/$FILE.formatted
+Ensure idempotency: first format and second format are the same
+  $ diff formatted.re formatted_back.re
