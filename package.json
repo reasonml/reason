@@ -16,9 +16,8 @@
 	],
 	"license": "MIT",
 	"homepage": "https://github.com/reasonml/reason",
-	"dependencies": {},
-	"devDependencies": {
-		"bs-platform": "1.9.3"
+	"dependencies": {
+		"esy": "^0.6.12"
 	},
 	"scripts": {
 		"prepublishOnly": "cp .dune-for-prepublish dune && esy @jsoo && ./js/closurefy.sh"
