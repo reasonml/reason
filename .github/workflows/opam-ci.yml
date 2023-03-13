@@ -1,0 +1,82 @@
+name: opam CI
+
+on:
+  pull_request:
+  push:
+   branches:
+     - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+        ocaml-compiler:
+          # Please keep the list in sync with the minimal version of OCaml in
+          # esy.json, reason.esy/reason.opam and rtop.esy/rtop.opam.
+          - 4.06.x # We support 4.06 because is the one that is used in BuckleScript / ReScript v9
+          - 4.10.x
+          - 4.12.x
+          - 4.14.x
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          opam-pin: false
+
+      - name: Load opam cache when not Windows
+        if: runner.os != 'Windows'
+        id: opam-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: ~/.opam
+          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+      
+      - name: Load opam cache when Windows
+        if: runner.os == 'Windows'
+        id: opam-cache-windows
+        uses: actions/cache/restore@v3
+        with:
+          path: _opam
+          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+
+      - name: Install dependencies
+        run: opam install . --deps-only
+
+      - name: Build reason and rtop
+        run: opam exec -- dune build -p reason,rtop
+
+      - name: Test
+        run: opam exec -- dune runtest
+
+      - name: Save cache when not Windows
+        uses: actions/cache/save@v3
+        if: steps.opam-cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
+        with:
+          path: ~/.opam
+          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+
+      - name: Save cache when Windows
+        uses: actions/cache/save@v3
+        if: steps.opam-cache-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'
+        with:
+          path: _opam
+          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+
