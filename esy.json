@@ -5,11 +5,12 @@
   "license": "MIT",
   "version": "3.8.1",
   "dependencies": {
+    "@opam/pprint": "*",
     "@opam/dune": "2.9.3",
     "@opam/fix": "*",
     "@opam/menhir": " >= 20180523.0.0",
     "@opam/merlin-extend": " >= 0.6",
-    "@opam/ocamlfind": "*",
+    "@opam/ocamlfind": "1.9.1",
     "@opam/ppx_derivers": "< 2.0.0",
     "@opam/result": "*",
     "@opam/utop": " >= 1.17.0",
@@ -43,7 +44,7 @@
         "@opam/camomile", "@opam/lambda-term", "@opam/lwt", "@opam/lwt_log",
         "@opam/lwt_react", "@opam/menhir", "@opam/mmap",
         "@opam/ocplib-endian", "@opam/ocamlfind", "@opam/ppx_derivers",
-        "@opam/react", "@opam/result", "@opam/seq", "@opam/charInfo_width",
+        "@opam/react", "@opam/result", "@opam/seq", "@opam/charInfo_width", "@opam/pprint",
         "@opam/utop", "@opam/zed", "ocaml"
       ],
       "rewritePrefix": true

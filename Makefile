@@ -90,3 +90,7 @@ all-supported-ocaml-versions:
 	dune build @install @runtest --root .
 
 .PHONY: all-supported-ocaml-versions
+
+sandertest: 
+	ocamlformat src/reason-parser/reason_pprint_ast_pprint.ml -i
+	esy x refmt --parse re ./formatTest/typeCheckedTests/input/patternMatching.re --print re > formatTest/typeCheckedTests/expected_output/patternMatching2.re

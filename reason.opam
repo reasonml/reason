@@ -17,6 +17,7 @@ depends: [
   "menhir"        {>= "20180523"}
   "merlin-extend" {>= "0.6"}
   "fix"
+  "pprint"
   "result"
   "ppx_derivers"
 ]

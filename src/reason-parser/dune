@@ -138,6 +138,7 @@
   reason_toolchain
   reason_config
   reason_pprint_ast
+  reason_pprint_ast_pprint
   reason_errors
   reason_parser_def
   reason_parser
@@ -151,4 +152,4 @@
   reason_parser_explain_raw
   reason_parser_explain
   reason_parser_recover)
- (libraries reason.ocaml-migrate-parsetree menhirLib reason.easy_format))
+ (libraries reason.ocaml-migrate-parsetree menhirLib reason.easy_format pprint))
