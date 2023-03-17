@@ -41,18 +41,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'npm'
 
       - name: Install esy
-        run: npm install --prefer-offline --audit false
-
-      - name: Expose esy as binary
-        if: runner.os == 'Windows'
-        run: echo "node_modules\.bin" >> $GITHUB_PATH
-
-      - name: Expose esy as binary
-        if: runner.os != 'Windows'
-        run: echo "node_modules/.bin" >> $GITHUB_PATH
+        run: npm install -g esy@0.6.12
 
       - name: Restore global cache (~/.esy/source)
         id: global-cache
