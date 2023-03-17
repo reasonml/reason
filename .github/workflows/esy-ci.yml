@@ -54,16 +54,12 @@ jobs:
         if: runner.os != 'Windows'
         run: echo "node_modules/.bin" >> $GITHUB_PATH
 
-
       - name: Restore global cache (~/.esy/source)
         id: global-cache
         uses: actions/cache/restore@v3
         with:
           path: ~/.esy/source
           key: esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
-
-      - name: Install dependencies
-        run: esy install
 
       - name: Print esy cache
         id: print_esy_cache
@@ -84,6 +80,9 @@ jobs:
         run: |
           esy import-dependencies _export
           rm -rf _export
+
+      - name: Install dependencies
+        run: esy install
 
       - name: Build dependencies
         run: esy build-dependencies
