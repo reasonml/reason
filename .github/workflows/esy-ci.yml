@@ -66,14 +66,14 @@ jobs:
           key: esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
           restore-keys: esy-build-${{ matrix.os }}-
 
+      - name: Install dependencies
+        run: esy install
+
       - name: Import dependencies
         if: steps.deps-cache.outputs.cache-hit == 'true'
         run: |
           esy import-dependencies _export
           rm -rf _export
-
-      - name: Install dependencies
-        run: esy install
 
       - name: Build dependencies
         run: esy build-dependencies
