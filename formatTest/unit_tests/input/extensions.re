@@ -348,6 +348,8 @@ let () = {
   something_else();
 };
 
+let f = [%bs.raw x => x];
+
 [%bs.raw x => x];
 
 let work = () => {
