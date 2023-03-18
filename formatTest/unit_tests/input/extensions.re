@@ -350,6 +350,8 @@ let () = {
 
 let f = [%bs.raw x => x];
 
+[%bs.raw x => x];
+
 let work = () => {
   open Syntax;
   let%bind name = x;
