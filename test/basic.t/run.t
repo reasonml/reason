@@ -1,4 +1,4 @@
-Run oprint
+See the typed tree from ./input.re
   $ cat ./input.re | typedtree_printer
   let x1: unit => int;
   let x2: 'a => int;
