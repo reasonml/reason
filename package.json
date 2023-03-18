@@ -16,7 +16,6 @@
 	],
 	"license": "MIT",
 	"homepage": "https://github.com/reasonml/reason",
-	"dependencies": {},
 	"devDependencies": {
 		"bs-platform": "1.9.3"
 	},
