@@ -348,16 +348,29 @@ let () = {
   something_else();
 };
 
-[%bs.raw x => x];
-
 let work = () => {
   open Syntax;
   let%bind name = x;
   name;
 };
 
-/** header */
-[%raw "console.log(42)"];
+/* Extensions can have % or %% at the top-level */
+
+[%bs.raw x => x];
+
+[%%bs.raw x => x];
+
+[%%randomExtension "with string payload"];
+
+[%%randomExtension { with_obj: 33 }];
+
+[%randomExtension { with_obj: 33 }];
+
+/** with a comment on top */
+[%%raw "console.log(42)"];
+
+/* extensions live under expresions with only one % */
+let f = [%bs.raw x => x];
 
 /* https://github.com/facebook/reason/issues/2032 */
 let predicate =

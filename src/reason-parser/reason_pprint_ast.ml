@@ -7576,29 +7576,42 @@ let printer = object(self:'self)
     | Pmod_constraint _
     | Pmod_structure _ -> self#simple_module_expr x
 
-
   method structure structureItems =
+    (* We don't have any way to know if an extension is placed at the top level by the parsetree
+    while there's a difference syntactically (% for structure_items/expressons and %% for top_level).
+    This small fn detects this particular case (structure > structure_item > extension > value) and 
+    prints with double % *)
+    let structure_item item =
+      match item.pstr_desc with
+      | Pstr_extension ((extension, PStr [item]), attrs) ->
+          begin match item.pstr_desc with
+            (* In case of a value, the extension gets inlined `let%private a = 1` *)
+            | Pstr_value (rf, vb_list) -> self#bindings ~extension (rf, vb_list)
+            | _ -> self#attach_std_item_attrs attrs (self#payload "%%" extension (PStr [item]))
+          end
+      | _ -> self#structure_item item
+    in
     match structureItems with
     | [] -> atom ""
-    | first::_ as structureItems ->
+    | first :: _ as structureItems ->
       let last = match (List.rev structureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.pstr_loc.loc_start in
       let loc_end = last.pstr_loc.loc_end in
       let items =
         groupAndPrint
-          ~xf:self#structure_item
+          ~xf:structure_item
           ~getLoc:(fun x -> x.pstr_loc)
           ~comments:self#comments
           structureItems
       in
       source_map ~loc:{loc_start; loc_end; loc_ghost = false}
         (makeList
-           ~postSpace:true
-           ~break:Always_rec
-           ~indent:0
-           ~inline:(true, false)
-           ~sep:(SepFinal (";", ";"))
-           items)
+          ~postSpace:true
+          ~break:Always_rec
+          ~indent:0
+          ~inline:(true, false)
+          ~sep:(SepFinal (";", ";"))
+          items)
 
   (*
      How do modules become parsed?
