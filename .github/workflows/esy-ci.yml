@@ -71,6 +71,8 @@ jobs:
 
       - name: Import dependencies
         if: steps.deps-cache.outputs.cache-hit == 'true'
+        # Don't crash the run if esy cache import fails - mostly happens on Windows
+        continue-on-error: true
         run: |
           esy import-dependencies _export
           rm -rf _export
