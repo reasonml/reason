@@ -3,10 +3,10 @@ Format basic
 
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
-  File "formatted.re", line 460, characters 23-26:
-  460 |   <Optional1 required=?zzz />;
-                               ^^^
-  Warning 43 [nonoptional-label]: the label required is not optional.
+  File "formatted.re", line 503, characters 4-10:
+  503 |     concat;
+            ^^^^^^
+  Warning 10: this expression should have type unit.
 
 Format the formatted file back
   $ refmt --print re ./formatted.re > ./formatted_back.re
