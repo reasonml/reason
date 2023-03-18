@@ -21,11 +21,15 @@ node_modules
 /bspacks/build/
 /bspacks/ocaml-migrate-parsetree/
 /bspacks/closure-compiler/
+
 # gitignored, but not npmignored. Published by `npm run prepublish`
 refmt.js
 refmt.map
+.merlin
+
+# Esy
 _esy
 _esybuild
 _esyinstall
-.merlin
 _release
+_export/
