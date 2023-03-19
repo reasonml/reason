@@ -1,7 +1,0 @@
-(cram
- (enabled_if
-  (<= %{ocaml_version} 4.04.0)))
-
-(cram
- (enabled_if
-  (= %{ocaml_version} 4.04.0)))
