@@ -28,7 +28,6 @@ jobs:
         ocaml-compiler:
           # Please keep the list in sync with the minimal version of OCaml in
           # esy.json, reason.esy/reason.opam and rtop.esy/rtop.opam.
-          - 4.03.x
           - 4.06.x # We support 4.06 because is the one that is used in BuckleScript / ReScript v9
           - 4.10.x
           - 4.12.x
