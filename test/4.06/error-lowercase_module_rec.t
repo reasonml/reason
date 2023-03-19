@@ -4,7 +4,6 @@ Print error for lowercase module
   > EOF
 
   $ refmt ./input.re
-  File "./input.re", line 1, characters 0-2:
+  File "./input.re", line 1, characters 11-20:
   Error: Module names must start with an uppercase letter.
-  
   [1]

@@ -4,6 +4,6 @@ Force error for try catch
   > EOF
 
   $ refmt ./input.re
+  File "./input.re", line 1, characters 9-10:
   Error: Syntax error
-  
   [1]
