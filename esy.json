@@ -9,7 +9,7 @@
     "@opam/fix": "*",
     "@opam/menhir": " >= 20180523.0.0",
     "@opam/merlin-extend": " >= 0.6",
-    "@opam/ocamlfind": "1.9.5",
+    "@opam/ocamlfind": "1.9.6",
     "@opam/ppx_derivers": "< 2.0.0",
     "@opam/result": "*",
     "@opam/utop": " >= 1.17.0",
