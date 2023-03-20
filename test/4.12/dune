@@ -7,7 +7,8 @@
 (cram
  ; Disable these tests in windows since their output don't match, and we
  ; want to ensure the output works in other systems
- (applies_to type-jsx reasonComments-re)
+ (applies_to type-jsx.t reasonComments-re.t)
  (enabled_if
-  (not
-   (= %{system} "windows"))))
+  (or
+   (= %{system} "mac")
+   (= %{system} "linux"))))
