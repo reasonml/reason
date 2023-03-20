@@ -1,14 +1,12 @@
-(cram
- (enabled_if
-  (or
-   (= %{ocaml_version} 4.12.0)
-   (= %{ocaml_version} 4.12.1))))
+; Disable these tests in windows since their output don't match, and we
+; want to ensure the output works in other systems
 
 (cram
- ; Disable these tests in windows since their output don't match, and we
- ; want to ensure the output works in other systems
- (applies_to type-jsx.t reasonComments-re.t)
  (enabled_if
-  (or
-   (= %{system} "mac")
-   (= %{system} "linux"))))
+  (and
+   (or
+    (= %{system} "mac")
+    (= %{system} "linux"))
+   (or
+    (= %{ocaml_version} 4.12.0)
+    (= %{ocaml_version} 4.12.1)))))

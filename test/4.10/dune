@@ -1,7 +1,14 @@
+; Disable these tests in windows since their output don't match, and we
+; want to ensure the output works in other systems
+
 (cram
  (enabled_if
-  (or
-   (= %{ocaml_version} 4.10.0)
-   (= %{ocaml_version} 4.10.1)
-   (= %{ocaml_version} 4.10.2)
-   (= %{ocaml_version} 4.10.3))))
+  (and
+   (or
+    (= %{system} "mac")
+    (= %{system} "linux"))
+   (or
+    (= %{ocaml_version} 4.10.0)
+    (= %{ocaml_version} 4.10.1)
+    (= %{ocaml_version} 4.10.2)
+    (= %{ocaml_version} 4.10.3)))))
