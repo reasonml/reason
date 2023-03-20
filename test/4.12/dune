@@ -3,3 +3,11 @@
   (or
    (= %{ocaml_version} 4.12.0)
    (= %{ocaml_version} 4.12.1))))
+
+(cram
+ ; Disable these tests in windows since their output don't match, and we
+ ; want to ensure the output works in other systems
+ (applies_to type-jsx reasonComments-re)
+ (enabled_if
+  (not
+   (= %{system} "windows"))))
