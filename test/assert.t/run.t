@@ -1,5 +1,5 @@
 Format assertions
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt ./input.re
   switch (true) {
   | true => ()
   | false => assert(false)

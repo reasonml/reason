@@ -1,5 +1,5 @@
 Format line comments
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt ./input.re
   3; // -
   3; //-
   

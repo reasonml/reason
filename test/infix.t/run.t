@@ -1,5 +1,5 @@
 Format infix operators
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt ./input.re
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
   
   /* - A good way to test if formatting of infix operators groups precedences

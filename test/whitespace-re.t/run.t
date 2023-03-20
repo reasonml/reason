@@ -1,5 +1,5 @@
 Format whitespace in .re files
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt ./input.re
   module Test = {
     open Belt;
     open React;

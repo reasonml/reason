@@ -66,7 +66,7 @@ jobs:
       - template: utils/create-docs.yml
       - script: "esy test"
         displayName: "Test command"
-      - script: "esy b dune runtest -p reason"
+      - script: "esy b dune runtest -p reason,rtop"
         displayName: "Cram tests command"
       - powershell: esy x env
         continueOnError: true

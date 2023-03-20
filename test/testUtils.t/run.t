@@ -1,5 +1,5 @@
 Format test utils
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt ./input.re
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
   
   let printSection = s => {

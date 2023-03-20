@@ -1,5 +1,5 @@
 Format pipe first (->)
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt ./input.re
   foo->f->g->h;
   
   bar->f->g->h;

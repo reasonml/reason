@@ -1,5 +1,5 @@
 Format extensions
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt ./input.re
   /* Extension sugar */
   
   [%extend open M];

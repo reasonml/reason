@@ -1,5 +1,5 @@
 Format bigarray
-  $ ../../src/refmt/refmt_impl.exe --print-width 50 ./input.re
+  $ refmt ./input.re
   my_big_array3.{
     reallyLongStringThatWillDefinitelyBreakLine
   };
