@@ -244,8 +244,8 @@ let ((nestedAnnotation: int) : int) = 0;
 let ((A(i) | B(i): aOrB)) = A(0);
 
 
-type test_foo = 
-  | VariantType1 
+type test_foo =
+  | VariantType1
   | VariantType2
 
 let branch_with_variant_and_annotation =
