@@ -3,9 +3,10 @@
   "notes":
     "This is just the dev package config (also built as globally installable reason-cli). See ./refmt.json ./rtop.json for individual release package configs.",
   "license": "MIT",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "dependencies": {
     "@opam/dune": "3.6.2",
+    "@opam/dune-build-info": "3.7.0",
     "@opam/fix": "*",
     "@opam/menhir": " >= 20180523.0.0",
     "@opam/merlin-extend": " >= 0.6",

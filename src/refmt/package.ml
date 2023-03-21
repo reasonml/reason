@@ -1,4 +1,7 @@
+let version = (match Build_info.V1.version () with
+  | None -> "n/a"
+  | Some v -> Build_info.V1.Version.to_string v)
 
-let version = "3.7.0"
-let git_version = "b66ed1b87c2543ed950f619f0e1208e010968d12"
-let git_short_version = "b66ed1b"
+let git_version = Git_commit.version
+
+let git_short_version = Git_commit.short_version
