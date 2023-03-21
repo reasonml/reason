@@ -11,10 +11,11 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml"         {>= "4.03" & < "5.1"}
-  "dune"          {>= "2.3"}
-  "ocamlfind"     {build}
-  "menhir"        {>= "20180523"}
+  "ocaml" {>= "4.03" & < "5.1"}
+  "dune" {>= "2.9"}
+  "dune-build-info" {> "2.9"}
+  "ocamlfind" {build}
+  "menhir" {>= "20180523"}
   "merlin-extend" {>= "0.6"}
   "fix"
   "result"
