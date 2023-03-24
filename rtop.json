@@ -10,7 +10,7 @@
     "@esy-ocaml/substs": "^0.0.1",
     "@opam/ocamlfind": "*",
     "@opam/result": "*",
-    "@opam/dune": "2.9.3",
+    "@opam/dune": ">= 3 < 4",
     "@opam/reason": "^3.8.0",
     "@opam/utop": " >= 1.17.0",
     "ocaml": ">= 4.2.0 < 5.1.0"

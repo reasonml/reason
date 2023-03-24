@@ -1,0 +1,48 @@
+opam-version: "2.0"
+synopsis: "A library manager for OCaml"
+description: """
+Findlib is a library manager for OCaml. It provides a convention how
+to store libraries, and a file format ("META") to describe the
+properties of libraries. There is also a tool (ocamlfind) for
+interpreting the META files, so that it is very easy to use libraries
+in programs and scripts.
+"""
+license: "MIT"
+maintainer: "Thomas Gazagnaire <thomas@gazagnaire.org>"
+authors: "Gerd Stolpmann <gerd@gerd-stolpmann.de>"
+homepage: "http://projects.camlcity.org/projects/findlib.html"
+bug-reports: "https://github.com/ocaml/ocamlfind/issues"
+depends: [
+  "ocaml" {>= "3.08.0"}
+]
+depopts: ["graphics"]
+build: [
+  [
+    "./configure"
+    "-bindir" bin
+    "-sitelib" lib
+    "-mandir" man
+    "-config" "%{lib}%/findlib.conf"
+    "-no-custom"
+    "-no-camlp4" {!ocaml:preinstalled & ocaml:version >= "4.02.0"}
+    "-no-topfind" {ocaml:preinstalled}
+  ]
+  [make "all"]
+  [make "opt"] {ocaml:native}
+]
+install: [
+  [make "install"]
+  ["install" "-m" "0755" "ocaml-stub" "%{bin}%/ocaml"] {ocaml:preinstalled}
+]
+extra-files: ["0001-Harden-test-for-OCaml-5.patch" "md5=3cddbf72164c29d4e50e077a92a37c6c"]
+# See https://github.com/ocaml/ocamlfind/pull/61
+patches: ["0001-Harden-test-for-OCaml-5.patch"]
+dev-repo: "git+https://github.com/ocaml/ocamlfind.git"
+url {
+  src: "http://download.camlcity.org/download/findlib-1.9.6.tar.gz"
+  checksum: [
+    "md5=96c6ee50a32cca9ca277321262dbec57"
+    "sha512=cfaf1872d6ccda548f07d32cc6b90c3aafe136d2aa6539e03143702171ee0199add55269bba894c77115535dc46a5835901a5d7c75768999e72db503bfd83027"
+  ]
+}
+available: os != "win32"

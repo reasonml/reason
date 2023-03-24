@@ -1,0 +1,11 @@
+--- ./pkg/topkg.ml
++++ ./pkg/topkg.ml
+@@ -344,7 +344,7 @@
+   let build ccomp btool bdir pkg mvs =
+     let ext_to_string = Exts.ext_to_string ccomp in
+     let install, exec = build_strings btool bdir ext_to_string mvs in
+-    let e = Sys.command exec in
++    let e = Sys.command ("bash -c '" ^ exec ^ "'") in
+     if e <> 0 then exit e else
+     let install_file = pkg ^ ".install" in
+     try

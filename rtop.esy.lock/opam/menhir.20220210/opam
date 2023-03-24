@@ -8,7 +8,7 @@ authors: [
 homepage: "http://gitlab.inria.fr/fpottier/menhir"
 dev-repo: "git+https://gitlab.inria.fr/fpottier/menhir.git"
 bug-reports: "https://gitlab.inria.fr/fpottier/menhir/-/issues"
-license: "LGPL-2.0-only with OCaml-LGPL-linking-exception"
+license: "LGPL-2.0-only WITH OCaml-LGPL-linking-exception"
 build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]

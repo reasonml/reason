@@ -15,8 +15,8 @@
     "@opam/merlin-extend": " >= 0.6",
     "@opam/result": "*",
     "@opam/ppx_derivers": "< 2.0.0",
-    "@opam/dune": "2.9.3",
-    "@opam/dune-build-info": "3.7.0"
+    "@opam/dune": ">= 3 < 4",
+    "@opam/dune-build-info": ">= 3 < 4"
   },
   "devDependencies": {
     "@opam/merlin": "*",
