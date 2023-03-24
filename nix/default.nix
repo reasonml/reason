@@ -24,6 +24,13 @@ ocamlPackages.buildDunePackage {
     cppo
     fix
     ppx_derivers
+<<<<<<< HEAD
+||||||| parent of 9c33022 (generate opam files with dune)
+    ppxlib
+    # ocaml-migrate-parsetree
+=======
+    # ppxlib
+>>>>>>> 9c33022 (generate opam files with dune)
   ];
 
 }
