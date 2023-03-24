@@ -1,6 +1,6 @@
 {
   "name": "@esy-ocaml/rtop",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
     "@esy-ocaml/substs": "^0.0.1",
     "@opam/ocamlfind": "*",
     "@opam/result": "*",
-    "@opam/dune": ">= 3 < 4",
+    "@opam/dune": ">= 3.0.0",
     "@opam/reason": "^3.8.0",
     "@opam/utop": " >= 1.17.0",
     "ocaml": ">= 4.2.0 < 5.1.0"

@@ -5,8 +5,8 @@
   "license": "MIT",
   "version": "3.8.2",
   "dependencies": {
-    "@opam/dune": ">= 3 < 4",
-    "@opam/dune-build-info": ">= 3 < 4",
+    "@opam/dune": "3.7.0",
+    "@opam/dune-build-info": "> 3.0.0",
     "@opam/fix": "*",
     "@opam/menhir": " >= 20180523.0.0",
     "@opam/merlin-extend": " >= 0.6",
