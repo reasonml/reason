@@ -5774,6 +5774,7 @@ let printer = object(self:'self)
       ~wrap
       ~break:IfNeed
       ~sep:commaTrail
+      ~pad:(true, true)
       ~postSpace:true
       rows
 
@@ -6130,7 +6131,7 @@ let printer = object(self:'self)
         | (Pexp_record (recordRows, optionalGadt), _, _) ->
             forceBreak := true;
             let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
-            let value = self#unparseRecord ~forceBreak: true recordRows optionalGadt in
+            let value = self#unparseRecord ~forceBreak:true recordRows optionalGadt in
             label ~space:true keyWithColon value
         | (Pexp_extension (s, p), _, _) when s.txt = "bs.obj" ->
             forceBreak := true;
@@ -6191,6 +6192,7 @@ let printer = object(self:'self)
       ~wrap:(lwrap ^ "{" ,"}" ^ rwrap)
       ~break:(if !forceBreak then Layout.Always else Layout.IfNeed)
       ~sep:commaTrail
+      ~pad:(true, true)
       ~postSpace:true
       (groupAndPrint ~xf:fst ~getLoc:snd ~comments:self#comments allRows)
 
@@ -6234,6 +6236,7 @@ let printer = object(self:'self)
       | Closed -> atom "."
       | Open -> atom ".."
     in
+    let notEmpty = rows != [] in
     (* if an object has more than 2 rows, always break for readability *)
     let rows_layout = makeList
         ~inline:(true, true) ~postSpace:true ~sep:commaTrail rows
@@ -6245,6 +6248,7 @@ let printer = object(self:'self)
       ~break:Layout.IfNeed
       ~preSpace:(rows != [])
       ~wrap:(lwrap ^ "{", "}" ^ rwrap)
+      ~pad:(false, notEmpty)
       (openness::[rows_layout])
 
   method unparseSequence ?wrap:(wrap=("", "")) ~construct l =
