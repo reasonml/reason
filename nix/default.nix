@@ -23,10 +23,7 @@ ocamlPackages.buildDunePackage {
     menhirLib
     cppo
     fix
-    result
     ppx_derivers
-    ppxlib
-    # ocaml-migrate-parsetree
   ];
 
 }

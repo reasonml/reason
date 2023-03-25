@@ -1,5 +1,5 @@
 {
-  "checksum": "4bcaaba71fd7b99170f95d5376e7aa24",
+  "checksum": "541ef021a71d9d8bce474b1d40a99f0b",
   "root": "reason-cli@link-dev:./esy.json",
   "node": {
     "reason-cli@link-dev:./esy.json": {
@@ -10,7 +10,6 @@
       "overrides": [],
       "dependencies": [
         "ocaml@4.14.0@d41d8cd9", "@opam/utop@opam:2.11.0@bd245e47",
-        "@opam/result@opam:1.5@1c6a6533",
         "@opam/ppx_derivers@opam:1.2.1@e2cbad12",
         "@opam/ocamlfind@opam:1.9.5@e83abf74",
         "@opam/merlin-extend@opam:0.6.1@7d979feb",
