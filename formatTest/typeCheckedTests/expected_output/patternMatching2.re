@@ -99,11 +99,9 @@ let res =
   | TwoCombos(
       HeresTwoConstructorArguments(x, y),
       HeresTwoConstructorArguments(a, b),
-    ) => (
-      fun
-      | Some(x) => x + 1
-      | None => 0
-    )
+    ) => fun
+    | Some(x) => x + 1
+    | None => 0
   | TwoCombos(_, _) =>
     let x = (
       fun
@@ -115,82 +113,80 @@ let res =
   | AlsoHasARecord(300, _, _) =>
     id(
       fun
-        | Some(x) => x + 1
-        | None => 0
-      ,
+      | Some(x) => x + 1
+      | None => 0,
     )
   | AlsoHasARecord(firstItem, two, {x, y}) =>
     id(
       fun
-        | Some(x) => x + 1
-        | None => 0
-      ,
+      | Some(x) => x + 1
+      | None => 0,
     )
   };
 
 
-switch (Some(())) {
-| Some(()) => 1
+switch (Some()) {
+| Some() => 1
 | _ => 2
 };
 
 
-switch (Some(())) {
-| Some(()) => 1
+switch (Some()) {
+| Some() => 1
 | _ => 2
 };
 
 
-switch (Some(())) {
-| Some(()) => 1
+switch (Some()) {
+| Some() => 1
 | _ => 2
 };
 
 
-switch (Some(())) {
-| Some(()) => 1
+switch (Some()) {
+| Some() => 1
 | _ => 2
 };
 
 type foo =  | Foo(unit);
 
 
-switch (Foo(())) {
-| Foo(()) => 1
+switch (Foo()) {
+| Foo() => 1
 };
 
 
-switch (Foo(())) {
-| Foo(()) => 1
+switch (Foo()) {
+| Foo() => 1
 };
 
 
-switch (Foo(())) {
-| Foo(()) => 1
+switch (Foo()) {
+| Foo() => 1
 };
 
 
-switch (Foo(())) {
-| Foo(()) => 1
+switch (Foo()) {
+| Foo() => 1
 };
 
 
-switch (()) {
+switch () {
 | () => 1
 };
 
 
-switch (()) {
+switch () {
 | () => 1
 };
 
 
-switch (()) {
+switch () {
 | () => 1
 };
 
 
-switch (()) {
+switch () {
 | () => 1
 };
 
@@ -203,72 +199,75 @@ switch (Some(1)) {
 
 let myInt = 100;
 
-todo attributelet rangeInt = 0;
+[@something1 .. 2
+let rangeInt = 0;
 
 let myChar = 'x';
 
 let rangeChar =
   switch (myChar) {
-  | todo: Ppat_interval => "a to b"
-  | todo: Ppat_interval => "b to z"
+  | 'a' .. 'b' => "a to b"
+  | 'b' .. 'z' => "b to z"
   | c => "something else"
   };
 
 
 switch (None) {
 | Some([]) => ()
-| Some(::(_, [])) => ()
-| Some(::(x, [])) => ()
-| Some(::(x, xs)) => ()
-| Some(::(x, ::(y, ::(z, [])))) => ()
+| Some([_]) when true => ()
+| Some([x]) => ()
+| Some([x, ...xs]) when true => ()
+| Some([x, y, z]) => ()
 | _ => ()
 };
 
 
 switch (None) {
 | Some([]) => ()
-| Some(::(_, [])) => ()
-| Some(::(x, [])) => ()
-| Some(::(x, xs)) => ()
-| Some(::(x, ::(y, ::(z, [])))) => ()
+| Some([_]) when true => ()
+| Some([x]) => ()
+| Some([x, ...xs]) when true => ()
+| Some([x, y, z]) => ()
 | _ => ()
 };
 
 
 switch (None) {
-| Some(todo: Ppat_array) => "empty"
-| Some(todo: Ppat_array) => "one any"
-| Some(todo: Ppat_array) => "one"
-| Some(todo: Ppat_array) => "two"
+| Some([||]) => "empty"
+| Some([|_|]) when true => "one any"
+| Some([|a|]) => "one"
+| Some([|a, b|]) => "two"
 | _ => "many"
 };
 
 
 switch (None) {
-| Some(todo: Ppat_array) => "empty"
-| Some(todo: Ppat_array) => "one any"
-| Some(todo: Ppat_array) => "one"
-| Some(todo: Ppat_array) => "two"
+| Some([||]) => "empty"
+| Some([|_|]) when true => "one any"
+| Some([|a|]) => "one"
+| Some([|a, b|]) => "two"
 | _ => "many"
 };
 
 
 switch (None) {
-| Some({x}) => ()
+| Some({x}) when true => ()
 | Some({x, y}) => ()
 | _ => ()
 };
 
 
 switch (None) {
-| Some({x}) => ()
+| Some({x}) when true => ()
 | Some({x, y}) => ()
 | _ => ()
 };
 
 
 switch (None) {
-| Some(todo: Ppat_array) => ()
+| Some(
+    [|someSuperLongString, thisShouldBreakTheLine|],
+  ) => ()
 | _ => ()
 };
 
@@ -283,22 +282,13 @@ switch (None) {
 
 switch (None) {
 | Some(
-    ::(
-      someSuperLongString,
-      ::(thisShouldBreakTheLine, []),
-    ),
+    [someSuperLongString, thisShouldBreakTheLine],
   ) => ()
 | Some(
-    ::(
-      someSuperLongString,
-      es6ListSugarLikeSyntaxWhichIsSuperLong,
-    ),
-  ) => ()
+    [someSuperLongString, ...es6ListSugarLikeSyntaxWhichIsSuperLong],
+  ) when true == true => ()
 | Some(
-    ::(
-      someSuperLongString,
-      es6ListSugarLikeSyntaxWhichIsSuperLong,
-    ),
+    [someSuperLongString, ...es6ListSugarLikeSyntaxWhichIsSuperLong],
   ) => ()
 | _ => ()
 };
@@ -307,9 +297,10 @@ type aOrB =
   | A(int)
   | B(int);
 
-let todo: Ppat_constraint = 0;
+let ((nestedAnnotation: int): int) = 0;
 
-let todo: Ppat_constraint = A(0);
+let (A(i)
+| B(i): aOrB) = A(0);
 
 type test_foo =
   | VariantType1
@@ -317,19 +308,19 @@ type test_foo =
 
 let branch_with_variant_and_annotation = (
   fun
-  | todo: Ppat_constraint => true
+  | (VariantType1: test_foo) => true
   | VariantType2 => false
 );
 
 type intRange = {
-  from: string1,
-  to_: string1,
+  from: option(string),
+  to_: option(string),
 };
 
-type optIntRange = todo: ptype_abstract;
+type optIntRange = option(intRange);
 
 let optIntRangeOfIntRange = (
   fun
-  | todo: Ppat_constraint => todo Pexp_constraint
-  | {from, to_} => Some(todo Pexp_record)
+  | ({from: None, to_: None}: intRange) => (None: optIntRange)
+  | {from, to_} => Some({from, to_})
 );

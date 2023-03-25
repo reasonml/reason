@@ -163,9 +163,15 @@ let configure ~width ~assumeExplicitArity ~constructorLists =
   configuredSettings :=
     { defaultSettings with width; assumeExplicitArity; constructorLists }
 
+let settings = defaultSettings
+
 let rec structure_item term =
   match term.pstr_desc with
-  | Pstr_eval (e, a) -> group (expression e ^^ semi)
+  | Pstr_eval (e, attrs) ->
+      let attrs = partitionAttributes attrs in
+      concat_map attribute attrs.docAttrs
+      ^^ concat_map attribute attrs.stdAttrs
+      ^^ group (expression e ^^ semi)
   | Pstr_value (rf, vb) -> value_bindings rf vb
   | Pstr_primitive v -> string "todo Pstr_primitive"
   | Pstr_type (r, tl) ->
@@ -218,7 +224,14 @@ and attribute = function
       let text = if text = "" then "/**/" else "/**" ^ text ^ "*/" in
       string text ^^ hardline
   | { attr_name; attr_payload; _ } ->
-      string "todo attribute" (* self#payload "@" attr_name attr_payload *)
+      string "[@" ^^ string attr_name.txt ^^ payload attr_payload
+      ^^ hardline (* self#payload "@" attr_name attr_payload *)
+
+and payload = function
+  | PStr s -> structure s
+  | PSig s -> string "todo payload: sig"
+  | PTyp t -> string "todo payload: typ"
+  | PPat (p, eo) -> pattern p ^^ optional expression eo
 
 and value_binding { pvb_pat; pvb_expr; pvb_attributes; pvb_loc } =
   group
@@ -254,13 +267,14 @@ and expression ?(depth = 0) ?(wrap = true)
   | Pexp_let (rf, vb, e) ->
       break 0 ^^ value_bindings rf vb ^^ break 1 ^^ expression e ^^ semi
   | Pexp_function cl ->
-      let lparen, rparen =
-        if wrap then (lparen ^^ break 0, rparen) else (empty, empty)
+      let lparen, rparen, n =
+        if wrap then (lparen ^^ break 0, break 0 ^^ rparen, 2)
+        else (empty, empty, 0)
       in
-      nest 2
+      nest n
         (lparen ^^ string "fun" ^^ break 0 ^^ bar ^^ space
         ^^ separate_map (hardline ^^ bar ^^ space) case cl)
-      ^^ break 0 ^^ rparen
+      ^^ rparen
   | Pexp_fun (a, e, p, e2) ->
       let rec args p result =
         match p.pexp_desc with
@@ -282,15 +296,16 @@ and expression ?(depth = 0) ?(wrap = true)
     when isInfix i ->
       expression a ^^ space ^^ expression infixOperator ^^ space ^^ expression b
   | Pexp_apply (e, l) ->
-      break 0 ^^ expression e ^^ string "("
-      ^^ nest 2
-           (break 0
-           ^^ separate_map
-                (comma ^^ break 1)
-                (fun (_, e) -> expression ~wrap:false e)
-                l
-           ^^ ifflat empty comma)
-      ^^ break 0 ^^ string ")"
+      group
+        (break 0 ^^ expression e ^^ string "("
+        ^^ nest 2
+             (break 0
+             ^^ separate_map
+                  (comma ^^ break 1)
+                  (fun (_, e) -> expression ~wrap:false e)
+                  l
+             ^^ ifflat empty comma)
+        ^^ break 0 ^^ string ")")
   | Pexp_match (e, cl) ->
       group
         (nest depth
@@ -306,11 +321,29 @@ and expression ?(depth = 0) ?(wrap = true)
         ^^ separate_map (comma ^^ break 1) expression el
         ^^ ifflat empty comma)
       ^^ break 0 ^^ rparen
+  | Pexp_construct ({ txt = Lident "()" }, None) ->
+      if wrap then empty else string "()"
   | Pexp_construct ({ txt = Lident s1 }, opt) ->
-      group (string s1 ^^ optional expression opt)
+      group (string s1 ^^ optional (expression ~wrap:true) opt)
   | Pexp_construct (_, opt) -> string "todo Pexp_construct"
   | Pexp_variant (l, e) -> string "todo Pexp_variant"
-  | Pexp_record (l, e) -> string "todo Pexp_record"
+  | Pexp_record (l, e) ->
+      group
+        (nest 2
+           (lbrace ^^ break 0
+           ^^ separate_map
+                (comma ^^ break 1)
+                (fun (l, e) ->
+                  match l.txt with
+                  | Lident name -> (
+                      match e with
+                      | { pexp_desc = Pexp_ident { txt = Lident value }; _ }
+                        when name = value ->
+                          string name
+                      | _ -> string name ^^ colon ^^ space ^^ expression e)
+                  | _ -> string "Ppat_record: not supported")
+                l)
+        ^^ ifflat empty comma ^^ break 0 ^^ rbrace)
   | Pexp_field (e, l) -> string "todo Pexp_field"
   | Pexp_setfield (e, l, e2) -> string "todo Pexp_setfield"
   | Pexp_array el -> string "todo Pexp_array"
@@ -318,7 +351,8 @@ and expression ?(depth = 0) ?(wrap = true)
   | Pexp_sequence (e1, e2) -> string "todo Pexp_sequence"
   | Pexp_while (e1, e2) -> string "todo Pexp_while"
   | Pexp_for (p, e1, e2, d, e3) -> string "todo Pexp_for"
-  | Pexp_constraint (e1, ct) -> string "todo Pexp_constraint"
+  | Pexp_constraint (e1, c) ->
+      lparen ^^ expression e1 ^^ colon ^^ space ^^ core_type c ^^ rparen
   | Pexp_coerce (e, c, c2) -> string "todo Pexp_coerce"
   | Pexp_send (e, l) -> string "todo Pexp_send"
   | Pexp_new l -> string "todo Pexp_new"
@@ -339,19 +373,57 @@ and expression ?(depth = 0) ?(wrap = true)
 
 and case { pc_lhs; pc_guard; pc_rhs } =
   let depth = match pc_lhs.ppat_desc with Ppat_or (_, _) -> 0 | _ -> 2 in
-  group (nest depth (pattern pc_lhs) ^^ arrow ^^ nest 2 (expression pc_rhs))
+  group
+    (nest depth (pattern ~wrap:false pc_lhs)
+    ^^ optional
+         (fun e -> space ^^ string "when" ^^ space ^^ expression e)
+         pc_guard
+    ^^ arrow
+    ^^ nest 2 (expression ~wrap:false pc_rhs))
 
-and pattern { ppat_desc; ppat_loc; ppat_loc_stack; ppat_attributes } =
+and pattern ?(wrap = true)
+    ({ ppat_desc; ppat_loc; ppat_loc_stack; ppat_attributes } as px) =
   match ppat_desc with
   | Ppat_var v -> string v.txt
   | Ppat_any -> underscore
   | Ppat_alias (p, l) -> string "todo: Ppat_alias"
   | Ppat_constant c -> constant c
-  | Ppat_interval (c, c2) -> string "todo: Ppat_interval"
+  | Ppat_interval (c, c2) ->
+      constant c ^^ space ^^ string ".." ^^ space ^^ constant c2
   | Ppat_tuple pl ->
       group
         (nest 2 (lparen ^^ break 0 ^^ separate_map (comma ^^ break 1) pattern pl)
         ^^ ifflat empty comma ^^ break 0 ^^ rparen)
+  | Ppat_construct ({ txt = Lident "::" }, l) -> (
+      let rec list_items_cons acc = function
+        | {
+            ppat_desc =
+              Ppat_construct
+                ( { txt = Lident "::" },
+                  Some { ppat_desc = Ppat_tuple [ pat1; pat2 ] } );
+          } ->
+            list_items_cons (pat1 :: acc) pat2
+        | p -> (List.rev acc, p)
+      in
+
+      let pat_list, pat_last = list_items_cons [] px in
+      match pat_last with
+      | { ppat_desc = Ppat_construct ({ txt = Lident "[]" }, _) } ->
+          (* [x,y,z] *)
+          (* let lwrap, rwrap = wrap in *)
+          lbracket ^^ separate_map (comma ^^ space) pattern pat_list ^^ rbracket
+          (* makeList pat_list
+             ~break:Layout.IfNeed ~sep:commaTrail ~postSpace:true
+             ~wrap:(lwrap ^ "[", "]" ^ rwrap) *)
+      | _ ->
+          (* x::y *)
+          lbracket
+          ^^ separate2 (comma ^^ space)
+               (comma ^^ space ^^ dot ^^ dot ^^ dot)
+               (List.map pattern (pat_list @ [ pat_last ]))
+          ^^ rbracket)
+  | Ppat_construct ({ txt = Lident "()" }, None) ->
+      if wrap then empty else string "()"
   | Ppat_construct ({ txt = Lident s }, c) -> string s ^^ optional pattern c
   | Ppat_construct (s, s2) -> string "todo Ppatconstruct"
   | Ppat_variant (l, po) -> string "todo: Ppat_variant"
@@ -359,11 +431,27 @@ and pattern { ppat_desc; ppat_loc; ppat_loc_stack; ppat_attributes } =
       group
         (nest 2
            (lbrace ^^ break 0
-           ^^ separate_map (comma ^^ break 1) (fun (_, p) -> pattern p) pl)
+           ^^ separate_map
+                (comma ^^ break 1)
+                (fun (l, p) ->
+                  match l.txt with
+                  | Lident name -> (
+                      match p with
+                      | { ppat_desc = Ppat_var { txt = value }; _ }
+                        when name = value ->
+                          string name
+                      | _ -> string name ^^ colon ^^ space ^^ pattern p)
+                  | _ -> string "Ppat_record: not supported")
+                pl)
         ^^ ifflat empty comma ^^ break 0 ^^ rbrace)
-  | Ppat_array pl -> string "todo: Ppat_array"
+  | Ppat_array pl ->
+      group
+        (lbracket ^^ bar
+        ^^ separate_map (comma ^^ space) pattern pl
+        ^^ bar ^^ rbracket)
   | Ppat_or (p, p2) -> pattern p ^^ hardline ^^ bar ^^ space ^^ pattern p2
-  | Ppat_constraint (p, c) -> string "todo: Ppat_constraint"
+  | Ppat_constraint (p, c) ->
+      lparen ^^ pattern p ^^ colon ^^ space ^^ core_type c ^^ rparen
   | Ppat_type l -> string "todo: Ppat_type"
   | Ppat_lazy p -> string "todo: Ppat_lazy"
   | Ppat_unpack l -> string "todo: Ppat_unpack"
@@ -384,10 +472,10 @@ and type_declaration
     } =
   group
     (string ptype_name.txt ^^ space ^^ string "=" ^^ space
-   ^^ type_kind ptype_kind)
+    ^^ type_kind (ptype_kind, ptype_private, ptype_manifest))
 
 and type_kind = function
-  | Ptype_record ll ->
+  | Ptype_record ll, _, _ ->
       (* ifflat
          (braces (separate_map (comma ^^ blank 1) label_declaration ll)) *)
       string "{"
@@ -395,10 +483,11 @@ and type_kind = function
            (hardline ^^ separate_map (comma ^^ hardline) label_declaration ll)
       ^^ comma ^^ break 1 ^^ string "}"
       (* braces (nest 2 (hardline ^^ separate_map (comma ^^ blank 1) label_declaration ll)) *)
-  | Ptype_variant cl ->
+  | Ptype_variant cl, _, _ ->
       nest 2 (break 1 ^^ separate_map hardline constructor_declaration cl)
-  | Ptype_abstract -> string "todo: ptype_abstract"
-  | Ptype_open -> string "todo: Ptype_open"
+  | Ptype_abstract, Public, Some s -> core_type s
+  | Ptype_abstract, _, _ -> string "todo: ptype_abstract"
+  | Ptype_open, _, _ -> string "todo: Ptype_open"
 
 and constructor_declaration { pcd_name; pcd_args; pcd_res; _ } =
   bar ^^ space ^^ string pcd_name.txt ^^ constructor_argument pcd_args
@@ -415,8 +504,8 @@ and core_type { ptyp_desc; _ } =
   match ptyp_desc with
   | Ptyp_var _ -> string "todo a"
   | Ptyp_constr ({ txt = Lident s1 }, []) -> string s1
-  | Ptyp_constr (_, cl) ->
-      separate_map star core_type cl ^^ string (string_of_int (List.length cl))
+  | Ptyp_constr ({ txt = Lident s1 }, cl) ->
+      string s1 ^^ lparen ^^ separate_map star core_type cl ^^ rparen
   | _ -> string "other type..."
 
 and structure structureItems =
