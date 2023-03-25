@@ -12,8 +12,8 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.03" & < "5.1"}
-  "dune" {> "3.0.0"}
-  "dune-build-info" {> "3.0.0"}
+  "dune" {>= "2.9.3"}
+  "dune-build-info" {>= "2.9.3"}
   "ocamlfind" {build}
   "menhir" {>= "20180523"}
   "merlin-extend" {>= "0.6"}
