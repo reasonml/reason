@@ -1,0 +1,31 @@
+opam-version: "2.0"
+
+synopsis: "Lwt logging library (deprecated)"
+license: ["LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception" "BSD-3-Clause"]
+homepage: "https://github.com/ocsigen/lwt_log"
+doc: "https://github.com/ocsigen/lwt_log/blob/master/src/core/lwt_log_core.mli"
+bug-reports: "https://github.com/ocsigen/lwt_log/issues"
+
+authors: [
+  "Shawn Wagner"
+  "Jérémie Dimino"
+]
+maintainer: "Raphaël Proust <code@bnwr.net>"
+dev-repo: "git+https://github.com/ocsigen/lwt_log.git"
+
+depends: [
+  "dune" {>= "1.0"}
+  "lwt" {>= "4.0.0"}
+  "ocaml" {>= "4.03"}
+]
+
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+url {
+  src: "https://github.com/ocsigen/lwt_log/archive/1.1.2.tar.gz"
+  checksum: [
+    "md5=f060baea008b2563265dbcf0250f8912"
+    "sha512=fb976d89c0f868b57434a9e0907ffae0842fe48fc747ddb860954d20f36722faea315ebb0b4dac202f9bf7203b0a09681614e9619f3bbd0dd59f8dd7bbd50575"
+  ]
+}
