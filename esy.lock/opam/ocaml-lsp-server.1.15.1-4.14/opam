@@ -1,0 +1,66 @@
+opam-version: "2.0"
+synopsis: "LSP Server for OCaml"
+description: "An LSP server for OCaml."
+maintainer: ["Rudi Grinberg <me@rgrinberg.com>"]
+authors: [
+  "Andrey Popp <8mayday@gmail.com>"
+  "Rusty Key <iam@stfoo.ru>"
+  "Louis Roché <louis@louisroche.net>"
+  "Oleksiy Golovko <alexei.golovko@gmail.com>"
+  "Rudi Grinberg <me@rgrinberg.com>"
+  "Sacha Ayoun <sachaayoun@gmail.com>"
+  "cannorin <cannorin@gmail.com>"
+  "Ulugbek Abdullaev <ulugbekna@gmail.com>"
+  "Thibaut Mattio <thibaut.mattio@gmail.com>"
+  "Max Lantas <mnxndev@outlook.com>"
+]
+license: "ISC"
+homepage: "https://github.com/ocaml/ocaml-lsp"
+bug-reports: "https://github.com/ocaml/ocaml-lsp/issues"
+depends: [
+  "dune" {>= "3.0"}
+  "yojson"
+  "re" {>= "1.5.0"}
+  "ppx_yojson_conv_lib" {>= "v0.14"}
+  "dune-rpc" {>= "3.4.0"}
+  "chrome-trace" {>= "3.3.0"}
+  "dyn"
+  "stdune"
+  "fiber" {>= "3.1.1"}
+  "xdg"
+  "ordering"
+  "dune-build-info"
+  "spawn"
+  "ppx_expect" {>= "v0.15.0" & with-test}
+  "ocamlformat" {with-test & = "0.24.1"}
+  "ocamlc-loc" {>= "3.5.0" & < "3.7.0"}
+  "omd" {>= "1.3.2" & < "2.0.0~alpha1"}
+  "octavius" {>= "1.2.2"}
+  "uutf" {>= "1.0.2"}
+  "pp" {>= "1.1.2"}
+  "csexp" {>= "1.5"}
+  "ocamlformat-rpc-lib" {>= "0.21.0"}
+  "odoc" {with-doc}
+  "ocaml" {>= "4.14" & < "4.15"}
+]
+dev-repo: "git+https://github.com/ocaml/ocaml-lsp.git"
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-j"
+    jobs
+    "ocaml-lsp-server.install"
+    "--release"
+  ]
+]
+url {
+  src:
+    "https://github.com/ocaml/ocaml-lsp/releases/download/1.15.1-4.14/lsp-1.15.1-4.14.tbz"
+  checksum: [
+    "sha256=9e8e1edb067b0b6edc9b8081f1c046427afc6d5d422fe88a9bf2f8076ab9826d"
+    "sha512=28e4511404e808c066b05cde1f047f82819f30ca689d9c906b716743c0a53002ab1993202204302455ae45ce591868cc80490c01ea4fe672e95ce46e62fd2a39"
+  ]
+}
+x-commit-hash: "38849b2a14355e97532e8866c29a88d966dd8b47"

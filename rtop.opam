@@ -11,10 +11,10 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml"  {>= "4.03" & < "5.1"}
-  "dune"   {>= "2.3"}
+  "ocaml" {>= "4.03" & < "5.1"}
+  "dune" {>= "2.9.3"}
   "reason" {=version}
-  "utop"   {>= "2.0"}
+  "utop" {>= "2.0"}
 ]
 synopsis: "Reason toplevel"
 description:
