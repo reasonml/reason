@@ -15,7 +15,7 @@ license: "MIT"
 homepage: "https://reasonml.github.io/"
 bug-reports: "https://github.com/reasonml/reason/issues"
 depends: [
-  "dune" {>= "2.8"}
+  "dune" {>= "2.9"}
   "ocaml" {>= "4.03" & < "5.1"}
   "ocamlfind" {build}
   "menhir" {>= "20180523"}
@@ -33,9 +33,11 @@ build: [
     name
     "-j"
     jobs
+    "--promote-install-files=false"
     "@install"
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/reasonml/reason.git"
