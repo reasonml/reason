@@ -3,9 +3,10 @@
   "notes":
     "This is just the dev package config (also built as globally installable reason-cli). See ./refmt.json ./rtop.json for individual release package configs.",
   "license": "MIT",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "dependencies": {
-    "@opam/dune": "3.6.2",
+    "@opam/dune": "> 3.0.0",
+    "@opam/dune-build-info": "> 3.0.0",
     "@opam/fix": "*",
     "@opam/menhir": " >= 20180523.0.0",
     "@opam/merlin-extend": " >= 0.6",
@@ -14,7 +15,11 @@
     "@opam/utop": " >= 1.17.0",
     "ocaml": " >= 4.3.0 < 4.15.0"
   },
-  "devDependencies": { "@opam/odoc": "*", "ocaml": "~4.14.0" },
+  "devDependencies": {
+    "@opam/ocaml-lsp-server": "1.15.1-4.14",
+    "@opam/odoc": "*",
+    "ocaml": "~4.14.0"
+  },
   "notes-ctd": [
     "This is how you make an esy monorepo for development, but then release the monorepo as many individual packages:",
     "1. Create a packageName-dev esy.json at the root and list the sum of all dependencies",
@@ -36,7 +41,7 @@
       "SYSTEM_PULLREQUEST_MERGEDAT": { "scope": "global", "val": "d" }
     },
     "release": {
-      "bin": ["rtop", "refmt"],
+      "bin": [ "rtop", "refmt" ],
       "includePackages": [
         "root", "@opam/base-bytes", "@opam/base-threads", "@opam/base-unix",
         "@opam/camomile", "@opam/lambda-term", "@opam/lwt", "@opam/lwt_log",

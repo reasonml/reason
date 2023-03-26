@@ -1,3 +1,3 @@
-Ensures refmt is in the right place
-  $ refmt --version
-  Reason 3.7.0 @ b66ed1b
+Ensures refmt --version prints the right version
+  $ refmt --version | cut -d '@' -f 1
+  Reason 3.8.2 
