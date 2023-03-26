@@ -36,6 +36,8 @@
     (>= "4.03")
     (< "5.1")))
   (ocamlfind :build)
+  (dune-build-info
+   (>= 2.9.3))
   (menhir
    (>= "20180523"))
   (merlin-extend
@@ -53,7 +55,7 @@
    (and
     (>= "4.03")
     (< "5.1")))
-  reason
-  (= :version)
+  (reason
+   (= :version))
   (utop
    (>= "2.0"))))
