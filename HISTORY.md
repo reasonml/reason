@@ -1,5 +1,6 @@
 ## 3.9 (unreleased)
 
+- Print poly variants as normal variansts (@Sander Spies) [#2708](https://github.com/reasonml/reason/pull/2708)
 - Fix missing patterns around contraint pattern (a pattern with a type annotation).
 - Fix top level extension printing
 - Remove the dependency on the `result` package, which isn't needed for OCaml
