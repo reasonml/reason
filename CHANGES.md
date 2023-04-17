@@ -6,6 +6,7 @@
   [#2773](https://github.com/reasonml/reason/pull/2773))
 - Wrap `let lazy patterns = ..` in parentheses (`let lazy(patterns) = ..`)
   (@anmonteiro, [#2774](https://github.com/reasonml/reason/pull/2774))
+- Print poly variants as normal variansts (@Sander Spies) [#2708](https://github.com/reasonml/reason/pull/2708)
 
 ## 3.12.0
 
