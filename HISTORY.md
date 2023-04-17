@@ -1,5 +1,6 @@
 ## 3.9 (unreleased)
 
+- Print module type body on separate line (@SanderSpies) [#2709](https://github.com/reasonml/reason/pull/2709)
 - Fix missing patterns around contraint pattern (a pattern with a type annotation).
 - Fix top level extension printing
 - Remove the dependency on the `result` package, which isn't needed for OCaml

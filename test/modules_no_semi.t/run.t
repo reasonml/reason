@@ -113,7 +113,9 @@ Format modules no semi
     tmp + 30;
   };
   
-  module type HasTT = {type tt;};
+  module type HasTT = {
+    type tt;
+  };
   
   module SubModule: HasTT = {
     type tt = int;
@@ -123,7 +125,9 @@ Format modules no semi
     module SubModuleThatHasTT = SubModule;
   };
   
-  module type HasPolyType = {type t('a);};
+  module type HasPolyType = {
+    type t('a);
+  };
   
   module type HasDestructivelySubstitutedPolyType =
     HasPolyType with type t('a) := list('a);
@@ -200,10 +204,16 @@ Format modules no semi
       type tt = string;
     });
   
-  module type SigResult = {let result: int;};
+  module type SigResult = {
+    let result: int;
+  };
   
-  module type ASig = {let a: int;};
-  module type BSig = {let b: int;};
+  module type ASig = {
+    let a: int;
+  };
+  module type BSig = {
+    let b: int;
+  };
   module AMod = {
     let a = 10;
   };
@@ -422,7 +432,9 @@ Format modules no semi
   };
   
   /* From http://stackoverflow.com/questions/1986374/higher-order-type-constructors-and-functors-in-ocaml */
-  module type Type = {type t;};
+  module type Type = {
+    type t;
+  };
   module Char = {
     type t = char;
   };
@@ -483,7 +495,9 @@ Format modules no semi
     let myValue = {recordField: "hello"};
   });
   
-  module type HasInt = {let x: int;};
+  module type HasInt = {
+    let x: int;
+  };
   
   module MyModule = {
     let x = 10;
