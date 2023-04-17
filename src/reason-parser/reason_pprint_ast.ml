@@ -3119,7 +3119,8 @@ let printer = object(self:'self)
           let ll = (List.map (fun t -> atom ("`" ^ t)) tl) in
           let tag_list = makeList ~postSpace:true ~break:IfNeed ((atom ">")::ll) in
           let type_list = if tl != [] then node_list@[tag_list] else node_list in
-          makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break:IfNeed type_list
+          let break = if (List.length type_list) > 1 then Layout.Always else IfNeed in
+          makeList ~wrap:("[" ^ designator,"]") ~pad:(true, false) ~postSpace:true ~break type_list
         | Ptyp_class (li, []) -> makeList [atom "#"; self#longident_loc li]
         | Ptyp_class (li, l) ->
           label
