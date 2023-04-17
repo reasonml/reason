@@ -2568,8 +2568,12 @@ Format wrapping in .re files
       1 + 2 + 3 + 3,
     );
   
-  module type ASig = {let a: int;};
-  module type BSig = {let b: int;};
+  module type ASig = {
+    let a: int;
+  };
+  module type BSig = {
+    let b: int;
+  };
   module AMod = {
     let a = 10;
   };

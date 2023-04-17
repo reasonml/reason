@@ -142,16 +142,22 @@ Format whitespace in .rei files
   include Shared;
   
   /** doc attached */
-  module type X = {let x: int;};
+  module type X = {
+    let x: int;
+  };
   
   /** doc attached with whitespace */
   
-  module type X = {let x: int;};
+  module type X = {
+    let x: int;
+  };
   
   /** doc attached with whitespace and comment */
   
   /* test */
-  module type X = {let x: int;};
+  module type X = {
+    let x: int;
+  };
   
   /** doc attached */
   module X: MX;
