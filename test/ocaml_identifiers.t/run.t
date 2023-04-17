@@ -80,7 +80,10 @@ Format OCaml identifiers file
   
   /* Polymorphic variants (probably ok as-is?) */
   module P = {
-    type t = [ | `pub_ | `method];
+    type t = [
+      | `pub_
+      | `method
+    ];
   
     let x = `method;
   
