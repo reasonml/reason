@@ -1033,7 +1033,7 @@ let makeList
   let config =
     { Layout.
       listConfigIfCommentsInterleaved; listConfigIfEolCommentsInterleaved;
-      break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
+      break = if lst = [] then Layout.IfNeed else break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
     }
   in
   Layout.Sequence (config, lst)
@@ -2942,7 +2942,7 @@ let printer = object(self:'self)
       | (Ptype_variant lst, scope, None) -> [
           privatize scope
             [makeList
-              ~break:(if lst == [] then IfNeed else Always_rec)
+              ~break:Always_rec
               ~postSpace:true
               ~inline:(true, true)
               (self#type_variant_list lst)]
@@ -7555,7 +7555,7 @@ let printer = object(self:'self)
             s
         in
         makeList
-          ~break:(if List.length s = 0 then Layout.IfNeed else Layout.Always_rec)
+          ~break:Layout.Always_rec
           ~inline:(true, false)
           ~wrap
           ~postSpace:true
