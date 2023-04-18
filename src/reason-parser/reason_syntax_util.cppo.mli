@@ -21,8 +21,6 @@ val escape_string : string -> string
 
 (* Everything below is used by reason repo but not the BuckleScript repo *)
 
-#ifdef BS_NO_COMPILER_PATCH
-
 val reason_to_ml_swap : string -> string
 
 module TrailingCommaMarker : sig val char : char val string : string end
@@ -95,7 +93,6 @@ val location_contains : Location.t -> Location.t -> bool
 val split_compiler_error : Location.error -> Location.t * string
 
 val explode_str : string -> char list
-#endif
 
 module Clflags : sig
   include module type of Clflags

@@ -1,0 +1,120 @@
+name: esy CI
+
+on:
+  pull_request:
+  push:
+   branches:
+     - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+
+        ocaml-compiler:
+          # Please keep the list in sync with the minimal version of OCaml in
+          # esy.json, reason.esy/reason.opam and rtop.esy/rtop.opam.
+          - 4.06.x # We support 4.06 because is the one that is used in BuckleScript / ReScript v9
+          - 4.10.x
+          - 4.12.x
+          - 4.14.x
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install esy
+        run: npm install -g esy@0.6.12
+
+      - name: Restore global cache (~/.esy/source)
+        id: global-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: ~/.esy/source
+          key: esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+
+      - name: Print esy cache
+        id: print_esy_cache
+        run: echo "ESY_CACHE=$(node .github/workflows/print-esy-cache.js)" >> $GITHUB_OUTPUT;
+
+      - name: Load dependencies cache
+        id: deps-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
+            _export
+          key: esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+          restore-keys: esy-build-${{ matrix.os }}-
+
+      - name: Instal OCaml ${{ matrix.ocaml-compiler }}
+        run: esy add ocaml@${{ matrix.ocaml-compiler }}
+
+      - name: Install dependencies
+        run: esy install
+
+      - name: Import dependencies
+        if: steps.deps-cache.outputs.cache-hit == 'true'
+        # Don't crash the run if esy cache import fails - mostly happens on Windows
+        continue-on-error: true
+        run: |
+          esy import-dependencies _export
+          rm -rf _export
+
+      - name: Build dependencies
+        run: esy build-dependencies
+
+      - name: Build
+        run: esy build
+
+      - name: Test when not Windows
+        if: runner.os != 'Windows'
+        run: esy dune runtest
+
+      - name: Test when Windows
+        if: runner.os == 'Windows'
+        run: esy b dune runtest -p "reason,rtop"
+
+      - name: Export dependencies
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: esy export-dependencies
+
+      - name: Save global cache
+        uses: actions/cache/save@v3
+        if: steps.global-cache.outputs.cache-hit != 'true'
+        with:
+          path: ~/.esy/source
+          key: esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+
+      - name: Save dependencies cache
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
+            _export
+          key: esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+
+      # Cleanup build cache in case dependencies have changed
+      - name: Cleanup
+        if: steps.deps-cache.outputs.cache-hit != 'true'
+        run: esy cleanup .

@@ -12,7 +12,6 @@
 (*   special exception on linking described in the file LICENSE.          *)
 (*                                                                        *)
 (**************************************************************************)
-open Result[@@ocaml.warning "-33"]
 
 (** A marshalled ast packs the ast with the corresponding version of the
     frontend *)

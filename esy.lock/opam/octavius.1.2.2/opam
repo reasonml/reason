@@ -1,0 +1,33 @@
+opam-version: "2.0"
+maintainer: ["leo@lpw25.net"]
+authors: ["Leo White <leo@lpw25.net>"]
+license: "ISC"
+homepage: "https://github.com/ocaml-doc/octavius"
+doc: "http://ocaml-doc.github.io/octavius/"
+bug-reports: "https://github.com/ocaml-doc/octavius/issues"
+depends: [
+  "dune" {>= "1.11"}
+  "ocaml" {>= "4.03.0"}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-doc/octavius.git"
+
+synopsis: "Ocamldoc comment syntax parser"
+description: "Octavius is a library to parse the `ocamldoc` comment syntax."
+url {
+  src: "https://github.com/ocaml-doc/octavius/archive/v1.2.2.tar.gz"
+  checksum: "md5=72f9e1d996e6c5089fc513cc9218607b"
+}

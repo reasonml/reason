@@ -1,0 +1,40 @@
+opam-version: "2.0"
+synopsis: "Dynamic type"
+description: "Dynamic type"
+maintainer: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+license: "MIT"
+homepage: "https://github.com/ocaml/dune"
+doc: "https://dune.readthedocs.io/"
+bug-reports: "https://github.com/ocaml/dune/issues"
+depends: [
+  "dune" {>= "3.5"}
+  "ocaml" {>= "4.08.0"}
+  "ordering" {= version}
+  "pp" {>= "1.1.0"}
+  "odoc" {with-doc}
+]
+dev-repo: "git+https://github.com/ocaml/dune.git"
+build: [
+  ["dune" "subst"] {dev}
+  ["rm" "-rf" "vendor/csexp"]
+  ["rm" "-rf" "vendor/pp"]
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@doc" {with-doc}
+  ]
+]
+url {
+  src: "https://github.com/ocaml/dune/releases/download/3.6.2/dune-3.6.2.tbz"
+  checksum: [
+    "sha256=b6d4ab848efb04aa2a325d0015d32ed4414ed7130ec7aa12f98158eff445cf3c"
+    "sha512=d0dd69ada2f1583319a2d6f679b8d49998059117c3258805ee69ae3e71d47bfab7a9c646f19b5fc43a6ccdef934eb87de5bb81205fcd60968bed8bf1790cf0a3"
+  ]
+}
+x-commit-hash: "c939c2b0f7a470cedd189988c61cd307a3cedace"

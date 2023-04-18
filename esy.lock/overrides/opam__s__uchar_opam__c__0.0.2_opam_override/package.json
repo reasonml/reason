@@ -1,0 +1,11 @@
+{
+  "build": [
+    [
+      "bash",
+      "-c",
+      "#{os == 'windows' ? 'patch -p1 < winpatch.patch' : 'true' }"
+    ],
+    "ocaml pkg/git.ml",
+    "ocaml pkg/build.ml native=true native-dynlink=true"
+  ]
+}
