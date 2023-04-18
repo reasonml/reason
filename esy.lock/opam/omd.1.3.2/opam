@@ -1,0 +1,50 @@
+opam-version: "2.0"
+synopsis: "A Markdown frontend in pure OCaml"
+description: """
+This Markdown library is implemented using only pure OCaml (including
+I/O operations provided by the standard OCaml compiler distribution).
+OMD is meant to be as faithful as possible to the original Markdown.
+Additionally, OMD implements a few Github markdown features, an
+extension mechanism, and some other features. Note that the opam
+package installs both the OMD library and the command line tool `omd`."""
+maintainer: [
+  "Shon Feder <shon.feder@gmail.com>" "Raphael Sousa Santos <@sonologico>"
+]
+authors: [
+  "Philippe Wang <philippe.wang@gmail.com>"
+  "Nicolás Ojeda Bär <n.oje.bar@gmail.com>"
+]
+license: "ISC"
+tags: ["org:ocamllabs" "org:mirage"]
+homepage: "https://github.com/ocaml/omd"
+bug-reports: "https://github.com/ocaml/omd/issues"
+depends: [
+  "dune" {>= "2.7"}
+  "ocaml" {>= "4.04"}
+  "base-bigarray"
+  "base-bytes"
+  "odoc" {with-doc}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml/omd.git"
+url {
+  src: "https://github.com/ocaml/omd/releases/download/1.3.2/omd-1.3.2.tbz"
+  checksum: [
+    "sha256=6023e1642631f08f678eb5725820879ed7bb5a3ffee777cdedebc28c1f85fadb"
+    "sha512=fa2070a5f5d30b2cc422937ac4158bb087134a69d47fa15df403afb1c0c60a73dd436c949faa8d44e0b65bdee039779d86191b55085b717253f91ef20a69ef98"
+  ]
+}
+x-commit-hash: "bc6c0d568b90b61143e9863cb6ef7b3989b3313a"

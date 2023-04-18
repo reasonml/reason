@@ -1,0 +1,55 @@
+opam-version: "2.0"
+synopsis: "Unicode character properties for OCaml"
+description: """\
+Uucp is an OCaml library providing efficient access to a selection of
+character properties of the [Unicode character database][1].
+
+Uucp is independent from any Unicode text data structure and has no
+dependencies. It is distributed under the ISC license.
+
+[1]: http://www.unicode.org/reports/tr44/
+
+Home page: http://erratique.ch/software/uucp"""
+maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
+authors: "The uucp programmers"
+license: "ISC"
+tags: ["unicode" "text" "character" "org:erratique"]
+homepage: "https://erratique.ch/software/uucp"
+doc: "https://erratique.ch/software/uucp/doc/"
+bug-reports: "https://github.com/dbuenzli/uucp/issues"
+depends: [
+  "ocaml" {>= "4.03.0"}
+  "ocamlfind" {build}
+  "ocamlbuild" {build}
+  "topkg" {build & >= "1.0.3"}
+  "uucd" {with-test}
+  "uunf" {with-test}
+  "uutf" {with-test}
+]
+depopts: ["uutf" "uunf" "cmdliner"]
+conflicts: [
+  "uutf" {< "1.0.1"}
+  "cmdliner" {< "1.1.0"}
+]
+build: [
+  "ocaml"
+  "pkg/pkg.ml"
+  "build"
+  "--dev-pkg"
+  "%{dev}%"
+  "--with-uutf"
+  "%{uutf:installed}%"
+  "--with-uunf"
+  "%{uunf:installed}%"
+  "--with-cmdliner"
+  "%{cmdliner:installed}%"
+]
+post-messages:
+  "If the build fails with \"ocamlopt.opt got signal and exited\", issue 'ulimit -s unlimited' and retry."
+    {failure & (arch = "ppc64" | arch = "arm64")}
+dev-repo: "git+https://erratique.ch/repos/uucp.git"
+url {
+  src: "https://erratique.ch/software/uucp/releases/uucp-15.0.0.tbz"
+  checksum:
+    "sha512=ee4acff5666961766321e85e287fb9d5b8d50533319f22bf6f4eceb943242df2d0e0f4e775c4a140f68ca142837938eaa5926e22362215a3365ffe7f8768923b"
+}

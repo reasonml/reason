@@ -43,7 +43,8 @@ let print =
 let print_width =
   let docv = "COLS" in
   let doc = "wrapping width for printing the AST" in
-  Arg.(value & opt (int) (80) & info ["w"; "print-width"] ~docv ~doc)
+  let env = Arg.env_var "REFMT_PRINT_WIDTH" ~doc in
+  Arg.(value & opt (int) (80) & info ["w"; "print-width"] ~docv ~doc ~env)
 
 let heuristics_file =
   let doc =

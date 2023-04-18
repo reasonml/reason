@@ -1,6 +1,11 @@
-## 3.9
+## 3.9 (unreleased)
 
 - Reduce the amount of parentheses around functor usage.
+- Print module type body on separate line (@SanderSpies) [#2709](https://github.com/reasonml/reason/pull/2709)
+- Fix missing patterns around contraint pattern (a pattern with a type annotation).
+- Fix top level extension printing
+- Remove the dependency on the `result` package, which isn't needed for OCaml
+  4.03 and above (@anmonteiro) [2703](https://github.com/reasonml/reason/pull/2703)
 
 ## 3.8.2
 
