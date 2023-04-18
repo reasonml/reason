@@ -84,10 +84,8 @@
   patching the right parts, through the power of types(tm)
 *)
 
-#ifdef BS_NO_COMPILER_PATCH
 open Reason_omp
 open Ast_411
-#endif
 
 open Format
 open Outcometree
@@ -98,7 +96,6 @@ let cautious f ppf arg =
   try f ppf arg with
     Ellipsis -> fprintf ppf "..."
 
-#ifdef BS_NO_COMPILER_PATCH
 let rec print_ident ppf =
   function
     Oide_ident s -> pp_print_string ppf s.printed_name
@@ -106,15 +103,6 @@ let rec print_ident ppf =
       print_ident ppf id; pp_print_char ppf '.'; pp_print_string ppf s
   | Oide_apply (id1, id2) ->
       fprintf ppf "%a(%a)" print_ident id1 print_ident id2
-#else
-let rec print_ident ppf =
-  function
-    Oide_ident s -> !Oprint.out_ident ppf s
-  | Oide_dot (id, s) ->
-      print_ident ppf id; pp_print_char ppf '.'; !Oprint.out_ident ppf s
-  | Oide_apply (id1, id2) ->
-      fprintf ppf "%a(%a)" print_ident id1 print_ident id2
-#endif
 
 let parenthesized_ident name =
   (List.mem name ["or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr"])
