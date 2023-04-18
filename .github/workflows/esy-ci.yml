@@ -67,7 +67,8 @@ jobs:
           restore-keys: esy-build-${{ matrix.os }}-
 
       - name: Instal OCaml ${{ matrix.ocaml-compiler }}
-        run: sed -i 's/"ocaml": "~4.14.0"/"ocaml": "${{ matrix.ocaml-compiler }}"/g' esy.json
+        run: |
+          sed -i 's/"ocaml": "~4.14.0"/"ocaml": "${{ matrix.ocaml-compiler }}"/g' esy.json
 
       - name: Install dependencies
         run: esy install
