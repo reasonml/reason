@@ -324,12 +324,7 @@ Format modules no semi
     );
   
   module ResultFromNonSimpleFunctorArg =
-    CurriedNoSugar(
-      (
-        MakeAModule({})
-      ),
-      BMod,
-    );
+    CurriedNoSugar(MakeAModule(), BMod);
   
   /* TODO: Functor type signatures should more resemble value signatures */
   let curriedFunc: (int, int) => int =
@@ -451,7 +446,7 @@ Format modules no semi
            G: (Type) => Type,
            X: Type,
          ) =>
-    F((G(X)));
+    F(G(X));
   let l: Compose(List)(Maybe)(Char).t = [
     Some('a'),
   ];
