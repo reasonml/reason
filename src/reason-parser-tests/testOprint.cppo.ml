@@ -20,9 +20,9 @@
  *)
 
 open Reason_omp
+module Ast = Ast_414
 
-module Convert = Reason_omp.Convert (Reason_omp.OCaml_411) (Reason_omp.OCaml_current)
-module ConvertBack = Reason_omp.Convert (Reason_omp.OCaml_current) (Reason_omp.OCaml_411)
+module ConvertBack = Reason_omp.Convert (Reason_omp.OCaml_current) (Reason_omp.OCaml_414)
 
 let main () =
   let filename = "./TestTest.ml" in
@@ -39,7 +39,7 @@ let main () =
   Env.set_unit_name modulename;
 
   let ast = impl lexbuf in
-  let ast = Convert.copy_structure ast in
+  let ast = Reason_toolchain.To_current.copy_structure ast in
   let env = Compmisc.initial_env() in
 #if OCAML_VERSION >= (4,13,0)
   let { Typedtree.structure = typedtree; _ } =
@@ -48,7 +48,7 @@ let main () =
 #endif
     Typemod.type_implementation modulename modulename modulename env ast in
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
-  let phrase = (Ast_411.Outcometree.Ophr_signature
+  let phrase = (Ast.Outcometree.Ophr_signature
     (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)
   ) in
   let fmt = Format.str_formatter in

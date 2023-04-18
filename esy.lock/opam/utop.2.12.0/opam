@@ -34,10 +34,10 @@ and more.  It integrates with the Tuareg mode in Emacs.
 """
 url {
   src:
-    "https://github.com/ocaml-community/utop/releases/download/2.11.0/utop-2.11.0.tbz"
+    "https://github.com/ocaml-community/utop/releases/download/2.12.0/utop-2.12.0.tbz"
   checksum: [
-    "sha256=6937c6c672913ac3b875341ac4a205c7561d01cd8ac8f47cfb35d3bc0e762170"
-    "sha512=ab8b96eaa7f24654a371245f14819b74de0907ed8f3b2bbd9196808dc10e536458cf95418eeacf6dfc4b7f64a8dd088ee31e2eaae3d9ebc7de7cebcada52fb84"
+    "sha256=ad19c859a783bec573cd91e810c54d0e6b70f339d0a4fed55ec672ae408aa1ea"
+    "sha512=cd55cfb49178bec60b39df5b15df9090d9a316b81ddd5e564daaaa04c3c896c2e1ccf24a15ebce5b41ad3e22db56cfc95cc3f1a6808ee8e09f1c685284cdfb71"
   ]
 }
-x-commit-hash: "595002e6f07e6a3c6abc6e94a1b2448006115f1b"
+x-commit-hash: "c50173caf9b147eae637cb44e302e2077778afb4"

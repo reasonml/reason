@@ -43,7 +43,9 @@
   (merlin-extend
    (>= "0.6"))
   fix
-  ppx_derivers))
+  ppx_derivers
+  (ppxlib
+   (>= "0.28.0"))))
 
 (package
  (name rtop)
