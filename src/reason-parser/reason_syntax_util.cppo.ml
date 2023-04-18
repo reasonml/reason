@@ -14,10 +14,8 @@
   patching the right parts, through the power of types(tm)
 *)
 
-#ifdef BS_NO_COMPILER_PATCH
 open Reason_omp
 open Ast_411
-#endif
 
 open Asttypes
 open Ast_mapper
@@ -154,8 +152,6 @@ let escape_string str =
 
 (* the stuff below contains side-effects and are not used by BuckleScript's
   vendored version of reason_syntax_util.ml. So we can neglect it *)
-
-#ifdef BS_NO_COMPILER_PATCH
 
 (*
     UTF-8 characters are encoded like this (most editors are UTF-8)
@@ -858,8 +854,6 @@ let explode_str str =
     if i < 0 then acc else loop (str.[i] :: acc) (i - 1)
   in
     loop [] (String.length str - 1)
-#endif
-
 
 module Clflags = struct
   include Clflags
