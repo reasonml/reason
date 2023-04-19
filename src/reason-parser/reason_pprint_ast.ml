@@ -7542,7 +7542,7 @@ let printer = object(self:'self)
         formatPrecedence (self#module_type letPattern mt)
     | Pmod_structure s ->
         let wrap = if hug then
-          if List.length s = 0 then 
+          if s = [] then 
             ("(", ")") 
           else 
             ("({", "})")
