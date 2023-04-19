@@ -1033,7 +1033,7 @@ let makeList
   let config =
     { Layout.
       listConfigIfCommentsInterleaved; listConfigIfEolCommentsInterleaved;
-      break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
+      break = if lst = [] then Layout.IfNeed else break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
     }
   in
   Layout.Sequence (config, lst)
@@ -2942,7 +2942,7 @@ let printer = object(self:'self)
       | (Ptype_variant lst, scope, None) -> [
           privatize scope
             [makeList
-              ~break:(if lst == [] then IfNeed else Always_rec)
+              ~break:Always_rec
               ~postSpace:true
               ~inline:(true, true)
               (self#type_variant_list lst)]
@@ -5060,7 +5060,7 @@ let printer = object(self:'self)
     | { pmod_desc = Pmod_functor(fp, me2) } ->
         let firstOne =
           match fp with
-            | Unit -> atom "()"
+            | Unit -> atom ""
             | Named (s, mt') ->
               let s = moduleIdent s in
               self#module_type (makeList [atom s; atom ":"]) mt'
@@ -7541,7 +7541,12 @@ let printer = object(self:'self)
         in
         formatPrecedence (self#module_type letPattern mt)
     | Pmod_structure s ->
-        let wrap = if hug then ("({", "})") else ("{", "}") in
+        let wrap = if hug then
+          if s = [] then 
+            ("(", ")") 
+          else 
+            ("({", "})")
+        else ("{", "}") in
         let items =
           groupAndPrint
             ~xf:self#structure_item
@@ -7558,7 +7563,7 @@ let printer = object(self:'self)
           items
     | _ ->
         (* For example, functor application will be wrapped. *)
-        formatPrecedence (self#module_expr x)
+        formatPrecedence ~wrap:("", "") (self#module_expr x)
 
   method module_expr x =
     match x.pmod_desc with

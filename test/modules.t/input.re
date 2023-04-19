@@ -487,4 +487,16 @@ module type Event = (module type of {
 include (Version2: (module type of Version2));
 
 /* https://github.com/facebook/reason/issues/2608 */
-module Functor = (()): (module type of {}) => {};
+module Functor = (): (module type of {}) => {};
+
+module Lola1 = () => {
+  let a = 3;
+}
+
+module Lola2 = (C: Cat, D: Dog, L: Lion) => {
+  let a = 33;
+}
+
+module L = Lola1();
+
+module L2 = Lola2(Cat, Dog, Foo);
