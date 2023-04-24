@@ -500,3 +500,8 @@ module Lola2 = (C: Cat, D: Dog, L: Lion) => {
 module L = Lola1();
 
 module L2 = Lola2(Cat, Dog, Foo);
+
+let y = Promise.Ops.(
+  let* x = Js.Promise.resolve(42);
+  Js.Promise.resolve(x * 2);
+);

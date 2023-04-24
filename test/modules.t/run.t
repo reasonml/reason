@@ -665,4 +665,10 @@ Format modules
   module L = Lola1();
   
   module L2 = Lola2(Cat, Dog, Foo);
+  
+  let y = {
+    open Promise.Ops;
+    let* x = Js.Promise.resolve(42);
+    Js.Promise.resolve(x * 2);
+  };
 /* From http://stackoverflow.com/questions/1986374/  higher-order-type-constructors-and-functors-in-ocaml */
