@@ -2481,7 +2481,7 @@ class_type_declaration_details:
  *)
 braced_expr:
 mark_position_exp
-  ( LBRACE seq_expr RBRACE
+  ( LBRACE seq_expr(SEMI?) RBRACE
     { add_brace_attr $2 }
   | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
@@ -2503,28 +2503,28 @@ mark_position_exp
     { mkexp (Pexp_object $2) }
 ) {$1};
 
-seq_expr_no_seq [@recover.expr default_expr ()]:
-| expr SEMI? { $1 }
-| opt_LET_MODULE_ident module_binding_body SEMI seq_expr
+seq_expr_no_seq [@recover.expr default_expr ()] (semi):
+| expr semi { $1 }
+| opt_LET_MODULE_ident module_binding_body SEMI seq_expr(SEMI?)
   { mkexp (Pexp_letmodule($1, $2, $4)) }
-| item_attributes LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
+| item_attributes LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr(SEMI?)
   { let loc = (mklocation $startpos($1) $endpos($4)) in
     let me = Ast_helper.Mod.ident ~loc $5 in
     let od = Ast_helper.Opn.mk ~override:$4 ~loc me in
     let exp = mkexp (Pexp_open(od, $7)) in
     { exp with pexp_attributes = $1 }
   }
-| str_exception_declaration SEMI seq_expr {
+| str_exception_declaration SEMI seq_expr(SEMI?) {
    mkexp (Pexp_letexception ($1, $3)) }
-| let_bindings SEMI seq_expr
+| let_bindings SEMI seq_expr(SEMI?)
   { let loc = mklocation $startpos($1) $endpos($3) in
     expr_of_let_bindings ~loc $1 $3
   }
-| let_bindings SEMI?
+| let_bindings semi
   { let loc = mklocation $symbolstartpos $endpos in
     expr_of_let_bindings ~loc $1 (ghunit ~loc ())
   }
-| as_loc(LETOP) letop_bindings SEMI seq_expr
+| as_loc(LETOP) letop_bindings SEMI seq_expr(SEMI?)
   { let (pbop_pat, pbop_exp, rev_ands) = $2 in
     let ands = List.rev rev_ands in
     let pbop_loc = mklocation $symbolstartpos $endpos($2) in
@@ -2532,15 +2532,15 @@ seq_expr_no_seq [@recover.expr default_expr ()]:
     mkexp ~loc:pbop_loc (Pexp_letop { let_; ands; body = $4}) }
 ;
 
-seq_expr:
+seq_expr(semi):
 mark_position_exp
-  ( seq_expr_no_seq
+  ( seq_expr_no_seq(semi)
     { $1 }
-  | item_extension_sugar mark_position_exp(seq_expr_no_seq)
+  | item_extension_sugar mark_position_exp(seq_expr_no_seq(SEMI?))
     { expression_extension $1 $2 }
-  | expr SEMI seq_expr
+  | expr SEMI seq_expr(SEMI?)
     { mkexp (Pexp_sequence($1, $3)) }
-  | item_extension_sugar expr SEMI seq_expr
+  | item_extension_sugar expr SEMI seq_expr(SEMI?)
     { let loc = mklocation $startpos($1) $endpos($2) in
       mkexp (Pexp_sequence(expression_extension ~loc $1 $2, $4)) }
   ) { $1 }
@@ -2874,10 +2874,10 @@ mark_position_exp
   | FUN optional_expr_extension match_cases(expr) %prec below_BAR
     { $2 (mkexp (Pexp_function $3)) }
   | SWITCH optional_expr_extension simple_expr_no_constructor
-    LBRACE match_cases(seq_expr) RBRACE
+    LBRACE match_cases(seq_expr(SEMI?)) RBRACE
     { $2 (mkexp (Pexp_match ($3, $5))) }
   | TRY optional_expr_extension simple_expr_no_constructor
-    LBRACE match_cases(seq_expr) RBRACE
+    LBRACE match_cases(seq_expr(SEMI?)) RBRACE
     { $2 (mkexp (Pexp_try ($3, $5))) }
   | IF optional_expr_extension parenthesized_expr
        simple_expr ioption(preceded(ELSE,expr))
@@ -3007,6 +3007,10 @@ parenthesized_expr:
 %inline bigarray_access:
   DOT LBRACE lseparated_nonempty_list(COMMA, expr) COMMA? RBRACE { $3 }
 
+expr_list_or_seq_expr: 
+  | expr_list { $1 }
+  | seq_expr(SEMI) { [$1] };
+
 (* The grammar of simple exprs changes slightly according to context:
  * - in most cases, calls (like f(x)) are allowed
  * - in some contexts, calls are forbidden
@@ -3033,7 +3037,7 @@ parenthesized_expr:
     { may_tuple $startpos $endpos $2 }
   | E as_loc(POSTFIXOP)
     { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
-  | od=open_dot_declaration DOT LPAREN expr_list RPAREN
+  | od=open_dot_declaration DOT LPAREN expr_list_or_seq_expr RPAREN
     { mkexp(Pexp_open(od, may_tuple $startpos($3) $endpos($5) $4)) }
   | E DOT as_loc(label_longident)
     { mkexp(Pexp_field($1, $3)) }
@@ -3119,11 +3123,6 @@ parenthesized_expr:
       mkinfixop $1 (mkoperator op) $3 }
   | E as_loc(MINUSGREATER) simple_expr_no_call
     { mkinfixop $1 (mkoperator {$2 with txt = "|."}) $3 }
-  | od=open_dot_declaration DOT LPAREN MODULE module_expr COLON package_type RPAREN
-    { let loc = mklocation $symbolstartpos $endpos in
-      mkexp (Pexp_open(od,
-        mkexp ~loc (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $5), $7))))
-    }
   | extension
     { mkexp (Pexp_extension $1) }
 ;
