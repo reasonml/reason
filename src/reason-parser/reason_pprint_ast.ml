@@ -6450,7 +6450,12 @@ let printer = object(self:'self)
                     (atom (".")))
                   (self#formatNonSequencyExpression e))
           else
-            Some (makeLetSequence (self#letList x))
+            Some
+                (label
+                  (label
+                    (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
+                    (atom (".")))
+                  (makeLetSequence ~wrap:("(", ")") (self#letList e)))
         | Pexp_send (e, s) ->
           let needparens = match e.pexp_desc with
             | Pexp_apply (ee, _) ->
