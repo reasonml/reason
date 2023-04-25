@@ -125,4 +125,5 @@
   reason.ocaml-migrate-parsetree
   menhirLib
   reason.easy_format
-  ppxlib))
+  ppxlib
+  reason.version))

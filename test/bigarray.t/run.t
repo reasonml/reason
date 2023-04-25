@@ -1,5 +1,6 @@
 Format bigarray
   $ refmt ./input.re
+  [@reason.version 3.7];
   my_big_array3.{
     reallyLongStringThatWillDefinitelyBreakLine
   };

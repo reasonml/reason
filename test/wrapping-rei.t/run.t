@@ -1,5 +1,6 @@
 Format wrapping in .rei files
   $ refmt ./input.rei
+  [@reason.version 3.7];
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
   
   let named: (~a: int, ~b: int) => int;

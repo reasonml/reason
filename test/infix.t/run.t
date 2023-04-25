@@ -1,5 +1,6 @@
 Format infix operators
   $ refmt ./input.re
+  [@reason.version 3.7];
   /* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
   
   /* - A good way to test if formatting of infix operators groups precedences

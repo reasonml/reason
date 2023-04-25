@@ -1,5 +1,6 @@
 Format uncurried
   $ refmt ./input.re
+  [@reason.version 3.7];
   f(.);
   
   [@attr]

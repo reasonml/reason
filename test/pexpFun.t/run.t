@@ -1,5 +1,6 @@
 Format function expressipns (pexpFun)
   $ refmt ./input.re
+  [@reason.version 3.7];
   let x =
     switch (x) {
     | Bar =>

@@ -1,5 +1,6 @@
 Format line comments
   $ refmt ./input.re
+  [@reason.version 3.7];
   3; // -
   3; //-
   
