@@ -11,7 +11,7 @@ ocamlPackages.buildDunePackage {
 
   src = nix-filter.filter {
     root = ./..;
-    include = [ "dune" "dune-project" "reason.opam" "rtop.opam" "scripts" "src" "formatTest" ];
+    include = [ "dune" "dune-project" "reason.opam" "rtop.opam" "scripts" "src" "test" ];
   };
 
   useDune2 = true;
@@ -24,6 +24,8 @@ ocamlPackages.buildDunePackage {
     cppo
     fix
     ppx_derivers
+    ppxlib
+    dune-build-info
   ];
 
 }

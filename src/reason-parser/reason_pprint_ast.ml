@@ -48,8 +48,7 @@
 
 module Easy_format = Vendored_easy_format
 
-open Reason_omp
-open Ast_411
+open Ppxlib
 open Asttypes
 open Location
 open Longident
@@ -178,7 +177,7 @@ let add_extension_sugar keyword = function
 
 let string_equal : string -> string -> bool = (=)
 
-let string_loc_equal: string Ast_411.Asttypes.loc -> string Ast_411.Asttypes.loc -> bool =
+let string_loc_equal: string Asttypes.loc -> string Asttypes.loc -> bool =
   fun l1 l2 -> l1.txt = l2.txt
 
 let longident_same l1 l2 =
@@ -301,7 +300,7 @@ let expandLocation pos ~expand:(startPos, endPos) =
  * 2| let f = ...           by the attr on line 1, not the lnum of the `let`
  *)
 let rec firstAttrLoc loc = function
-  | ({ attr_name = attrLoc; _} : Ast_411.Parsetree.attribute) ::attrs ->
+  | ({ attr_name = attrLoc; _} : Parsetree.attribute) ::attrs ->
       if attrLoc.loc.loc_start.pos_lnum < loc.loc_start.pos_lnum
          && not attrLoc.loc.loc_ghost
       then
@@ -729,7 +728,7 @@ let override = function
 
 (* variance encoding: need to sync up with the [parser.mly] *)
 let type_variance = function
-  | Invariant -> ""
+  | NoVariance -> ""
   | Covariant -> "+"
   | Contravariant -> "-"
 
@@ -1033,7 +1032,7 @@ let makeList
   let config =
     { Layout.
       listConfigIfCommentsInterleaved; listConfigIfEolCommentsInterleaved;
-      break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
+      break = if lst = [] then Layout.IfNeed else break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
     }
   in
   Layout.Sequence (config, lst)
@@ -2052,13 +2051,13 @@ let recordRowIsPunned pld =
             ptyp_attributes = [];
           _}
             when
-            (Longident.last txt = name
+            (Longident.last_exn txt = name
               (* Don't pun types from other modules, e.g. type bar = {foo: Baz.foo}; *)
               && isLongIdentWithDot txt == false) -> true
         | _ -> false)
 
 let isPunnedJsxArg lbl ident =
-  not (isLongIdentWithDot ident.txt) && (Longident.last ident.txt) = lbl
+  not (isLongIdentWithDot ident.txt) && (Longident.last_exn ident.txt) = lbl
 
 let is_unit_pattern x = match x.ppat_desc with
   | Ppat_construct ( {txt= Lident"()"}, None) -> true
@@ -2514,7 +2513,7 @@ let printer = object(self:'self)
       makeList ~postSpace:true [atom "."; t]
     else t
 
-  method type_param (ct, a) =
+  method type_param (ct, (a, _)) =
     makeList [atom (type_variance a); self#core_type ct]
 
   (* According to the parse rule [type_declaration], the "type declaration"'s
@@ -2626,7 +2625,7 @@ let printer = object(self:'self)
       in
     let sourceMappedName = atom ~loc:pext_name.loc pext_name.txt in
     let resolved = match pext_kind with
-      | Pext_decl (ctor_args, gadt) ->
+      | Pext_decl (_, ctor_args, gadt) ->
         let formattedArgs = match ctor_args with
           | Pcstr_tuple [] -> []
           | Pcstr_tuple args -> [makeTup (List.map self#non_arrowed_non_simple_core_type args)]
@@ -2942,7 +2941,7 @@ let printer = object(self:'self)
       | (Ptype_variant lst, scope, None) -> [
           privatize scope
             [makeList
-              ~break:(if lst == [] then IfNeed else Always_rec)
+              ~break:Always_rec
               ~postSpace:true
               ~inline:(true, true)
               (self#type_variant_list lst)]
@@ -3101,7 +3100,7 @@ let printer = object(self:'self)
                 self#type_variant_leaf
                   ~opt_ampersand
                   ~polymorphic:true
-                  {pcd_name = label; pcd_args; pcd_res; pcd_loc = label.loc; pcd_attributes = all_attrs}
+                  {pcd_name = label; pcd_args; pcd_res; pcd_loc = label.loc; pcd_attributes = all_attrs; pcd_vars = []}
               | Rinherit ct ->
                 (* '| type' is required if the Rinherit is not the first
                   row_field in the list
@@ -3147,7 +3146,7 @@ let printer = object(self:'self)
     | {
       ppat_desc = Ppat_construct (
         { txt = Lident("::")},
-        Some {ppat_desc = Ppat_tuple ([pat1; pat2])}
+        Some ([], {ppat_desc = Ppat_tuple ([pat1; pat2])})
       ) } ->
         self#pattern_list_split_cons (pat1::acc) pat2
     | p -> (List.rev acc), p
@@ -3255,7 +3254,7 @@ let printer = object(self:'self)
               (*   ppat_attributes=[{txt="explicit_arity"; loc}] *)
               (* }) -> *)
               (*   label ~space:true (self#longident_loc li) (makeSpacedBreakableInlineList (List.map self#simple_pattern l)) *)
-              | Some pattern ->
+              | Some (_, pattern) ->
                   let arityIsClear = isArityClear arityAttrs in
                   self#constructor_pattern ~arityIsClear (self#longident_loc li) pattern
               | None ->
@@ -3507,10 +3506,10 @@ let printer = object(self:'self)
         match loc.txt with
         | Ldot (moduleLid, "createElement") ->
           Some (self#formatJSXComponent
-                  (String.concat "." (Longident.flatten moduleLid)) l)
+                  (String.concat "." (Longident.flatten_exn moduleLid)) l)
         | lid ->
           Some (self#formatJSXComponent
-                  (String.concat "." (Longident.flatten lid)) l)
+                  (String.concat "." (Longident.flatten_exn lid)) l)
       else None
     )
     | (Pexp_apply (
@@ -3527,9 +3526,9 @@ let printer = object(self:'self)
       *)
       let rec extract_apps args = function
         | { pmod_desc = Pmod_apply (m1, {pmod_desc=Pmod_ident loc}) } ->
-          let arg = String.concat "." (Longident.flatten loc.txt) in
+          let arg = String.concat "." (Longident.flatten_exn loc.txt) in
           extract_apps (arg :: args) m1
-        | { pmod_desc=Pmod_ident loc } -> (String.concat "." (Longident.flatten loc.txt))::args
+        | { pmod_desc=Pmod_ident loc } -> (String.concat "." (Longident.flatten_exn loc.txt))::args
         | _ -> failwith "Functors in JSX tags support only module names as parameters" in
       let hasLabelledChildrenLiteral = List.exists (function
         | (Labelled "children", _) -> true
@@ -3542,8 +3541,8 @@ let printer = object(self:'self)
       | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
       in
       if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
-        if List.length (Longident.flatten loc.txt) > 1 then
-          if Longident.last loc.txt = "createElement" then
+        if List.length (Longident.flatten_exn loc.txt) > 1 then
+          if Longident.last_exn loc.txt = "createElement" then
             begin match extract_apps [] app with
               | ftor::args ->
                 let applied = ftor ^ "(" ^ String.concat ", " args ^ ")" in
@@ -3551,7 +3550,7 @@ let printer = object(self:'self)
               | _ -> None
             end
           else None
-        else Some (self#formatJSXComponent (Longident.last loc.txt) l)
+        else Some (self#formatJSXComponent (Longident.last_exn loc.txt) l)
       else None
     )
     | _ -> None
@@ -5060,7 +5059,7 @@ let printer = object(self:'self)
     | { pmod_desc = Pmod_functor(fp, me2) } ->
         let firstOne =
           match fp with
-            | Unit -> atom "()"
+            | Unit -> atom ""
             | Named (s, mt') ->
               let s = moduleIdent s in
               self#module_type (makeList [atom s; atom ":"]) mt'
@@ -5229,9 +5228,9 @@ let printer = object(self:'self)
    *)
   method attachDocAttrsToLayout
     (* all std attributes attached on the ast node backing the layout *)
-    ~stdAttrs:(stdAttrs : Ast_411.Parsetree.attributes)
+    ~stdAttrs:(stdAttrs : Parsetree.attributes)
     (* all doc comments attached on the ast node backing the layout *)
-    ~docAttrs:(docAttrs : Ast_411.Parsetree.attributes)
+    ~docAttrs:(docAttrs : Parsetree.attributes)
     (* location of the layout *)
     ~loc
     (* layout to attach the doc comments to *)
@@ -5254,7 +5253,7 @@ let printer = object(self:'self)
     | [] -> loc
     in
     let rec aux prevLoc layout = function
-      | ({ attr_name = x; _} as attr : Ast_411.Parsetree.attribute)::xs ->
+      | ({ attr_name = x; _} as attr : Parsetree.attribute)::xs ->
         let newLayout =
           let range = Range.makeRangeBetween x.loc prevLoc in
           let layout =
@@ -5750,13 +5749,13 @@ let printer = object(self:'self)
   method patternRecord ?(wrap=("","")) l closed =
     let longident_x_pattern (li, p) =
       match (li, p.ppat_desc) with
-        | ({txt = ident}, Ppat_var {txt}) when Longident.last ident = txt ->
+        | ({txt = ident}, Ppat_var {txt}) when Longident.last_exn ident = txt ->
           (* record field punning when destructuring. {x: x, y: y} becomes {x, y} *)
           (* works with module prefix too: {MyModule.x: x, y: y} becomes {MyModule.x, y} *)
             self#longident_loc li
         | ({txt = ident},
            Ppat_alias ({ppat_desc = (Ppat_var {txt = ident2}) }, {txt = aliasIdent}))
-           when Longident.last ident = ident2 ->
+           when Longident.last_exn ident = ident2 ->
           (* record field punning when destructuring with renaming. {state: state as prevState} becomes {state as prevState *)
           (* works with module prefix too: {ReasonReact.state: state as prevState} becomes {ReasonReact.state as prevState *)
             makeList ~sep:(Sep " ") [self#longident_loc li; atom "as"; atom aliasIdent]
@@ -6112,7 +6111,7 @@ let printer = object(self:'self)
         (* record value punning. Turns {foo: foo, bar: 1} into {foo, bar: 1} *)
         (* also turns {Foo.bar: bar, baz: 1} into {Foo.bar, baz: 1} *)
         (* don't turn {bar: Foo.bar, baz: 1} into {bar, baz: 1}, naturally *)
-        | (Pexp_ident {txt = Lident value}, true, true) when Longident.last li.txt = value ->
+        | (Pexp_ident {txt = Lident value}, true, true) when Longident.last_exn li.txt = value ->
           makeList (maybeQuoteFirstElem li [])
 
           (* Force breaks for nested records or bs obj sugar
@@ -6601,9 +6600,9 @@ let printer = object(self:'self)
     let pcd_loc = ed.pext_loc in
     let pcd_attributes = [] in
     let exn_arg = match ed.pext_kind with
-      | Pext_decl (args, type_opt) ->
+      | Pext_decl (vars, args, type_opt) ->
           let pcd_args, pcd_res = args, type_opt in
-          [self#type_variant_leaf_nobar {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes}]
+          [self#type_variant_leaf_nobar {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes; pcd_vars = vars}]
       | Pext_rebind id ->
           [atom pcd_name.txt; atom "="; (self#longident_loc id)] in
     let {stdAttrs; docAttrs} =
@@ -7384,6 +7383,7 @@ let printer = object(self:'self)
             ()
         | Psig_typesubst l ->
           self#type_def_list ~eq_symbol:":=" (Recursive, l)
+        | Psig_modtypesubst _ -> assert false
     in
     source_map ~loc:x.psig_loc item
 
@@ -7419,7 +7419,7 @@ let printer = object(self:'self)
           ~comments:self#comments
           s
         in
-        let shouldBreakLabel = if List.length s > 1 then `Always else `Auto in
+        let shouldBreakLabel = if List.length s > 0 then `Always else `Auto in
         label
           ~indent:0
           ~break:shouldBreakLabel
@@ -7504,6 +7504,7 @@ let printer = object(self:'self)
                   destrAtom
                   td
             | Pwith_modsubst (s, li2) -> modSub (self#longident s.txt) li2 ":="
+            | Pwith_modtype (_, _)|Pwith_modtypesubst (_, _) -> assert false
           in
           (match l with
             | [] -> self#module_type ~space letPattern mt
@@ -7541,7 +7542,12 @@ let printer = object(self:'self)
         in
         formatPrecedence (self#module_type letPattern mt)
     | Pmod_structure s ->
-        let wrap = if hug then ("({", "})") else ("{", "}") in
+        let wrap = if hug then
+          if s = [] then
+            ("(", ")")
+          else
+            ("({", "})")
+        else ("{", "}") in
         let items =
           groupAndPrint
             ~xf:self#structure_item
@@ -7558,7 +7564,7 @@ let printer = object(self:'self)
           items
     | _ ->
         (* For example, functor application will be wrapped. *)
-        formatPrecedence (self#module_expr x)
+        formatPrecedence ~wrap:("", "") (self#module_expr x)
 
   method module_expr x =
     match x.pmod_desc with
@@ -7579,7 +7585,7 @@ let printer = object(self:'self)
   method structure structureItems =
     (* We don't have any way to know if an extension is placed at the top level by the parsetree
     while there's a difference syntactically (% for structure_items/expressons and %% for top_level).
-    This small fn detects this particular case (structure > structure_item > extension > value) and 
+    This small fn detects this particular case (structure > structure_item > extension > value) and
     prints with double % *)
     let structure_item item =
       match item.pstr_desc with
@@ -7899,7 +7905,7 @@ let printer = object(self:'self)
         | [] -> []
         | hd::tl ->
           let formattedHd = self#pattern hd in
-          let formattedHd = match hd.ppat_desc with 
+          let formattedHd = match hd.ppat_desc with
           | Ppat_constraint _ -> formatPrecedence formattedHd
           | _ -> formattedHd
           in
@@ -8106,7 +8112,7 @@ let printer = object(self:'self)
            *)
           let forceBreak = match funExpr.pexp_desc with
           | Pexp_ident ident when
-              let lastIdent = Longident.last ident.txt in
+              let lastIdent = Longident.last_exn ident.txt in
               List.mem lastIdent ["test"; "describe"; "it"; "expect"] -> true
           | _ -> false
           in
@@ -8283,78 +8289,88 @@ let wrap_pat_with_tuple pat =
  *
  *)
 
-module StringSet = Set.Make(String);;
+module StringSet = Stdlib.Set.Make(String)
 
 let built_in_explicit_arity_constructors = ["Some"; "Assert_failure"; "Match_failure"]
 
 let explicit_arity_constructors = StringSet.of_list(built_in_explicit_arity_constructors @ (!configuredSettings).constructorLists)
 
-let add_explicit_arity_mapper super =
-  let super_expr = super.Ast_mapper.expr in
-  let super_pat = super.Ast_mapper.pat in
-  let expr mapper expr =
-    let expr =
-      match expr with
-      | {pexp_desc=Pexp_construct(lid, Some sp);
-         pexp_loc;
-         pexp_attributes} when
-          List.exists
-            (fun c -> StringSet.mem c explicit_arity_constructors)
-            (longident_for_arity lid.txt) &&
-          explicit_arity_not_exists pexp_attributes ->
-        {pexp_desc=Pexp_construct(lid, Some (wrap_expr_with_tuple sp));
-         pexp_loc;
-         pexp_attributes=add_explicit_arity pexp_loc pexp_attributes;
-         pexp_loc_stack = []}
-      | x -> x
-    in
-    super_expr mapper expr
-  and pat mapper pat =
-    let pat =
-      match pat with
-      | {ppat_desc=Ppat_construct(lid, Some sp);
-         ppat_loc;
-         ppat_attributes} when
-          List.exists
-            (fun c -> StringSet.mem c explicit_arity_constructors)
-            (longident_for_arity lid.txt) &&
-          explicit_arity_not_exists ppat_attributes ->
-        {ppat_desc=Ppat_construct(lid, Some (wrap_pat_with_tuple sp));
-         ppat_loc;
-         ppat_attributes=add_explicit_arity ppat_loc ppat_attributes;
-         ppat_loc_stack = []}
-      | x -> x
-    in
-    super_pat mapper pat
-  in
-  { super with Ast_mapper. expr; pat }
 
 let preprocessing_mapper =
-  ml_to_reason_swap_operator_mapper
-    (escape_stars_slashes_mapper
-      (add_explicit_arity_mapper Ast_mapper.default_mapper))
+  let escape_slashes = new  Reason_syntax_util.escape_stars_slashes_mapper in
+  object
+    inherit Ast_traverse.map as super
+
+    method! expression expr =
+      let expr =
+        match expr with
+        | {pexp_desc=Pexp_construct(lid, Some sp);
+           pexp_loc;
+           pexp_attributes} when
+            List.exists
+              (fun c -> StringSet.mem c explicit_arity_constructors)
+              (longident_for_arity lid.txt) &&
+            explicit_arity_not_exists pexp_attributes ->
+          {pexp_desc=Pexp_construct(lid, Some (wrap_expr_with_tuple sp));
+           pexp_loc;
+           pexp_attributes=add_explicit_arity pexp_loc pexp_attributes;
+           pexp_loc_stack = []}
+        | x -> x
+      in
+      escape_slashes#expression (super#expression expr)
+
+    method! pattern pat =
+      let pat =
+        match pat with
+        | {ppat_desc=Ppat_construct(lid, Some (x, sp));
+           ppat_loc;
+           ppat_attributes} when
+            List.exists
+              (fun c -> StringSet.mem c explicit_arity_constructors)
+              (longident_for_arity lid.txt) &&
+            explicit_arity_not_exists ppat_attributes ->
+          {ppat_desc=Ppat_construct(lid, Some (x, wrap_pat_with_tuple sp));
+           ppat_loc;
+           ppat_attributes=add_explicit_arity ppat_loc ppat_attributes;
+           ppat_loc_stack = []}
+        | x -> x
+      in
+      escape_slashes#pattern (super#pattern pat)
+  end
+
+let ml_to_reason_swap_operator_mapper = new Reason_syntax_util.ml_to_reason_swap_operator_mapper
+
+let preprocessing_mapper f a =
+  a
+  |> f ml_to_reason_swap_operator_mapper
+  |> f preprocessing_mapper
 
 let core_type ppf x =
   format_layout ppf
-    (printer#core_type (apply_mapper_to_type x preprocessing_mapper))
+    (printer#core_type
+      (preprocessing_mapper apply_mapper_to_type x))
 
 let pattern ppf x =
   format_layout ppf
-    (printer#pattern (apply_mapper_to_pattern x preprocessing_mapper))
+    (printer#pattern
+      (preprocessing_mapper apply_mapper_to_pattern x))
 
 let signature (comments : Comment.t list) ppf x =
   List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
-    (printer#signature (apply_mapper_to_signature x preprocessing_mapper))
+    (printer#signature
+      (preprocessing_mapper apply_mapper_to_signature x))
 
 let structure (comments : Comment.t list) ppf x =
   List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
-    (printer#structure (apply_mapper_to_structure x preprocessing_mapper))
+    (printer#structure
+      (preprocessing_mapper apply_mapper_to_structure x))
 
 let expression ppf x =
   format_layout ppf
-    (printer#unparseExpr (apply_mapper_to_expr x preprocessing_mapper))
+    (printer#unparseExpr
+      (preprocessing_mapper apply_mapper_to_expr x))
 
 let case_list = case_list
 

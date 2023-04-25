@@ -113,7 +113,9 @@ Format modules
     tmp + 30;
   };
   
-  module type HasTT = {type tt;};
+  module type HasTT = {
+    type tt;
+  };
   
   module SubModule: HasTT = {
     type tt = int;
@@ -123,7 +125,9 @@ Format modules
     module SubModuleThatHasTT = SubModule;
   };
   
-  module type HasPolyType = {type t('a);};
+  module type HasPolyType = {
+    type t('a);
+  };
   
   module type HasDestructivelySubstitutedPolyType =
     HasPolyType with type t('a) := list('a);
@@ -200,10 +204,16 @@ Format modules
       type tt = string;
     });
   
-  module type SigResult = {let result: int;};
+  module type SigResult = {
+    let result: int;
+  };
   
-  module type ASig = {let a: int;};
-  module type BSig = {let b: int;};
+  module type ASig = {
+    let a: int;
+  };
+  module type BSig = {
+    let b: int;
+  };
   module AMod = {
     let a = 10;
   };
@@ -314,12 +324,7 @@ Format modules
     );
   
   module ResultFromNonSimpleFunctorArg =
-    CurriedNoSugar(
-      (
-        MakeAModule({})
-      ),
-      BMod,
-    );
+    CurriedNoSugar(MakeAModule(), BMod);
   
   /* TODO: Functor type signatures should more resemble value signatures */
   let curriedFunc: (int, int) => int =
@@ -422,7 +427,9 @@ Format modules
   };
   
   /* From http://stackoverflow.com/questions/1986374/higher-order-type-constructors-and-functors-in-ocaml */
-  module type Type = {type t;};
+  module type Type = {
+    type t;
+  };
   module Char = {
     type t = char;
   };
@@ -439,7 +446,7 @@ Format modules
            G: (Type) => Type,
            X: Type,
          ) =>
-    F((G(X)));
+    F(G(X));
   let l: Compose(List)(Maybe)(Char).t = [
     Some('a'),
   ];
@@ -483,7 +490,9 @@ Format modules
     let myValue = {recordField: "hello"};
   });
   
-  module type HasInt = {let x: int;};
+  module type HasInt = {
+    let x: int;
+  };
   
   module MyModule = {
     let x = 10;
@@ -643,7 +652,17 @@ Format modules
   include (Version2: (module type of Version2));
   
   /* https://github.com/facebook/reason/issues/2608 */
-  module Functor =
-         (())
-         : (module type of {}) => {};
+  module Functor = () : (module type of {}) => {};
+  
+  module Lola1 = () => {
+    let a = 3;
+  };
+  
+  module Lola2 = (C: Cat, D: Dog, L: Lion) => {
+    let a = 33;
+  };
+  
+  module L = Lola1();
+  
+  module L2 = Lola2(Cat, Dog, Foo);
 /* From http://stackoverflow.com/questions/1986374/  higher-order-type-constructors-and-functors-in-ocaml */

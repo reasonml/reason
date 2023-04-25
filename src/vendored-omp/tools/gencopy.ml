@@ -82,7 +82,7 @@ module Main : sig end = struct
 
   (*************************************************************************)
 
-  let env = Env.initial_safe_string
+  let env = Env.initial
 
   let module_mapping = ref []
 
@@ -144,7 +144,7 @@ module Main : sig end = struct
           td.type_params
       in
       let env =
-        List.map2 (fun s t -> (t.id, evar s.txt)) params_in td.type_params
+        List.map2 (fun s t -> (Types.get_id t, evar s.txt)) params_in td.type_params
       in
       let make_result_t tyargs_in tyargs_out =
         Typ.(
@@ -212,9 +212,9 @@ module Main : sig end = struct
     List.split (List.mapi arg tl)
 
   and tyexpr env ty x =
-    match ty.desc with
+    match Types.get_desc ty with
     | Tvar _ -> (
-      match List.assoc ty.id env with
+      match List.assoc (Types.get_id ty) env with
       | f -> app f [ x ]
       | exception Not_found -> failwith "Existentials not supported" )
     | Ttuple tl ->
@@ -312,7 +312,7 @@ module Main : sig end = struct
   let usage = Printf.sprintf "%s [options] <type names>\n" Sys.argv.(0)
 
   let main () =
-    Load_path.init [ Config.standard_library ];
+    Load_path.init ~auto_include:Compmisc.auto_include [ Config.standard_library ];
     Arg.parse (Arg.align args) gen usage;
     let from_, to_ =
       match !module_mapping with
@@ -341,3 +341,11 @@ module Main : sig end = struct
       Format.eprintf "%a@?" Errors.report_error exn;
       exit 1
 end
+
+(* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_403:Ast_402 Ast_403.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_403_402_migrate.ml *)
+(* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_402:Ast_403  Ast_402.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_402_403_migrate.ml *)
+
+
+(* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_500:Ast_414 Ast_500.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_500_414_migrate.ml *)
+(* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_414:Ast_500  Ast_414.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_414_500_migrate.ml *)
+

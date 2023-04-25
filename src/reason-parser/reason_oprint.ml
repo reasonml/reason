@@ -84,12 +84,8 @@
   patching the right parts, through the power of types(tm)
 *)
 
-#ifdef BS_NO_COMPILER_PATCH
-open Reason_omp
-open Ast_411
-#endif
-
 open Format
+module Outcometree = Reason_omp.Ast_414.Outcometree
 open Outcometree
 
 exception Ellipsis
@@ -98,7 +94,6 @@ let cautious f ppf arg =
   try f ppf arg with
     Ellipsis -> fprintf ppf "..."
 
-#ifdef BS_NO_COMPILER_PATCH
 let rec print_ident ppf =
   function
     Oide_ident s -> pp_print_string ppf s.printed_name
@@ -106,15 +101,6 @@ let rec print_ident ppf =
       print_ident ppf id; pp_print_char ppf '.'; pp_print_string ppf s
   | Oide_apply (id1, id2) ->
       fprintf ppf "%a(%a)" print_ident id1 print_ident id2
-#else
-let rec print_ident ppf =
-  function
-    Oide_ident s -> !Oprint.out_ident ppf s
-  | Oide_dot (id, s) ->
-      print_ident ppf id; pp_print_char ppf '.'; !Oprint.out_ident ppf s
-  | Oide_apply (id1, id2) ->
-      fprintf ppf "%a(%a)" print_ident id1 print_ident id2
-#endif
 
 let parenthesized_ident name =
   (List.mem name ["or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr"])
@@ -463,15 +449,15 @@ and print_simple_out_type ppf =
       fprintf ppf "@[<1>%a@]" print_out_type ty;
   | Otyp_abstract | Otyp_open
   | Otyp_sum _ | Otyp_record _ | Otyp_manifest (_, _) -> ()
-  | Otyp_module (p, n, tyl) ->
+
+  | Otyp_module (p, ntyls) ->
       fprintf ppf "@[<1>(module %a" print_ident p;
       let first = ref true in
-      List.iter2
-        (fun s t ->
+      List.iter
+        (fun (s, t) ->
           let sep = if !first then (first := false; "with") else "and" in
-          fprintf ppf " %s type %s = %a" sep s print_out_type t
-        )
-        n tyl;
+          fprintf ppf " %s type %s = %a" sep s print_out_type t)
+        ntyls;
       fprintf ppf ")@]"
   | Otyp_attribute (t, attr) ->
         fprintf ppf "@[<1>(%a [@@%s])@]" print_out_type t attr.oattr_name
@@ -532,15 +518,12 @@ and print_typargs ppf =
 
 let out_type = ref print_out_type
 
-(* Class types *)
 let variance = function
- (* co, contra *)
- | false, false -> ""
- | true, true -> ""
- | true, false -> "+"
- | false, true -> "-"
+ | Reason_omp.Ast_414.Asttypes.NoVariance -> ""
+ | Covariant -> "+"
+ | Contravariant -> "-"
 
-let type_parameter ppf (ty, var) =
+let type_parameter ppf (ty, (var, _)) =
   fprintf ppf "%s%s"
     (variance var)
     (if ty = "_" then ty else "'"^ty)
@@ -648,13 +631,19 @@ and print_out_signature ppf =
         match items with
             Osig_typext(ext, Oext_next) :: items ->
               gather_extensions
-                ((ext.oext_name, ext.oext_args, ext.oext_ret_type) :: acc)
+                ( { ocstr_name = ext.oext_name;
+                    ocstr_args = ext.oext_args;
+                    ocstr_return_type = ext.oext_ret_type;
+                  } :: acc)
                 items
           | _ -> (List.rev acc, items)
       in
       let exts, items =
         gather_extensions
-          [(ext.oext_name, ext.oext_args, ext.oext_ret_type)]
+          [ { ocstr_name = ext.oext_name
+            ; ocstr_args = ext.oext_args
+            ; ocstr_return_type = ext.oext_ret_type
+            } ]
           items
       in
       let te =
@@ -682,7 +671,11 @@ and print_out_sig_item ppf =
         print_out_class_type clt
   | Osig_typext (ext, Oext_exception) ->
       fprintf ppf "@[<2>exception %a@]"
-        print_out_constr (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+        print_out_constr
+        { ocstr_name = ext.oext_name
+        ; ocstr_args = ext.oext_args
+        ; ocstr_return_type = ext.oext_ret_type
+        }
   | Osig_typext (ext, _) ->
       print_out_extension_constructor ppf ext
   | Osig_modtype (name, Omty_abstract) ->
@@ -766,8 +759,8 @@ and print_out_type_decl kwd ppf td =
     | _ -> td.otype_type
   in
   let print_private ppf = function
-    Asttypes.Private -> fprintf ppf " pri"
-  | Asttypes.Public -> ()
+    Reason_omp.Ast_414.Asttypes.Private -> fprintf ppf " pri"
+  | Public -> ()
   in
   let print_out_tkind ppf = function
   | Otyp_abstract -> ()
@@ -791,7 +784,7 @@ and print_out_type_decl kwd ppf td =
     print_out_tkind ty
     print_constraints
 
-and print_out_constr ppf (name, tyl,ret_type_opt) =
+and print_out_constr ppf {ocstr_name =name; ocstr_args = tyl; ocstr_return_type = ret_type_opt} =
   match ret_type_opt with
   | None ->
       begin match tyl with
@@ -844,8 +837,12 @@ and print_out_extension_constructor ppf ext =
   in
   fprintf ppf "@[<hv 2>type %t +=%s@;<1 2>%a@]"
     print_extended_type
-    (if ext.oext_private = Asttypes.Private then " pri" else "")
-    print_out_constr (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+    (if ext.oext_private = Reason_omp.Ast_414.Asttypes.Private then " pri" else "")
+    print_out_constr
+    { ocstr_name = ext.oext_name
+    ; ocstr_args = ext.oext_args
+    ; ocstr_return_type = ext.oext_ret_type
+    }
 
 and print_out_type_extension ppf te =
   let print_extended_type ppf =
@@ -867,7 +864,7 @@ and print_out_type_extension ppf te =
   in
   fprintf ppf "@[<hv 2>type %t +=%s@;<1 2>%a@]"
     print_extended_type
-    (if te.otyext_private = Asttypes.Private then " pri" else "")
+    (if te.otyext_private = Reason_omp.Ast_414.Asttypes.Private then " pri" else "")
     (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
     te.otyext_constructors
 
@@ -890,13 +887,13 @@ let rec print_items ppf =
         match items with
             (Osig_typext(ext, Oext_next), None) :: items ->
               gather_extensions
-                ((ext.oext_name, ext.oext_args, ext.oext_ret_type) :: acc)
+                ({ocstr_name = ext.oext_name; ocstr_args = ext.oext_args; ocstr_return_type = ext.oext_ret_type} :: acc)
                 items
           | _ -> (List.rev acc, items)
       in
       let exts, items =
         gather_extensions
-          [(ext.oext_name, ext.oext_args, ext.oext_ret_type)]
+          [{ ocstr_name = ext.oext_name; ocstr_args = ext.oext_args; ocstr_return_type = ext.oext_ret_type}]
           items
       in
       let te =

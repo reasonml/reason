@@ -74,46 +74,16 @@
    (run ../menhir-recover/main.exe reason_parser.cmly))))
 
 (rule
- (targets reason_oprint.ml)
- (deps reason_oprint.cppo.ml)
- (action
-  (run
-   %{bin:cppo}
-   -V
-   OCAML:%{ocaml_version}
-   -D
-   BS_NO_COMPILER_PATCH
-   %{deps}
-   -o
-   %{targets})))
-
-(rule
  (targets reason_syntax_util.ml)
  (deps reason_syntax_util.cppo.ml)
  (action
-  (run
-   %{bin:cppo}
-   -V
-   OCAML:%{ocaml_version}
-   -D
-   BS_NO_COMPILER_PATCH
-   %{deps}
-   -o
-   %{targets})))
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
 
 (rule
  (targets reason_syntax_util.mli)
  (deps reason_syntax_util.cppo.mli)
  (action
-  (run
-   %{bin:cppo}
-   -V
-   OCAML:%{ocaml_version}
-   -D
-   BS_NO_COMPILER_PATCH
-   %{deps}
-   -o
-   %{targets})))
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
 
 (library
  (name reason)
@@ -151,4 +121,8 @@
   reason_parser_explain_raw
   reason_parser_explain
   reason_parser_recover)
- (libraries reason.ocaml-migrate-parsetree menhirLib reason.easy_format))
+ (libraries
+  reason.ocaml-migrate-parsetree
+  menhirLib
+  reason.easy_format
+  ppxlib))

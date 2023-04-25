@@ -33,7 +33,7 @@ install: [
 ]
 dev-repo: "git+https://erratique.ch/repos/cmdliner.git"
 url {
-  src: "https://erratique.ch/software/cmdliner/releases/cmdliner-1.1.1.tbz"
+  src: "https://erratique.ch/software/cmdliner/releases/cmdliner-1.2.0.tbz"
   checksum:
-    "sha512=5478ad833da254b5587b3746e3a8493e66e867a081ac0f653a901cc8a7d944f66e4387592215ce25d939be76f281c4785702f54d4a74b1700bc8838a62255c9e"
+    "sha512=6fcd6a59a6fbc6986b1aecdc3e4ce7a0dc43c65a16b427d6caa5504b10b51384f6b0bc703af646b09f5f1caeb6827b37d4480ce350ca8006204c850785f2810b"
 }
