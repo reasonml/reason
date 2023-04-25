@@ -13,11 +13,13 @@ install:
 # CI uses opam. Regular workflow needn't.
 test-ci: install test-once-installed
 
-# Can be run with esy x - no need to build beforehand.
-test-once-installed: clean-tests
-	./miscTests/rtopIntegrationTest.sh
-	./miscTests/backportSyntaxTests.sh
-	cd formatTest; ./test.sh
+test-once-installed: test
+
+test:
+	esy dune runtest
+
+test-watch:
+	esy dune runtest --watch
 
 .PHONY: coverage
 coverage:
@@ -26,15 +28,7 @@ coverage:
 	bisect-ppx-report -ignore-missing-files -I _build/ -html coverage-after/ bisect*.out ./*/*/*/bisect*.out
 	find -iname "bisect*.out" -exec rm {} \;
 
-clean-tests:
-	rm -rf ./formatTest/**/actual_output
-	rm -rf ./formatTest/**/intf_output
-	rm -rf ./formatTest/**/**/TestTest.cmi
-	rm -f ./formatTest/failed_tests
-	rm -f ./miscTests/reactjs_jsx_ppx_tests/*.cm*
-
-testFormat: build clean-tests
-	cd formatTest; ./test.sh
+testFormat: build test-once-installed
 
 all_errors:
 	@ echo "Regenerate all the possible error states for Menhir."
@@ -42,16 +36,16 @@ all_errors:
 	@ echo "---"
 	menhir --explain --strict --unused-tokens src/reason-parser/reason_parser.mly --list-errors > src/reason-parser/reason_parser.messages.checked-in
 
-clean: clean-tests
+clean:
 	dune clean
 
-clean-for-ci: clean-tests
+clean-for-ci:
 	rm -rf ./_build
 
 .PHONY: build clean
 
 # For publishing esy releases to npm
-esy-prepublish: build clean-tests
+esy-prepublish: build
 	node ./scripts/esy-prepublish.js
 
 # For OPAM
@@ -76,3 +70,8 @@ all-supported-ocaml-versions:
 	dune build @install @runtest --root .
 
 .PHONY: all-supported-ocaml-versions
+
+doc:
+	esy dune build @doc
+
+.PHONY: doc
