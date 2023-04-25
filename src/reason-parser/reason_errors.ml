@@ -10,6 +10,7 @@
    A fourth case is when unknown / unexpected error occurs.
 *)
 
+open Ppxlib
 open Format
 
 type lexing_error =
@@ -126,8 +127,6 @@ let () =
         Some (Format.flush_str_formatter ())
       | _ -> None
     )
-
-open Reason_omp.Ast_411
 
 let str_eval_message text = {
   Parsetree.

@@ -14,6 +14,7 @@
     "@opam/menhir": " >= 20180523.0.0",
     "@opam/merlin-extend": " >= 0.6",
     "@opam/ppx_derivers": "< 2.0.0",
+    "@opam/ppxlib": "> 0.28.x",
     "@opam/dune": ">= 2.9.3",
     "@opam/dune-build-info": ">= 2.9.3"
   },

@@ -12,6 +12,7 @@
     "@opam/merlin-extend": " >= 0.6",
     "@opam/ocamlfind": "1.9.5",
     "@opam/ppx_derivers": "< 2.0.0",
+    "@opam/ppxlib": "> 0.28.x",
     "@opam/utop": " >= 1.17.0",
     "ocaml": " >= 4.3.0 < 4.15.0"
   },
