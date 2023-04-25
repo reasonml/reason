@@ -1,5 +1,5 @@
 See the typed tree from ./input.re
-  $ cat ./input.re | typedtree_printer
+  $ cat ./input.re | outcometree_printer
   type t0 = T0({ t0: int, });
   type t1 = A({ x: int, }) | B | C({ c1: string, c2: string, });
   type t2(_) =
