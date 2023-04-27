@@ -24,6 +24,30 @@
 Format basic
   $ refmt --print re ./input.re > ./formatted.re
 
+Print the formatted file
+  $ cat ./formatted.re
+  /* Pexp_letexception with attributes */
+  let () = {
+    [@attribute]
+    exception E;
+    raise(E);
+  };
+  
+  /** Different payloads **/
+  
+  /* Empty signature */
+  
+  [@haha:]
+  let x = 5;
+  
+  /* signature_item */
+  [@haha: let x: option(int)]
+  let x = 5;
+  
+  /* Signature */
+  [@haha: type t; let x: option(t)]
+  let x = 5;
+
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
 
