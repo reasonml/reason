@@ -242,7 +242,10 @@ Print the formatted file
   
   /* To be able to put an attribute on just the return in that case, use
    * parens. */
-  [@onBoxC x; y]
+  [@onBoxC
+    x;
+    y
+  ]
   class boxC ('a) =
     [@onEntireFunction] (
       fun (init: 'a) =>
@@ -458,10 +461,7 @@ Print the formatted file
     string;
   
   /* Ensure that attributes on extensions are printed */
-  [@test
-    [@attr]
-    [%%extension]
-  ];
+  [@test [@attr] [%%extension]];
   
   external debounce:
     (int, [@bs.meth] unit) => unit;
@@ -628,9 +628,9 @@ Print the formatted file
   
   [@bs.deriving abstract]
   type editorConfiguration = {
-  /** Determines whether horizontal cursor movement through right-to-left (Arabic,   Hebrew) text
+    /** Determines whether horizontal cursor movement through right-to-left (Arabic, Hebrew) text
         is visual (pressing the left arrow moves the cursor left)
-      or logical (pressing the left arrow moves to the next lower index in the string,   which is visually right in right-to-left text).
+        or logical (pressing the left arrow moves to the next lower index in the string, which is visually right in right-to-left text).
         The default is false on Windows, and true on other platforms. */
     [@bs.optional]
     rtlMoveVisually: bool,
