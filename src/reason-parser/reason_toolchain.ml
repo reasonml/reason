@@ -79,8 +79,7 @@
  *)
 
 open Reason_toolchain_conf
-open Reason_omp
-open Ast_411
+open Ppxlib
 
 open Location
 open Lexing
@@ -285,7 +284,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
           Reason_errors.report_error Format.str_formatter ~loc e;
           (loc, Format.flush_str_formatter ())
         | exn ->
-          (Location.curr lexbuf, "default_error: " ^ Printexc.to_string exn)
+          (Location.of_lexbuf lexbuf, "default_error: " ^ Printexc.to_string exn)
       in
       (loc, Reason_errors.error_extension_node loc msg)
     else

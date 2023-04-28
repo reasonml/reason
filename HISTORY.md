@@ -9,6 +9,8 @@
   4.03 and above (@anmonteiro) [#2703](https://github.com/reasonml/reason/pull/2703)
 - Fix the binary parser by converting to the internal AST version used by
   Reason (@anmonteiro) [#2713](https://github.com/reasonml/reason/pull/2713)
+- Port Reason to `ppxlib` (@anmonteiro, [#2711](https://github.com/reasonml/reason/pull/2711))
+- Support OCaml 5.1 (@anmonteiro, [#2714](https://github.com/reasonml/reason/pull/2714))
 
 ## 3.8.2
 

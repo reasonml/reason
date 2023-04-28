@@ -140,7 +140,7 @@ files require some adjustments which should pop up when you do this
 diff. Port the old adjustments to the new file as required.
 
 Add migration functions:
-- Manually compile the asts (`ocamlc -c src/ast_{NEW,OLD}.ml -I +compiler-libs -I _build/default/src/.migrate_parsetree.objs/byte/ -open Migrate_parsetree__`)
+- Manually compile the asts (`ocamlc -c src/ast_{NEW,OLD}.ml -I +compiler-libs -I _build/default/src/vendored-omp/src/.reason_omp.objs/byte -open Reason_omp__`)
 - Using `tools/gencopy.exe` (`dune build tools/gencopy.exe`), generate copy code to and from previous version (assuming it is 408):
 ```
 _build/default/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_409:Ast_408 Ast_409.Parsetree.{expression,expr,pattern,pat,core_type,typ,toplevel_phrase} Ast_409.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_409_408_migrate.ml

@@ -1,5 +1,3 @@
-open Reason_omp
-
 type parse_itype = [ `ML | `Reason | `Binary | `BinaryReason | `Auto ]
 type print_itype = [ `ML | `Reason | `Binary | `BinaryReason | `AST | `None ]
 
@@ -36,22 +34,16 @@ let close_output_file output_file output_chan =
     | None -> ()
 
 let ocamlBinaryParser use_stdin filename =
-  let chan =
+  let module Ast_io = Ppxlib__.Utils.Ast_io in
+  let input_source =
     match use_stdin with
-      | true -> stdin
-      | false ->
-          let file_chan = open_in_bin filename in
-          seek_in file_chan 0;
-          file_chan
+      | true -> Ast_io.Stdin
+      | false -> File filename
   in
-  match Ast_io.from_channel chan with
+  match Ast_io.read input_source ~input_kind:Necessarily_binary with
   | Error _ -> assert false
-  | Ok (_, Ast_io.Impl ((module Version), ast)) ->
-    let module Convert = Convert(Version)(OCaml_411) in
-    ((Obj.magic (Convert.copy_structure ast), []), true, false)
-  | Ok (_, Ast_io.Intf ((module Version), ast)) ->
-    let module Convert = Convert(Version)(OCaml_411) in
-    ((Obj.magic (Convert.copy_signature ast), []), true, true)
+  | Ok ({ ast = Impl ast; _ }) -> ((Obj.magic ast, []), true, false)
+  | Ok ({ ast = Intf ast; _ }) -> ((Obj.magic ast, []), true, true)
 
 let reasonBinaryParser use_stdin filename =
   let chan =

@@ -1,4 +1,4 @@
-open Reason_omp.OCaml_411.Ast
+open Ppxlib
 
 type labelled_parameter =
   | Term of Asttypes.arg_label * Parsetree.expression option * Parsetree.pattern

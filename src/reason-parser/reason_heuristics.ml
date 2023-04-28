@@ -1,7 +1,7 @@
-open Reason_omp
+open Ppxlib
 
 let is_punned_labelled_expression e lbl =
-  let open Ast_411.Parsetree in
+  let open Parsetree in
   match e.pexp_desc with
   | Pexp_ident { txt }
   | Pexp_constraint ({pexp_desc = Pexp_ident { txt }}, _)
@@ -17,11 +17,11 @@ let is_punned_labelled_expression e lbl =
  * where the sum of the string contents and identifier names are less than the print width
  *)
 let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
-  let open Ast_411.Parsetree in
-  let open Ast_411.Asttypes in
+  let open Parsetree in
+  let open Asttypes in
   let funLen = begin match funExpr.pexp_desc with
     | Pexp_ident ident ->
-       let identList = Longident.flatten ident.txt in
+       let identList = Longident.flatten_exn ident.txt in
        let lengthOfDots = List.length identList - 1 in
        let len = List.fold_left (fun acc curr ->
          acc + (String.length curr)) lengthOfDots identList in
@@ -39,7 +39,7 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
       | (label, ({ pexp_desc = Pexp_ident ident } as e)) ->
         let identLen = List.fold_left (fun acc curr ->
           acc + (String.length curr)
-        ) len (Longident.flatten ident.txt) in
+        ) len (Longident.flatten_exn ident.txt) in
         begin match label with
         | Nolabel -> aux (len - identLen) args
         | Labelled s when is_punned_labelled_expression e s ->
@@ -88,17 +88,17 @@ let singleTokenPatternOmmitTrail txt = String.length txt < 4
  *  -> setTimeout((.) => Js.log("hola"), 1000);
  *)
 let bsExprCanBeUncurried expr =
-  match Ast_411.Parsetree.(expr.pexp_desc) with
+  match Parsetree.(expr.pexp_desc) with
   | Pexp_fun _
   | Pexp_apply _ -> true
   | _ -> false
 
 let isUnderscoreIdent expr =
-  match Ast_411.Parsetree.(expr.pexp_desc) with
+  match Parsetree.(expr.pexp_desc) with
   | Pexp_ident ({txt = Lident "_"}) -> true
   | _ -> false
 
-let isPipeFirst e = match Ast_411.Parsetree.(e.pexp_desc) with
+let isPipeFirst e = match Parsetree.(e.pexp_desc) with
   | Pexp_ident({txt = Longident.Lident("|.")}) -> true
   | Pexp_apply(
     {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
@@ -107,7 +107,7 @@ let isPipeFirst e = match Ast_411.Parsetree.(e.pexp_desc) with
   | _ -> false
 
 let isUnderscoreApplication expr =
-  let open Ast_411.Parsetree in
+  let open Parsetree in
   match expr with
   | {pexp_attributes = []; pexp_desc = Pexp_fun(
         Nolabel,
@@ -125,7 +125,7 @@ let isUnderscoreApplication expr =
  * An application with pipe first inside jsx children requires special treatment.
  * Jsx children don't allow expression application, hence we need the braces
  * preserved in this case. *)
-let isPipeFirstWithNonSimpleJSXChild e = match Ast_411.Parsetree.(e.pexp_desc) with
+let isPipeFirstWithNonSimpleJSXChild e = match Parsetree.(e.pexp_desc) with
   | Pexp_apply(
     {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})},
       [Nolabel, {pexp_desc = Pexp_apply(_)}; _]

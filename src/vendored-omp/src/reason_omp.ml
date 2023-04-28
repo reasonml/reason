@@ -38,10 +38,8 @@ module Ast_412 = Ast_412
 module Ast_413 = Ast_413
 module Ast_414 = Ast_414
 module Ast_500 = Ast_500
+module Ast_51 = Ast_51
 (*$*)
-
-(* A module for marshalling/unmarshalling arbitrary versions of Asts *)
-module Ast_io = Migrate_parsetree_ast_io
 
 (* Manual migration between versions *)
 (*$foreach_version_pair (fun x y ->
@@ -74,6 +72,8 @@ module Migrate_413_414 = Migrate_parsetree_413_414
 module Migrate_414_413 = Migrate_parsetree_414_413
 module Migrate_414_500 = Migrate_parsetree_414_500
 module Migrate_500_414 = Migrate_parsetree_500_414
+module Migrate_500_51 = Migrate_parsetree_500_51
+module Migrate_51_500 = Migrate_parsetree_51_500
 (*$*)
 
 (* An abstraction of OCaml compiler versions *)
@@ -99,18 +99,13 @@ module OCaml_412 = Versions.OCaml_412
 module OCaml_413 = Versions.OCaml_413
 module OCaml_414 = Versions.OCaml_414
 module OCaml_500 = Versions.OCaml_500
+module OCaml_51 = Versions.OCaml_51
 (*$*)
 module OCaml_current = Versions.OCaml_current
 
 (* A Functor taking two OCaml versions and producing a module of functions
    migrating from one to the other. *)
 module Convert = Versions.Convert
-
-(* A [Parse] module that migrate ASTs to the desired version of an AST *)
-module Parse = Migrate_parsetree_parse
-
-(* Entrypoints for registering rewriters and making a ppx binary *)
-module Driver = Migrate_parsetree_driver
 
 (* Aliases for compiler-libs modules that might be shadowed *)
 module Compiler_libs = struct

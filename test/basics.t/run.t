@@ -1,5 +1,6 @@
 Format basic
   $ refmt --print re ./input.re > ./formatted.re
+$ cat formatted.re
 
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re

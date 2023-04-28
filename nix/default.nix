@@ -24,6 +24,8 @@ ocamlPackages.buildDunePackage {
     cppo
     fix
     ppx_derivers
+    ppxlib
+    dune-build-info
   ];
 
 }
