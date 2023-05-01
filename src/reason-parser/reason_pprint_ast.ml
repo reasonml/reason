@@ -6467,15 +6467,13 @@ let printer = object(self:'self)
                 | _ -> Some (self#extension e)
           end
         | Pexp_open (me, e) ->
-            if self#isSeriesOfOpensFollowedByNonSequencyExpression x then (              
+            if self#isSeriesOfOpensFollowedByNonSequencyExpression x then
               Some
                 (label
                   (label
                     (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
                     (atom (".")))
-                  (
-                    self#formatNonSequencyExpression ~parent:x e
-                  )))
+                  (self#formatNonSequencyExpression ~parent:x e))
             else 
               Some  (makeLetSequence (self#letList e))
         | Pexp_send (e, s) ->
