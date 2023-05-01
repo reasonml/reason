@@ -5,4 +5,4 @@
 
 (cram
  (applies_to * \ lib)
- (deps %{bin:ocamlc} %{bin:refmt} %{bin:typedtree_printer} %{bin:rtop}))
+ (deps %{bin:ocamlc} %{bin:refmt} %{bin:outcome_printer} %{bin:rtop}))

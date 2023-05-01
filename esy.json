@@ -53,9 +53,5 @@
       ],
       "rewritePrefix": true
     }
-  },
-  "scripts": {
-    "test": "esy x make test-once-installed",
-    "doc": "esy dune build @doc"
   }
 }

@@ -14,6 +14,10 @@ let l1 = [1,2,3] |> List.map(incr(~v=_)) |> List.length
 
 let l2 = [1,2,3] |> List.map(incr(~v =_)) |> List.length
 
+let a1 = [|1, 2, 3|] |> Array.get(_, 1)
+
+let s1 = "roses are red" |> String.get(_, 4)
+
 let optParam = (~v=?, ()) => v == None ? 0 : 1
 
 let l1 =
@@ -86,3 +90,9 @@ module X: {let x: (~x: unit=?, unit) => unit} = {
 }
 
 let display (~message=("hello": string), ~person: string="Reason", time: float) = 1
+
+let not = (x, y) => x + y
+
+let added: int = not(1, 2)
+
+let better = foo => !foo ? 42 : not(41, 2)
