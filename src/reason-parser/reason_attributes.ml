@@ -41,6 +41,9 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
   | ({ attr_name = {txt="reason.preserve_braces"}; _} as attr) :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with stylisticAttrs=attr::partition.stylisticAttrs}
+  | ({ attr_name = {txt="reason.openSyntaxNotation"}; _} as attr) :: atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with stylisticAttrs=attr::partition.stylisticAttrs}
   | atHd :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with stdAttrs=atHd::partition.stdAttrs}
@@ -88,3 +91,9 @@ let maybe_remove_stylistic_attrs attrs should_preserve =
       | { attr_name = {txt="reason.raw_literal"}; _} -> true
       | _ -> false)
       attrs
+
+let is_open_notation_attr { attr_name = {txt}; _} =
+  txt = "reason.openSyntaxNotation"
+
+let has_open_notation_attr stylisticAttrs =
+  List.exists is_open_notation_attr stylisticAttrs

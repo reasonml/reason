@@ -3038,7 +3038,14 @@ expr_list_or_seq_expr:
   | E as_loc(POSTFIXOP)
     { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
   | od=open_dot_declaration DOT LPAREN expr_list_or_seq_expr RPAREN
-    { mkexp(Pexp_open(od, may_tuple $startpos($3) $endpos($5) $4)) }
+    { 
+      let loc = mklocation $symbolstartpos $endpos in
+      let openSyntaxNotationAttribute = { 
+        attr_name = mkloc "reason.openSyntaxNotation" loc;
+        attr_payload = PStr [];
+        attr_loc = Location.none
+      } in
+      mkexp ~attrs:[openSyntaxNotationAttribute] (Pexp_open(od, may_tuple $startpos($3) $endpos($5) $4)) }
   | E DOT as_loc(label_longident)
     { mkexp(Pexp_field($1, $3)) }
   | od=open_dot_declaration DOT LBRACE RBRACE

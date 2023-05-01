@@ -502,6 +502,11 @@ module L = Lola1();
 module L2 = Lola2(Cat, Dog, Foo);
 
 let y = Promise.Ops.(
-  let* x = Js.Promise.resolve(42);
-  Js.Promise.resolve(x * 2);
+  open Foo.Bar;
+  let a = 2
+  Bar.(
+    let* x = Js.Promise.resolve(42);
+    let a = 1;
+    Js.Promise.resolve(x * 2)
+  )
 );

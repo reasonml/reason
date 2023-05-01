@@ -4342,7 +4342,7 @@ let printer = object(self:'self)
       | None -> raise (Invalid_argument "No match for unparsing expression")
     )
 
-  method formatNonSequencyExpression e =
+  method formatNonSequencyExpression ?parent e =
     (*
      * Instead of printing:
      *   let result =  { open Fmt; strf(foo);}
@@ -4364,7 +4364,23 @@ let printer = object(self:'self)
      * E.g., avoid M.(M2.v) being printed as M.M2.v
      * Or ReasonReact.(<> {string("Test")} </>);
      *)
-    | _ -> makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
+    | _ -> (
+      match parent with 
+      | Some (parent) -> (
+        if has_open_notation_attr parent.pexp_attributes then
+          makeList
+            ~break:IfNeed
+            ~inline:(true, false)
+            ~postSpace:true
+            ~wrap:("(",")")
+            ~sep:(SepFinal (";", ""))
+            (self#letList e)
+        else
+          makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
+      )
+      | None -> 
+        makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
+    )
 
   (*
      It's not enough to only check if precedence of an infix left/right is
@@ -5508,7 +5524,7 @@ let printer = object(self:'self)
      * list containing the location indicating start/end of the "let-item" and
      * its layout. *)
     let rec processLetList acc expr =
-      let {stdAttrs; arityAttrs; jsxAttrs} =
+      let {stdAttrs; arityAttrs; jsxAttrs; stylisticAttrs} =
         partitionAttributes ~allowUncurry:false expr.pexp_attributes
       in
       match (stdAttrs, expr.pexp_desc) with
@@ -5534,26 +5550,35 @@ let printer = object(self:'self)
             (* Add this when check to make sure these are handled as regular "simple expressions" *)
             when not (self#isSeriesOfOpensFollowedByNonSequencyExpression {expr with pexp_attributes = []}) ->
           let overrideStr = match me.popen_override with | Override -> "!" | Fresh -> "" in
-          let openLayout = label ~space:true
-            (atom ("open" ^ overrideStr))
-            (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
-          in
-          let attrsOnOpen =
-            makeList ~inline:(true, true) ~postSpace:true ~break:Always
-            ((self#attributes attrs)@[openLayout])
-          in
-          (* Just like the bindings, have to synthesize a location since the
-           * Pexp location is parsed (potentially) beginning with the open
-           * brace {} in the let sequence. *)
-          let layout = source_map ~loc:me.popen_loc attrsOnOpen in
-          let loc = {
-            me.popen_loc with
-            loc_start = {
-              me.popen_loc.loc_start with
-              pos_lnum = expr.pexp_loc.loc_start.pos_lnum
-            }
-          } in
-          processLetList ((loc, layout)::acc) e
+          if (has_open_notation_attr stylisticAttrs) then (
+            (Location.none, label
+              (label
+                (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
+                (atom (".")))
+              (makeLetSequence ~wrap:("(", ")") (self#letList e))) :: acc
+          )
+          else (
+            let openLayout = label ~space:true
+              (atom ("open" ^ overrideStr))
+              (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
+            in
+            let attrsOnOpen =
+              makeList ~inline:(true, true) ~postSpace:true ~break:Always
+              ((self#attributes attrs)@[openLayout])
+            in
+            (* Just like the bindings, have to synthesize a location since the
+            * Pexp location is parsed (potentially) beginning with the open
+            * brace {} in the let sequence. *)
+            let layout = source_map ~loc:me.popen_loc attrsOnOpen in
+            let loc = {
+              me.popen_loc with
+              loc_start = {
+                me.popen_loc.loc_start with
+                pos_lnum = expr.pexp_loc.loc_start.pos_lnum
+              }
+            } in
+            processLetList ((loc, layout)::acc) e 
+          )
         | ([], Pexp_letmodule (s, me, e)) ->
             let prefixText = "module" in
             let bindingName = atom ~loc:s.loc (moduleIdent s) in
@@ -6442,16 +6467,17 @@ let printer = object(self:'self)
                 | _ -> Some (self#extension e)
           end
         | Pexp_open (me, e) ->
+            if self#isSeriesOfOpensFollowedByNonSequencyExpression x then (              
               Some
                 (label
                   (label
                     (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
                     (atom (".")))
                   (
-                    if self#isSeriesOfOpensFollowedByNonSequencyExpression x then
-                      self#formatNonSequencyExpression e
-                    else
-                      (makeLetSequence ~wrap:("(", ")") (self#letList e))))
+                    self#formatNonSequencyExpression ~parent:x e
+                  )))
+            else 
+              Some  (makeLetSequence (self#letList e))
         | Pexp_send (e, s) ->
           let needparens = match e.pexp_desc with
             | Pexp_apply (ee, _) ->
