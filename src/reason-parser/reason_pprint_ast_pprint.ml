@@ -7,7 +7,6 @@ open Longident
 open Parsetree
 open Reason_syntax_util
 open Reason_attributes
-
 open PPrint
 
 let infix_symbols =
@@ -402,7 +401,7 @@ and pattern ?(wrap = true)
             ppat_desc =
               Ppat_construct
                 ( { txt = Lident "::" },
-                  Some { ppat_desc = Ppat_tuple [ pat1; pat2 ] } );
+                  Some ([], { ppat_desc = Ppat_tuple [ pat1; pat2 ] }) );
           } ->
             list_items_cons (pat1 :: acc) pat2
         | p -> (List.rev acc, p)
@@ -426,7 +425,8 @@ and pattern ?(wrap = true)
           ^^ rbracket)
   | Ppat_construct ({ txt = Lident "()" }, None) ->
       if wrap then empty else string "()"
-  | Ppat_construct ({ txt = Lident s }, c) -> string s ^^ optional pattern c
+  | Ppat_construct ({ txt = Lident s }, c) ->
+      string s ^^ optional (fun f -> pattern (snd f)) c
   | Ppat_construct (s, s2) -> string "todo Ppatconstruct"
   | Ppat_variant (l, po) -> string "todo: Ppat_variant"
   | Ppat_record (pl, c) ->
