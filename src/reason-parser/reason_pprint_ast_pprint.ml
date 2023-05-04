@@ -1,3 +1,4 @@
+[@@@warning "-27-33-32"]
 open Reason_omp
 open Ast_411
 open Asttypes
