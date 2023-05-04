@@ -48,17 +48,23 @@
 (* The parser definition *)
 
 %{
-open Reason_omp
-open OCaml_411.Ast
+open Ppxlib
 open Reason_syntax_util
 open Location
 open Asttypes
 open Longident
 open Parsetree
 open Ast_helper
-open Ast_mapper
 open Reason_parser_def
 open Reason_errors
+
+(* Menhir generates `Warnings.loc` *)
+module Warnings = struct
+  type loc = Location.t
+end
+
+let mkloc txt loc = {txt;loc}
+let mknoloc txt = mkloc txt none
 
 let raise_error error loc =
   raise_error (Ast_error error) loc
@@ -357,10 +363,10 @@ let ghexp_cons args loc =
   mkexp ~ghost:true ~loc (Pexp_construct(mkloc (Lident "::") loc, Some args))
 
 let mkpat_cons args loc =
-  mkpat ~loc (Ppat_construct(mkloc (Lident "::") loc, Some args))
+  mkpat ~loc (Ppat_construct(mkloc (Lident "::") loc, Some ([], args)))
 
 let ghpat_cons args loc =
-  mkpat ~ghost:true ~loc (Ppat_construct(mkloc (Lident "::") loc, Some args))
+  mkpat ~ghost:true ~loc (Ppat_construct(mkloc (Lident "::") loc, Some ([], args)))
 
 let mkpat_constructor_unit consloc loc =
   mkpat ~loc (Ppat_construct(mkloc (Lident "()") consloc, None))
@@ -688,10 +694,10 @@ let bigarray_set ?(loc=dummy_loc()) arr arg newval =
                         Nolabel, newval]))
 
 let exp_of_label label =
-  mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Longident.last label.txt)})
+  mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Longident.last_exn label.txt)})
 
 let pat_of_label label =
-  mkpat ~loc:label.loc (Ppat_var {label with txt=(Longident.last label.txt)})
+  mkpat ~loc:label.loc (Ppat_var {label with txt=(Longident.last_exn label.txt)})
 
 let check_variable vl loc v =
   if List.mem v vl then
@@ -844,9 +850,11 @@ let class_of_let_bindings lbs body =
  * unwrap the tuple to expose the inner tuple directly.
  *
  *)
-let arity_conflict_resolving_mapper super =
-{ super with
-  expr = begin fun mapper expr ->
+let reason_to_ml_swap_operator_mapper = new reason_to_ml_swap_operator_mapper
+let reason_mapper = object
+  inherit Ppxlib.Ast_traverse.map as super
+
+  method! expression expr =
     match expr with
       | {pexp_desc=Pexp_construct(lid, args);
          pexp_loc;
@@ -855,37 +863,34 @@ let arity_conflict_resolving_mapper super =
            match args with
              | Some {pexp_desc = Pexp_tuple [sp]} -> Some sp
              | _ -> args in
-         super.expr mapper
+         super#expression
          { pexp_desc=Pexp_construct(lid, new_args);
            pexp_loc;
            pexp_attributes = normalized_attributes "explicit_arity" pexp_attributes;
            pexp_loc_stack = []
          }
-      | x -> super.expr mapper x
-  end;
-  pat = begin fun mapper pattern ->
+      | x -> super#expression x
+  method! pattern pattern =
     match pattern with
       | {ppat_desc=Ppat_construct(lid, args);
          ppat_loc;
          ppat_attributes} when attributes_conflicted "implicit_arity" "explicit_arity" ppat_attributes ->
          let new_args =
            match args with
-             | Some {ppat_desc = Ppat_tuple [sp]} -> Some sp
-             | _ -> args in
-         super.pat mapper
+             | Some (x, {ppat_desc = Ppat_tuple [sp]}) -> Some (x, sp)
+             | _ -> args
+         in
+         super#pattern
          { ppat_desc=Ppat_construct(lid, new_args);
            ppat_loc;
            ppat_attributes = normalized_attributes "explicit_arity" ppat_attributes;
            ppat_loc_stack = [];
          }
-      | x -> super.pat mapper x
-  end;
-}
+      | x -> super#pattern x
+end
 
-let reason_mapper =
-  default_mapper
-  |> reason_to_ml_swap_operator_mapper
-  |> arity_conflict_resolving_mapper
+let reason_mapper f a =
+  a |> f reason_to_ml_swap_operator_mapper |> f reason_mapper
 
 let rewriteFunctorApp module_name elt loc =
   let rec applies = function
@@ -1050,7 +1055,7 @@ let package_type_of_module_type pmty =
 
 let add_brace_attr expr =
   let attr = {
-    attr_name = Location.mknoloc "reason.preserve_braces";
+    attr_name = mknoloc "reason.preserve_braces";
     attr_payload = PStr [];
     attr_loc = Location.none
   }
@@ -1061,14 +1066,14 @@ let add_brace_attr expr =
 
 %[@recover.prelude
 
-  open Reason_omp.OCaml_411.Ast
+  open Ppxlib
   open Parsetree
   open Ast_helper
 
   let default_loc = ref Location.none
 
   let default_expr () =
-    let id = Location.mkloc "merlin.hole" !default_loc in
+    let id = Location.{txt = "merlin.hole"; loc = !default_loc} in
     Exp.mk ~loc:!default_loc (Pexp_extension (id, PStr []))
 
   let default_pattern () = Pat.any ~loc:!default_loc ()
@@ -1358,19 +1363,19 @@ conflicts.
 (* Entry points *)
 
 %start implementation                   (* for implementation files *)
-%type <Reason_omp.Ast_411.Parsetree.structure> implementation
+%type <Ppxlib.Parsetree.structure> implementation
 %start interface                        (* for interface files *)
-%type <Reason_omp.Ast_411.Parsetree.signature> interface
+%type <Ppxlib.Parsetree.signature> interface
 %start toplevel_phrase                  (* for interactive use *)
-%type <Reason_omp.Ast_411.Parsetree.toplevel_phrase> toplevel_phrase
+%type <Ppxlib.Parsetree.toplevel_phrase> toplevel_phrase
 %start use_file                         (* for the #use directive *)
-%type <Reason_omp.Ast_411.Parsetree.toplevel_phrase list> use_file
+%type <Ppxlib.Parsetree.toplevel_phrase list> use_file
 %start parse_core_type
-%type <Reason_omp.Ast_411.Parsetree.core_type> parse_core_type
+%type <Ppxlib.Parsetree.core_type> parse_core_type
 %start parse_expression
-%type <Reason_omp.Ast_411.Parsetree.expression> parse_expression
+%type <Ppxlib.Parsetree.expression> parse_expression
 %start parse_pattern
-%type <Reason_omp.Ast_411.Parsetree.pattern> parse_pattern
+%type <Ppxlib.Parsetree.pattern> parse_pattern
 
 (* Instead of reporting an error directly, productions specified
  * below will be reduced first and popped up in the stack to a higher
@@ -1403,19 +1408,19 @@ conflicts.
 
 implementation:
   structure EOF
-  { apply_mapper_to_structure $1 reason_mapper }
+  { reason_mapper apply_mapper_to_structure $1 }
 ;
 
 interface:
   signature EOF
-  { apply_mapper_to_signature $1 reason_mapper }
+  { reason_mapper apply_mapper_to_signature $1 }
 ;
 
 toplevel_phrase: embedded
   ( EOF                              { raise End_of_file }
   | structure_item     SEMI          { Ptop_def $1 }
   | toplevel_directive SEMI          { $1 }
-  ) { apply_mapper_to_toplevel_phrase $1 reason_mapper }
+  ) { reason_mapper apply_mapper_to_toplevel_phrase $1 }
 ;
 
 use_file_no_mapper: embedded
@@ -1428,22 +1433,22 @@ use_file_no_mapper: embedded
 ;
 
 use_file:
-  use_file_no_mapper { apply_mapper_to_use_file $1 reason_mapper }
+  use_file_no_mapper { reason_mapper apply_mapper_to_use_file $1 }
 ;
 
 parse_core_type:
   core_type EOF
-  { apply_mapper_to_type $1 reason_mapper }
+  { reason_mapper apply_mapper_to_type $1 }
 ;
 
 parse_expression:
   expr EOF
-  { apply_mapper_to_expr $1 reason_mapper }
+  { reason_mapper apply_mapper_to_expr $1 }
 ;
 
 parse_pattern:
   pattern EOF
-  { apply_mapper_to_pattern $1 reason_mapper }
+  { reason_mapper apply_mapper_to_pattern $1 }
 ;
 
 (* Module expressions *)
@@ -2645,7 +2650,7 @@ es6_parameters:
   | as_loc(UNDERSCORE)
     { ([{$1 with txt = Term (Nolabel, None, mkpat ~loc:$1.loc Ppat_any)}], false) }
   | simple_pattern_ident
-    { ([Location.mkloc (Term (Nolabel, None, $1)) $1.ppat_loc], false) }
+    { ([mkloc (Term (Nolabel, None, $1)) $1.ppat_loc], false) }
 ;
 
 (* TODO: properly fix JSX labelled/optional stuff *)
@@ -3260,12 +3265,12 @@ labeled_expr:
       | Some typ ->
           ghexp_constraint $2.loc exp typ
       in
-      (Labelled (Longident.last lident_loc.txt), labeled_exp)
+      (Labelled (Longident.last_exn lident_loc.txt), labeled_exp)
     }
   | TILDE as_loc(val_longident) QUESTION
     { (* foo(~a?)  -> parses ~a? *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
-      (Optional (Longident.last $2.txt), exp)
+      (Optional (Longident.last_exn $2.txt), exp)
     }
   | TILDE as_loc(LIDENT) EQUAL optional labeled_expr_constraint
     { (* foo(~bar=?Some(1)) or add(~x=1, ~y=2) -> parses ~bar=?Some(1) & ~x=1 & ~y=1 *)
@@ -3678,11 +3683,11 @@ mark_position_pat
     *)
     { match is_pattern_list_single_any $2 with
       | Some singleAnyPat ->
-        mkpat (Ppat_construct($1, Some singleAnyPat))
+        mkpat (Ppat_construct($1, Some ([], singleAnyPat)))
       | None ->
         let loc = mklocation $symbolstartpos $endpos in
         let argPattern = simple_pattern_list_to_tuple ~loc $2 in
-        mkExplicitArityTuplePat (Ppat_construct($1, Some argPattern))
+        mkExplicitArityTuplePat (Ppat_construct($1, Some ([], argPattern)))
     }
 
   | name_tag simple_pattern { mkpat (Ppat_variant($1, Some $2)) }
@@ -4027,12 +4032,12 @@ type_variables_with_variance:
 
 type_variable_with_variance:
   embedded
-  ( QUOTE ident       { (mktyp (Ptyp_var $2) , Invariant    ) }
-  | UNDERSCORE        { (mktyp (Ptyp_any)    , Invariant    ) }
-  | PLUS QUOTE ident  { (mktyp (Ptyp_var $3) , Covariant    ) }
-  | PLUS UNDERSCORE   { (mktyp (Ptyp_any)    , Covariant    ) }
-  | MINUS QUOTE ident { (mktyp (Ptyp_var $3) , Contravariant) }
-  | MINUS UNDERSCORE  { (mktyp Ptyp_any      , Contravariant) }
+  ( QUOTE ident       { (mktyp (Ptyp_var $2) , (NoVariance, NoInjectivity)    ) }
+  | UNDERSCORE        { (mktyp (Ptyp_any)    , (NoVariance, NoInjectivity)    ) }
+  | PLUS QUOTE ident  { (mktyp (Ptyp_var $3) , (Covariant, NoInjectivity)    ) }
+  | PLUS UNDERSCORE   { (mktyp (Ptyp_any)    , (Covariant, NoInjectivity)    ) }
+  | MINUS QUOTE ident { (mktyp (Ptyp_var $3) , (Contravariant, NoInjectivity)) }
+  | MINUS UNDERSCORE  { (mktyp Ptyp_any      , (Contravariant, NoInjectivity)) }
   )
   { let first, second = $1 in
     let ptyp_loc =
@@ -4042,10 +4047,10 @@ type_variable_with_variance:
   }
 ;
 
-type_parameter: type_variance type_variable { ($2, $1) };
+type_parameter: type_variance type_variable { ($2, ($1, NoInjectivity)) };
 
 type_variance:
-  | (* empty *) { Invariant }
+  | (* empty *) { NoVariance }
   | PLUS        { Covariant }
   | MINUS       { Contravariant }
 ;
@@ -4222,7 +4227,7 @@ with_constraint:
   | TYPE as_loc(label_longident) type_variables_with_variance
       EQUAL embedded(private_flag) core_type constraints
     { let loc = mklocation $symbolstartpos $endpos in
-      let typ = Type.mk {$2 with txt=Longident.last $2.txt}
+      let typ = Type.mk {$2 with txt=Longident.last_exn $2.txt}
                   ~params:$3 ~cstrs:$7 ~manifest:$6 ~priv:$5 ~loc in
       Pwith_type ($2, typ)
     }
@@ -4642,7 +4647,7 @@ constant:
       | None -> []
       | Some raw ->
         let constant = Exp.constant (Pconst_string (raw, loc, None)) in
-        [ { attr_name = Location.mkloc "reason.raw_literal" loc;
+        [ { attr_name = mkloc "reason.raw_literal" loc;
             attr_payload = PStr [mkstrexp constant []];
             attr_loc = Location.none
           } ]

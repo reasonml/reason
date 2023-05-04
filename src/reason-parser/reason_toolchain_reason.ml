@@ -1,4 +1,3 @@
-open Reason_toolchain_conf
 open Reason_errors
 
 module P = Reason_recover_parser

@@ -1,24 +1,28 @@
+open Ppxlib
 open Reason_toolchain_conf
 
 (* The OCaml parser keep doc strings in the comment list.
      To avoid duplicating comments, we need to filter comments that appear
      as doc strings is the AST out of the comment list. *)
 let doc_comments_filter () =
-  let open Ast_mapper in
   let open Parsetree in
   let seen = Hashtbl.create 7 in
-  let attribute mapper = function
-    | { attr_name = { Location. txt = ("ocaml.doc" | "ocaml.text")};
-        attr_payload =
-          PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(_text, _loc, None)) } , _);
-                  pstr_loc = loc }]} as attribute ->
-       (* Workaround: OCaml 4.02.3 kept an initial '*' in docstrings.
-        * For other versions, we have to put the '*' back. *)
-       Hashtbl.add seen loc ();
-       default_mapper.attribute mapper attribute
-    | attribute -> default_mapper.attribute mapper attribute
+  let mapper =
+    object
+      inherit Ast_traverse.map as super
+    method! attribute attr =
+      match attr with
+      | { attr_name = { Location. txt = ("ocaml.doc" | "ocaml.text")};
+          attr_payload =
+            PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(_text, _loc, None)) } , _);
+                    pstr_loc = loc }]} as attribute ->
+         (* Workaround: OCaml 4.02.3 kept an initial '*' in docstrings.
+          * For other versions, we have to put the '*' back. *)
+         Hashtbl.add seen loc ();
+         super#attribute attribute
+      | attribute -> super#attribute attribute
+    end
   in
-  let mapper = {default_mapper with attribute} in
   let filter (_text, loc) = not (Hashtbl.mem seen loc) in
   (mapper, filter)
 
@@ -33,7 +37,7 @@ module Lexer_impl = struct
     filtered_comments := List.filter filter (Lexer.comments ())
   let get_comments _lexbuf _docstrings = !filtered_comments
 end
-module OCaml_parser = Parser
+module OCaml_parser = Ocaml_common.Parser
 type token = OCaml_parser.token
 type invalid_docstrings = unit
 
@@ -49,34 +53,34 @@ let parse_and_filter_doc_comments iter fn lexbuf=
 
 let implementation lexbuf =
   parse_and_filter_doc_comments
-    (fun it -> it.Ast_mapper.structure it)
+    (fun it stru -> it#structure stru)
     (fun lexbuf -> From_current.copy_structure
-                     (Parser.implementation Lexer.token lexbuf))
+                     (OCaml_parser.implementation Lexer.token lexbuf))
     lexbuf
 
 let core_type lexbuf =
   parse_and_filter_doc_comments
-    (fun it -> it.Ast_mapper.typ it)
+    (fun it ty -> it#core_type ty)
     (fun lexbuf -> From_current.copy_core_type
-                     (Parser.parse_core_type Lexer.token lexbuf))
+                     (OCaml_parser.parse_core_type Lexer.token lexbuf))
     lexbuf
 
 let interface lexbuf =
   parse_and_filter_doc_comments
-    (fun it -> it.Ast_mapper.signature it)
+    (fun it sig_ -> it#signature sig_)
     (fun lexbuf -> From_current.copy_signature
-                     (Parser.interface Lexer.token lexbuf))
+                     (OCaml_parser.interface Lexer.token lexbuf))
     lexbuf
 
 let filter_toplevel_phrase it = function
-  | Parsetree.Ptop_def str -> ignore (it.Ast_mapper.structure it str)
+  | Parsetree.Ptop_def str -> ignore (it#structure str)
   | Parsetree.Ptop_dir _ -> ()
 
 let toplevel_phrase lexbuf =
   parse_and_filter_doc_comments
     filter_toplevel_phrase
     (fun lexbuf -> From_current.copy_toplevel_phrase
-                     (Parser.toplevel_phrase Lexer.token lexbuf))
+                     (OCaml_parser.toplevel_phrase Lexer.token lexbuf))
     lexbuf
 
 let use_file lexbuf =
@@ -85,7 +89,7 @@ let use_file lexbuf =
     (fun lexbuf ->
       List.map
         From_current.copy_toplevel_phrase
-        (Parser.use_file Lexer.token lexbuf))
+        (OCaml_parser.use_file Lexer.token lexbuf))
     lexbuf
 
 (* Skip tokens to the end of the phrase *)
@@ -108,6 +112,8 @@ let maybe_skip_phrase lexbuf =
      || Parsing.is_current_lookahead OCaml_parser.EOF
   then ()
   else skip_phrase lexbuf
+
+module Location = Ocaml_common.Location
 
 let safeguard_parsing lexbuf fn =
   try fn ()
@@ -132,15 +138,16 @@ let safeguard_parsing lexbuf fn =
 (* Unfortunately we drop the comments because there doesn't exist an ML
  * printer that formats comments *and* line wrapping! (yet) *)
 let format_interface_with_comments (signature, _) formatter =
-  Pprintast.signature formatter
+  Ocaml_common.Pprintast.signature formatter
     (To_current.copy_signature signature)
+
 let format_implementation_with_comments (structure, _) formatter =
   let structure =
-    Reason_syntax_util.(apply_mapper_to_structure
-      structure
-      (backport_letopt_mapper remove_stylistic_attrs_mapper))
+    structure
+    |> Reason_syntax_util.(apply_mapper_to_structure backport_letopt_mapper)
+    |> Reason_syntax_util.(apply_mapper_to_structure remove_stylistic_attrs_mapper)
   in
-  Pprintast.structure formatter
+  Ocaml_common.Pprintast.structure formatter
     (To_current.copy_structure structure)
 
 module Lexer = Lexer_impl
