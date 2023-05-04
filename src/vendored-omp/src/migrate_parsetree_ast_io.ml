@@ -12,7 +12,6 @@
 (*   special exception on linking described in the file LICENSE.          *)
 (*                                                                        *)
 (**************************************************************************)
-open Result
 
 type ast =
   | Impl : (module Migrate_parsetree_versions.OCaml_version with

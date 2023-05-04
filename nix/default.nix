@@ -11,7 +11,7 @@ ocamlPackages.buildDunePackage {
 
   src = nix-filter.filter {
     root = ./..;
-    include = [ "dune" "dune-project" "reason.opam" "rtop.opam" "scripts" "src" "formatTest" ];
+    include = [ "dune" "dune-project" "reason.opam" "rtop.opam" "scripts" "src" "test" ];
   };
 
   useDune2 = true;
@@ -23,10 +23,7 @@ ocamlPackages.buildDunePackage {
     menhirLib
     cppo
     fix
-    result
     ppx_derivers
-    ppxlib
-    # ocaml-migrate-parsetree
   ];
 
 }

@@ -1033,7 +1033,7 @@ let makeList
   let config =
     { Layout.
       listConfigIfCommentsInterleaved; listConfigIfEolCommentsInterleaved;
-      break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
+      break = if lst = [] then Layout.IfNeed else break; wrap; inline; sep; indent; sepLeft; preSpace; postSpace; pad;
     }
   in
   Layout.Sequence (config, lst)
@@ -2942,7 +2942,7 @@ let printer = object(self:'self)
       | (Ptype_variant lst, scope, None) -> [
           privatize scope
             [makeList
-              ~break:(if lst == [] then IfNeed else Always_rec)
+              ~break:Always_rec
               ~postSpace:true
               ~inline:(true, true)
               (self#type_variant_list lst)]
@@ -5060,7 +5060,7 @@ let printer = object(self:'self)
     | { pmod_desc = Pmod_functor(fp, me2) } ->
         let firstOne =
           match fp with
-            | Unit -> atom "()"
+            | Unit -> atom ""
             | Named (s, mt') ->
               let s = moduleIdent s in
               self#module_type (makeList [atom s; atom ":"]) mt'
@@ -7419,7 +7419,7 @@ let printer = object(self:'self)
           ~comments:self#comments
           s
         in
-        let shouldBreakLabel = if List.length s > 1 then `Always else `Auto in
+        let shouldBreakLabel = if List.length s > 0 then `Always else `Auto in
         label
           ~indent:0
           ~break:shouldBreakLabel
@@ -7541,7 +7541,12 @@ let printer = object(self:'self)
         in
         formatPrecedence (self#module_type letPattern mt)
     | Pmod_structure s ->
-        let wrap = if hug then ("({", "})") else ("{", "}") in
+        let wrap = if hug then
+          if s = [] then 
+            ("(", ")") 
+          else 
+            ("({", "})")
+        else ("{", "}") in
         let items =
           groupAndPrint
             ~xf:self#structure_item
@@ -7558,7 +7563,7 @@ let printer = object(self:'self)
           items
     | _ ->
         (* For example, functor application will be wrapped. *)
-        formatPrecedence (self#module_expr x)
+        formatPrecedence ~wrap:("", "") (self#module_expr x)
 
   method module_expr x =
     match x.pmod_desc with
@@ -7576,29 +7581,42 @@ let printer = object(self:'self)
     | Pmod_constraint _
     | Pmod_structure _ -> self#simple_module_expr x
 
-
   method structure structureItems =
+    (* We don't have any way to know if an extension is placed at the top level by the parsetree
+    while there's a difference syntactically (% for structure_items/expressons and %% for top_level).
+    This small fn detects this particular case (structure > structure_item > extension > value) and 
+    prints with double % *)
+    let structure_item item =
+      match item.pstr_desc with
+      | Pstr_extension ((extension, PStr [item]), attrs) ->
+          begin match item.pstr_desc with
+            (* In case of a value, the extension gets inlined `let%private a = 1` *)
+            | Pstr_value (rf, vb_list) -> self#bindings ~extension (rf, vb_list)
+            | _ -> self#attach_std_item_attrs attrs (self#payload "%%" extension (PStr [item]))
+          end
+      | _ -> self#structure_item item
+    in
     match structureItems with
     | [] -> atom ""
-    | first::_ as structureItems ->
+    | first :: _ as structureItems ->
       let last = match (List.rev structureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.pstr_loc.loc_start in
       let loc_end = last.pstr_loc.loc_end in
       let items =
         groupAndPrint
-          ~xf:self#structure_item
+          ~xf:structure_item
           ~getLoc:(fun x -> x.pstr_loc)
           ~comments:self#comments
           structureItems
       in
       source_map ~loc:{loc_start; loc_end; loc_ghost = false}
         (makeList
-           ~postSpace:true
-           ~break:Always_rec
-           ~indent:0
-           ~inline:(true, false)
-           ~sep:(SepFinal (";", ";"))
-           items)
+          ~postSpace:true
+          ~break:Always_rec
+          ~indent:0
+          ~inline:(true, false)
+          ~sep:(SepFinal (";", ";"))
+          items)
 
   (*
      How do modules become parsed?

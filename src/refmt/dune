@@ -2,4 +2,13 @@
  (name refmt_impl)
  (public_name refmt)
  (package reason)
- (libraries reason reason.cmdliner))
+ (libraries reason reason.cmdliner dune-build-info))
+
+(rule
+ (targets git_commit.ml)
+ (action
+  (with-stdout-to
+   %{targets}
+   (progn
+    (bash "echo let version = \\\"$(git rev-parse --verify HEAD)\\\"")
+    (bash "echo let short_version = \\\"$(git rev-parse --short HEAD)\\\"")))))

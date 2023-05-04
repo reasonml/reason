@@ -50,30 +50,16 @@ clean-for-ci: clean-tests
 
 .PHONY: build clean
 
-ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-SUBSTS:=$(ROOT_DIR)/pkg/substs
-
 # For publishing esy releases to npm
-esy-prepublish: build clean-tests pre_release
+esy-prepublish: build clean-tests
 	node ./scripts/esy-prepublish.js
-
-# For OPAM
-pre_release:
-ifndef version
-	$(error environment variable 'version' is undefined)
-endif
-	export git_version="$(shell git rev-parse --verify HEAD)"; \
-	export git_short_version="$(shell git rev-parse --short HEAD)"; \
-	$(SUBSTS) $(ROOT_DIR)/src/refmt/package.ml.in
-
-.PHONY: pre_release
 
 # For OPAM
 release_check:
 	./scripts/release-check.sh
 
 # For OPAM
-release: release_check pre_release
+release: release_check
 	git add package.json src/refmt/package.ml reason.opam
 	git commit -m "Version $(version)"
 	git tag -a $(version) -m "Version $(version)."

@@ -1,0 +1,8 @@
+(env
+ (_
+  (env-vars
+   (REFMT_PRINT_WIDTH 50))))
+
+(cram
+ (applies_to * \ lib)
+ (deps %{bin:ocamlc} %{bin:refmt} %{bin:typedtree_printer} %{bin:rtop}))

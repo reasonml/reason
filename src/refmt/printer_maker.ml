@@ -45,12 +45,12 @@ let ocamlBinaryParser use_stdin filename =
           file_chan
   in
   match Ast_io.from_channel chan with
-  | Result.Error _ -> assert false
-  | Result.Ok (_, Ast_io.Impl ((module Version), ast)) ->
-    let module Convert = Convert(Version)(OCaml_408) in
+  | Error _ -> assert false
+  | Ok (_, Ast_io.Impl ((module Version), ast)) ->
+    let module Convert = Convert(Version)(OCaml_411) in
     ((Obj.magic (Convert.copy_structure ast), []), true, false)
-  | Result.Ok (_, Ast_io.Intf ((module Version), ast)) ->
-    let module Convert = Convert(Version)(OCaml_408) in
+  | Ok (_, Ast_io.Intf ((module Version), ast)) ->
+    let module Convert = Convert(Version)(OCaml_411) in
     ((Obj.magic (Convert.copy_signature ast), []), true, true)
 
 let reasonBinaryParser use_stdin filename =
