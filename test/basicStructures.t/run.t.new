@@ -4,24 +4,28 @@ let run = () => {
 
 while (something) {
   print_string("You're in a while loop");
-  print_newline(())
+  print_newline()
 };
 
 for (i in 0 to 5) {
   print_int(i);
-  print_newline(());
+  print_newline();
   for (i in 10 downto 0) {
     print_string("Counting in reverse direction");
-    print_newline(())
+    print_newline()
   }
 };
 
-for (i in 0 to endOfRangeMustBeSimple(expr,soWrap)) {
+for (i in 0 to
+endOfRangeMustBeSimple(
+  expr,
+  soWrap,
+)) {
   print_int(i);
-  print_newline(());
-  for (i in theSame(isTrue,ofThe,startOfRange) downto 0) {
+  print_newline();
+  for (i in theSame(isTrue, ofThe, startOfRange) downto 0) {
     print_string("Counting in reverse direction");
-    print_newline(())
+    print_newline()
   }
 };
 
@@ -35,25 +39,25 @@ let x = (!)((!)(foo).bar);
 
 let x = (!)((!)(foo)#bar);
 
-let x = not(not(not(foo)).bar);
+let x = !(!(!(foo)).bar);
 
-let x = not(foo.bar);
+let x = !(foo.bar);
 
-let x = not(foo#bar);
+let x = !(foo#bar);
 
-let x = not(not(foo).bar);
+let x = !(!(foo).bar);
 
-let x = not(not(foo)#bar);
+let x = !(!(foo)#bar);
 
-let x = not(not(foo.bar));
+let x = !(!(foo.bar));
 
-let x = (?!)(not(foo.bar));
+let x = (?!)(!(foo.bar));
 
-let x = not((?!)(foo.bar));
+let x = !((?!)(foo.bar));
 
-let x = (~!)(not(foo.bar));
+let x = (~!)(!(foo.bar));
 
-let x = not((~!)(foo.bar));
+let x = !((~!)(foo.bar));
 
 let x = (~!)((~!)(foo.bar));
 
@@ -65,26 +69,23 @@ let x = (!~)(foo.bar);
 
 let x = (!~)(foo#bar);
 
-let noParensNeeded = not(blah.foo.bar);
+let noParensNeeded = !(blah.foo.bar);
 
-let parensNeededAroundFirst = not(blah).foo.bar;
+let parensNeededAroundFirst = !(blah).foo.bar;
 
-let parensNeededAroundSecond = not(blah.foo).bar;
+let parensNeededAroundSecond = !(blah.foo).bar;
 
-let noParensNeeded = not(blah#foo#bar);
+let noParensNeeded = !(blah#foo#bar);
 
-let parensNeededAroundFirst = not(blah)#foo#bar;
+let parensNeededAroundFirst = !(blah)#foo#bar;
 
-let parensNeededAroundSecond = not(blah#foo)#bar;
+let parensNeededAroundSecond = !(blah#foo)#bar;
 
-let parensWithSpaceNeededAroundFirst =
-not(
-  not(blah)
-)#foo#bar;
+let parensWithSpaceNeededAroundFirst = !(!(blah))#foo#bar;
 
 let parensWithSpaceNeededAroundSecond =
-not(
-  not(blah#foo)
+!(
+  !(blah#foo)
 )#bar;
 
 let parensWithSpaceNeededAroundFirst =
@@ -97,9 +98,9 @@ let parensWithSpaceNeededAroundSecond =
   (~+)(blah#foo)
 )#bar;
 
-let x = not(not(foo.bar));
+let x = !(!(foo.bar));
 
-let x = not(not(foo#bar));
+let x = !(!(foo#bar));
 
 let x = -10;
 
@@ -129,17 +130,17 @@ let lazy lazy true = 10;
 
 let lazy [%extend] = 10;
 
-let x = Array.get((!)(arr),0);
+let x = Array.get((!)(arr), 0);
 
-let x = Array.get((!)(arr),0);
+let x = Array.get((!)(arr), 0);
 
-let x = String.get((!)(str),0);
+let x = String.get((!)(str), 0);
 
-let x = String.get((!)(str),0);
+let x = String.get((!)(str), 0);
 
-let x = Array.set((!)(arr),0,1);
+let x = Array.set((!)(arr), 0, 1);
 
-let x = Array.set((!)(arr),0,1);
+let x = Array.set((!)(arr), 0, 1);
 
 /**/
 
@@ -151,36 +152,36 @@ let /++ = (+);
 
 let something = if (self.ext.logSuccess) {
   print_string("Did tap");
-  print_newline(())
+  print_newline()
   };
 
 let logTapSuccess = self => if (self.ext.logSuccess) {
   print_string("Did tap");
-  print_newline(())
+  print_newline()
   }
 else ();
 
 let logTapSuccess = self => if (self.ext.logSuccess) {
   print_string("Did tap");
-  print_newline(())
+  print_newline()
   };
 
-todo Pexp_setfield;
+!(data).true;
 
-todo Pexp_setfield;
+!(data).field1.true;
 
-todo Pexp_setfield;
+!(data.field1).true;
 
-todo Pexp_setfield;
+!(data).field1.true;
 
-todo Pexp_setfield;
+!(data.field1).true;
 
 let loop = (appTime, frameTime) => if (hasSetup.contents) {
-  setupScene(());
-  renderIntoTop(());
-  todo Pexp_setfield
+  setupScene();
+  renderIntoTop();
+  hasSetup.true
   };
-process(appTime,frameTime);
+process(appTime, frameTime);
 
 if (something) {
   if (somethingElse) {
@@ -233,7 +234,7 @@ else print_string("a <= b")) {
   print_string(
     "That could never possibly type check"
   );
-  print_newline(())
+  print_newline()
   };
 
 let myRecord = {
@@ -312,7 +313,7 @@ let (x: int) = (10: int);
  *============================================================================
  */
 
-type pairOfInts = other type...;
+type pairOfInts = (int, int);
 
 let (letBindingWithTypeConstraint: int) = 10;
 
@@ -344,7 +345,7 @@ let (
   (constrainedWithoutGrouping: int),
 ) = (10, 20);
 
-let ((tupleItem, withOutsideTypeConstraint): other type...) = (
+let ((tupleItem, withOutsideTypeConstraint): (int, int)) = (
   10,
   20,
 );
@@ -357,26 +358,29 @@ let moreTrailing = (1, 2, 3, 4, 5, 7);
  * ============================================================================
  */
 
-let x = (Pexp_construct list: list(int));
+let x = ([1, 2, 3, 4, 5, 6, 7, 8, 9]: list(int));
 
 let hd = "appendedToHead";
 
-let tl = Pexp_construct list;
+let tl = ["listTo", "append", "to"];
 
-let result = (Pexp_construct cons: list(string));
+let result = ([hd, ...tl]: list(string));
 
-let result = (Pexp_construct list: list(string));
+let result = (["appendedToHead",
+"listTo",
+"append",
+"to"]: list(string));
 
-let recsize = (
+let rec size = (
   fun
   | [] => 0
   | [hd, ...tl] => 1 + size(tl)
 );
 
-let recsize = (soFar, lst) =>
+let rec size = (soFar, lst) =>
 switch (lst) {
 | [] => 0
-| [hd, ...tl] => size(soFar + 1,tl)
+| [hd, ...tl] => size(soFar + 1, tl)
 };
 
 let nestedMatch = lstLst =>
@@ -412,21 +416,21 @@ type mine =
 
 let ppp =
   switch (MyThing(20)) {
-  | todo: Ppat_alias
-  | todo: Ppat_alias => ppp
+  | MyThing(x) as ppp
+  | YourThing(x) as ppp => ppp
   };
 
-let todo: Ppat_alias
-| todo: Ppat_alias = ppp;
+let MyThing_ as ppp
+| YourThing_ as ppp = ppp;
 
 let ppp =
   switch (MyThing(20)) {
-  | todo: Ppat_alias
-  | todo: Ppat_alias => ppp
+  | MyThing(x) as ppp
+  | YourThing(x) as ppp => ppp
   };
 
-let todo: Ppat_alias
-| todo: Ppat_alias = ppp;
+let MyThing_ as ppp
+| YourThing_ as ppp = ppp;
 
 /**                               ARRAYS
  * ============================================================================
@@ -435,17 +439,17 @@ let todo: Ppat_alias
  * random access and better control over memory layout, use arrays.
  */
 
-let emptyArray = todo Pexp_array;
+let emptyArray = [||];
 
-let arrayWithOne = todo Pexp_array;
+let arrayWithOne = [|10|];
 
-let arrayWithTwo = todo Pexp_array;
+let arrayWithTwo = [|10, 10|];
 
-let secondItem = Array.get(arrayWithTwo,1);
+let secondItem = Array.get(arrayWithTwo, 1);
 
-let secondItem = Array.get(arrayWithTwo,1);
+let secondItem = Array.get(arrayWithTwo, 1);
 
-Array.set(arrayWithTwo,1,300);
+Array.set(arrayWithTwo, 1, 300);
 
 /**
  *                                STRINGS
@@ -455,7 +459,7 @@ Array.set(arrayWithTwo,1,300);
 
 let myString = "asdf";
 
-String.set(myString,2,'9');
+String.set(myString, 2, '9');
 
 let one = 900;
 
@@ -463,7 +467,7 @@ let two = 10000;
 
 let myTuple = ((one: int), (two: int));
 
-type myTupleType = other type...;
+type myTupleType = (int, int);
 
 let myTuple = (myTuple: myTupleType);
 
@@ -478,7 +482,7 @@ let addValues = ((a: int), (b: int)) => a + b;
 
 let myFunction = ((a: int), (b: int)) => (a + b: int);
 
-let functionReturnValueType = ((i: int), (s: string)) => (x => x + 1: other type...);
+let functionReturnValueType = ((i: int), (s: string)) => (x => x + 1: int => int);
 
 let curriedFormOne = ((i: int), (s: string)) => s (^)
 string_of_int(
@@ -488,16 +492,16 @@ string_of_int(
 let curriedFormTwo = ((i: int), (x: int)) => ((
   i,
   x,
-): other type...);
+): (int, int));
 
 let curriedFormThree = ((i: int), ((
   (a: int),
   (b: int),
-): other type...)) => ((
+): (int, int))) => ((
   i,
   a,
   b,
-): other type...);
+): (int, int, int));
 
 /** TODO: But this, however doesn't work.
  *  let (myCurriedFunc: int => int) a => a;
@@ -505,24 +509,28 @@ let curriedFormThree = ((i: int), ((
  *  in let bindings - that may be easy to change.
  */
 
-type myFuncType = other type...;
+type myFuncType = int => int => int;
 
 let myFunc = ((a, b) => a + b: myFuncType);
 
-let funcWithTypeLocallyAbstractTypes = todo Pexp_newtype;
+let funcWithTypeLocallyAbstractTypes = (type atype(type btype(a, b, (c: atype => btype => unit)) =>
+c(
+  a,
+  b,
+)));
 
-type a = other type...;
+type a = unit => unit;
 
 type b =
-  | Foo(other type...)
-  | Bar(other type..., other type..., other type...)
-  | Baz(other type..., other type..., other type...);
+  | Foo(unit => unit)
+  | Bar(unit => unit, unit => unit, a => b => c)
+  | Baz(unit => unit, unit => unit, a => b => c);
 
 type c =
-  | Foo(other type...)
-  | Bar(other type...);
+  | Foo(a => b => unit)
+  | Bar(a => b => unit);
 
-type d = other type...;
+type d = todo Ptyp_variant;
 
 /**
  * Records:
@@ -604,7 +612,7 @@ type component2 = {
 };
 
 type component3 = {
-  props: other type...,
+  props: M.props,
   state: state,
 };
 
@@ -620,17 +628,17 @@ type mutabeleComponent2 = {
 
 type description = {
   element: string,
-  tag: tag(todo a),
+  tag: tag('props),
 };
 
 module Foo = {type bar = {
-  foo: other type...,
+  foo: Baz.foo,
 };};
 
 type foo = {
-  bar: other type...,
+  bar: Baz.bar,
   qux: qux,
-  fooo: other type...,
+  fooo: Fooo.fooo,
 };
 
 let moreFoo = {bar: Baz.bar, qux, fooo: Fooo.fooo};
@@ -649,11 +657,11 @@ let bar = {bar: 1, Foo.foo: foo};
 
 let bar = {Foo.foo: foo, Bar.bar: bar};
 
-{Ppat_record: not supported, y} => 1;
+{M.x: x, y} => 1;
 
 
 switch (foo) {
-| {y: 1, Ppat_record: not supported} => 2
+| {y: 1, M.x: x} => 2
 };
 
 let break_after_equal =
@@ -699,7 +707,7 @@ it(
 
 foo(preserveBraces => { inCallback});
 
-foo(preserveBraces => { inFirstPos},secondArg);
+foo(preserveBraces => { inFirstPos}, secondArg);
 
 
 foo(

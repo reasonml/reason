@@ -900,7 +900,7 @@ let rec extension (s, p) =
   (* We special case "bs.obj" for now to allow for a nicer interop with
      * BuckleScript. We might be able to generalize to any kind of record
      * looking thing with struct keys. *)
-  | "bs.obj" -> string "todo: bs.obj"
+  | "bs.obj" -> string "todo: extension bs.obj"
   | _ -> payload "%" s p
 
 and payload ppxToken ppxId e =
@@ -1026,7 +1026,9 @@ and value_bindings rf vb =
   concat_map attribute fstAttrs.docAttrs
   ^^ concat_map attribute fstAttrs.stdAttrs
   ^^ string "let" ^^ space
-  ^^ (match rf with Nonrecursive -> empty | Recursive -> string "rec")
+  ^^ (match rf with
+     | Nonrecursive -> empty
+     | Recursive -> string "rec" ^^ space)
   ^^ separate_map (space ^^ hardline ^^ string "and" ^^ space) value_binding vb
 
 and attribute = function
@@ -1109,6 +1111,7 @@ and direction_flag (f : Compiler_libs.Asttypes.direction_flag) =
 and expression ?(depth = 0) ?(wrap = true) x =
   let { pexp_desc; pexp_loc; pexp_loc_stack; pexp_attributes } = x in
   match pexp_desc with
+  | Pexp_ident { txt = Lident "not" } -> bang
   | Pexp_ident { txt } -> longident txt
   | Pexp_constant c -> constant c
   | Pexp_let (rf, vb, e) ->
@@ -1153,7 +1156,7 @@ and expression ?(depth = 0) ?(wrap = true) x =
           group
             (ifflat
                (expression infixOperator ^^ lparen
-               ^^ separate_map comma (fun (_, e) -> expression ~wrap:false e) l
+               ^^ separate_map (comma ^^ space) (fun (_, e) -> expression e) l
                ^^ rparen)
                (group
                   (break 0 ^^ expression infixOperator ^^ lparen
@@ -1170,26 +1173,22 @@ and expression ?(depth = 0) ?(wrap = true) x =
           expression a ^^ space ^^ expression infixOperator ^^ space
           ^^ expression b)
   | Pexp_apply (e, l) ->
-      (* ifflat
-         (expression e ^^ lparen
-         ^^ separate_map comma (fun (_, e) -> expression ~wrap:false e) l)
-         (group
-            (break 0 ^^ expression e ^^ lparen
-            ^^ nest 2
-                 (break 0
-                 ^^ separate_map
-                      (comma ^^ break 1)
-                      (fun (_, e) -> expression ~wrap:false e)
-                      l
-                 ^^ ifflat empty (if List.length l = 1 then empty else comma))
-            ^^ break 0 ^^ rparen)) *)
+      let leftParen, rightParen =
+        match l with
+        | (_, { pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, _); _ })
+          :: [] ->
+            (empty, empty)
+        | _ -> (lparen, rparen)
+      in
       group
         (ifflat
-           (expression e ^^ lparen
-           ^^ separate_map comma (fun (_, e) -> expression ~wrap:false e) l
-           ^^ rparen)
+           (expression e ^^ leftParen
+           ^^ separate_map (comma ^^ space)
+                (fun (_, e) -> expression ~wrap:false e)
+                l
+           ^^ rightParen)
            (group
-              (break 0 ^^ expression e ^^ lparen
+              (break 0 ^^ expression e ^^ leftParen
               ^^ nest 2
                    (break 0
                    ^^ separate_map
@@ -1198,7 +1197,7 @@ and expression ?(depth = 0) ?(wrap = true) x =
                         l
                    ^^ ifflat empty (if List.length l = 1 then empty else comma)
                    )
-              ^^ break 0 ^^ rparen)))
+              ^^ break 0 ^^ rightParen)))
   | Pexp_match (e, cl) ->
       group
         (nest depth
@@ -1218,8 +1217,12 @@ and expression ?(depth = 0) ?(wrap = true) x =
       match view_expr x with
       | `nil -> string "[]"
       | `tuple -> string "()"
-      | `list xs -> string "Pexp_construct list"
-      | `cons xs -> string "Pexp_construct cons"
+      | `list xs ->
+          lbracket ^^ separate_map (comma ^^ break 1) expression xs ^^ rbracket
+      | `cons (hd :: tl) ->
+          lbracket ^^ expression hd ^^ comma ^^ space ^^ dot ^^ dot ^^ dot
+          ^^ separate_map (comma ^^ break 1) expression tl
+          ^^ rbracket
       | `simple x -> longident x
       | _ -> assert false)
   | Pexp_construct ({ txt = Lident s1 }, opt) ->
@@ -1250,8 +1253,11 @@ and expression ?(depth = 0) ?(wrap = true) x =
       layout
       (* SpecificInfixPrecedence
          ({ reducePrecedence = prec; shiftPrecedence = prec }, LayoutNode layout) *)
-  | Pexp_setfield (e, l, e2) -> string "todo Pexp_setfield"
-  | Pexp_array el -> string "todo Pexp_array"
+  | Pexp_setfield (e, l, e2) -> expression e ^^ dot ^^ expression e2
+  | Pexp_array el ->
+      lbracket ^^ bar
+      ^^ separate_map (comma ^^ space) expression el
+      ^^ bar ^^ rbracket
   | Pexp_ifthenelse (e1, e2, e3) ->
       string "if" ^^ space ^^ lparen ^^ expression e1 ^^ rparen ^^ space
       ^^ lbrace
@@ -1296,7 +1302,8 @@ and expression ?(depth = 0) ?(wrap = true) x =
   | Pexp_lazy e -> string "todo Pexp_lazy"
   | Pexp_poly (e, ct) -> string "todo Pexp_poly"
   | Pexp_object c -> string "todo Pexp_object"
-  | Pexp_newtype (s, e) -> string "todo Pexp_newtype"
+  | Pexp_newtype (s, e) ->
+      lparen ^^ string "type" ^^ space ^^ string s.txt ^^ expression e ^^ rparen
   | Pexp_pack m -> string "todo Pexp_pack"
   | Pexp_open (o, e) -> string "todo Pexp_open"
   | Pexp_letop l -> string "todo Pexp_letop"
@@ -1318,7 +1325,8 @@ and pattern ?(wrap = true)
   match ppat_desc with
   | Ppat_var v -> string v.txt
   | Ppat_any -> underscore
-  | Ppat_alias (p, l) -> string "todo: Ppat_alias"
+  | Ppat_alias (p, l) ->
+      pattern p ^^ space ^^ string "as" ^^ space ^^ string l.txt
   | Ppat_constant c -> constant c
   | Ppat_interval (c, c2) ->
       constant c ^^ space ^^ string ".." ^^ space ^^ constant c2
@@ -1373,7 +1381,9 @@ and pattern ?(wrap = true)
                         when name = value ->
                           string name
                       | _ -> string name ^^ colon ^^ space ^^ pattern p)
-                  | _ -> string "Ppat_record: not supported")
+                  | _ ->
+                      let name = longident l.txt in
+                      name ^^ colon ^^ space ^^ pattern p)
                 pl)
         ^^ ifflat empty comma ^^ break 0 ^^ rbrace)
   | Ppat_array pl ->
@@ -1434,11 +1444,24 @@ and label_declaration { pld_name; pld_type; _ } =
 
 and core_type { ptyp_desc; _ } =
   match ptyp_desc with
-  | Ptyp_var _ -> string "todo a"
-  | Ptyp_constr ({ txt = Lident s1 }, []) -> string s1
-  | Ptyp_constr ({ txt = Lident s1 }, cl) ->
-      string s1 ^^ lparen ^^ separate_map star core_type cl ^^ rparen
-  | _ -> string "other type..."
+  | Ptyp_var v -> squote ^^ string v
+  | Ptyp_constr ({ txt }, cl) -> (
+      longident txt
+      ^^
+      match cl with
+      | [] -> empty
+      | _ -> lparen ^^ separate_map star core_type cl ^^ rparen)
+  | Ptyp_arrow (l, a, b) -> core_type a ^^ arrow ^^ core_type b
+  | Ptyp_tuple lst1 ->
+      lparen ^^ separate_map (comma ^^ space) core_type lst1 ^^ rparen
+  | Ptyp_variant _ -> string "todo Ptyp_variant"
+  | Ptyp_extension _ -> string "todo Ptyp_extension"
+  | Ptyp_any -> string "todo Ptyp_any"
+  | Ptyp_object (_, _) -> string "todo Ptyp_object"
+  | Ptyp_class (_, _) -> string "todo Ptyp_class"
+  | Ptyp_alias (_, _) -> string "todo Ptyp_alias"
+  | Ptyp_poly (_, _) -> string "todo Ptyp_poly"
+  | Ptyp_package _ -> string "todo Ptyp_package"
 
 and structure structureItems =
   group (separate_map (hardline ^^ hardline) structure_item structureItems)
