@@ -16,7 +16,7 @@ for (i in 0 to 5) {
   }
 };
 
-for (i in 0 to expr endOfRangeMustBeSimple soWrap) {
+for (i in 0 to endOfRangeMustBeSimple(expr,soWrap)) {
   print_int(i);
   print_newline(());
   for (i in theSame(isTrue, ofThe, startOfRange) downto 0) {
@@ -29,21 +29,21 @@ let x = (!)(todo Pexp_field;
 
 let x = (!)(todo Pexp_field;
 
-let x = (!)(todo Pexp_send;
+let x = (!)(foo#bar;
 
 let x = (!)(todo Pexp_field;
 
-let x = (!)(todo Pexp_send;
+let x = (!)((!)(foo#bar;
 
 let x = not(todo Pexp_field;
 
 let x = not(todo Pexp_field;
 
-let x = not(todo Pexp_send;
+let x = not(foo#bar;
 
 let x = not(todo Pexp_field;
 
-let x = not(todo Pexp_send;
+let x = not(not(foo#bar;
 
 let x = not(not(todo Pexp_field;
 
@@ -59,11 +59,11 @@ let x = (~!)((~!)(todo Pexp_field;
 
 let x = (!!)(todo Pexp_field;
 
-let x = (!!)(todo Pexp_send;
+let x = (!!)(foo#bar;
 
 let x = (!~)(todo Pexp_field;
 
-let x = (!~)(todo Pexp_send;
+let x = (!~)(foo#bar;
 
 let noParensNeeded = not(todo Pexp_field;
 
@@ -71,23 +71,35 @@ let parensNeededAroundFirst = todo Pexp_field;
 
 let parensNeededAroundSecond = todo Pexp_field;
 
-let noParensNeeded = not(todo Pexp_send;
+let noParensNeeded = not(blah#foo#bar;
 
-let parensNeededAroundFirst = todo Pexp_send;
+let parensNeededAroundFirst = not(blah#foo#bar;
 
-let parensNeededAroundSecond = todo Pexp_send;
+let parensNeededAroundSecond = not(blah#foo#bar;
 
-let parensWithSpaceNeededAroundFirst = todo Pexp_send;
+let parensWithSpaceNeededAroundFirst =
+not(
+  not(blah)
+)#foo#bar;
 
-let parensWithSpaceNeededAroundSecond = todo Pexp_send;
+let parensWithSpaceNeededAroundSecond =
+not(
+  not(blah#foo)
+)#bar;
 
-let parensWithSpaceNeededAroundFirst = todo Pexp_send;
+let parensWithSpaceNeededAroundFirst =
+(?!)(
+  (~+)(blah)
+)#foo#bar;
 
-let parensWithSpaceNeededAroundSecond = todo Pexp_send;
+let parensWithSpaceNeededAroundSecond =
+(?!)(
+  (~+)(blah#foo)
+)#bar;
 
 let x = not(not(todo Pexp_field;
 
-let x = not(not(todo Pexp_send;
+let x = not(not(foo#bar;
 
 let x = -10;
 
@@ -135,11 +147,20 @@ todo Pstr_attribute
 
 let /++ = (+);
 
-let something = todo Pexp_ifthenelse;
+let something = if (todo Pexp_field) {
+print_string("Did tap");
+print_newline(())
+} ;
 
-let logTapSuccess = self => todo Pexp_ifthenelse;
+let logTapSuccess = self => if (todo Pexp_field) {
+print_string("Did tap");
+print_newline(())
+} else ();
 
-let logTapSuccess = self => todo Pexp_ifthenelse;
+let logTapSuccess = self => if (todo Pexp_field) {
+print_string("Did tap");
+print_newline(())
+} ;
 
 todo Pexp_setfield;
 
@@ -151,40 +172,112 @@ todo Pexp_setfield;
 
 todo Pexp_setfield;
 
-let loop = (appTime, frameTime) => todo Pexp_ifthenelse;
-appTime process frameTime;
+let loop = (appTime, frameTime) => if (todo Pexp_field) {
+setupScene(());
+renderIntoTop(());
+todo Pexp_setfield
+} ;
+process(appTime,frameTime);
 
-todo Pexp_ifthenelse;
+if (something) {
+if (somethingElse) {
+()
+} else "blah"
+} ;
 
-todo Pexp_ifthenelse;
+if (something) {
+if (somethingElse) {
+()
+} else "blah"
+} ;
 
-todo Pexp_ifthenelse;
+if (true) {
+if (true) {
+print_string("one")
+} else print_string("two")
+} ;
 
-todo Pexp_ifthenelse;
+if (true) {
+if (false) {
+print_string("one")
+} else print_string("two")
+} ;
 
-todo Pexp_ifthenelse;
+if (false) {
+if (true) {
+print_string("one")
+} else print_string("two")
+} ;
 
 let printIfFirstArgGreater = true;
 
-let result = todo Pexp_ifthenelse;
+let result = if (printIfFirstArgGreater) {
+(a, b) => if (a > b) {
+print_string("a > b")
+} else print_string("b >= a")
+} else if ((a, b) => if (a > b) {
+print_string("b < a")
+} else print_string("a <= b")) {
+
+print_string(
+  "That could never possibly type check"
+);
+print_newline(())
+} ;
 
 let myRecord = {
   nestedRecord: {
-    anotherNestedRecord: (instaComp, displayRect) => todo Pexp_ifthenelse,
+    anotherNestedRecord: (instaComp, displayRect) => if (
+    Graphics.cgRectIntersectsWithSlop(
+      defaultCompositeTimerRectSlop,
+      todo Pexp_field,
+      displayRect,
+    )) {
+    IoEligible
+    } else IoInelibleButTryComposition,
   },
 };
 
-todo Pexp_ifthenelse;
+if (printIfFirstArgGreater) {
+(a, b) => if (a > b) {
+print_string("a > b")
+}
+} else (a, b) => if (a > b) {
+print_string("b < a")
+} ;
 
-todo Pexp_ifthenelse;
+if (printIfFirstArgGreater) {
+(a, b) => if (a > b) {
+print_string("a > b")
+} else (a, b) => if (a > b) {
+print_string("b < a")
+}
+} ;
 
-(a, b) => todo Pexp_ifthenelse;
+(a, b) => if (a > b) { print_string("a > b" } ;
 
-todo Pexp_ifthenelse;
+if (printIfFirstArgGreater) {
+(a, b) => if (a > b) {
+print_string("a > b")
+}
+} else (a, b) => if (a > b) {
+print_string("b < a")
+} ;
 
-todo Pexp_ifthenelse;
+if (10 < 100) {
 
-todo Pexp_ifthenelse;
+let msg = "If there was any doubt, 10 is in fact less than 100.";
+print_string(msg);
+} else
+let msg = "All bets are off.";
+print_string(msg);;
+
+if (10 < 100) {
+
+print_string(
+  "If there was any doubt, 10 is in fact less than 100."
+)
+} else print_string("All bets are off.");
 
 todo Pstr_attribute
 
@@ -260,7 +353,7 @@ let recsize = (
 let recsize = (soFar, lst) =>
 switch (lst) {
 | [] => 0
-| [hd, ...tl] => soFar + 1 size tl
+| [hd, ...tl] => size(soFar + 1,tl)
 };
 
 let nestedMatch = lstLst =>
@@ -555,16 +648,20 @@ let identifierLambda = a => ();
 
 let underscoreLambda = _ => ();
 
-"should remove parens" it a => {
-  print_string("did it work?");
-  print_string("did it work?")
-};
+
+it(
+  "should remove parens",
+  a => {
+    print_string("did it work?");
+    print_string("did it work?")
+  },
+);
 
 (!)(curNode ## childNodes;
 
 foo(preserveBraces => { inCallback};
 
-preserveBraces => { inFirstPos} foo secondArg;
+foo(preserveBraces => { inFirstPos},secondArg);
 
 
 foo(
