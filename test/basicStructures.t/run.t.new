@@ -19,63 +19,63 @@ for (i in 0 to 5) {
 for (i in 0 to endOfRangeMustBeSimple(expr,soWrap)) {
   print_int(i);
   print_newline(());
-  for (i in theSame(isTrue, ofThe, startOfRange) downto 0) {
+  for (i in theSame(isTrue,ofThe,startOfRange) downto 0) {
     print_string("Counting in reverse direction");
     print_newline(())
   }
 };
 
-let x = (!)(todo Pexp_field;
+let x = (!)((!)((!)(foo)).bar);
 
-let x = (!)(todo Pexp_field;
+let x = (!)(foo.bar);
 
-let x = (!)(foo#bar;
+let x = (!)(foo#bar);
 
-let x = (!)(todo Pexp_field;
+let x = (!)((!)(foo).bar);
 
-let x = (!)((!)(foo#bar;
+let x = (!)((!)(foo)#bar);
 
-let x = not(todo Pexp_field;
+let x = not(not(not(foo)).bar);
 
-let x = not(todo Pexp_field;
+let x = not(foo.bar);
 
-let x = not(foo#bar;
+let x = not(foo#bar);
 
-let x = not(todo Pexp_field;
+let x = not(not(foo).bar);
 
-let x = not(not(foo#bar;
+let x = not(not(foo)#bar);
 
-let x = not(not(todo Pexp_field;
+let x = not(not(foo.bar));
 
-let x = (?!)(not(todo Pexp_field;
+let x = (?!)(not(foo.bar));
 
-let x = not((?!)(todo Pexp_field;
+let x = not((?!)(foo.bar));
 
-let x = (~!)(not(todo Pexp_field;
+let x = (~!)(not(foo.bar));
 
-let x = not((~!)(todo Pexp_field;
+let x = not((~!)(foo.bar));
 
-let x = (~!)((~!)(todo Pexp_field;
+let x = (~!)((~!)(foo.bar));
 
-let x = (!!)(todo Pexp_field;
+let x = (!!)(foo.bar);
 
-let x = (!!)(foo#bar;
+let x = (!!)(foo#bar);
 
-let x = (!~)(todo Pexp_field;
+let x = (!~)(foo.bar);
 
-let x = (!~)(foo#bar;
+let x = (!~)(foo#bar);
 
-let noParensNeeded = not(todo Pexp_field;
+let noParensNeeded = not(blah.foo.bar);
 
-let parensNeededAroundFirst = todo Pexp_field;
+let parensNeededAroundFirst = not(blah).foo.bar;
 
-let parensNeededAroundSecond = todo Pexp_field;
+let parensNeededAroundSecond = not(blah.foo).bar;
 
-let noParensNeeded = not(blah#foo#bar;
+let noParensNeeded = not(blah#foo#bar);
 
-let parensNeededAroundFirst = not(blah#foo#bar;
+let parensNeededAroundFirst = not(blah)#foo#bar;
 
-let parensNeededAroundSecond = not(blah#foo#bar;
+let parensNeededAroundSecond = not(blah#foo)#bar;
 
 let parensWithSpaceNeededAroundFirst =
 not(
@@ -97,9 +97,9 @@ let parensWithSpaceNeededAroundSecond =
   (~+)(blah#foo)
 )#bar;
 
-let x = not(not(todo Pexp_field;
+let x = not(not(foo.bar));
 
-let x = not(not(foo#bar;
+let x = not(not(foo#bar));
 
 let x = -10;
 
@@ -109,62 +109,61 @@ let x = Some(-10);
 
 let x = Some(-5.);
 
-let todo: Ppat_lazy = 10;
+let lazy x = 10;
 
-let todo: Ppat_lazy = 10;
+let lazy (x: int) = 10;
 
-let todo: Ppat_lazy = 10;
+let lazy [] = 10;
 
-let todo: Ppat_lazy = 10;
+let lazy true = 10;
 
-let todo: Ppat_lazy = 10;
+let lazy #x = 10;
 
-let todo: Ppat_lazy = 10;
+let lazy `Variant = 10;
 
-let todo: Ppat_lazy = 10;
+let lazy `variant = 10;
 
-let todo: Ppat_lazy = 10;
+let lazy '0' .. '9' = 10;
 
-let todo: Ppat_lazy = 10;
+let lazy lazy true = 10;
 
-let todo: Ppat_lazy = 10;
+let lazy [%extend] = 10;
 
-let x = Array.get((!)(arr,0;
+let x = Array.get((!)(arr),0);
 
-let x = Array.get((!)(arr,0;
+let x = Array.get((!)(arr),0);
 
-let x = String.get((!)(str,0;
+let x = String.get((!)(str),0);
 
-let x = String.get((!)(str,0;
+let x = String.get((!)(str),0);
 
-let x = Array.set((!)(arr,0,1;
+let x = Array.set((!)(arr),0,1);
 
-let x = Array.set((!)(arr,0,1;
+let x = Array.set((!)(arr),0,1);
 
-todo Pstr_attribute
+/**/
 
-todo Pstr_attribute
+/**                            IF
+ *============================================================================
+ */
 
 let /++ = (+);
 
-let something = if (todo Pexp_field) {
-print_string("Did tap");
-print_newline(())
-} ;
+let something = if (self.ext.logSuccess) {
+  print_string("Did tap");
+  print_newline(())
+  };
 
-let logTapSuccess = self => if (todo Pexp_field) {
-print_string("Did tap");
-print_newline(())
-} else ();
+let logTapSuccess = self => if (self.ext.logSuccess) {
+  print_string("Did tap");
+  print_newline(())
+  }
+else ();
 
-let logTapSuccess = self => if (todo Pexp_field) {
-print_string("Did tap");
-print_newline(())
-} ;
-
-todo Pexp_setfield;
-
-todo Pexp_setfield;
+let logTapSuccess = self => if (self.ext.logSuccess) {
+  print_string("Did tap");
+  print_newline(())
+  };
 
 todo Pexp_setfield;
 
@@ -172,114 +171,134 @@ todo Pexp_setfield;
 
 todo Pexp_setfield;
 
-let loop = (appTime, frameTime) => if (todo Pexp_field) {
-setupScene(());
-renderIntoTop(());
-todo Pexp_setfield
-} ;
+todo Pexp_setfield;
+
+todo Pexp_setfield;
+
+let loop = (appTime, frameTime) => if (hasSetup.contents) {
+  setupScene(());
+  renderIntoTop(());
+  todo Pexp_setfield
+  };
 process(appTime,frameTime);
 
 if (something) {
-if (somethingElse) {
-()
-} else "blah"
-} ;
+  if (somethingElse) {
+    ()
+    }
+  else "blah"
+  };
 
 if (something) {
-if (somethingElse) {
-()
-} else "blah"
-} ;
+  if (somethingElse) {
+    ()
+    }
+  else "blah"
+  };
 
 if (true) {
-if (true) {
-print_string("one")
-} else print_string("two")
-} ;
+  if (true) {
+    print_string("one")
+    }
+  else print_string("two")
+  };
 
 if (true) {
+  if (false) {
+    print_string("one")
+    }
+  else print_string("two")
+  };
+
 if (false) {
-print_string("one")
-} else print_string("two")
-} ;
-
-if (false) {
-if (true) {
-print_string("one")
-} else print_string("two")
-} ;
+  if (true) {
+    print_string("one")
+    }
+  else print_string("two")
+  };
 
 let printIfFirstArgGreater = true;
 
 let result = if (printIfFirstArgGreater) {
-(a, b) => if (a > b) {
-print_string("a > b")
-} else print_string("b >= a")
-} else if ((a, b) => if (a > b) {
-print_string("b < a")
-} else print_string("a <= b")) {
+  (a, b) => if (a > b) {
+    print_string("a > b")
+    }
+  else print_string("b >= a")
+  }
+else if ((a, b) => if (a > b) {
+  print_string("b < a")
+  }
+else print_string("a <= b")) {
 
-print_string(
-  "That could never possibly type check"
-);
-print_newline(())
-} ;
+  print_string(
+    "That could never possibly type check"
+  );
+  print_newline(())
+  };
 
 let myRecord = {
   nestedRecord: {
     anotherNestedRecord: (instaComp, displayRect) => if (
     Graphics.cgRectIntersectsWithSlop(
       defaultCompositeTimerRectSlop,
-      todo Pexp_field,
+      instaComp.relativeRect,
       displayRect,
     )) {
-    IoEligible
-    } else IoInelibleButTryComposition,
+      IoEligible
+      }
+    else IoInelibleButTryComposition,
   },
 };
 
 if (printIfFirstArgGreater) {
-(a, b) => if (a > b) {
-print_string("a > b")
-}
-} else (a, b) => if (a > b) {
-print_string("b < a")
-} ;
+  (a, b) => if (a > b) {
+    print_string("a > b")
+    }
+  }
+else (a, b) => if (a > b) {
+  print_string("b < a")
+  };
 
 if (printIfFirstArgGreater) {
-(a, b) => if (a > b) {
-print_string("a > b")
-} else (a, b) => if (a > b) {
-print_string("b < a")
-}
-} ;
+  (a, b) => if (a > b) {
+    print_string("a > b")
+    }
+  else (a, b) => if (a > b) {
+    print_string("b < a")
+    }
+  };
 
-(a, b) => if (a > b) { print_string("a > b" } ;
+(a, b) => if (a > b) { print_string("a > b") };
 
 if (printIfFirstArgGreater) {
-(a, b) => if (a > b) {
-print_string("a > b")
-}
-} else (a, b) => if (a > b) {
-print_string("b < a")
-} ;
+  (a, b) => if (a > b) {
+    print_string("a > b")
+    }
+  }
+else (a, b) => if (a > b) {
+  print_string("b < a")
+  };
 
 if (10 < 100) {
 
-let msg = "If there was any doubt, 10 is in fact less than 100.";
-print_string(msg);
-} else
+  let msg = "If there was any doubt, 10 is in fact less than 100.";
+  print_string(msg);
+  }
+else
 let msg = "All bets are off.";
 print_string(msg);;
 
 if (10 < 100) {
 
-print_string(
-  "If there was any doubt, 10 is in fact less than 100."
-)
-} else print_string("All bets are off.");
+  print_string(
+    "If there was any doubt, 10 is in fact less than 100."
+  )
+  }
+else print_string("All bets are off.");
 
-todo Pstr_attribute
+/**                            TYPE CONSTRAINTS
+ *============================================================================
+ */
 
 let x = (10: int);
 
@@ -289,7 +308,9 @@ let (x: int) = 10;
 
 let (x: int) = (10: int);
 
-todo Pstr_attribute
+/**                            TUPLES
+ *============================================================================
+ */
 
 type pairOfInts = other type...;
 
@@ -332,7 +353,9 @@ let trailingCommaAccepted = (1, 2);
 
 let moreTrailing = (1, 2, 3, 4, 5, 7);
 
-todo Pstr_attribute
+/**                        Immutable Lists
+ * ============================================================================
+ */
 
 let x = (Pexp_construct list: list(int));
 
@@ -347,7 +370,7 @@ let result = (Pexp_construct list: list(string));
 let recsize = (
   fun
   | [] => 0
-  | [hd, ...tl] => 1 + size(tl
+  | [hd, ...tl] => 1 + size(tl)
 );
 
 let recsize = (soFar, lst) =>
@@ -379,7 +402,9 @@ switch (lstLst) {
 | [] => 0
 };
 
-todo Pstr_attribute
+/**
+ * Aliasing with "as" during matches.
+ */
 
 type mine =
   | MyThing(int)
@@ -403,7 +428,12 @@ let ppp =
 let todo: Ppat_alias
 | todo: Ppat_alias = ppp;
 
-todo Pstr_attribute
+/**                               ARRAYS
+ * ============================================================================
+ * Arrays are weird looking. Usually you want lists because they support pattern
+ * matching - that's why they have nicer syntax - to entice you. But if you want
+ * random access and better control over memory layout, use arrays.
+ */
 
 let emptyArray = todo Pexp_array;
 
@@ -411,17 +441,21 @@ let arrayWithOne = todo Pexp_array;
 
 let arrayWithTwo = todo Pexp_array;
 
-let secondItem = Array.get(arrayWithTwo,1;
+let secondItem = Array.get(arrayWithTwo,1);
 
-let secondItem = Array.get(arrayWithTwo,1;
+let secondItem = Array.get(arrayWithTwo,1);
 
-Array.set(arrayWithTwo,1,300;
+Array.set(arrayWithTwo,1,300);
 
-todo Pstr_attribute
+/**
+ *                                STRINGS
+ *  ============================================================================
+ *  The language supports mutating strings, but that should not be depended upon.
+ */
 
 let myString = "asdf";
 
-String.set(myString,2,'9';
+String.set(myString,2,'9');
 
 let one = 900;
 
@@ -465,7 +499,11 @@ let curriedFormThree = ((i: int), ((
   b,
 ): other type...);
 
-todo Pstr_attribute
+/** TODO: But this, however doesn't work.
+ *  let (myCurriedFunc: int => int) a => a;
+ *  Note: This is likely because only "simple patterns" are accepted as constraints
+ *  in let bindings - that may be easy to change.
+ */
 
 type myFuncType = other type...;
 
@@ -486,7 +524,10 @@ type c =
 
 type d = other type...;
 
-todo Pstr_attribute
+/**
+ * Records:
+ *=============================================================================
+ */
 
 type withThreeFields = {
   name: string,
@@ -502,7 +543,7 @@ let testRecord = {
 
 let anotherRecord = {
   name: "joe++",
-  age: todo Pexp_field + 10,
+  age: testRecord.age + 10,
 };
 
 let makeRecordBase = () => {
@@ -513,37 +554,37 @@ let makeRecordBase = () => {
 
 let anotherRecord = {
   name: "joe++",
-  age: todo Pexp_field + 10,
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: todo Pexp_field + 10,
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: todo Pexp_field + 10,
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: todo Pexp_field + 10,
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: todo Pexp_field + 10,
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: todo Pexp_field + 10,
+  age: testRecord.age + 10,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: todo Pexp_field + 10,
+  age: testRecord.age + 10,
 };
 
 type props = {
@@ -600,16 +641,13 @@ let componentA = {props};
 
 let componentB = {props, state: ()};
 
-let foo = {Ppat_record: not supported};
+let foo = {Foo.foo: foo};
 
-let bar = {Ppat_record: not supported, bar: 1};
+let bar = {Foo.foo: foo, bar: 1};
 
-let bar = {bar: 1, Ppat_record: not supported};
+let bar = {bar: 1, Foo.foo: foo};
 
-let bar = {
-  Ppat_record: not supported,
-  Ppat_record: not supported,
-};
+let bar = {Foo.foo: foo, Bar.bar: bar};
 
 {Ppat_record: not supported, y} => 1;
 
@@ -657,9 +695,9 @@ it(
   },
 );
 
-(!)(curNode ## childNodes;
+(!)(curNode) ## childNodes;
 
-foo(preserveBraces => { inCallback};
+foo(preserveBraces => { inCallback});
 
 foo(preserveBraces => { inFirstPos},secondArg);
 

@@ -1,4 +1,4 @@
-[@@@warning "-27-32-51-37-34"]
+[@@@warning "-27-32-51-37-34-26"]
 
 open Reason_omp
 open Ast_411
@@ -895,6 +895,91 @@ let should_preserve_requested_braces expr =
       preserve_braces
       && Reason_attributes.has_preserve_braces_attrs stylisticAttrs
 
+let rec extension (s, p) =
+  match s.txt with
+  (* We special case "bs.obj" for now to allow for a nicer interop with
+     * BuckleScript. We might be able to generalize to any kind of record
+     * looking thing with struct keys. *)
+  | "bs.obj" -> string "todo: bs.obj"
+  | _ -> payload "%" s p
+
+and payload ppxToken ppxId e =
+  (* let wrap = ("[" ^ ppxToken ^ ppxId.txt, "]") in
+     let wrap_prefix str (x,y) = (x^str, y) in
+     let pad = (true, false) in
+     let postSpace = true in *)
+  match e with
+  | PStr [] ->
+      lbracket ^^ string ppxToken ^^ string ppxId.txt ^^ rbracket
+      (* string "TODO: payload: PStr[]" *)
+  | PStr [ itm ] ->
+      string "TODO: payload: PStr[itm]"
+      (* makeList ~break:Layout.IfNeed ~wrap ~pad [self#structure_item itm] *)
+  | PStr (_ :: _ as items) ->
+      string "TODO: payload: PStr[items]"
+      (* let rows = List.map self#structure_item items in
+         makeList ~wrap ~break:Layout.Always ~pad ~postSpace ~sep:(Layout.Sep ";") rows *)
+  | PTyp x -> string "TODO: payload: PTyp"
+  (* let wrap = wrap_prefix ":" wrap in
+     makeList ~wrap ~break:Layout.IfNeed ~pad [self#core_type x] *)
+  (* Signatures in attributes were added recently *)
+  | PSig [] ->
+      string
+        "TODO: payload: PSig[]" (* atom ("[" ^ ppxToken ^ ppxId.txt ^ ":]") *)
+  | PSig [ x ] ->
+      string "TODO: payload: PSign[x]"
+      (* let wrap = wrap_prefix ":" wrap in
+         makeList ~break:Layout.IfNeed ~wrap ~pad [self#signature_item x] *)
+  | PSig items ->
+      string "TODO: payload: PSig items"
+      (* let wrap = wrap_prefix ":" wrap in
+         let rows = List.map self#signature_item items in
+         makeList ~wrap ~break:Layout.IfNeed ~pad ~postSpace ~sep:(Layout.Sep ";") rows *)
+  | PPat (x, None) ->
+      string "TODO: payload: Ppat 1"
+      (* let wrap = wrap_prefix "?" wrap in
+         makeList ~wrap ~break:Layout.IfNeed ~pad [self#pattern_at_least_as_simple_as_alias_or_or x] *)
+  | PPat (x, Some e) -> string "TODO: payload: Ppat 2"
+(* let wrap = wrap_prefix "?" wrap in
+   makeList ~wrap ~break:Layout.IfNeed ~pad ~postSpace [
+     self#pattern_at_least_as_simple_as_alias_or_or x;
+     label ~space:true (atom "when") (self#unparseExpr e)
+   ] *)
+
+(* [@ ...] Simple attributes *)
+let attribute = function
+  | {
+      attr_name = { Location.txt = "ocaml.doc" | "ocaml.text" };
+      attr_payload =
+        PStr
+          [
+            {
+              pstr_desc =
+                Pstr_eval
+                  ( { pexp_desc = Pexp_constant (Pconst_string (text, _, None)) },
+                    _ );
+              pstr_loc;
+            };
+          ];
+      _;
+    } ->
+      let text =
+        if text = "" then string "/**/"
+        else string "/**" ^^ string text ^^ string "*/"
+      in
+      text
+      (* makeList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [atom ~loc:pstr_loc text] *)
+  | { attr_name; attr_payload; _ } -> payload "@" attr_name attr_payload
+
+(* [@@ ... ] Attributes that occur after a major item in a structure/class *)
+let item_attribute = attribute
+let floating_attribute = item_attribute
+
+(* [@@ ...] Attributes that occur not *after* an item in some structure/class/sig, but
+   rather as their own standalone item. Note that syntactic distinction
+   between item_attribute and floating_attribute is no longer necessary with
+   Reason. Thank you semicolons. *)
+
 let rec structure_item term =
   match term.pstr_desc with
   | Pstr_eval (e, attrs) ->
@@ -924,7 +1009,7 @@ let rec structure_item term =
   | Pstr_class cl -> string "todo Pstr_class"
   | Pstr_class_type cl -> string "todo Pstr_class_type"
   | Pstr_include i -> string "todo Pstr_include"
-  | Pstr_attribute a -> string "todo Pstr_attribute"
+  | Pstr_attribute a -> floating_attribute a
   | Pstr_extension (e, a) -> string "todo Pstr_extension"
 
 and module_expr = function
@@ -1085,19 +1170,35 @@ and expression ?(depth = 0) ?(wrap = true) x =
           expression a ^^ space ^^ expression infixOperator ^^ space
           ^^ expression b)
   | Pexp_apply (e, l) ->
-      ifflat
-        (expression e ^^ lparen
-        ^^ separate_map comma (fun (_, e) -> expression ~wrap:false e) l)
-        (group
-           (break 0 ^^ expression e ^^ lparen
-           ^^ nest 2
-                (break 0
-                ^^ separate_map
-                     (comma ^^ break 1)
-                     (fun (_, e) -> expression ~wrap:false e)
-                     l
-                ^^ ifflat empty (if List.length l = 1 then empty else comma))
-           ^^ break 0 ^^ rparen))
+      (* ifflat
+         (expression e ^^ lparen
+         ^^ separate_map comma (fun (_, e) -> expression ~wrap:false e) l)
+         (group
+            (break 0 ^^ expression e ^^ lparen
+            ^^ nest 2
+                 (break 0
+                 ^^ separate_map
+                      (comma ^^ break 1)
+                      (fun (_, e) -> expression ~wrap:false e)
+                      l
+                 ^^ ifflat empty (if List.length l = 1 then empty else comma))
+            ^^ break 0 ^^ rparen)) *)
+      group
+        (ifflat
+           (expression e ^^ lparen
+           ^^ separate_map comma (fun (_, e) -> expression ~wrap:false e) l
+           ^^ rparen)
+           (group
+              (break 0 ^^ expression e ^^ lparen
+              ^^ nest 2
+                   (break 0
+                   ^^ separate_map
+                        (comma ^^ break 1)
+                        (fun (_, e) -> expression ~wrap:false e)
+                        l
+                   ^^ ifflat empty (if List.length l = 1 then empty else comma)
+                   )
+              ^^ break 0 ^^ rparen)))
   | Pexp_match (e, cl) ->
       group
         (nest depth
@@ -1132,23 +1233,33 @@ and expression ?(depth = 0) ?(wrap = true) x =
            ^^ separate_map
                 (comma ^^ break 1)
                 (fun (l, e) ->
-                  match l.txt with
-                  | Lident name -> (
-                      match e with
-                      | { pexp_desc = Pexp_ident { txt = Lident value }; _ }
-                        when name = value ->
-                          string name
-                      | _ -> string name ^^ colon ^^ space ^^ expression e)
-                  | _ -> string "Ppat_record: not supported")
+                  let name = longident l.txt in
+                  match e with
+                  | { pexp_desc = Pexp_ident l; _ } when name = longident l.txt
+                    ->
+                      name
+                  | _ -> name ^^ colon ^^ space ^^ expression e)
                 l)
         ^^ ifflat empty comma ^^ break 0 ^^ rbrace)
-  | Pexp_field (e, l) -> string "todo Pexp_field"
+  | Pexp_field (e, li) ->
+      let _prec = Token "." in
+      let leftItm = expression e in
+      let { stdAttrs } = partitionAttributes e.pexp_attributes in
+      let formattedLeftItm = if stdAttrs == [] then leftItm else leftItm in
+      let layout = group (formattedLeftItm ^^ dot ^^ longident li.txt) in
+      layout
+      (* SpecificInfixPrecedence
+         ({ reducePrecedence = prec; shiftPrecedence = prec }, LayoutNode layout) *)
   | Pexp_setfield (e, l, e2) -> string "todo Pexp_setfield"
   | Pexp_array el -> string "todo Pexp_array"
   | Pexp_ifthenelse (e1, e2, e3) ->
       string "if" ^^ space ^^ lparen ^^ expression e1 ^^ rparen ^^ space
-      ^^ lbrace ^^ break 1 ^^ expression e2 ^^ break 1 ^^ rbrace ^^ space
-      ^^ optional (fun e3 -> string "else" ^^ space ^^ expression e3) e3
+      ^^ lbrace
+      ^^ nest 2 (break 1 ^^ expression e2 ^^ break 1)
+      ^^ rbrace
+      ^^ optional
+           (fun e3 -> break 1 ^^ string "else" ^^ space ^^ expression e3)
+           e3
   | Pexp_sequence (e1, e2) -> expression e1 ^^ semi ^^ hardline ^^ expression e2
   | Pexp_while (e1, e2) ->
       string "while" ^^ space ^^ lparen ^^ expression e1 ^^ rparen ^^ space
@@ -1247,7 +1358,7 @@ and pattern ?(wrap = true)
   | Ppat_construct ({ txt = Lident s }, c) ->
       string s ^^ optional (fun f -> pattern (snd f)) c
   | Ppat_construct (s, s2) -> string "todo Ppatconstruct"
-  | Ppat_variant (l, po) -> string "todo: Ppat_variant"
+  | Ppat_variant (l, po) -> string "`" ^^ string l
   | Ppat_record (pl, c) ->
       group
         (nest 2
@@ -1273,11 +1384,11 @@ and pattern ?(wrap = true)
   | Ppat_or (p, p2) -> pattern p ^^ hardline ^^ bar ^^ space ^^ pattern p2
   | Ppat_constraint (p, c) ->
       lparen ^^ pattern p ^^ colon ^^ space ^^ core_type c ^^ rparen
-  | Ppat_type l -> string "todo: Ppat_type"
-  | Ppat_lazy p -> string "todo: Ppat_lazy"
+  | Ppat_type l -> string "#" ^^ longident l.txt
+  | Ppat_lazy p -> string "lazy" ^^ space ^^ pattern p
   | Ppat_unpack l -> string "todo: Ppat_unpack"
   | Ppat_exception p -> string "todo: Ppat_exception"
-  | Ppat_extension e -> string "todo: Ppat_extension"
+  | Ppat_extension e -> extension e
   | Ppat_open (l, p) -> string "todo: Ppat_open"
 
 and type_declaration
