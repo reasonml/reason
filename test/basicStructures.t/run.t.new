@@ -1,58 +1,77 @@
-let run =  => todo pexident("Basic Structures");
+let run = () => {
+  TestUtils.printSection("Basic Structures")
+};
 
-todo Pexp_while;
+while (something) {
+  print_string("You're in a while loop");
+  print_newline(())
+};
 
-todo Pexp_for;
+for (i in 0 to 5) {
+  print_int(i);
+  print_newline(());
+  for (i in 10 downto 0) {
+    print_string("Counting in reverse direction");
+    print_newline(())
+  }
+};
 
-todo Pexp_for;
+for (i in 0 to expr endOfRangeMustBeSimple soWrap) {
+  print_int(i);
+  print_newline(());
+  for (i in theSame(isTrue, ofThe, startOfRange) downto 0) {
+    print_string("Counting in reverse direction");
+    print_newline(())
+  }
+};
 
-let x = !(todo Pexp_field);
+let x = (!)(todo Pexp_field;
 
-let x = !(todo Pexp_field);
+let x = (!)(todo Pexp_field;
 
-let x = !(todo Pexp_send);
+let x = (!)(todo Pexp_send;
 
-let x = !(todo Pexp_field);
+let x = (!)(todo Pexp_field;
 
-let x = !(todo Pexp_send);
+let x = (!)(todo Pexp_send;
 
-let x = not(todo Pexp_field);
+let x = not(todo Pexp_field;
 
-let x = not(todo Pexp_field);
+let x = not(todo Pexp_field;
 
-let x = not(todo Pexp_send);
+let x = not(todo Pexp_send;
 
-let x = not(todo Pexp_field);
+let x = not(todo Pexp_field;
 
-let x = not(todo Pexp_send);
+let x = not(todo Pexp_send;
 
-let x = not(not(todo Pexp_field));
+let x = not(not(todo Pexp_field;
 
-let x = ?!(not(todo Pexp_field));
+let x = (?!)(not(todo Pexp_field;
 
-let x = not(?!(todo Pexp_field));
+let x = not((?!)(todo Pexp_field;
 
-let x = ~!(not(todo Pexp_field));
+let x = (~!)(not(todo Pexp_field;
 
-let x = not(~!(todo Pexp_field));
+let x = not((~!)(todo Pexp_field;
 
-let x = ~!(~!(todo Pexp_field));
+let x = (~!)((~!)(todo Pexp_field;
 
-let x = !!(todo Pexp_field);
+let x = (!!)(todo Pexp_field;
 
-let x = !!(todo Pexp_send);
+let x = (!!)(todo Pexp_send;
 
-let x = !~(todo Pexp_field);
+let x = (!~)(todo Pexp_field;
 
-let x = !~(todo Pexp_send);
+let x = (!~)(todo Pexp_send;
 
-let noParensNeeded = not(todo Pexp_field);
+let noParensNeeded = not(todo Pexp_field;
 
 let parensNeededAroundFirst = todo Pexp_field;
 
 let parensNeededAroundSecond = todo Pexp_field;
 
-let noParensNeeded = not(todo Pexp_send);
+let noParensNeeded = not(todo Pexp_send;
 
 let parensNeededAroundFirst = todo Pexp_send;
 
@@ -66,9 +85,9 @@ let parensWithSpaceNeededAroundFirst = todo Pexp_send;
 
 let parensWithSpaceNeededAroundSecond = todo Pexp_send;
 
-let x = not(not(todo Pexp_field));
+let x = not(not(todo Pexp_field;
 
-let x = not(not(todo Pexp_send));
+let x = not(not(todo Pexp_send;
 
 let x = -10;
 
@@ -98,23 +117,23 @@ let todo: Ppat_lazy = 10;
 
 let todo: Ppat_lazy = 10;
 
-let x = todo pexident(!(arr), 0);
+let x = Array.get((!)(arr,0;
 
-let x = todo pexident(!(arr), 0);
+let x = Array.get((!)(arr,0;
 
-let x = todo pexident(!(str), 0);
+let x = String.get((!)(str,0;
 
-let x = todo pexident(!(str), 0);
+let x = String.get((!)(str,0;
 
-let x = todo pexident(!(arr), 0, 1);
+let x = Array.set((!)(arr,0,1;
 
-let x = todo pexident(!(arr), 0, 1);
-
-todo Pstr_attribute
+let x = Array.set((!)(arr,0,1;
 
 todo Pstr_attribute
 
-let /++ = +;
+todo Pstr_attribute
+
+let /++ = (+);
 
 let something = todo Pexp_ifthenelse;
 
@@ -132,7 +151,8 @@ todo Pexp_setfield;
 
 todo Pexp_setfield;
 
-let loop = (appTime, frameTime) => todo Pexp_sequence;
+let loop = (appTime, frameTime) => todo Pexp_ifthenelse;
+appTime process frameTime;
 
 todo Pexp_ifthenelse;
 
@@ -196,7 +216,7 @@ let annotatingFuncApplication = (
 
 let annotatingSingleFuncApplication = (
 _dummyFunc(
-  "a",
+  "a"
 ): int);
 
 let annotatingSingleFuncApplication =
@@ -221,38 +241,26 @@ let moreTrailing = (1, 2, 3, 4, 5, 7);
 
 todo Pstr_attribute
 
-let x = (::(
-  1,
-  ::(
-    2,
-    ::(
-      3,
-      ::(4, ::(5, ::(6, ::(7, ::(8, ::(9, [])))))),
-    ),
-  ),
-): list(int));
+let x = (Pexp_construct list: list(int));
 
 let hd = "appendedToHead";
 
-let tl = ::("listTo", ::("append", ::("to", [])));
+let tl = Pexp_construct list;
 
-let result = (::(hd, tl): list(string));
+let result = (Pexp_construct cons: list(string));
 
-let result = (::(
-  "appendedToHead",
-  ::("listTo", ::("append", ::("to", []))),
-): list(string));
+let result = (Pexp_construct list: list(string));
 
 let recsize = (
   fun
   | [] => 0
-  | [hd, ...tl] => 1 + size(tl)
+  | [hd, ...tl] => 1 + size(tl
 );
 
 let recsize = (soFar, lst) =>
 switch (lst) {
 | [] => 0
-| [hd, ...tl] => size(soFar + 1, tl)
+| [hd, ...tl] => soFar + 1 size tl
 };
 
 let nestedMatch = lstLst =>
@@ -310,17 +318,17 @@ let arrayWithOne = todo Pexp_array;
 
 let arrayWithTwo = todo Pexp_array;
 
-let secondItem = todo pexident(arrayWithTwo, 1);
+let secondItem = Array.get(arrayWithTwo,1;
 
-let secondItem = todo pexident(arrayWithTwo, 1);
+let secondItem = Array.get(arrayWithTwo,1;
 
-todo pexident(arrayWithTwo, 1, 300);
+Array.set(arrayWithTwo,1,300;
 
 todo Pstr_attribute
 
 let myString = "asdf";
 
-todo pexident(myString, 2, '9');
+String.set(myString,2,'9';
 
 let one = 900;
 
@@ -345,9 +353,9 @@ let myFunction = ((a: int), (b: int)) => (a + b: int);
 
 let functionReturnValueType = ((i: int), (s: string)) => (x => x + 1: other type...);
 
-let curriedFormOne = ((i: int), (s: string)) => s ^
+let curriedFormOne = ((i: int), (s: string)) => s (^)
 string_of_int(
-  i,
+  i
 );
 
 let curriedFormTwo = ((i: int), (x: int)) => ((
@@ -404,7 +412,7 @@ let anotherRecord = {
   age: todo Pexp_field + 10,
 };
 
-let makeRecordBase =  => {
+let makeRecordBase = () => {
   name: "Joe",
   age: 30,
   occupation: "Engineer",
@@ -481,7 +489,9 @@ type description = {
   tag: tag(todo a),
 };
 
-todo Pstr_module
+module Foo = {type bar = {
+  foo: other type...,
+};};
 
 type foo = {
   bar: other type...,
@@ -489,17 +499,13 @@ type foo = {
   fooo: other type...,
 };
 
-let moreFoo = {
-  bar: todo pexident,
-  qux,
-  fooo: todo pexident,
-};
+let moreFoo = {bar: Baz.bar, qux, fooo: Fooo.fooo};
 
 let props = {title: "hi"};
 
 let componentA = {props};
 
-let componentB = {props, state: };
+let componentB = {props, state: ()};
 
 let foo = {Ppat_record: not supported};
 
@@ -521,12 +527,12 @@ switch (foo) {
 
 let break_after_equal =
 no_break_from_here(
-  some_call(to_here),
+  some_call(to_here)
 );
 
-let  = todo Pexp_letexception;
+let () = todo Pexp_letexception;
 
-{contents:  => (: unit)};
+{contents: () => ((): unit)};
 
 let z = {a: {b: c, d: e}, f: g};
 
@@ -543,27 +549,28 @@ let z = todo Pexp_extension;
 /**
  * Unnecessary parens should be removed.
  */
-let unitLambda =  => ;
+let unitLambda = () => ();
 
-let identifierLambda = a => ;
+let identifierLambda = a => ();
 
-let underscoreLambda = _ => ;
+let underscoreLambda = _ => ();
 
+"should remove parens" it a => {
+  print_string("did it work?");
+  print_string("did it work?")
+};
 
-it(
-  "should remove parens",
-  a => todo Pexp_sequence,
-);
+(!)(curNode ## childNodes;
 
-!(curNode) ## childNodes;
+foo(preserveBraces => { inCallback};
 
-foo(preserveBraces => inCallback);
-
-foo(preserveBraces => inFirstPos, secondArg);
+preserveBraces => { inFirstPos} foo secondArg;
 
 
 foo(
   oneArg,
-  preserveBraces => inFirstPos,
+  preserveBraces => {
+    inFirstPos
+  },
   secondArg,
 );
