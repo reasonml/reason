@@ -996,7 +996,7 @@ and protectIdentifier txt =
   in
   if not needs_parens then string txt
   else if needs_spaces txt then group (lparen ^^ string txt ^^ rparen)
-  else string ("(" ^ txt ^ ")")
+  else lparen ^^ string txt ^^ rparen
 
 and protectLongIdentifier longPrefix txt =
   group (longPrefix ^^ string "." ^^ protectIdentifier txt)
@@ -1004,8 +1004,7 @@ and protectLongIdentifier longPrefix txt =
 and longident = function
   | Lident s -> protectIdentifier s
   | Ldot (longPrefix, s) -> protectLongIdentifier (longident longPrefix) s
-  | Lapply (y, s) ->
-      group (longident y ^^ string "(" ^^ longident s ^^ string ")")
+  | Lapply (y, s) -> group (longident y ^^ lparen ^^ longident s ^^ rparen)
 
 and constant c =
   let open OCaml in
@@ -1061,18 +1060,36 @@ and expression ?(depth = 0) ?(wrap = true) x =
       arg_label a ^^ args ^^ arrow ^^ callback
   | Pexp_apply
       ( ({ pexp_desc = Pexp_ident { txt = Lident i; _ }; _ } as infixOperator),
-        [ (_, a); (_, b) ] ) -> (
+        ([ (_, a); (_, b) ] as l) ) -> (
       match printedStringAndFixity i with
       | Infix o -> expression a ^^ space ^^ string o ^^ space ^^ expression b
+      | Normal ->
+          (* this should be merged with Pexp_apply (e, l) *)
+          group
+            (ifflat
+               (expression infixOperator ^^ lparen
+               ^^ separate_map comma (fun (_, e) -> expression ~wrap:false e) l
+               ^^ rparen)
+               (group
+                  (break 0 ^^ expression infixOperator ^^ lparen
+                  ^^ nest 2
+                       (break 0
+                       ^^ separate_map
+                            (comma ^^ break 1)
+                            (fun (_, e) -> expression ~wrap:false e)
+                            l
+                       ^^ ifflat empty
+                            (if List.length l = 1 then empty else comma))
+                  ^^ break 0 ^^ rparen)))
       | _ ->
           expression a ^^ space ^^ expression infixOperator ^^ space
           ^^ expression b)
   | Pexp_apply (e, l) ->
       ifflat
-        (expression e ^^ string "("
+        (expression e ^^ lparen
         ^^ separate_map comma (fun (_, e) -> expression ~wrap:false e) l)
         (group
-           (break 0 ^^ expression e ^^ string "("
+           (break 0 ^^ expression e ^^ lparen
            ^^ nest 2
                 (break 0
                 ^^ separate_map
@@ -1080,7 +1097,7 @@ and expression ?(depth = 0) ?(wrap = true) x =
                      (fun (_, e) -> expression ~wrap:false e)
                      l
                 ^^ ifflat empty (if List.length l = 1 then empty else comma))
-           ^^ break 0 ^^ string ")"))
+           ^^ break 0 ^^ rparen))
   | Pexp_match (e, cl) ->
       group
         (nest depth
@@ -1128,22 +1145,37 @@ and expression ?(depth = 0) ?(wrap = true) x =
   | Pexp_field (e, l) -> string "todo Pexp_field"
   | Pexp_setfield (e, l, e2) -> string "todo Pexp_setfield"
   | Pexp_array el -> string "todo Pexp_array"
-  | Pexp_ifthenelse (e1, e2, e3) -> string "todo Pexp_ifthenelse"
+  | Pexp_ifthenelse (e1, e2, e3) ->
+      string "if" ^^ space ^^ lparen ^^ expression e1 ^^ rparen ^^ space
+      ^^ lbrace ^^ break 1 ^^ expression e2 ^^ break 1 ^^ rbrace ^^ space
+      ^^ optional (fun e3 -> string "else" ^^ space ^^ expression e3) e3
   | Pexp_sequence (e1, e2) -> expression e1 ^^ semi ^^ hardline ^^ expression e2
   | Pexp_while (e1, e2) ->
       string "while" ^^ space ^^ lparen ^^ expression e1 ^^ rparen ^^ space
       ^^ nest 2 (lbrace ^^ break 1 ^^ expression e2)
       ^^ break 1 ^^ rbrace
   | Pexp_for (p, e1, e2, d, e3) ->
-      string "for" ^^ space ^^ lparen ^^ pattern p ^^ space ^^ string "in"
-      ^^ space ^^ expression e1 ^^ space ^^ direction_flag d ^^ space
-      ^^ expression e2 ^^ rparen ^^ space
-      ^^ nest 2 (lbrace ^^ break 1 ^^ expression e3)
+      group
+        (string "for" ^^ space ^^ lparen ^^ pattern p ^^ space ^^ string "in"
+       ^^ space ^^ expression e1 ^^ space ^^ direction_flag d ^^ space
+       ^^ expression e2 ^^ rparen ^^ space ^^ lbrace)
+      ^^ group (nest 2 (break 1 ^^ expression e3))
       ^^ break 1 ^^ rbrace
   | Pexp_constraint (e1, c) ->
       lparen ^^ expression e1 ^^ colon ^^ space ^^ core_type c ^^ rparen
   | Pexp_coerce (e, c, c2) -> string "todo Pexp_coerce"
-  | Pexp_send (e, l) -> string "todo Pexp_send"
+  | Pexp_send (e, s) ->
+      let needparens =
+        match e.pexp_desc with
+        | Pexp_apply (ee, _) -> (
+            match printedStringAndFixityExpr ee with
+            | UnaryPostfix "^" -> true
+            | _ -> false)
+        | _ -> false
+      in
+      let lhs = expression e in
+      let lhs = if needparens then lparen ^^ lhs ^^ rparen else lhs in
+      lhs ^^ string "#" ^^ string s.txt
   | Pexp_new l -> string "todo Pexp_new"
   | Pexp_setinstvar (l, e) -> string "todo Pexp_setinstvar"
   | Pexp_override l -> string "todo Pexp_override"
