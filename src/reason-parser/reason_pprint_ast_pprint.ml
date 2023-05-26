@@ -633,7 +633,9 @@ let higherPrecedenceThan c1 c2 =
   | Some (_, p1), Some (_, p2) -> p1 < p2
 
 let printedStringAndFixityExpr = function
-  | { pexp_desc = Pexp_ident { txt = Lident l } } -> printedStringAndFixity l
+  | { pexp_desc = Pexp_ident { txt = Lident op } } ->
+      let op = Reason_syntax_util.ml_to_reason_swap op in
+      printedStringAndFixity op
   | _ -> Normal
 
 (* which identifiers are in fact operators needing parentheses *)
@@ -1108,10 +1110,20 @@ and constant c =
 and direction_flag (f : Compiler_libs.Asttypes.direction_flag) =
   match f with Upto -> string "to" | Downto -> string "downto"
 
-and expression ?(depth = 0) ?(wrap = true) x =
+(* and is_unary_operator txt =
+   match txt with
+   | "not" -> true
+   | op when String.length op > 0 && List.mem op.[0] almost_simple_prefix_symbols
+     ->
+       true
+   | _ -> false *)
+
+and expression ?(depth = 0) ?(wrap = false) x =
   let { pexp_desc; pexp_loc; pexp_loc_stack; pexp_attributes } = x in
   match pexp_desc with
   | Pexp_ident { txt = Lident "not" } -> bang
+  | Pexp_ident { txt = Lident x } ->
+      string (Reason_syntax_util.ml_to_reason_swap x)
   | Pexp_ident { txt } -> longident txt
   | Pexp_constant c -> constant c
   | Pexp_let (rf, vb, e) ->
@@ -1147,36 +1159,55 @@ and expression ?(depth = 0) ?(wrap = true) x =
       in
       arg_label a ^^ args ^^ arrow ^^ callback
   | Pexp_apply
-      ( ({ pexp_desc = Pexp_ident { txt = Lident i; _ }; _ } as infixOperator),
-        ([ (_, a); (_, b) ] as l) ) -> (
-      match printedStringAndFixity i with
-      | Infix o -> expression a ^^ space ^^ string o ^^ space ^^ expression b
-      | Normal ->
-          (* this should be merged with Pexp_apply (e, l) *)
-          group
-            (ifflat
-               (expression infixOperator ^^ lparen
-               ^^ separate_map (comma ^^ space) (fun (_, e) -> expression e) l
-               ^^ rparen)
-               (group
-                  (break 0 ^^ expression infixOperator ^^ lparen
-                  ^^ nest 2
-                       (break 0
-                       ^^ separate_map
-                            (comma ^^ break 1)
-                            (fun (_, e) -> expression ~wrap:false e)
-                            l
-                       ^^ ifflat empty
-                            (if List.length l = 1 then empty else comma))
-                  ^^ break 0 ^^ rparen)))
-      | _ ->
-          expression a ^^ space ^^ expression infixOperator ^^ space
-          ^^ expression b)
+      (({ pexp_desc = Pexp_ident { txt = Lident op; _ }; _ } as e_op), l1) -> (
+      let needs_parens =
+        match l1 with
+        | [] -> false
+        | (Nolabel, { pexp_desc = Pexp_ident _; _ }) :: _
+        | (Nolabel, { pexp_desc = Pexp_send _; _ }) :: _
+        | (Nolabel, { pexp_desc = Pexp_field _; _ }) :: _ ->
+            false
+        | (Nolabel, { pexp_desc = Pexp_apply _; _ }) :: _ -> true
+        | _ -> true
+      in
+
+      let l =
+        separate_map (comma ^^ break 1) (fun (_, e) -> expression ~wrap e) l1
+      in
+      let op = Reason_syntax_util.ml_to_reason_swap op in
+      match printedStringAndFixity op with
+      | UnaryPlusPrefix _ | UnaryMinusPrefix _ | UnaryNotPrefix _
+      | AlmostSimplePrefix _
+        when needs_parens ->
+          expression ~wrap:true e_op ^^ lparen ^^ l ^^ rparen
+      | UnaryPlusPrefix _ | UnaryMinusPrefix _ | UnaryNotPrefix _
+      | AlmostSimplePrefix _ ->
+          expression ~wrap:true e_op ^^ l
+      | Normal -> (
+          expression ~wrap e_op
+          ^^
+          match l1 with
+          | [
+           ( Nolabel,
+             { pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, _); _ } );
+          ] ->
+              l
+          | _ -> lparen ^^ l ^^ rparen)
+      | Infix _ -> string "todo: Pexpl_apply infix"
+      | Letop _ -> string "todo: Pexpl_apply letop"
+      | Andop _ -> string "todo: Pexpl_apply andop"
+      | UnaryPostfix _ when needs_parens ->
+          lparen ^^ l ^^ rparen ^^ expression ~wrap:true e_op
+      | UnaryPostfix _ -> l ^^ expression ~wrap:true e_op)
   | Pexp_apply (e, l) ->
       let leftParen, rightParen =
         match l with
         | (_, { pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, _); _ })
-          :: [] ->
+          :: []
+        | (_, { pexp_desc = Pexp_ident { txt = Lident "not"; _ }; _ }) :: [] ->
+            (empty, empty)
+        | (_, { pexp_desc = Pexp_field _; _ }) :: []
+        | (_, { pexp_desc = Pexp_send _; _ }) :: [] ->
             (empty, empty)
         | _ -> (lparen, rparen)
       in
@@ -1184,11 +1215,11 @@ and expression ?(depth = 0) ?(wrap = true) x =
         (ifflat
            (expression e ^^ leftParen
            ^^ separate_map (comma ^^ space)
-                (fun (_, e) -> expression ~wrap:false e)
+                (fun (_, e) -> expression ~wrap:true e)
                 l
            ^^ rightParen)
            (group
-              (break 0 ^^ expression e ^^ leftParen
+              (break 0 ^^ expression e ~wrap:true ^^ leftParen
               ^^ nest 2
                    (break 0
                    ^^ separate_map
@@ -1245,10 +1276,29 @@ and expression ?(depth = 0) ?(wrap = true) x =
                 l)
         ^^ ifflat empty comma ^^ break 0 ^^ rbrace)
   | Pexp_field (e, li) ->
+      let needsParens =
+        match e.pexp_desc with
+        | Pexp_apply (ee, _) -> (
+            match printedStringAndFixityExpr ee with
+            | AlmostSimplePrefix _ | UnaryPlusPrefix _ | UnaryMinusPrefix _
+            | UnaryNotPrefix _ | UnaryPostfix _ ->
+                wrap
+            | _ -> false)
+        | _ -> false
+      in
+
+      (* let lhs = expression e in
+         let lhs = if needparens then lparen ^^ lhs ^^ rparen else lhs in
+         lhs ^^ string "#" ^^ string s.txt
+      *)
       let _prec = Token "." in
-      let leftItm = expression e in
+      let leftItm = expression ~wrap:true e in
       let { stdAttrs } = partitionAttributes e.pexp_attributes in
       let formattedLeftItm = if stdAttrs == [] then leftItm else leftItm in
+      let formattedLeftItm =
+        if needsParens then lparen ^^ formattedLeftItm ^^ rparen
+        else formattedLeftItm
+      in
       let layout = group (formattedLeftItm ^^ dot ^^ longident li.txt) in
       layout
       (* SpecificInfixPrecedence
@@ -1286,7 +1336,7 @@ and expression ?(depth = 0) ?(wrap = true) x =
         match e.pexp_desc with
         | Pexp_apply (ee, _) -> (
             match printedStringAndFixityExpr ee with
-            | UnaryPostfix "^" -> true
+            | UnaryPostfix _ -> true
             | _ -> false)
         | _ -> false
       in

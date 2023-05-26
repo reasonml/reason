@@ -16,91 +16,81 @@ for (i in 0 to 5) {
   }
 };
 
-for (i in 0 to
-endOfRangeMustBeSimple(
-  expr,
-  soWrap,
-)) {
+for (i in 0 to endOfRangeMustBeSimple(expr,
+soWrap)) {
   print_int(i);
   print_newline();
-  for (i in theSame(isTrue, ofThe, startOfRange) downto 0) {
+  for (i in theSame(isTrue,
+  ofThe,
+  startOfRange) downto 0) {
     print_string("Counting in reverse direction");
     print_newline()
   }
 };
 
-let x = (!)((!)((!)(foo)).bar);
+let x = ((foo^)^).bar^;
 
-let x = (!)(foo.bar);
+let x = foo.bar^;
 
-let x = (!)(foo#bar);
+let x = foo#bar^;
 
-let x = (!)((!)(foo).bar);
+let x = (foo^).bar^;
 
-let x = (!)((!)(foo)#bar);
+let x = (foo^)#bar^;
 
-let x = !(!(!(foo)).bar);
+let x = !(!(!foo)).bar;
 
-let x = !(foo.bar);
+let x = !foo.bar;
 
-let x = !(foo#bar);
+let x = !foo#bar;
 
-let x = !(!(foo).bar);
+let x = !(!foo).bar;
 
-let x = !(!(foo)#bar);
+let x = !!foo#bar;
 
-let x = !(!(foo.bar));
+let x = !(!foo.bar);
 
-let x = (?!)(!(foo.bar));
+let x = ?!(!foo.bar);
 
-let x = !((?!)(foo.bar));
+let x = !(?!foo.bar);
 
-let x = (~!)(!(foo.bar));
+let x = ~!(!foo.bar);
 
-let x = !((~!)(foo.bar));
+let x = !(~!foo.bar);
 
-let x = (~!)((~!)(foo.bar));
+let x = ~!(~!foo.bar);
 
-let x = (!!)(foo.bar);
+let x = !!foo.bar;
 
-let x = (!!)(foo#bar);
+let x = !!foo#bar;
 
-let x = (!~)(foo.bar);
+let x = !~foo.bar;
 
-let x = (!~)(foo#bar);
+let x = !~foo#bar;
 
-let noParensNeeded = !(blah.foo.bar);
+let noParensNeeded = !blah.foo.bar;
 
-let parensNeededAroundFirst = !(blah).foo.bar;
+let parensNeededAroundFirst = (!blah).foo.bar;
 
-let parensNeededAroundSecond = !(blah.foo).bar;
+let parensNeededAroundSecond = (!blah.foo).bar;
 
-let noParensNeeded = !(blah#foo#bar);
+let noParensNeeded = !blah#foo#bar;
 
-let parensNeededAroundFirst = !(blah)#foo#bar;
+let parensNeededAroundFirst = !blah#foo#bar;
 
-let parensNeededAroundSecond = !(blah#foo)#bar;
+let parensNeededAroundSecond = !blah#foo#bar;
 
-let parensWithSpaceNeededAroundFirst = !(!(blah))#foo#bar;
+let parensWithSpaceNeededAroundFirst = !(!blah)#foo#bar;
 
-let parensWithSpaceNeededAroundSecond =
-!(
-  !(blah#foo)
-)#bar;
+let parensWithSpaceNeededAroundSecond = !(!blah#foo)#bar;
 
-let parensWithSpaceNeededAroundFirst =
-(?!)(
-  (~+)(blah)
-)#foo#bar;
+let parensWithSpaceNeededAroundFirst = ?!(~+blah)#foo#bar;
 
-let parensWithSpaceNeededAroundSecond =
-(?!)(
-  (~+)(blah#foo)
-)#bar;
+let parensWithSpaceNeededAroundSecond = ?!(~+blah#foo)#bar;
 
-let x = !(!(foo.bar));
+let x = !(!foo.bar);
 
-let x = !(!(foo#bar));
+let x = !(!foo#bar);
 
 let x = -10;
 
@@ -130,17 +120,17 @@ let lazy lazy true = 10;
 
 let lazy [%extend] = 10;
 
-let x = Array.get((!)(arr), 0);
+let x = Array.get(arr^, 0);
 
-let x = Array.get((!)(arr), 0);
+let x = Array.get(arr^, 0);
 
-let x = String.get((!)(str), 0);
+let x = String.get(str^, 0);
 
-let x = String.get((!)(str), 0);
+let x = String.get(str^, 0);
 
-let x = Array.set((!)(arr), 0, 1);
+let x = Array.set(arr^, 0, 1);
 
-let x = Array.set((!)(arr), 0, 1);
+let x = Array.set(arr^, 0, 1);
 
 /**/
 
@@ -148,7 +138,7 @@ let x = Array.set((!)(arr), 0, 1);
  *============================================================================
  */
 
-let /++ = (+);
+let /++ = +;
 
 let something = if (self.ext.logSuccess) {
   print_string("Did tap");
@@ -166,22 +156,23 @@ let logTapSuccess = self => if (self.ext.logSuccess) {
   print_newline()
   };
 
-!(data).true;
+!data.true;
 
-!(data).field1.true;
+(!data).field1.true;
 
-!(data.field1).true;
+!data.field1.true;
 
-!(data).field1.true;
+(!data).field1.true;
 
-!(data.field1).true;
+!data.field1.true;
 
 let loop = (appTime, frameTime) => if (hasSetup.contents) {
   setupScene();
   renderIntoTop();
   hasSetup.true
   };
-process(appTime, frameTime);
+process(appTime,
+frameTime);
 
 if (something) {
   if (somethingElse) {
@@ -221,19 +212,16 @@ if (false) {
 let printIfFirstArgGreater = true;
 
 let result = if (printIfFirstArgGreater) {
-  (a, b) => if (a > b) {
+  (a, b) => if (todo: Pexpl_apply infix) {
     print_string("a > b")
     }
   else print_string("b >= a")
   }
-else if ((a, b) => if (a > b) {
+else if ((a, b) => if (todo: Pexpl_apply infix) {
   print_string("b < a")
   }
 else print_string("a <= b")) {
-
-  print_string(
-    "That could never possibly type check"
-  );
+  print_string("That could never possibly type check");
   print_newline()
   };
 
@@ -252,35 +240,37 @@ let myRecord = {
 };
 
 if (printIfFirstArgGreater) {
-  (a, b) => if (a > b) {
+  (a, b) => if (todo: Pexpl_apply infix) {
     print_string("a > b")
     }
   }
-else (a, b) => if (a > b) {
+else (a, b) => if (todo: Pexpl_apply infix) {
   print_string("b < a")
   };
 
 if (printIfFirstArgGreater) {
-  (a, b) => if (a > b) {
+  (a, b) => if (todo: Pexpl_apply infix) {
     print_string("a > b")
     }
-  else (a, b) => if (a > b) {
+  else (a, b) => if (todo: Pexpl_apply infix) {
     print_string("b < a")
     }
   };
 
-(a, b) => if (a > b) { print_string("a > b") };
+(a, b) => if (todo: Pexpl_apply infix) {
+  print_string("a > b")
+  };
 
 if (printIfFirstArgGreater) {
-  (a, b) => if (a > b) {
+  (a, b) => if (todo: Pexpl_apply infix) {
     print_string("a > b")
     }
   }
-else (a, b) => if (a > b) {
+else (a, b) => if (todo: Pexpl_apply infix) {
   print_string("b < a")
   };
 
-if (10 < 100) {
+if (todo: Pexpl_apply infix) {
 
   let msg = "If there was any doubt, 10 is in fact less than 100.";
   print_string(msg);
@@ -289,11 +279,8 @@ else
 let msg = "All bets are off.";
 print_string(msg);;
 
-if (10 < 100) {
-
-  print_string(
-    "If there was any doubt, 10 is in fact less than 100."
-  )
+if (todo: Pexpl_apply infix) {
+  print_string("If there was any doubt, 10 is in fact less than 100.")
   }
 else print_string("All bets are off.");
 
@@ -329,16 +316,13 @@ let annotatingFuncApplication = (
   (_dummyFunc("a"): int),
 );
 
-let annotatingSingleFuncApplication = (
-_dummyFunc(
-  "a"
-): int);
+let annotatingSingleFuncApplication = (_dummyFunc("a"): int);
 
 let annotatingSingleFuncApplication =
 let a = 100;
 
 let int = 200;
-2 + (_dummyFunc(a): int);;;
+todo: Pexpl_apply infix;;;
 
 let (
   (tupleItem: int),
@@ -371,16 +355,14 @@ let result = (["appendedToHead",
 "append",
 "to"]: list(string));
 
-let rec size = (
-  fun
-  | [] => 0
-  | [hd, ...tl] => 1 + size(tl)
-);
+let rec size = fun
+| [] => 0
+| [hd, ...tl] => todo: Pexpl_apply infix;
 
 let rec size = (soFar, lst) =>
 switch (lst) {
 | [] => 0
-| [hd, ...tl] => size(soFar + 1, tl)
+| [hd, ...tl] => size(todo: Pexpl_apply infix, tl)
 };
 
 let nestedMatch = lstLst =>
@@ -388,8 +370,8 @@ switch (lstLst) {
 | [hd, ...tl] when false => 10
 | [hd, ...tl] =>
   switch (tl) {
-  | [] => 0 + 0
-  | [tlHd, ...tlTl] => 0 + 1
+  | [] => todo: Pexpl_apply infix
+  | [tlHd, ...tlTl] => todo: Pexpl_apply infix
   }
 | [] => 0
 };
@@ -399,9 +381,9 @@ switch (lstLst) {
 | [hd, ...tl] when false => 10
 | [hd, ...tl] when true =>
   switch (tl) {
-  | [] when false => 0 + 0
-  | [] when true => 0 + 0
-  | [tlHd, ...tlTl] => 0 + 1
+  | [] when false => todo: Pexpl_apply infix
+  | [] when true => todo: Pexpl_apply infix
+  | [tlHd, ...tlTl] => todo: Pexpl_apply infix
   }
 | [] => 0
 };
@@ -476,18 +458,15 @@ let myTuple = ((
   (two: int),
 ): myTupleType);
 
-let addValues = ((a: int), (b: int)) => a + b;
+let addValues = ((a: int), (b: int)) => todo: Pexpl_apply infix;
 
-let addValues = ((a: int), (b: int)) => a + b;
+let addValues = ((a: int), (b: int)) => todo: Pexpl_apply infix;
 
-let myFunction = ((a: int), (b: int)) => (a + b: int);
+let myFunction = ((a: int), (b: int)) => (todo: Pexpl_apply infix: int);
 
-let functionReturnValueType = ((i: int), (s: string)) => (x => x + 1: int => int);
+let functionReturnValueType = ((i: int), (s: string)) => (x => todo: Pexpl_apply infix: int => int);
 
-let curriedFormOne = ((i: int), (s: string)) => s (^)
-string_of_int(
-  i
-);
+let curriedFormOne = ((i: int), (s: string)) => todo: Pexpl_apply infix;
 
 let curriedFormTwo = ((i: int), (x: int)) => ((
   i,
@@ -511,13 +490,10 @@ let curriedFormThree = ((i: int), ((
 
 type myFuncType = int => int => int;
 
-let myFunc = ((a, b) => a + b: myFuncType);
+let myFunc = ((a, b) => todo: Pexpl_apply infix: myFuncType);
 
-let funcWithTypeLocallyAbstractTypes = (type atype(type btype(a, b, (c: atype => btype => unit)) =>
-c(
-  a,
-  b,
-)));
+let funcWithTypeLocallyAbstractTypes = (type atype(type btype(a, b, (c: atype => btype => unit)) => c(a,
+b)));
 
 type a = unit => unit;
 
@@ -551,7 +527,7 @@ let testRecord = {
 
 let anotherRecord = {
   name: "joe++",
-  age: testRecord.age + 10,
+  age: todo: Pexpl_apply infix,
 };
 
 let makeRecordBase = () => {
@@ -562,37 +538,37 @@ let makeRecordBase = () => {
 
 let anotherRecord = {
   name: "joe++",
-  age: testRecord.age + 10,
+  age: todo: Pexpl_apply infix,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: testRecord.age + 10,
+  age: todo: Pexpl_apply infix,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: testRecord.age + 10,
+  age: todo: Pexpl_apply infix,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: testRecord.age + 10,
+  age: todo: Pexpl_apply infix,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: testRecord.age + 10,
+  age: todo: Pexpl_apply infix,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: testRecord.age + 10,
+  age: todo: Pexpl_apply infix,
 };
 
 let anotherRecord = {
   name: "joe++",
-  age: testRecord.age + 10,
+  age: todo: Pexpl_apply infix,
 };
 
 type props = {
@@ -664,10 +640,7 @@ switch (foo) {
 | {y: 1, M.x: x} => 2
 };
 
-let break_after_equal =
-no_break_from_here(
-  some_call(to_here)
-);
+let break_after_equal = no_break_from_here(some_call(to_here));
 
 let () = todo Pexp_letexception;
 
@@ -694,26 +667,20 @@ let identifierLambda = a => ();
 
 let underscoreLambda = _ => ();
 
+it("should remove parens",
+a => {
+  print_string("did it work?");
+  print_string("did it work?")
+});
 
-it(
-  "should remove parens",
-  a => {
-    print_string("did it work?");
-    print_string("did it work?")
-  },
-);
-
-(!)(curNode) ## childNodes;
+todo: Pexpl_apply infix;
 
 foo(preserveBraces => { inCallback});
 
 foo(preserveBraces => { inFirstPos}, secondArg);
 
-
-foo(
-  oneArg,
-  preserveBraces => {
-    inFirstPos
-  },
-  secondArg,
-);
+foo(oneArg,
+preserveBraces => {
+  inFirstPos
+},
+secondArg);
