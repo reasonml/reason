@@ -71,6 +71,11 @@ all-supported-ocaml-versions:
 
 .PHONY: all-supported-ocaml-versions
 
+pprint_test: 
+	ocamlformat src/reason-parser/reason_pprint_ast_pprint.ml -i
+	dune exec src/refmt/refmt_impl.exe -- test/basicStructures.t/input.re --parse re --print ast > test/basicStructures.t/run.t.ast
+	dune exec src/refmt/refmt_impl.exe -- test/basicStructures.t/input.re --parse re --print re > test/basicStructures.t/run.t.new
+
 doc:
 	esy dune build @doc
 

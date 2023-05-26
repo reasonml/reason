@@ -1,0 +1,686 @@
+let run = () => {
+  TestUtils.printSection("Basic Structures")
+};
+
+while (something) {
+  print_string("You're in a while loop");
+  print_newline()
+};
+
+for (i in 0 to 5) {
+  print_int(i);
+  print_newline();
+  for (i in 10 downto 0) {
+    print_string("Counting in reverse direction");
+    print_newline()
+  }
+};
+
+for (i in 0 to endOfRangeMustBeSimple(expr,
+soWrap)) {
+  print_int(i);
+  print_newline();
+  for (i in theSame(isTrue,
+  ofThe,
+  startOfRange) downto 0) {
+    print_string("Counting in reverse direction");
+    print_newline()
+  }
+};
+
+let x = ((foo^)^).bar^;
+
+let x = foo.bar^;
+
+let x = foo#bar^;
+
+let x = (foo^).bar^;
+
+let x = (foo^)#bar^;
+
+let x = !(!(!foo)).bar;
+
+let x = !foo.bar;
+
+let x = !foo#bar;
+
+let x = !(!foo).bar;
+
+let x = !!foo#bar;
+
+let x = !(!foo.bar);
+
+let x = ?!(!foo.bar);
+
+let x = !(?!foo.bar);
+
+let x = ~!(!foo.bar);
+
+let x = !(~!foo.bar);
+
+let x = ~!(~!foo.bar);
+
+let x = !!foo.bar;
+
+let x = !!foo#bar;
+
+let x = !~foo.bar;
+
+let x = !~foo#bar;
+
+let noParensNeeded = !blah.foo.bar;
+
+let parensNeededAroundFirst = (!blah).foo.bar;
+
+let parensNeededAroundSecond = (!blah.foo).bar;
+
+let noParensNeeded = !blah#foo#bar;
+
+let parensNeededAroundFirst = !blah#foo#bar;
+
+let parensNeededAroundSecond = !blah#foo#bar;
+
+let parensWithSpaceNeededAroundFirst = !(!blah)#foo#bar;
+
+let parensWithSpaceNeededAroundSecond = !(!blah#foo)#bar;
+
+let parensWithSpaceNeededAroundFirst = ?!(~+blah)#foo#bar;
+
+let parensWithSpaceNeededAroundSecond = ?!(~+blah#foo)#bar;
+
+let x = !(!foo.bar);
+
+let x = !(!foo#bar);
+
+let x = -10;
+
+let x = -5.;
+
+let x = Some(-10);
+
+let x = Some(-5.);
+
+let lazy x = 10;
+
+let lazy (x: int) = 10;
+
+let lazy [] = 10;
+
+let lazy true = 10;
+
+let lazy #x = 10;
+
+let lazy `Variant = 10;
+
+let lazy `variant = 10;
+
+let lazy '0' .. '9' = 10;
+
+let lazy lazy true = 10;
+
+let lazy [%extend] = 10;
+
+let x = Array.get(arr^, 0);
+
+let x = Array.get(arr^, 0);
+
+let x = String.get(str^, 0);
+
+let x = String.get(str^, 0);
+
+let x = Array.set(arr^, 0, 1);
+
+let x = Array.set(arr^, 0, 1);
+
+/**/
+
+/**                            IF
+ *============================================================================
+ */
+
+let /++ = +;
+
+let something = if (self.ext.logSuccess) {
+  print_string("Did tap");
+  print_newline()
+  };
+
+let logTapSuccess = self => if (self.ext.logSuccess) {
+  print_string("Did tap");
+  print_newline()
+  }
+else ();
+
+let logTapSuccess = self => if (self.ext.logSuccess) {
+  print_string("Did tap");
+  print_newline()
+  };
+
+!data.true;
+
+(!data).field1.true;
+
+!data.field1.true;
+
+(!data).field1.true;
+
+!data.field1.true;
+
+let loop = (appTime, frameTime) => if (hasSetup.contents) {
+  setupScene();
+  renderIntoTop();
+  hasSetup.true
+  };
+process(appTime,
+frameTime);
+
+if (something) {
+  if (somethingElse) {
+    ()
+    }
+  else "blah"
+  };
+
+if (something) {
+  if (somethingElse) {
+    ()
+    }
+  else "blah"
+  };
+
+if (true) {
+  if (true) {
+    print_string("one")
+    }
+  else print_string("two")
+  };
+
+if (true) {
+  if (false) {
+    print_string("one")
+    }
+  else print_string("two")
+  };
+
+if (false) {
+  if (true) {
+    print_string("one")
+    }
+  else print_string("two")
+  };
+
+let printIfFirstArgGreater = true;
+
+let result = if (printIfFirstArgGreater) {
+  (a, b) => if (todo: Pexpl_apply infix) {
+    print_string("a > b")
+    }
+  else print_string("b >= a")
+  }
+else if ((a, b) => if (todo: Pexpl_apply infix) {
+  print_string("b < a")
+  }
+else print_string("a <= b")) {
+  print_string("That could never possibly type check");
+  print_newline()
+  };
+
+let myRecord = {
+  nestedRecord: {
+    anotherNestedRecord: (instaComp, displayRect) => if (
+    Graphics.cgRectIntersectsWithSlop(
+      defaultCompositeTimerRectSlop,
+      instaComp.relativeRect,
+      displayRect,
+    )) {
+      IoEligible
+      }
+    else IoInelibleButTryComposition,
+  },
+};
+
+if (printIfFirstArgGreater) {
+  (a, b) => if (todo: Pexpl_apply infix) {
+    print_string("a > b")
+    }
+  }
+else (a, b) => if (todo: Pexpl_apply infix) {
+  print_string("b < a")
+  };
+
+if (printIfFirstArgGreater) {
+  (a, b) => if (todo: Pexpl_apply infix) {
+    print_string("a > b")
+    }
+  else (a, b) => if (todo: Pexpl_apply infix) {
+    print_string("b < a")
+    }
+  };
+
+(a, b) => if (todo: Pexpl_apply infix) {
+  print_string("a > b")
+  };
+
+if (printIfFirstArgGreater) {
+  (a, b) => if (todo: Pexpl_apply infix) {
+    print_string("a > b")
+    }
+  }
+else (a, b) => if (todo: Pexpl_apply infix) {
+  print_string("b < a")
+  };
+
+if (todo: Pexpl_apply infix) {
+
+  let msg = "If there was any doubt, 10 is in fact less than 100.";
+  print_string(msg);
+  }
+else
+let msg = "All bets are off.";
+print_string(msg);;
+
+if (todo: Pexpl_apply infix) {
+  print_string("If there was any doubt, 10 is in fact less than 100.")
+  }
+else print_string("All bets are off.");
+
+/**                            TYPE CONSTRAINTS
+ *============================================================================
+ */
+
+let x = (10: int);
+
+let x = (10: int);
+
+let (x: int) = 10;
+
+let (x: int) = (10: int);
+
+/**                            TUPLES
+ *============================================================================
+ */
+
+type pairOfInts = (int, int);
+
+let (letBindingWithTypeConstraint: int) = 10;
+
+let ((tupleItem: int), (withTypeConstraint: int)) = (
+  10,
+  20,
+);
+
+let _dummyFunc = x => 10;
+
+let annotatingFuncApplication = (
+  (_dummyFunc("a"): int),
+  (_dummyFunc("a"): int),
+);
+
+let annotatingSingleFuncApplication = (_dummyFunc("a"): int);
+
+let annotatingSingleFuncApplication =
+let a = 100;
+
+let int = 200;
+todo: Pexpl_apply infix;;;
+
+let (
+  (tupleItem: int),
+  (constrainedWithoutGrouping: int),
+) = (10, 20);
+
+let ((tupleItem, withOutsideTypeConstraint): (int, int)) = (
+  10,
+  20,
+);
+
+let trailingCommaAccepted = (1, 2);
+
+let moreTrailing = (1, 2, 3, 4, 5, 7);
+
+/**                        Immutable Lists
+ * ============================================================================
+ */
+
+let x = ([1, 2, 3, 4, 5, 6, 7, 8, 9]: list(int));
+
+let hd = "appendedToHead";
+
+let tl = ["listTo", "append", "to"];
+
+let result = ([hd, ...tl]: list(string));
+
+let result = (["appendedToHead",
+"listTo",
+"append",
+"to"]: list(string));
+
+let rec size = fun
+| [] => 0
+| [hd, ...tl] => todo: Pexpl_apply infix;
+
+let rec size = (soFar, lst) =>
+switch (lst) {
+| [] => 0
+| [hd, ...tl] => size(todo: Pexpl_apply infix, tl)
+};
+
+let nestedMatch = lstLst =>
+switch (lstLst) {
+| [hd, ...tl] when false => 10
+| [hd, ...tl] =>
+  switch (tl) {
+  | [] => todo: Pexpl_apply infix
+  | [tlHd, ...tlTl] => todo: Pexpl_apply infix
+  }
+| [] => 0
+};
+
+let nestedMatchWithWhen = lstLst =>
+switch (lstLst) {
+| [hd, ...tl] when false => 10
+| [hd, ...tl] when true =>
+  switch (tl) {
+  | [] when false => todo: Pexpl_apply infix
+  | [] when true => todo: Pexpl_apply infix
+  | [tlHd, ...tlTl] => todo: Pexpl_apply infix
+  }
+| [] => 0
+};
+
+/**
+ * Aliasing with "as" during matches.
+ */
+
+type mine =
+  | MyThing(int)
+  | YourThing(int);
+
+let ppp =
+  switch (MyThing(20)) {
+  | MyThing(x) as ppp
+  | YourThing(x) as ppp => ppp
+  };
+
+let MyThing_ as ppp
+| YourThing_ as ppp = ppp;
+
+let ppp =
+  switch (MyThing(20)) {
+  | MyThing(x) as ppp
+  | YourThing(x) as ppp => ppp
+  };
+
+let MyThing_ as ppp
+| YourThing_ as ppp = ppp;
+
+/**                               ARRAYS
+ * ============================================================================
+ * Arrays are weird looking. Usually you want lists because they support pattern
+ * matching - that's why they have nicer syntax - to entice you. But if you want
+ * random access and better control over memory layout, use arrays.
+ */
+
+let emptyArray = [||];
+
+let arrayWithOne = [|10|];
+
+let arrayWithTwo = [|10, 10|];
+
+let secondItem = Array.get(arrayWithTwo, 1);
+
+let secondItem = Array.get(arrayWithTwo, 1);
+
+Array.set(arrayWithTwo, 1, 300);
+
+/**
+ *                                STRINGS
+ *  ============================================================================
+ *  The language supports mutating strings, but that should not be depended upon.
+ */
+
+let myString = "asdf";
+
+String.set(myString, 2, '9');
+
+let one = 900;
+
+let two = 10000;
+
+let myTuple = ((one: int), (two: int));
+
+type myTupleType = (int, int);
+
+let myTuple = (myTuple: myTupleType);
+
+let myTuple = ((
+  (one: int),
+  (two: int),
+): myTupleType);
+
+let addValues = ((a: int), (b: int)) => todo: Pexpl_apply infix;
+
+let addValues = ((a: int), (b: int)) => todo: Pexpl_apply infix;
+
+let myFunction = ((a: int), (b: int)) => (todo: Pexpl_apply infix: int);
+
+let functionReturnValueType = ((i: int), (s: string)) => (x => todo: Pexpl_apply infix: int => int);
+
+let curriedFormOne = ((i: int), (s: string)) => todo: Pexpl_apply infix;
+
+let curriedFormTwo = ((i: int), (x: int)) => ((
+  i,
+  x,
+): (int, int));
+
+let curriedFormThree = ((i: int), ((
+  (a: int),
+  (b: int),
+): (int, int))) => ((
+  i,
+  a,
+  b,
+): (int, int, int));
+
+/** TODO: But this, however doesn't work.
+ *  let (myCurriedFunc: int => int) a => a;
+ *  Note: This is likely because only "simple patterns" are accepted as constraints
+ *  in let bindings - that may be easy to change.
+ */
+
+type myFuncType = int => int => int;
+
+let myFunc = ((a, b) => todo: Pexpl_apply infix: myFuncType);
+
+let funcWithTypeLocallyAbstractTypes = (type atype(type btype(a, b, (c: atype => btype => unit)) => c(a,
+b)));
+
+type a = unit => unit;
+
+type b =
+  | Foo(unit => unit)
+  | Bar(unit => unit, unit => unit, a => b => c)
+  | Baz(unit => unit, unit => unit, a => b => c);
+
+type c =
+  | Foo(a => b => unit)
+  | Bar(a => b => unit);
+
+type d = todo Ptyp_variant;
+
+/**
+ * Records:
+ *=============================================================================
+ */
+
+type withThreeFields = {
+  name: string,
+  age: int,
+  occupation: string,
+};
+
+let testRecord = {
+  name: "joe",
+  age: 20,
+  occupation: "engineer",
+};
+
+let anotherRecord = {
+  name: "joe++",
+  age: todo: Pexpl_apply infix,
+};
+
+let makeRecordBase = () => {
+  name: "Joe",
+  age: 30,
+  occupation: "Engineer",
+};
+
+let anotherRecord = {
+  name: "joe++",
+  age: todo: Pexpl_apply infix,
+};
+
+let anotherRecord = {
+  name: "joe++",
+  age: todo: Pexpl_apply infix,
+};
+
+let anotherRecord = {
+  name: "joe++",
+  age: todo: Pexpl_apply infix,
+};
+
+let anotherRecord = {
+  name: "joe++",
+  age: todo: Pexpl_apply infix,
+};
+
+let anotherRecord = {
+  name: "joe++",
+  age: todo: Pexpl_apply infix,
+};
+
+let anotherRecord = {
+  name: "joe++",
+  age: todo: Pexpl_apply infix,
+};
+
+let anotherRecord = {
+  name: "joe++",
+  age: todo: Pexpl_apply infix,
+};
+
+type props = {
+  title: string,
+};
+
+type state = unit;
+
+type component = {
+  props: props,
+};
+
+type component2 = {
+  props: props,
+  state: state,
+  updater: unit,
+};
+
+type component3 = {
+  props: M.props,
+  state: state,
+};
+
+type mutableComponent = {
+  props: props,
+};
+
+type mutabeleComponent2 = {
+  props: props,
+  state: state,
+  style: int,
+};
+
+type description = {
+  element: string,
+  tag: tag('props),
+};
+
+module Foo = {type bar = {
+  foo: Baz.foo,
+};};
+
+type foo = {
+  bar: Baz.bar,
+  qux: qux,
+  fooo: Fooo.fooo,
+};
+
+let moreFoo = {bar: Baz.bar, qux, fooo: Fooo.fooo};
+
+let props = {title: "hi"};
+
+let componentA = {props};
+
+let componentB = {props, state: ()};
+
+let foo = {Foo.foo: foo};
+
+let bar = {Foo.foo: foo, bar: 1};
+
+let bar = {bar: 1, Foo.foo: foo};
+
+let bar = {Foo.foo: foo, Bar.bar: bar};
+
+{M.x: x, y} => 1;
+
+
+switch (foo) {
+| {y: 1, M.x: x} => 2
+};
+
+let break_after_equal = no_break_from_here(some_call(to_here));
+
+let () = todo Pexp_letexception;
+
+{contents: () => ((): unit)};
+
+let z = {a: {b: c, d: e}, f: g};
+
+let z = {a: todo Pexp_extension, f: g};
+
+let z = {a: todo Pexp_object, f: g};
+
+let z = todo Pexp_extension;
+
+let z = todo Pexp_extension;
+
+let z = todo Pexp_extension;
+
+/**
+ * Unnecessary parens should be removed.
+ */
+let unitLambda = () => ();
+
+let identifierLambda = a => ();
+
+let underscoreLambda = _ => ();
+
+it("should remove parens",
+a => {
+  print_string("did it work?");
+  print_string("did it work?")
+});
+
+todo: Pexpl_apply infix;
+
+foo(preserveBraces => { inCallback});
+
+foo(preserveBraces => { inFirstPos}, secondArg);
+
+foo(oneArg,
+preserveBraces => {
+  inFirstPos
+},
+secondArg);

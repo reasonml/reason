@@ -5,6 +5,7 @@
   "license": "MIT",
   "version": "3.8.2",
   "dependencies": {
+    "@opam/pprint": "*",    
     "@opam/dune": "> 3.0.0",
     "@opam/dune-build-info": "> 3.0.0",
     "@opam/fix": "*",
@@ -48,7 +49,7 @@
         "@opam/camomile", "@opam/lambda-term", "@opam/lwt", "@opam/lwt_log",
         "@opam/lwt_react", "@opam/menhir", "@opam/mmap",
         "@opam/ocplib-endian", "@opam/ocamlfind", "@opam/ppx_derivers",
-        "@opam/react", "@opam/seq", "@opam/charInfo_width",
+        "@opam/react", "@opam/seq", "@opam/charInfo_width", "@opam/pprint",
         "@opam/utop", "@opam/zed", "ocaml"
       ],
       "rewritePrefix": true

@@ -110,6 +110,7 @@
   reason_toolchain
   reason_config
   reason_pprint_ast
+  reason_pprint_ast_pprint
   reason_errors
   reason_parser_def
   reason_parser
@@ -127,4 +128,5 @@
   reason.ocaml-migrate-parsetree
   menhirLib
   reason.easy_format
-  ppxlib))
+  ppxlib 
+  pprint))
