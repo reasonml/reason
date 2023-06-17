@@ -1,4 +1,4 @@
-## 3.9 (unreleased)
+## 3.9.0
 
 - Reduce the amount of parentheses around functor usage (@SanderSpies, [#2683](https://github.com/reasonml/reason/pull/2683))
 - Print module type body on separate line (@SanderSpies, [#2709](https://github.com/reasonml/reason/pull/2709))
