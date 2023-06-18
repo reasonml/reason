@@ -34,7 +34,7 @@
   (ocaml
    (and
     (>= "4.03")
-    (< "5.1")))
+    (< "5.2")))
   (ocamlfind :build)
   (dune-build-info
    (>= 2.9.3))
