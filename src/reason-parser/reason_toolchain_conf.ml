@@ -1,11 +1,11 @@
 open Ppxlib
 
 module From_current = struct
-  include Ppxlib.Selected_ast.Of_ocaml
+  include Selected_ast.Of_ocaml
   include Reason_omp.Convert (Reason_omp.OCaml_current) (Reason_omp.OCaml_414)
 end
 module To_current = struct
-  include Ppxlib.Selected_ast.To_ocaml
+  include Selected_ast.To_ocaml
   include Reason_omp.Convert (Reason_omp.OCaml_414) (Reason_omp.OCaml_current)
 end
 
