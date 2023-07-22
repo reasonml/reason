@@ -145,7 +145,7 @@ let make_floating_doc attr =
       {attr with attr_name = {attr_name with txt = "ocaml.text"}}
   | attr -> attr
 
-let uncurry_payload ?(name="bs") loc =
+let uncurry_payload ?(name="u") loc =
   { Ppxlib.Parsetree.attr_name = {loc; txt = name};
     attr_payload = PStr [];
     attr_loc = loc

@@ -3901,7 +3901,7 @@ let printer = object(self:'self)
          )} as e ->
           let args = PipeFirstTree.Args args in
           begin match pexp_attributes with
-          | [{ attr_name = {txt = "bs"}; attr_payload = PStr []}] ->
+          | [{ attr_name = {txt = "u" | "bs"}; attr_payload = PStr []}] ->
             flatten ((PipeFirstTree.ExpU arg2)::args::acc) arg1
           | [] ->
               (* the uncurried attribute might sit on the Pstr_eval
