@@ -2495,7 +2495,7 @@ mark_position_exp
   | LBRACE record_expr_with_string_keys RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
       let (exten, fields) = $2 in
-      mkexp ~loc (Pexp_extension (mkloc ("bs.obj") loc,
+      mkexp ~loc (Pexp_extension (mkloc ("mel.obj") loc,
              PStr [mkstrexp (mkexp ~loc (Pexp_record(fields, exten))) []]))
     }
   (* Todo: Why is this not a simple_expr? *)
@@ -3062,7 +3062,7 @@ parenthesized_expr:
   | od=open_dot_declaration DOT LBRACE record_expr_with_string_keys RBRACE
     { let (exten, fields) = $4 in
       let loc = mklocation $symbolstartpos $endpos in
-      let rec_exp = mkexp ~loc (Pexp_extension (mkloc ("bs.obj") loc,
+      let rec_exp = mkexp ~loc (Pexp_extension (mkloc ("mel.obj") loc,
              PStr [mkstrexp (mkexp ~loc (Pexp_record(fields, exten))) []]))
       in
       mkexp(Pexp_open(od, rec_exp))

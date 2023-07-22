@@ -152,7 +152,7 @@ let expression_extension_sugar x =
   if x.pexp_attributes != [] then None
   else match x.pexp_desc with
     | Pexp_extension (name, PStr [{pstr_desc = Pstr_eval(expr, [])}])
-      when name.txt <> "bs.obj" ->
+      when name.txt <> "mel.obj" ->
       Some (name, expr)
     | _ -> None
 
@@ -2113,7 +2113,7 @@ let isSingleArgParenApplication = function
   | [{pexp_attributes = []; pexp_desc = Pexp_tuple _}]
   | [{pexp_attributes = []; pexp_desc = Pexp_array _}]
   | [{pexp_attributes = []; pexp_desc = Pexp_object _}] -> true
-  | [{pexp_attributes = []; pexp_desc = Pexp_extension (s, _)}] when s.txt = "bs.obj" -> true
+  | [{pexp_attributes = []; pexp_desc = Pexp_extension (s, _)}] when s.txt = "mel.obj" -> true
   | [({pexp_attributes = []} as exp)] when (is_simple_list_expr exp) -> true
   | _ -> false
 
@@ -4358,7 +4358,7 @@ let printer = object(self:'self)
     | [], Pexp_object {pcstr_fields = []} (* syntax sugar for M.{} *)
     | [], Pexp_construct ( {txt= Lident"::"},Some _)
     | [], Pexp_construct ( {txt= Lident"[]"},_)
-    | [], Pexp_extension ( {txt = "bs.obj"}, _ ) ->
+    | [], Pexp_extension ( {txt = "mel.obj"}, _ ) ->
       self#simplifyUnparseExpr e (* syntax sugar for M.[x,y] *)
     (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
      * E.g., avoid M.(M2.v) being printed as M.M2.v
@@ -6114,7 +6114,7 @@ let printer = object(self:'self)
         | (Pexp_ident {txt = Lident value}, true, true) when Longident.last_exn li.txt = value ->
           makeList (maybeQuoteFirstElem li [])
 
-          (* Force breaks for nested records or bs obj sugar
+          (* Force breaks for nested records or mel.obj sugar
            * Example:
            *  let person = {name: {first: "Bob", last: "Zhmith"}, age: 32};
            * is a lot less readable than
@@ -6131,7 +6131,7 @@ let printer = object(self:'self)
             let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let value = self#unparseRecord ~forceBreak: true recordRows optionalGadt in
             label ~space:true keyWithColon value
-        | (Pexp_extension (s, p), _, _) when s.txt = "bs.obj" ->
+        | (Pexp_extension (s, p), _, _) when s.txt = "mel.obj" ->
             forceBreak := true;
             let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
             let value = self#formatBsObjExtensionSugar ~forceBreak:true p in
@@ -6202,7 +6202,7 @@ let printer = object(self:'self)
         | ([], Pexp_open (me, e)) ->
           me.popen_override == Fresh && self#isSeriesOfOpensFollowedByNonSequencyExpression e
         | ([], Pexp_letexception _) -> false
-        | ([], Pexp_extension ({txt}, _)) -> txt = "bs.obj"
+        | ([], Pexp_extension ({txt}, _)) -> txt = "mel.obj"
         | _ -> true
 
   method unparseObject ?wrap:((lwrap,rwrap)=("", "")) ?(withStringKeys=false) l o =
@@ -6276,14 +6276,14 @@ let printer = object(self:'self)
       match itm with
       | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_record (l, eo) }, []) } ->
         self#unparseRecord ~forceBreak ~wrap ~withStringKeys:true ~allowPunning:false l eo
-      | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_extension ({txt = "bs.obj"}, payload) }, []) } ->
-        (* some folks write `[%bs.obj [%bs.obj {foo: bar}]]`. This looks improbable but
-          it happens often if you use the sugared version: `[%bs.obj {"foo": bar}]`.
+      | {pstr_desc = Pstr_eval ({ pexp_desc = Pexp_extension ({txt = "mel.obj"}, payload) }, []) } ->
+        (* some folks write `[%mel.obj [%mel.obj {foo: bar}]]`. This looks improbable but
+          it happens often if you use the sugared version: `[%mel.obj {"foo": bar}]`.
           We're gonna be lenient here and treat it as if they wanted to just write
-          `{"foo": bar}`. BuckleScript does the same relaxation when parsing bs.obj
+          `{"foo": bar}`. BuckleScript does the same relaxation when parsing mel.obj
         *)
         self#formatBsObjExtensionSugar ~wrap ~forceBreak payload
-      | _ -> raise (Invalid_argument "bs.obj only accepts a record. You've passed something else"))
+      | _ -> raise (Invalid_argument "mel.obj only accepts a record. You've passed something else"))
     | _ -> assert false
 
   method should_preserve_requested_braces expr =
@@ -6545,10 +6545,10 @@ let printer = object(self:'self)
   (* [% ...] *)
   method extension (s, p) =
     match s.txt with
-    (* We special case "bs.obj" for now to allow for a nicer interop with
+    (* We special case "mel.obj" for now to allow for a nicer interop with
      * BuckleScript. We might be able to generalize to any kind of record
      * looking thing with struct keys. *)
-    | "bs.obj" -> self#formatBsObjExtensionSugar p
+    | "mel.obj" -> self#formatBsObjExtensionSugar p
     | _ -> (self#payload "%" s p)
 
   method item_extension (s, e) = (self#payload "%%" s e)
@@ -7966,7 +7966,7 @@ let printer = object(self:'self)
       self#unparseSequence ~wrap:(lparen, rparen) ~construct:`Array l
     | [{pexp_attributes = []; pexp_desc = Pexp_object cs}] ->
       self#classStructure ~wrap:(lparen, rparen) cs
-    | [{pexp_attributes = []; pexp_desc = Pexp_extension (s, p)}] when s.txt = "bs.obj" ->
+    | [{pexp_attributes = []; pexp_desc = Pexp_extension (s, p)}] when s.txt = "mel.obj" ->
       self#formatBsObjExtensionSugar ~wrap:(lparen, rparen) p
     | [({pexp_attributes = []} as exp)] when (is_simple_list_expr exp) ->
           (match view_expr exp with
