@@ -88,7 +88,7 @@ Format uncurried
     };
   
   class type _rect =
-    [@bs]
+    [@u]
     {
       [@bs.set]
       pub height: int;
