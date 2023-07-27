@@ -17,7 +17,7 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
   match attrs with
   | [] ->
     {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; stylisticAttrs=[]; uncurried = false}
-  | ({ attr_name = {txt = "bs"}; attr_payload = PStr []; _ } as attr)::atTl ->
+  | ({ attr_name = {txt = ("u" | "bs")}; attr_payload = PStr []; _ } as attr)::atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     if allowUncurry then
       {partition with uncurried = true}
