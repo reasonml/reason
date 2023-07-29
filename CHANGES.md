@@ -1,3 +1,8 @@
+## Unreleased
+
+- Support `@mel.*` attributes in addition to `@bs.*` (@anmonteiro,
+  [#2721](https://github.com/reasonml/reason/pull/2721))
+
 ## 3.9.0
 
 - Reduce the amount of parentheses around functor usage (@SanderSpies, [#2683](https://github.com/reasonml/reason/pull/2683))
