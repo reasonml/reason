@@ -85,7 +85,7 @@ let x = f ~method_:"GET"
 
 type marshalFields = < switch: string   >  Js.t
 
-let testMarshalFields = ([%bs.obj { switch = "switch" }] : marshalFields)
+let testMarshalFields = ([%mel.obj { switch = "switch" }] : marshalFields)
 
 (* Not an identifier test, but this is testing OCaml -> RE *)
 let x = List.map (fun y ->
