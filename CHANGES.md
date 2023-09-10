@@ -1,4 +1,4 @@
-## Unreleased
+## 3.10.0
 
 - Support `@mel.*` attributes in addition to `@bs.*` (@anmonteiro,
   [#2721](https://github.com/reasonml/reason/pull/2721))
