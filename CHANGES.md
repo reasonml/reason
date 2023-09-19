@@ -1,3 +1,8 @@
+## Unreleased
+
+- Print structure items extension nodes correctly inside modules (@anmonteiro,
+  [#2723](https://github.com/reasonml/reason/pull/2723))
+
 ## 3.10.0
 
 - Support `@mel.*` attributes in addition to `@bs.*` (@anmonteiro,
