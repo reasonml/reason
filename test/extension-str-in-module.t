@@ -12,6 +12,6 @@ Format extensions in modules
   module X = {
     /* No payload */
     [%%someExtension];
-    [%someExtension "payload"];
+    [%%someExtension "payload"];
   };
 
