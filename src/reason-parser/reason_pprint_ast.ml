@@ -5570,11 +5570,11 @@ let printer = object(self:'self)
              * brace {} in the let sequence. *)
           let layout = source_map ~loc:letModuleLoc letModuleLayout in
           let (_, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in
-            let loc = {
-              letModuleLoc with
-              loc_end = return.pmod_loc.loc_end
-            } in
-           processLetList ((loc, layout)::acc) e
+          let loc = {
+            letModuleLoc with
+            loc_end = return.pmod_loc.loc_end
+          } in
+         processLetList ((loc, layout)::acc) e
         | ([], Pexp_letexception (extensionConstructor, expr)) ->
             let exc = self#exception_declaration extensionConstructor in
             let layout = source_map ~loc:extensionConstructor.pext_loc exc in
@@ -7548,20 +7548,7 @@ let printer = object(self:'self)
           else
             ("({", "})")
         else ("{", "}") in
-        let items =
-          groupAndPrint
-            ~xf:self#structure_item
-            ~getLoc:(fun x -> x.pstr_loc)
-            ~comments:self#comments
-            s
-        in
-        makeList
-          ~break:Layout.Always_rec
-          ~inline:(true, false)
-          ~wrap
-          ~postSpace:true
-          ~sep:(SepFinal (";", ";"))
-          items
+        self#structure ~indent:None ~wrap s
     | _ ->
         (* For example, functor application will be wrapped. *)
         formatPrecedence ~wrap:("", "") (self#module_expr x)
@@ -7582,7 +7569,7 @@ let printer = object(self:'self)
     | Pmod_constraint _
     | Pmod_structure _ -> self#simple_module_expr x
 
-  method structure structureItems =
+  method structure ?(indent=Some 0) ?wrap structureItems =
     (* We don't have any way to know if an extension is placed at the top level by the parsetree
     while there's a difference syntactically (% for structure_items/expressons and %% for top_level).
     This small fn detects this particular case (structure > structure_item > extension > value) and
@@ -7598,7 +7585,7 @@ let printer = object(self:'self)
       | _ -> self#structure_item item
     in
     match structureItems with
-    | [] -> atom ""
+    | [] -> makeList ?wrap []
     | first :: _ as structureItems ->
       let last = match (List.rev structureItems) with | last::_ -> last | [] -> assert false in
       let loc_start = first.pstr_loc.loc_start in
@@ -7614,7 +7601,8 @@ let printer = object(self:'self)
         (makeList
           ~postSpace:true
           ~break:Always_rec
-          ~indent:0
+          ?wrap
+          ?indent
           ~inline:(true, false)
           ~sep:(SepFinal (";", ";"))
           items)

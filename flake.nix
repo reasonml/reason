@@ -10,7 +10,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages."${system}".extend (self: super: {
-          ocamlPackages = super.ocaml-ng.ocamlPackages_5_0;
+          ocamlPackages = super.ocaml-ng.ocamlPackages_5_1;
         });
       in
       rec {
