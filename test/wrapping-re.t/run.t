@@ -2904,3 +2904,5 @@ Format wrapping in .re files
     "more tests",
     ...x,
   ]);
+  
+  let {foo: (_: int)} = 2;
