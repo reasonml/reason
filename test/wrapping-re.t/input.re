@@ -1486,7 +1486,7 @@ let funcOnSomeRecord
 
 /* With two args */
 let funcOnSomeConstructorHi
-    (SomeConstructorHi(x,y), secondArg) = 
+    (SomeConstructorHi(x,y), secondArg) =
   x + y;
 
 let funcOnSomeRecord
@@ -1982,3 +1982,6 @@ fooSpreadES6List([
   "more tests",
   ...x
 ]);
+
+let { foo: (_: int), } = 2;
+
