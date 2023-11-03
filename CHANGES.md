@@ -2,6 +2,8 @@
 
 - Print structure items extension nodes correctly inside modules (@anmonteiro,
   [#2723](https://github.com/reasonml/reason/pull/2723))
+- Print wrapped type constraint on record patterns (@anmonteiro,
+  [#2725](https://github.com/reasonml/reason/pull/2725))
 
 ## 3.10.0
 

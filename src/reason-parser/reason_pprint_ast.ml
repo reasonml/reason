@@ -5760,7 +5760,16 @@ let printer = object(self:'self)
           (* works with module prefix too: {ReasonReact.state: state as prevState} becomes {ReasonReact.state as prevState *)
             makeList ~sep:(Sep " ") [self#longident_loc li; atom "as"; atom aliasIdent]
         | _ ->
-            label ~space:true (makeList [self#longident_loc li; atom ":"]) (self#pattern p)
+            let pattern =
+              let formatted = self#pattern p in
+              let wrap =
+                match p.ppat_desc with
+                | Ppat_constraint (_, _) -> Some("(", ")")
+                | _ -> None
+              in
+              makeList ~inline:(true, true) ?wrap [ formatted ]
+            in
+            label ~space:true (makeList [self#longident_loc li; atom ":"]) pattern
     in
     let rows = (List.map longident_x_pattern l)@(
       match closed with
