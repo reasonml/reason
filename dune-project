@@ -56,7 +56,7 @@
   (ocaml
    (and
     (>= "4.03")
-    (< "5.1")))
+    (< "5.2")))
   (reason
    (= :version))
   (utop
