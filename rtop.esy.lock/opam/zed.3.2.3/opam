@@ -1,0 +1,48 @@
+opam-version: "2.0"
+synopsis: "Abstract engine for text edition in OCaml"
+description: """
+Zed is an abstract engine for text edition. It can be used to write text
+editors, edition widgets, readlines, ... Zed uses Camomile to fully support the
+Unicode specification, and implements an UTF-8 encoded string type with
+validation, and a rope datastructure to achieve efficient operations on large
+Unicode buffers. Zed also features a regular expression search on ropes. To
+support efficient text edition capabilities, Zed provides macro recording and
+cursor management facilities."""
+maintainer: ["ZAN DoYe <zandoye+ocaml@gmail.com>"]
+authors: ["Jérémie Dimino"]
+license: "BSD-3-Clause"
+homepage: "https://github.com/ocaml-community/zed"
+bug-reports: "https://github.com/ocaml-community/zed/issues"
+depends: [
+  "dune" {>= "3.0"}
+  "ocaml" {>= "4.02.3"}
+  "react"
+  "result"
+  "uchar"
+  "uutf"
+  "uucp" {>= "2.0.0"}
+  "uuseg"
+  "alcotest" {with-test}
+  "odoc" {with-doc}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-community/zed.git"
+url {
+  src: "https://github.com/ocaml-community/zed/archive/refs/tags/3.2.3.tar.gz"
+  checksum: [
+    "sha512=637f75129550f6459417549d44bed16bdc62721d2e9e0c6bb5bfab30c5bc6478de15faece8c091b56f238375cb79a7bc176375400e543120bb31d7ea626b7c5b"
+  ]
+}
