@@ -1,0 +1,38 @@
+opam-version: "2.0"
+synopsis:
+  "OCamlbuild is a build system with builtin rules to easily build most OCaml projects"
+maintainer: "Gabriel Scherer <gabriel.scherer@gmail.com>"
+authors: ["Nicolas Pouillard" "Berke Durak"]
+license: "LGPL-2.0-or-later WITH OCaml-LGPL-linking-exception"
+homepage: "https://github.com/ocaml/ocamlbuild/"
+doc: "https://github.com/ocaml/ocamlbuild/blob/master/manual/manual.adoc"
+bug-reports: "https://github.com/ocaml/ocamlbuild/issues"
+depends: [
+  "ocaml" {>= "4.03"}
+]
+conflicts: [
+  "base-ocamlbuild"
+  "ocamlfind" {< "1.6.2"}
+]
+build: [
+  [make "all"]
+]
+install: [
+  [make "install"]
+  ["mkdir" "-p" "%{lib}%/ocamlbuild"]
+  ["install" "-m" "0644" "META" "%{lib}%/ocamlbuild"]
+]
+dev-repo: "git+https://github.com/ocaml/ocamlbuild.git"
+url {
+  src: "https://github.com/ocaml/ocamlbuild/archive/refs/tags/0.14.2.tar.gz"
+  checksum: [
+    "md5=2f407fadd57b073155a6aead887d9676"
+    "sha512=f568bf10431a1f701e8bd7554dc662400a0d978411038bbad93d44dceab02874490a8a5886a9b44e017347e7949997f13f5c3752f74e1eb5e273d2beb19a75fd"
+  ]
+}
+extra-source "ocamlbuild-0.14.2.patch" {
+  src: "https://raw.githubusercontent.com/ocaml-opam/opam-repository-mingw/354a87b397856f2a70024c5c83fc5001074935b6/packages/ocamlbuild/ocamlbuild.0.14.2/files/ocamlbuild-0.14.2.patch"
+  checksum: "sha256=a9b7e1829a3304e5a073d8ddea29d3d8272698e93b7e1ee659ae5e31e5cfb6b9"
+}
+patches: "ocamlbuild-0.14.2.patch"
+available: os = "win32"
