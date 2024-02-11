@@ -500,6 +500,13 @@ module OCaml_51 = struct
   let string_version = "5.1"
 end
 let ocaml_51 : OCaml_51.types ocaml_version = (module OCaml_51)
+module OCaml_52 = struct
+  module Ast = Ast_52
+  include Make_witness(Ast_52)
+  let version = 520
+  let string_version = "5.2"
+end
+let ocaml_52 : OCaml_52.types ocaml_version = (module OCaml_52)
 (*$*)
 
 let all_versions : (module OCaml_version) list = [
@@ -520,6 +527,7 @@ let all_versions : (module OCaml_version) list = [
   (module OCaml_414 : OCaml_version);
   (module OCaml_500 : OCaml_version);
   (module OCaml_51 : OCaml_version);
+  (module OCaml_52 : OCaml_version);
   (*$*)
 ]
 
@@ -556,6 +564,8 @@ include Register_migration(OCaml_414)(OCaml_500)
     (Migrate_parsetree_414_500)(Migrate_parsetree_500_414)
 include Register_migration(OCaml_500)(OCaml_51)
     (Migrate_parsetree_500_51)(Migrate_parsetree_51_500)
+include Register_migration(OCaml_51)(OCaml_52)
+    (Migrate_parsetree_51_52)(Migrate_parsetree_52_51)
 (*$*)
 
 module OCaml_current = OCaml_OCAML_VERSION

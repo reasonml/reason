@@ -39,6 +39,7 @@ module Ast_413 = Ast_413
 module Ast_414 = Ast_414
 module Ast_500 = Ast_500
 module Ast_51 = Ast_51
+module Ast_52 = Ast_52
 (*$*)
 
 (* Manual migration between versions *)
@@ -74,6 +75,8 @@ module Migrate_414_500 = Migrate_parsetree_414_500
 module Migrate_500_414 = Migrate_parsetree_500_414
 module Migrate_500_51 = Migrate_parsetree_500_51
 module Migrate_51_500 = Migrate_parsetree_51_500
+module Migrate_51_52 = Migrate_parsetree_51_52
+module Migrate_52_51 = Migrate_parsetree_52_51
 (*$*)
 
 (* An abstraction of OCaml compiler versions *)
