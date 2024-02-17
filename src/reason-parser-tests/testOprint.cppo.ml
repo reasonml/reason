@@ -46,7 +46,14 @@ let main () =
 #else
   let (typedtree, _) =
 #endif
-    Typemod.type_implementation modulename modulename modulename env ast in
+    Typemod.type_implementation
+#if OCAML_VERSION >= (5,2,0)
+      (Unit_info.make ~source_file:modulename modulename)
+#else
+      modulename modulename modulename
+#endif
+      env ast
+  in
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
   let phrase = (Ast.Outcometree.Ophr_signature
     (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)

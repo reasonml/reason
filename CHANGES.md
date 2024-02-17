@@ -4,6 +4,7 @@
   [#2723](https://github.com/reasonml/reason/pull/2723))
 - Print wrapped type constraint on record patterns (@anmonteiro,
   [#2725](https://github.com/reasonml/reason/pull/2725))
+- Support OCaml 5.2 (@anmonteiro, [#2734](https://github.com/reasonml/reason/pull/2734))
 
 ## 3.10.0
 
