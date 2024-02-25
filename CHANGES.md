@@ -1,4 +1,4 @@
-## Unreleased
+## 3.11.0
 
 - Print structure items extension nodes correctly inside modules (@anmonteiro,
   [#2723](https://github.com/reasonml/reason/pull/2723))
