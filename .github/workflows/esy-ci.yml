@@ -43,7 +43,7 @@ jobs:
           node-version: 16
 
       - name: Install esy
-        run: npm install -g esy@0.6.12
+        run: npm install -g @esy-nightly/esy
 
       - name: Restore global cache (~/.esy/source)
         id: global-cache
