@@ -1,9 +1,4 @@
-{ pkgs, nix-filter }:
-
-let
-  inherit (pkgs) stdenv lib ocamlPackages;
-
-in
+{ ocamlPackages, nix-filter }:
 
 ocamlPackages.buildDunePackage {
   pname = "reason";
@@ -11,17 +6,22 @@ ocamlPackages.buildDunePackage {
 
   src = nix-filter.filter {
     root = ./..;
-    include = [ "dune" "dune-project" "reason.opam" "rtop.opam" "scripts" "src" "test" ];
+    include = [
+      "dune"
+      "dune-project"
+      "reason.opam"
+      "rtop.opam"
+      "scripts"
+      "src"
+      "test"
+    ];
   };
 
-  useDune2 = true;
-
+  nativeBuildInputs = with ocamlPackages; [ cppo menhir ];
   propagatedBuildInputs = with ocamlPackages; [
     merlin-extend
-    menhir
     menhirSdk
     menhirLib
-    cppo
     fix
     ppx_derivers
     ppxlib
