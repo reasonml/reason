@@ -1,25 +1,22 @@
 {
-	"name": "reason",
-	"version": "3.6.2",
-	"description": "Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/reasonml/reason.git"
-	},
-	"main": "refmt.js",
-	"keywords": [
-		"reason",
-		"ocaml",
-		"react",
-		"javascript",
-		"won't you look at all these nice types"
-	],
-	"license": "MIT",
-	"homepage": "https://github.com/reasonml/reason",
-	"devDependencies": {
-		"bs-platform": "1.9.3"
-	},
-	"scripts": {
-		"prepublishOnly": "cp .dune-for-prepublish dune && esy @jsoo && ./js/closurefy.sh"
-	}
+  "name": "reason",
+  "version": "3.6.2",
+  "description": "Simple, fast & type safe code that leverages the JavaScript & OCaml ecosystems",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/reasonml/reason.git"
+  },
+  "main": "refmt.js",
+  "keywords": [
+    "reason",
+    "ocaml",
+    "react",
+    "javascript",
+    "won't you look at all these nice types"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/reasonml/reason",
+  "scripts": {
+    "prepublishOnly": "cp .dune-for-prepublish dune && esy @jsoo && ./js/closurefy.sh"
+  }
 }
