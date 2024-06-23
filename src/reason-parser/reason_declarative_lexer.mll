@@ -176,8 +176,6 @@ let raise_error loc error = raise_error (Lexing_error error) loc
 let store_lexeme buffer lexbuf =
   Buffer.add_string buffer (Lexing.lexeme lexbuf)
 
-let store_escaped_uchar buffer u = Buffer.add_utf_8_uchar buffer u
-
 (* To "unlex" a few characters *)
 let set_lexeme_length buf n = (
   let open Lexing in
@@ -272,11 +270,8 @@ let char_for_hexadecimal_code lexbuf i =
 
 let uchar_for_uchar_escape lexbuf =
   let err e =
-    raise
-      (Reason_error
-        ((Lexing_error
-          (Illegal_escape (Lexing.lexeme lexbuf ^ e)))
-        , (Location.curr lexbuf)))
+    raise_error (Location.curr lexbuf) (Illegal_escape (Lexing.lexeme lexbuf ^ e));
+    Uchar.of_char 'u'
   in
   let len = Lexing.lexeme_end lexbuf - Lexing.lexeme_start lexbuf in
   let first = 3 (* skip opening \u{ *) in
@@ -852,7 +847,7 @@ and string rawbuf txtbuf = parse
     { store_lexeme rawbuf lexbuf;
       begin match txtbuf with
       | None -> ()
-      | Some buf -> store_escaped_uchar buf (uchar_for_uchar_escape lexbuf)
+      | Some buf -> Buffer.add_utf_8_uchar buf (uchar_for_uchar_escape lexbuf)
       end;
       string rawbuf txtbuf lexbuf
     }
