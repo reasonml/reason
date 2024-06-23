@@ -31,6 +31,9 @@ license.
 [astring]: http://erratique.ch/software/astring
 """
 url {
-archive: "https://erratique.ch/software/fpath/releases/fpath-0.7.3.tbz"
-checksum: "0740b530e8fed5b0adc5eee8463cfc2f"
+  src: "https://erratique.ch/software/fpath/releases/fpath-0.7.3.tbz"
+  checksum: [
+    "sha256=12b08ff192d037d9b6d69e9ca19d1d385184f20b3237c27231e437ac81ace70f"
+    "md5=0740b530e8fed5b0adc5eee8463cfc2f"
+  ]
 }
