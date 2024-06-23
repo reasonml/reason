@@ -32,6 +32,9 @@ Astring depends only on the OCaml standard library. It is distributed
 under the ISC license.
 """
 url {
-archive: "https://erratique.ch/software/astring/releases/astring-0.8.5.tbz"
-checksum: "e148907c24157d1df43bec89b58b3ec8"
+  src: "https://erratique.ch/software/astring/releases/astring-0.8.5.tbz"
+  checksum: [
+    "sha256=865692630c07c3ab87c66cdfc2734c0fdfc9c34a57f8e89ffec7c7d15e7a70fa"
+    "md5=e148907c24157d1df43bec89b58b3ec8"
+  ]
 }

@@ -1,0 +1,27 @@
+{
+  "build": [
+    [
+      "bash",
+      "-c",
+      "patch -p1 < darwin.patch"
+    ],
+    [
+      "rm",
+      "-rf",
+      "vendor/csexp"
+    ],
+    [
+      "rm",
+      "-rf",
+      "vendor/pp"
+    ],
+    [
+      "dune",
+      "build",
+      "-p",
+      "dune-configurator",
+      "-j",
+      "4"
+    ]
+  ]
+}

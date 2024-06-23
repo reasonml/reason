@@ -34,7 +34,6 @@ install: [
   [make "install"]
   ["install" "-m" "0755" "ocaml-stub" "%{bin}%/ocaml"] {ocaml:preinstalled}
 ]
-extra-files: ["0001-Fix-bug-when-installing-with-a-system-compiler.patch" "md5=130d3d6fe399948ed7991b7756f50dc3"]
 patches: ["0001-Fix-bug-when-installing-with-a-system-compiler.patch"]
 dev-repo: "git+https://github.com/ocaml/ocamlfind.git"
 url {
@@ -42,6 +41,14 @@ url {
   checksum: [
     "md5=8b893525ce36cb3d4d4952483bcc7cf4"
     "sha512=03514c618a16b02889db997c6c4789b3436b3ad7d974348d2c6dea53eb78898ab285ce5f10297c074bab4fd2c82931a8b7c5c113b994447a44abb30fca74c715"
+  ]
+}
+extra-source "0001-Fix-bug-when-installing-with-a-system-compiler.patch" {
+  src:
+    "https://raw.githubusercontent.com/ocaml/opam-source-archives/main/patches/ocamlfind/0001-Fix-bug-when-installing-with-a-system-compiler.patch"
+  checksum: [
+    "sha256=66776698f5ea1e686f5b81014119a5f0d48278604a721036c7def0346a4749a3"
+    "md5=130d3d6fe399948ed7991b7756f50dc3"
   ]
 }
 

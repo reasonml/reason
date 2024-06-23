@@ -1,0 +1,58 @@
+opam-version: "2.0"
+synopsis: "Parsing and printing of S-expressions in Canonical form"
+description: """
+
+This library provides minimal support for Canonical S-expressions
+[1]. Canonical S-expressions are a binary encoding of S-expressions
+that is super simple and well suited for communication between
+programs.
+
+This library only provides a few helpers for simple applications. If
+you need more advanced support, such as parsing from more fancy input
+sources, you should consider copying the code of this library given
+how simple parsing S-expressions in canonical form is.
+
+To avoid a dependency on a particular S-expression library, the only
+module of this library is parameterised by the type of S-expressions.
+
+[1] https://en.wikipedia.org/wiki/Canonical_S-expressions
+"""
+maintainer: ["Jeremie Dimino <jeremie@dimino.org>"]
+authors: [
+  "Quentin Hocquet <mefyl@gruntech.org>"
+  "Jane Street Group, LLC <opensource@janestreet.com>"
+  "Jeremie Dimino <jeremie@dimino.org>"
+]
+license: "MIT"
+homepage: "https://github.com/ocaml-dune/csexp"
+doc: "https://ocaml-dune.github.io/csexp/"
+bug-reports: "https://github.com/ocaml-dune/csexp/issues"
+depends: [
+  "dune" {>= "3.4"}
+  "ocaml" {>= "4.03.0"}
+  "odoc" {with-doc}
+]
+dev-repo: "git+https://github.com/ocaml-dune/csexp.git"
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+#   "@runtest" {with-test & ocaml:version >= "4.04"}
+    "@doc" {with-doc}
+  ]
+]
+url {
+  src:
+    "https://github.com/ocaml-dune/csexp/releases/download/1.5.2/csexp-1.5.2.tbz"
+  checksum: [
+    "sha256=1a14dd04bb4379a41990248550628c77913a9c07f3c35c1370b6960e697787ff"
+    "sha512=be281018bcfc20d4db14894ef51c4b836d6338d2fdfe22e63d46f405f8dea7349e16f1c0ecd65f73d4c85a2a80e618cdbb8c9dafcbb9f229f04f1adca5b1973c"
+  ]
+}
+x-commit-hash: "e6c4768e10c61bcb04d09748744dad55602149c6"
