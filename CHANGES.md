@@ -1,3 +1,8 @@
+## Unreleased
+
+- Add `\u{hex-escape}` syntax (@anmonteiro,
+  [#2738](https://github.com/reasonml/reason/pull/2738))
+
 ## 3.11.0
 
 - Print structure items extension nodes correctly inside modules (@anmonteiro,
