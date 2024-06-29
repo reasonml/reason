@@ -11,12 +11,8 @@
     "reason",
     "ocaml",
     "react",
-    "javascript",
-    "won't you look at all these nice types"
+    "javascript"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/reasonml/reason",
-  "scripts": {
-    "prepublishOnly": "cp .dune-for-prepublish dune && esy @jsoo && ./js/closurefy.sh"
-  }
+  "homepage": "https://github.com/reasonml/reason"
 }
