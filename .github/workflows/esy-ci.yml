@@ -26,17 +26,12 @@ jobs:
           - windows-latest
 
         ocaml-compiler:
-          # Please keep the list in sync with the minimal version of OCaml in
-          # esy.json, reason.esy/reason.opam and rtop.esy/rtop.opam.
-          - 4.06.x # We support 4.06 because is the one that is used in BuckleScript / ReScript v9
-          - 4.10.x
-          - 4.12.x
           - 4.14.x
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v3
         with:
@@ -65,9 +60,6 @@ jobs:
             _export
           key: esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
           restore-keys: esy-build-${{ matrix.os }}-
-
-      - name: Instal OCaml ${{ matrix.ocaml-compiler }}
-        run: esy add ocaml@${{ matrix.ocaml-compiler }}
 
       - name: Install dependencies
         run: esy install

@@ -16,7 +16,6 @@
     "ocaml": " >= 4.3.0 < 4.15.0"
   },
   "devDependencies": {
-    "@opam/ocaml-lsp-server": "1.15.1-4.14",
     "@opam/odoc": "*",
     "ocaml": "~4.14.0"
   },
