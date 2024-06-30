@@ -19,10 +19,7 @@
  * not a super easy path to "test it out", but this setup is hopefully not too complicated.
  *)
 
-open Reason_omp
-module Ast = Ast_414
-
-module ConvertBack = Reason_omp.Convert (Reason_omp.OCaml_current) (Reason_omp.OCaml_414)
+module ConvertBack = Reason_toolchain.From_current
 
 let main () =
   let filename = "./TestTest.ml" in
@@ -55,7 +52,7 @@ let main () =
       env ast
   in
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
-  let phrase = (Ast.Outcometree.Ophr_signature
+  let phrase = (Reason_omp.Ast_414.Outcometree.Ophr_signature
     (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)
   ) in
   let fmt = Format.str_formatter in

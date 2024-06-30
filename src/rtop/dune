@@ -5,7 +5,6 @@
  (wrapped false)
  (modes byte)
  (libraries
-  compiler-libs.common
   menhirLib
   reason.easy_format
   reason

@@ -24,7 +24,7 @@ module Reason_reader = struct
     in
     Signature (Reason_toolchain.To_current.copy_signature sg)
 
-  let parse {text; path} =
+  let parse {text; path; _} =
     let l = String.length path in
     let buf = Lexing.from_string text in
     Location.init buf (Filename.basename path);

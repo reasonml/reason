@@ -6,7 +6,7 @@
  (wrapped true)
  ; (wrapped
  ; (transition "Access modules via the Migrate_parsetree toplevel module"))
- (libraries compiler-libs.common ppx_derivers)
+ (libraries ppxlib.astlib ppx_derivers)
  (modules :standard \ migrate_parsetree_driver_main)
  (preprocess
   (action
