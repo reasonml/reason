@@ -4365,21 +4365,16 @@ let printer = object(self:'self)
      * Or ReasonReact.(<> {string("Test")} </>);
      *)
     | _ -> (
-      match parent with 
-      | Some (parent) -> (
-        if has_open_notation_attr parent.pexp_attributes then
-          makeList
-            ~break:IfNeed
-            ~inline:(true, false)
-            ~postSpace:true
-            ~wrap:("(",")")
-            ~sep:(SepFinal (";", ""))
-            (self#letList e)
-        else
-          makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
-      )
-      | None -> 
-        makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
+      match parent with
+      | Some parent when has_open_notation_attr parent.pexp_attributes ->
+        makeList
+          ~break:IfNeed
+          ~inline:(true, false)
+          ~postSpace:true
+          ~wrap:("(",")")
+          ~sep:(SepFinal (";", ""))
+          (self#letList e)
+      | Some _ | None -> makeList ~wrap:("(",")") ~break:IfNeed [self#unparseExpr e]
     )
 
   (*
@@ -5577,7 +5572,7 @@ let printer = object(self:'self)
                 pos_lnum = expr.pexp_loc.loc_start.pos_lnum
               }
             } in
-            processLetList ((loc, layout)::acc) e 
+            processLetList ((loc, layout)::acc) e
           )
         | ([], Pexp_letmodule (s, me, e)) ->
             let prefixText = "module" in
@@ -6474,7 +6469,7 @@ let printer = object(self:'self)
                     (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
                     (atom (".")))
                   (self#formatNonSequencyExpression ~parent:x e))
-            else 
+            else
               Some  (makeLetSequence (self#letList e))
         | Pexp_send (e, s) ->
           let needparens = match e.pexp_desc with

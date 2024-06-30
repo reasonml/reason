@@ -3007,7 +3007,7 @@ parenthesized_expr:
 %inline bigarray_access:
   DOT LBRACE lseparated_nonempty_list(COMMA, expr) COMMA? RBRACE { $3 }
 
-expr_list_or_seq_expr: 
+expr_list_or_seq_expr:
   | expr_list { $1 }
   | seq_expr(SEMI) { [$1] };
 
@@ -3038,10 +3038,10 @@ expr_list_or_seq_expr:
   | E as_loc(POSTFIXOP)
     { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
   | od=open_dot_declaration DOT LPAREN expr_list_or_seq_expr RPAREN
-    { 
+    {
       let loc = mklocation $symbolstartpos $endpos in
-      let openSyntaxNotationAttribute = { 
-        attr_name = mkloc "reason.openSyntaxNotation" loc;
+      let openSyntaxNotationAttribute = {
+        Ppxlib.Parsetree.attr_name = mkloc "reason.openSyntaxNotation" loc;
         attr_payload = PStr [];
         attr_loc = Location.none
       } in
