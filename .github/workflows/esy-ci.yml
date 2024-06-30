@@ -28,8 +28,8 @@ jobs:
         ocaml-compiler:
           # Please keep the list in sync with the minimal version of OCaml in
           # esy.json, reason.esy/reason.opam and rtop.esy/rtop.opam.
+          - 4.08.x
           - 4.10.x
-          - 4.12.x
           - 4.14.x
 
     runs-on: ${{ matrix.os }}
