@@ -8,4 +8,4 @@
  (name ocamlmerlin_reason)
  (public_name ocamlmerlin-reason)
  (package reason)
- (libraries merlin-extend reason))
+ (libraries compiler-libs.common merlin-extend reason))
