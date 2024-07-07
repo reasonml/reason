@@ -3203,6 +3203,7 @@ let printer = object(self:'self)
           let raw_pattern = (self#pattern p) in
           let pattern_with_precedence = match p.ppat_desc with
             | Ppat_or (p1, p2) -> formatPrecedence (self#or_pattern p1 p2)
+            | Ppat_constraint _ -> makeList ~wrap:("(", ")") [ raw_pattern ]
             | _ -> raw_pattern
           in
           label ~space:true
