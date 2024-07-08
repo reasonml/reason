@@ -20,7 +20,7 @@ jobs:
           - 4_14
           - 5_0
           - 5_1
-          # - 5_2
+          - 5_2
 
     runs-on: ubuntu-latest
     steps:
@@ -46,7 +46,7 @@ jobs:
         ocaml-version:
           - 4_14
           - 5_0
-          # - 5_2
+          - 5_2
 
     runs-on: ${{ matrix.os }}
     steps:
