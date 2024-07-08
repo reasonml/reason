@@ -44,6 +44,7 @@
    (>= "0.6"))
   fix
   ppx_derivers
+  cppo
   (ppxlib
    (>= "0.28.0"))))
 
@@ -60,4 +61,5 @@
   (reason
    (= :version))
   (utop
-   (>= "2.0"))))
+   (>= "2.0"))
+  cppo))
