@@ -14,11 +14,10 @@
         pkgs = nixpkgs.legacyPackages."${system}".extend (self: super: {
           ocamlPackages = super.ocaml-ng.ocamlPackages_5_2;
         });
+        packages = pkgs.callPackage ./nix { nix-filter = nix-filter.lib; };
       in
       {
-        packages.default = pkgs.callPackage ./nix {
-          nix-filter = nix-filter.lib;
-        };
+        packages = packages // { default = packages.reason; };
         devShells = {
           default = pkgs.callPackage ./nix/shell.nix {
             reason = self.packages.${system}.default;

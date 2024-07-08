@@ -7,5 +7,5 @@
 (executable
  (public_name outcome_printer)
  (name outcometreePrinter)
- (package rtop)
+ (package reason)
  (libraries reason))
