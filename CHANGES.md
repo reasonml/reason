@@ -3,6 +3,7 @@
 - Add `\u{hex-escape}` syntax (@anmonteiro,
   [#2738](https://github.com/reasonml/reason/pull/2738))
 - Support local open and let bindings (@SanderSpies) [#2716](https://github.com/reasonml/reason/pull/2716)
+- outcome printer: change the printing of `@bs.*` to `@mel.*` (@anmonteiro, [#2755](https://github.com/reasonml/reason/pull/2755))
 
 ## 3.11.0
 

@@ -329,7 +329,9 @@ and print_simple_out_type ppf =
   (* same for `Js.Internal.fn(...)`. Either might shown *)
   | Otyp_constr (
       (Oide_dot (
-        (Oide_dot ((Oide_ident { printed_name = "Js" }), "Internal") | Oide_ident { printed_name = "Js_internal" }),
+        (Oide_dot
+          ((Oide_ident { printed_name = "Js" }), "Internal")
+          | Oide_ident { printed_name = "Js_internal" }),
         ("fn" | "meth" as name)
       ) as id),
       ([Otyp_variant(_, Ovar_fields [variant, _, tys], _, _); result] as tyl)
@@ -361,7 +363,7 @@ and print_simple_out_type ppf =
       | res ->
         begin match name  with
         | "fn" -> print_out_type_1 ~uncurried:true ppf res
-        | "meth" -> fprintf ppf "@[<0>(%a)@ [@bs.meth]@]" (print_out_type_1 ~uncurried:false) res
+        | "meth" -> fprintf ppf "@[<0>(%a)@ [@mel.meth]@]" (print_out_type_1 ~uncurried:false) res
         | _ -> assert false
         end
       end
@@ -394,7 +396,7 @@ and print_simple_out_type ppf =
           pp_close_box ppf ()
         end
       | res ->
-        fprintf ppf "@[<0>(%a)@ [@bs.this]@]" (print_out_type_1 ~uncurried:false) res
+        fprintf ppf "@[<0>(%a)@ [@mel.this]@]" (print_out_type_1 ~uncurried:false) res
       end
   (* also BuckleScript-specific. Turns Js.t({. foo: bar}) into {. "foo": bar} *)
   | Otyp_constr (
@@ -703,14 +705,14 @@ and print_out_sig_item ppf =
     let printAttributes ppf = List.iter (fun a -> fprintf ppf "[@@%s]" a.oattr_name) in
     let keyword = if oval_prims = [] then "let" else "external" in
     let (hackyBucklescriptExternalAnnotation, rhsValues) = List.partition (fun item ->
-      (* "BS:" is considered as a bucklescript external annotation, `[@bs.module]` and the sort.
+      (* "BS:" is considered as a bucklescript external annotation, `[@mel.module]` and the sort.
 
-        "What's going on here? Isn't [@bs.foo] supposed to be an attribute in oval_attributes?"
+        "What's going on here? Isn't [@mel.foo] supposed to be an attribute in oval_attributes?"
         Usually yes. But here, we're intercepting things a little too late. BuckleScript already
         finished its pre/post-processing work before we get to print anything. The original
         attribute is already gone, replaced by a "BS:asdfasdfasd" thing here.
       *)
-      String.length item >= 3 && item.[0] = 'B' && item.[1] = 'S' && item.[2] = ':'
+      String.length item >= 4 && item.[0] = 'M' && item.[1] = 'E' && item.[1] = 'L' && item.[3] = ':'
     ) oval_prims in
     let print_right_hand_side ppf =
       function
@@ -720,7 +722,7 @@ and print_out_sig_item ppf =
           List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
     in
     fprintf ppf "@[<2>%a%a%s %a:@ %a%a@]"
-      (fun ppf -> List.iter (fun _ -> fprintf ppf "[@@bs...]@ ")) hackyBucklescriptExternalAnnotation
+      (fun ppf -> List.iter (fun _ -> fprintf ppf "[@@mel...]@ ")) hackyBucklescriptExternalAnnotation
       printAttributes oval_attributes
       keyword
       value_ident oval_name
