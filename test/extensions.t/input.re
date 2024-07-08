@@ -383,3 +383,9 @@ let predicate =
 /* Attributes shoudn't be inlined and always break */
 [@warning "-8"]
 let a = 3;
+
+[%%foo external x: int => int = ""];
+[%%foo external x: int => int = "caml_prim"];
+external%foo x: int => int = "caml_prim";
+
+
