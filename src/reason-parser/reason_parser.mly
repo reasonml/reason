@@ -1671,13 +1671,27 @@ structure_item:
       { let (ext_attrs, ext_id) = $2 in
         struct_item_extension ($1@ext_attrs, ext_id) $3 }
     | item_attributes
-      EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
+      EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type EQUAL primitive_declaration
       { let loc = mklocation $symbolstartpos $endpos in
-        mkstr (Pstr_primitive (Ast_helper.Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc)) }
+        let pstr_prim =
+          mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc))
+        in
+        match $3 with
+        | None -> pstr_prim
+        | Some ext ->
+          struct_item_extension ext [pstr_prim]
+      }
     | item_attributes
-      EXTERNAL as_loc(val_ident) COLON core_type SEMI
+      EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type SEMI
       { let loc = mklocation $symbolstartpos $endpos in
-        mkstr (Pstr_primitive (Ast_helper.Val.mk $3 $5 ~prim:[""] ~attrs:$1 ~loc)) }
+        let pstr_prim =
+          mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc))
+        in
+        match $3 with
+        | None -> pstr_prim
+        | Some ext ->
+          struct_item_extension ext [pstr_prim]
+      }
     | type_declarations
       { let (nonrec_flag, tyl) = $1 in mkstr(Pstr_type (nonrec_flag, tyl)) }
     | str_type_extension

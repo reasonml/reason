@@ -385,3 +385,7 @@ Format extensions
   /* Attributes shoudn't be inlined and always break */
   [@warning "-8"]
   let a = 3;
+  
+  external%foo x: int => int;
+  external%foo x: int => int = "caml_prim";
+  external%foo x: int => int = "caml_prim";

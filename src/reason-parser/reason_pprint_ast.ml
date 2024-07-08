@@ -6725,12 +6725,13 @@ let printer = object(self:'self)
       * format everything together in a ~postSpace:true (inline, inline) list
         for nicer breaking
   *)
-  method primitive_declaration vd =
+  method primitive_declaration ?extension vd =
+    let external_label = add_extension_sugar "external" extension in
     let lblBefore =
       label
         ~space:true
         (makeList
-           [(makeList ~postSpace:true [atom "external"; protectIdentifier vd.pval_name.txt]); (atom ":")])
+           [(makeList ~postSpace:true [atom external_label; protectIdentifier vd.pval_name.txt]); (atom ":")])
         (self#core_type vd.pval_type)
     in
     let primDecl =
@@ -7608,8 +7609,10 @@ let printer = object(self:'self)
       match item.pstr_desc with
       | Pstr_extension ((extension, PStr [item]), attrs) ->
           begin match item.pstr_desc with
-            (* In case of a value, the extension gets inlined `let%private a = 1` *)
+            (* In case of a value or `external`, the extension gets inlined
+               `let%private a = 1` *)
             | Pstr_value (rf, vb_list) -> self#bindings ~extension (rf, vb_list)
+            | Pstr_primitive vd -> self#primitive_declaration ~extension vd
             | _ -> self#attach_std_item_attrs attrs (self#payload "%%" extension (PStr [item]))
           end
       | _ -> self#structure_item item
