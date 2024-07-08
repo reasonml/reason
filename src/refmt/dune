@@ -1,7 +1,7 @@
 (executable
- (name refmt_impl)
  (public_name refmt)
  (package reason)
+ (modes exe byte)
  (libraries reason reason.cmdliner dune-build-info))
 
 (rule
