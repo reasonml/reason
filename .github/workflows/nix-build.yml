@@ -1,0 +1,66 @@
+name: Nix Pipeline
+
+on:
+  pull_request:
+  push:
+   branches:
+     - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ubuntu-tests:
+    name: Build and test (Ubuntu)
+
+    strategy:
+      matrix:
+        ocaml-version:
+          - 4_12
+          - 4_13
+          - 4_14
+          - 5_0
+          - 5_1
+          - 5_2
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - uses: cachix/install-nix-action@v27
+      with:
+        extra_nix_config: |
+          extra-substituters = https://anmonteiro.nix-cache.workers.dev
+          extra-trusted-public-keys = ocaml.nix-cache.com-1:/xI2h2+56rwFfKyyFVbkJSeGqSIYMC/Je+7XXqGKDIY=
+    - name: "Run nix-build"
+      run: nix-build ./nix/ci.nix --argstr ocamlVersion ${{ matrix.ocaml-version }}
+
+  macos-tests:
+    name: Build and test (${{ matrix.os }})
+
+    strategy:
+      matrix:
+        os:
+          - macos-13
+          - macos-14
+        ocaml-version:
+          - 4_12
+          - 4_14
+          - 5_0
+          - 5_2
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - uses: cachix/install-nix-action@v27
+      with:
+        extra_nix_config: |
+          extra-substituters = https://anmonteiro.nix-cache.workers.dev
+          extra-trusted-public-keys = ocaml.nix-cache.com-1:/xI2h2+56rwFfKyyFVbkJSeGqSIYMC/Je+7XXqGKDIY=
+    - name: "Run nix-build"
+      run: nix-build ./nix/ci.nix --argstr ocamlVersion ${{ matrix.ocaml-version }}
+
