@@ -170,7 +170,7 @@ and copy_out_class_type :
         ((copy_out_ident x0), (List.map copy_out_type x1))
   | Ast_52.Outcometree.Octy_arrow (x0, x1, x2) ->
       Ast_51.Outcometree.Octy_arrow
-        ((match x0 with Nolabel -> "" | Labelled s | Optional s -> s), (copy_out_type x1), (copy_out_class_type x2))
+        ((match x0 with Nolabel -> "" | Labelled s  -> s | Optional s -> "?" ^ s), (copy_out_type x1), (copy_out_class_type x2))
   | Ast_52.Outcometree.Octy_signature (x0, x1) ->
       Ast_51.Outcometree.Octy_signature
         ((Option.map copy_out_type x0),
@@ -216,7 +216,7 @@ and copy_out_type :
       Ast_51.Outcometree.Otyp_alias {non_gen; aliased=(copy_out_type x0); alias=x1}
   | Ast_52.Outcometree.Otyp_arrow (x0, x1, x2) ->
       Ast_51.Outcometree.Otyp_arrow
-        ((match x0 with Nolabel -> "" | Labelled s | Optional s -> s), (copy_out_type x1), (copy_out_type x2))
+        ((match x0 with Nolabel -> "" | Labelled s -> s | Optional s -> "?" ^ s), (copy_out_type x1), (copy_out_type x2))
   | Ast_52.Outcometree.Otyp_class (x0, x1) ->
       Ast_51.Outcometree.Otyp_class
         ((copy_out_ident x0), (List.map copy_out_type x1))
