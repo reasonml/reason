@@ -23,6 +23,7 @@ depends: [
   "merlin-extend" {>= "0.6"}
   "fix"
   "ppx_derivers"
+  "cppo"
   "ppxlib" {>= "0.28.0"}
   "odoc" {with-doc}
 ]

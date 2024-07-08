@@ -17,6 +17,7 @@ depends: [
   "ocaml" {>= "4.03" & < "5.3"}
   "reason" {= version}
   "utop" {>= "2.0"}
+  "cppo"
   "odoc" {with-doc}
 ]
 build: [
