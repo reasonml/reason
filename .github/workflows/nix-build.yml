@@ -17,8 +17,6 @@ jobs:
     strategy:
       matrix:
         ocaml-version:
-          - 4_12
-          - 4_13
           - 4_14
           - 5_0
           - 5_1
@@ -46,7 +44,6 @@ jobs:
           - macos-13
           - macos-14
         ocaml-version:
-          - 4_12
           - 4_14
           - 5_0
           - 5_2
