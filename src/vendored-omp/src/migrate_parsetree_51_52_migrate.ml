@@ -1,6 +1,13 @@
 open Stdlib0
 module From = Ast_51
 module To = Ast_52
+
+let get_label lbl =
+  if lbl = "" then Ast_52.Asttypes.Nolabel
+  else if String.get lbl 0 = '?' then
+    Optional (String.sub lbl 1 @@ String.length lbl - 1)
+  else Labelled lbl
+
 let rec copy_out_type_extension :
   Ast_51.Outcometree.out_type_extension ->
     Ast_52.Outcometree.out_type_extension
@@ -170,7 +177,7 @@ and copy_out_class_type :
         ((copy_out_ident x0), (List.map copy_out_type x1))
   | Ast_51.Outcometree.Octy_arrow (x0, x1, x2) ->
       Ast_52.Outcometree.Octy_arrow
-        ((if x0 = "" then Nolabel else Labelled x0), (copy_out_type x1), (copy_out_class_type x2))
+        (get_label x0, (copy_out_type x1), (copy_out_class_type x2))
   | Ast_51.Outcometree.Octy_signature (x0, x1) ->
       Ast_52.Outcometree.Octy_signature
         ((Option.map copy_out_type x0),
@@ -218,7 +225,7 @@ and copy_out_type :
   | Ast_51.Outcometree.Otyp_open -> Ast_52.Outcometree.Otyp_open
   | Ast_51.Outcometree.Otyp_arrow (x0, x1, x2) ->
       Ast_52.Outcometree.Otyp_arrow
-        ((if x0 = "" then Nolabel else Labelled x0), (copy_out_type x1), (copy_out_type x2))
+        (get_label x0, (copy_out_type x1), (copy_out_type x2))
   | Ast_51.Outcometree.Otyp_class (x0, x1) ->
       Ast_52.Outcometree.Otyp_class
         ((copy_out_ident x0), (List.map copy_out_type x1))

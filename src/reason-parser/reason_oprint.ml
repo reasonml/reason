@@ -85,7 +85,8 @@
 *)
 
 open Format
-module Outcometree = Reason_omp.Ast_414.Outcometree
+module Reason_ast = Reason_omp.Ast_414
+module Outcometree = Reason_ast.Outcometree
 open Outcometree
 
 exception Ellipsis
@@ -241,16 +242,26 @@ let pr_present =
 let pr_vars =
   print_list (fun ppf s -> fprintf ppf "'%s" s) (fun ppf -> fprintf ppf "@ ")
 
-type label =
-  | Nonlabeled
-  | Labeled of string
-  | Optional of string
-
 let get_label lbl =
-  if lbl = "" then Nonlabeled
+  if lbl = "" then Reason_ast.Asttypes.Nolabel
   else if String.get lbl 0 = '?' then
     Optional (String.sub lbl 1 @@ String.length lbl - 1)
-  else Labeled lbl
+  else Labelled lbl
+
+let get_arg_suffix ppf lab =
+  match get_label lab with
+    | Nolabel -> ""
+    | Labelled lab ->
+        pp_print_string ppf "~";
+        pp_print_string ppf lab;
+        pp_print_string ppf ": ";
+        ""
+    | Optional lab ->
+        pp_print_string ppf "~";
+        pp_print_string ppf lab;
+        pp_print_string ppf ": ";
+        "=?"
+
 
 let rec print_out_type ppf =
   function
@@ -264,20 +275,7 @@ let rec print_out_type ppf =
       print_out_type_1 ~uncurried:false ppf ty
 
 and print_arg ppf (lab, typ) =
-  let suffix =
-    match get_label lab with
-    | Nonlabeled -> ""
-    | Labeled lab ->
-        pp_print_string ppf "~";
-        pp_print_string ppf lab;
-        pp_print_string ppf ": ";
-        ""
-    | Optional lab ->
-        pp_print_string ppf "~";
-        pp_print_string ppf lab;
-        pp_print_string ppf ": ";
-        "=?"
-  in
+  let suffix = get_arg_suffix ppf lab in
   print_out_type_2 ppf typ;
   pp_print_string ppf suffix;
 
