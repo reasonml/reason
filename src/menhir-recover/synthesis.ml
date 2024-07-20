@@ -197,7 +197,7 @@ struct
         const bottom
       else if pos = prod_len then
         let can_reduce = List.exists
-            (fun (_,prods) -> List.mem prod prods) (Lr1.reductions st)
+            (fun (_,prods) -> List.mem prod prods) (Lr1.reductions st [@alert "-deprecated"])
         in
         const (if can_reduce
                then (cost_of_prod prod, [Reduce prod])

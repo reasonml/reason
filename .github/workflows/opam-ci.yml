@@ -64,7 +64,7 @@ jobs:
         run: opam exec -- dune build -p reason,rtop
 
       - name: Test
-        run: opam exec -- dune runtest
+        run: opam exec -- dune runtest -p reason,rtop
 
       - name: Save cache when not Windows
         uses: actions/cache/save@v3
