@@ -42,7 +42,7 @@ let () =
             fprintf ppf " - on %a, reduce %d:\n  %a\n"
               Print.terminal t
               (p :> int) Print.production p
-          ) (Lr1.reductions st);
+          ) (Lr1.reductions st [@alert "-deprecated"]);
       );
     Production.iter (fun (p : production) ->
         fprintf ppf "\n# Production p%d\n%a"
