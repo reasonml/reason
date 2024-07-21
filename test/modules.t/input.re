@@ -510,3 +510,16 @@ let y = Promise.Ops.(
     Js.Promise.resolve(x * 2)
   )
 );
+
+module WithExternalExtension: {
+  external%foo bar: string => string = "";
+  [%%foo: external bar: int => int = "hello" ];
+} = {
+  external%foo bar: string => string = "";
+  [%%foo external bar: int => int = "hello" ];
+}
+
+module type TypeWithExternalExtension = {
+  external%foo bar: string => string = "";
+  [%%foo: external bar: int => int = "hello" ];
+}

@@ -676,4 +676,17 @@ Format modules
         Js.Promise.resolve(x * 2);
       )
     );
+  
+  module WithExternalExtension: {
+    external%foo bar: string => string;
+    external%foo bar: int => int = "hello";
+  } = {
+    external%foo bar: string => string;
+    external%foo bar: int => int = "hello";
+  };
+  
+  module type TypeWithExternalExtension = {
+    external%foo bar: string => string;
+    external%foo bar: int => int = "hello";
+  };
 /* From http://stackoverflow.com/questions/1986374/  higher-order-type-constructors-and-functors-in-ocaml */
