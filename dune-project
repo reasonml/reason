@@ -52,7 +52,7 @@
  (name rtop)
  (synopsis "Reason toplevel")
  (description
-  "rtop is the toplevel (or REPL) for Reason, based on utop (https://github.com/diml/utop).")
+  "rtop is the toplevel (or REPL) for Reason, based on utop (https://github.com/ocaml-community/utop).")
  (depends
   (ocaml
    (and
