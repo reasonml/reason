@@ -15,10 +15,10 @@
 
 (rule
  (with-stdout-to
-  reason.1
+  refmt.1
   (run %{bin:refmt} --help=groff)))
 
 (install
  (section man)
  (package reason)
- (files reason.1))
+ (files refmt.1))
