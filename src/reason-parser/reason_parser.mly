@@ -778,6 +778,20 @@ let wrap_type_annotation newtypes core_type body =
 let struct_item_extension (ext_attrs, ext_id) structure_items =
   mkstr ~ghost:true (Pstr_extension ((ext_id, PStr structure_items), ext_attrs))
 
+let wrap_str_ext ~loc body ext =
+  match ext with
+  | None -> body
+  | Some (ext_attrs, ext_id) ->
+    Ast_helper.Str.mk
+      ~loc:(make_ghost_loc loc)
+      (Pstr_extension ((ext_id, PStr [body]), ext_attrs))
+
+let wrap_sig_ext ~loc body ext =
+  match ext with
+  | None -> body
+  | Some (ext_attrs, ext_id) ->
+    Ppxlib.Parsetree.Psig_extension ((ext_id, PSig [mksig ~loc body]), ext_attrs)
+
 let expression_extension ?loc (ext_attrs, ext_id) item_expr =
   let extension = (ext_id, Ppxlib.Parsetree.PStr [mkstrexp item_expr []]) in
   let loc = match loc with
@@ -1676,10 +1690,7 @@ structure_item:
         let pstr_prim =
           mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc))
         in
-        match $3 with
-        | None -> pstr_prim
-        | Some ext ->
-          struct_item_extension ext [pstr_prim]
+        wrap_str_ext ~loc pstr_prim $3
       }
     | item_attributes
       EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type SEMI
@@ -1687,10 +1698,7 @@ structure_item:
         let pstr_prim =
           mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc))
         in
-        match $3 with
-        | None -> pstr_prim
-        | Some ext ->
-          struct_item_extension ext [pstr_prim]
+        wrap_str_ext ~loc pstr_prim $3
       }
     | type_declarations
       { let (nonrec_flag, tyl) = $1 in mkstr(Pstr_type (nonrec_flag, tyl)) }
@@ -1900,10 +1908,7 @@ signature_item:
       let psig_prim =
         Ppxlib.Parsetree.Psig_value (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc)
       in
-      match $3 with
-      | None -> psig_prim
-      | Some (ext_attrs, ext_id) ->
-        (Psig_extension ((ext_id, PSig [mksig ~loc psig_prim]), ext_attrs))
+      wrap_sig_ext ~loc psig_prim $3
     }
   | item_attributes
     EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type SEMI
@@ -1911,10 +1916,7 @@ signature_item:
       let psig_prim =
         Ppxlib.Parsetree.Psig_value (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc)
       in
-      match $3 with
-      | None -> psig_prim
-      | Some (ext_attrs, ext_id) ->
-        (Ppxlib.Parsetree.Psig_extension ((ext_id, PSig [mksig ~loc psig_prim]), ext_attrs))
+      wrap_sig_ext ~loc psig_prim $3
     }
   | type_declarations
     { let (nonrec_flag, tyl) = $1 in Psig_type (nonrec_flag, tyl) }
