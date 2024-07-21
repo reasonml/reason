@@ -105,12 +105,12 @@ let top_level_info =
   let man = [`S "DESCRIPTION"; `P "refmt lets you format Reason files, parse them, and convert them between OCaml syntax and Reason syntax."] in
 let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
   in
-  Term.info "refmt" ~version ~doc ~man
+  Cmd.info "refmt" ~version ~doc ~man
 
-let refmt_t =
+let refmt_t: [ `Error of bool * string | `Ok of unit ]  Cmd.t =
   let open Term in
   let open Refmt_args in
-  const refmt $ interface
+  let term = const refmt $ interface
               $ recoverable
               $ explicit_arity
               $ parse_ast
@@ -119,8 +119,10 @@ let refmt_t =
               $ heuristics_file
               $ in_place
               $ input
+  in
+  Cmd.v top_level_info term
 
 let () =
-  match Term.eval ((Term.ret refmt_t), top_level_info) with
-  | `Error _ -> exit 1
+  match Cmd.eval_value' refmt_t with
+  | `Exit _ -> exit 1
   | _ -> exit 0
