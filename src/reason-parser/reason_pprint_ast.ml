@@ -7174,17 +7174,6 @@ let printer = object(self:'self)
       (self#class_self_pattern_and_structure cs)
 
   method signature signatureItems =
-    let signature_item item =
-      match item.psig_desc with
-      | Psig_extension ((extension, PSig [item]), _attrs) ->
-          begin match item.psig_desc with
-            (* In case of a value or `external`, the extension gets inlined
-               `let%private a = 1` *)
-            | Psig_value ({ pval_prim = [_]; _ } as vd) -> self#primitive_declaration ~extension vd
-            | _ -> self#signature_item item
-          end
-      | _ -> self#signature_item item
-    in
     match signatureItems with
     | [] -> atom ""
     | first::_ as signatureItems ->
@@ -7193,7 +7182,7 @@ let printer = object(self:'self)
       let loc_end = last.psig_loc.loc_end in
       let items =
         groupAndPrint
-          ~xf:signature_item
+          ~xf:self#signature_item
           ~getLoc:(fun x -> x.psig_loc)
           ~comments:self#comments
           signatureItems
@@ -7207,7 +7196,18 @@ let printer = object(self:'self)
            ~sep:(SepFinal (";", ";"))
            items)
 
-  method signature_item x : Layout.t =
+  method signature_item item : Layout.t =
+    match item.psig_desc with
+    | Psig_extension ((extension, PSig [item]), _attrs) ->
+        begin match item.psig_desc with
+          (* In case of a value or `external`, the extension gets inlined
+             `let%private a = 1` *)
+          | Psig_value ({ pval_prim = [_]; _ } as vd) -> self#primitive_declaration ~extension vd
+          | _ -> self#signature_item' item
+        end
+    | _ -> self#signature_item' item
+
+  method signature_item' x : Layout.t =
     let item: Layout.t =
       match x.psig_desc with
         | Psig_type (rf, l) ->
