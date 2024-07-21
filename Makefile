@@ -48,23 +48,6 @@ clean-for-ci:
 esy-prepublish: build
 	node ./scripts/esy-prepublish.js
 
-# For OPAM
-release_check:
-	./scripts/release-check.sh
-
-# For OPAM
-release: release_check
-	git add package.json src/refmt/package.ml reason.opam
-	git commit -m "Version $(version)"
-	git tag -a $(version) -m "Version $(version)."
-	# Push first the objects, then the tag.
-	git push "git@github.com:reasonml/reason.git"
-	git push "git@github.com:reasonml/reason.git" tag $(version)
-	git clean -fdx
-	./scripts/opam-release.sh
-
-.PHONY: release
-
 all-supported-ocaml-versions:
 # the --dev flag has been omitted here but should be re-introduced eventually
 	dune build @install @runtest --root .
