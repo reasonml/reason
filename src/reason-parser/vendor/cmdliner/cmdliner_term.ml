@@ -52,8 +52,11 @@ let term_result ?(usage = false) (al, v) =
   | Ok (Error (`Msg e)) -> Error (`Error (usage, e))
   | Error _ as e -> e
 
+let map_error f = function
+  | Ok x -> Ok x
+  | Error e -> Error (f e)
 let term_result' ?usage t =
-  let wrap = app (const (Result.map_error (fun e -> `Msg e))) t in
+  let wrap = app (const (map_error (fun e -> `Msg e))) t in
   term_result ?usage wrap
 
 let cli_parse_result (al, v) =
@@ -63,7 +66,7 @@ let cli_parse_result (al, v) =
   | Error _ as e -> e
 
 let cli_parse_result' t =
-  let wrap = app (const (Result.map_error (fun e -> `Msg e))) t in
+  let wrap = app (const (map_error (fun e -> `Msg e))) t in
   cli_parse_result wrap
 
 let main_name =
