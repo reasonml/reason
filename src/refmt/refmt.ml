@@ -124,6 +124,14 @@ let split_lines s =
   loop ~acc:[] 0 0 ~last_is_cr:false
 ;;
 
+let[@tail_mod_cons] rec concat_map f = function
+  | [] -> []
+  | x::xs -> prepend_concat_map (f x) f xs
+and[@tail_mod_cons] prepend_concat_map ys f xs =
+  match ys with
+  | [] -> concat_map f xs
+  | y :: ys -> y :: prepend_concat_map ys f xs
+
 let examples = function
   | [] -> `Blocks []
   | _ :: _ as examples ->
@@ -133,7 +141,7 @@ let examples = function
         ex
         |> String.trim
         |> split_lines
-        |> List.concat_map (fun codeline -> [ `Noblank; `Pre ("      " ^ codeline) ])
+        |> concat_map (fun codeline -> [ `Noblank; `Pre ("      " ^ codeline) ])
         (* suppress initial blank *)
         |> List.tl
       in
