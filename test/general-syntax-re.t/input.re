@@ -1282,3 +1282,5 @@ class y = {
 let x = 1G;
 let x = 1.123g;
 
+let x = switch () { | _ => .};
+

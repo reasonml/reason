@@ -7,6 +7,7 @@
 - Fix outcome printing of optional arguments on OCaml 5.2 (@anmonteiro, [#2753](https://github.com/reasonml/reason/pull/2753))
 - support parsing and printing of `external%extension` (@anmonteiro, [#2750](https://github.com/reasonml/reason/pull/2750))
 - install `refmt` manpage (@anmonteiro, [#2760](https://github.com/reasonml/reason/pull/2760))
+- add support for parsing / printing of refutation clause in `switch` (@anmonteiro, [#2765](https://github.com/reasonml/reason/pull/2765))
 
 ## 3.11.0
 
