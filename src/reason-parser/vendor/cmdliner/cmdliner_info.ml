@@ -58,7 +58,7 @@ module Env = struct
   let info_var i = i.var
   let info_doc i = i.doc
   let info_docs i = i.docs
-  let info_compare i0 i1 = Int.compare i0.id i1.id
+  let info_compare i0 i1 = compare i0.id i1.id
 
   module Set = Set.Make (struct type t = info let compare = info_compare end)
 end
@@ -152,7 +152,7 @@ module Arg = struct
 
   let rev_pos_cli_order a0 a1 = pos_cli_order a1 a0
 
-  let compare a0 a1 = Int.compare a0.id a1.id
+  let compare a0 a1 = compare a0.id a1.id
   module Set = Set.Make (struct type nonrec t = t let compare = compare end)
 end
 
