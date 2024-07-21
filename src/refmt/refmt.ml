@@ -128,7 +128,7 @@ let examples = function
   | [] -> `Blocks []
   | _ :: _ as examples ->
     let block_of_example index (intro, ex) =
-      let prose = `I (Int.to_string (index + 1) ^ ".", String.trim intro ^ ":")
+      let prose = `I (string_of_int (index + 1) ^ ".", String.trim intro ^ ":")
       and code_lines =
         ex
         |> String.trim
