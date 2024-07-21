@@ -48,3 +48,6 @@ Format general interface syntax
   include
      (module type of Bos.Cmd) with
       type t = Bos.Cmd.t;
+  
+  external%foo bar: string => string;
+  external%foo bar: int => int = "hello";
