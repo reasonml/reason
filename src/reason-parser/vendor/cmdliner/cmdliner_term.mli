@@ -24,10 +24,12 @@ val app : ('a -> 'b) t -> 'a t -> 'b t
 val map : ('a -> 'b) -> 'a t -> 'b t
 val product : 'a t -> 'b t  -> ('a * 'b) t
 
+(*
 module Syntax : sig
   val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
   val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t
 end
+ *)
 
 val ( $ ) : ('a -> 'b) t -> 'a t -> 'b t
 
