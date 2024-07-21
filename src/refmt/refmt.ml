@@ -100,9 +100,74 @@ let refmt
      (* FIXME: Reason_syntax_util.report_error Format.err_formatter exn; *)
     exit 1
 
+let split_lines s =
+  let rec loop ~last_is_cr ~acc i j =
+    if j = String.length s
+    then (
+      let acc =
+        if j = i || (j = i + 1 && last_is_cr)
+        then acc
+        else String.sub s i (j - i) :: acc
+      in
+      List.rev acc)
+    else (
+      match s.[j] with
+      | '\r' -> loop ~last_is_cr:true ~acc i (j + 1)
+      | '\n' ->
+        let line =
+          let len = if last_is_cr then j - i - 1 else j - i in
+          String.sub s i len
+        in
+        loop ~acc:(line :: acc) (j + 1) (j + 1) ~last_is_cr:false
+      | _ -> loop ~acc i (j + 1) ~last_is_cr:false)
+  in
+  loop ~acc:[] 0 0 ~last_is_cr:false
+;;
+
+let[@tail_mod_cons] rec concat_map f = function
+  | [] -> []
+  | x::xs -> prepend_concat_map (f x) f xs
+and[@tail_mod_cons] prepend_concat_map ys f xs =
+  match ys with
+  | [] -> concat_map f xs
+  | y :: ys -> y :: prepend_concat_map ys f xs
+
+let examples = function
+  | [] -> `Blocks []
+  | _ :: _ as examples ->
+    let block_of_example index (intro, ex) =
+      let prose = `I (string_of_int (index + 1) ^ ".", String.trim intro ^ ":")
+      and code_lines =
+        ex
+        |> String.trim
+        |> split_lines
+        |> concat_map (fun codeline -> [ `Noblank; `Pre ("      " ^ codeline) ])
+        (* suppress initial blank *)
+        |> List.tl
+      in
+      `Blocks (prose :: code_lines)
+    in
+    let example_blocks = examples |> List.mapi block_of_example in
+    `Blocks (`S "EXAMPLES" :: example_blocks)
+;;
+
+
 let top_level_info =
   let doc = "Reason's Parser & Pretty-printer" in
-  let man = [`S "DESCRIPTION"; `P "refmt lets you format Reason files, parse them, and convert them between OCaml syntax and Reason syntax."] in
+  let man =
+    [`S "DESCRIPTION"
+    ; `P "refmt lets you format Reason files, parse them, and convert them between OCaml syntax and Reason syntax."
+    ; (examples
+      [ "Initialise a new project named `foo'", "dune init project foo"
+          ; "Format a Reason implementation file", "refmt file.re"
+          ; "Format a Reason interface file", "refmt file.rei"
+          ; "Format interface code from the command line", "echo 'let x: int' | refmt --interface=true"
+          ; "Convert an OCaml file to Reason", "refmt file.ml"
+          ; "Convert a Reason file to OCaml", "refmt file.re --print ml"
+          ; "Convert OCaml from the command line to Reason", "echo 'let x = 1' | refmt --parse ml"
+        ])
+    ]
+  in
 let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
   in
   Cmd.info "refmt" ~version ~doc ~man
@@ -124,5 +189,6 @@ let refmt_t: [ `Error of bool * string | `Ok of unit ]  Cmd.t =
 
 let () =
   match Cmd.eval_value' refmt_t with
+  | `Exit 0 -> exit 0
   | `Exit _ -> exit 1
   | _ -> exit 0
