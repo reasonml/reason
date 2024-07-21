@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   ubuntu-tests:
-    name: Build and test (Ubuntu)
+    name: Build and test (Ubuntu) (${{ matrix.ocaml-version }})
 
     strategy:
       matrix:
@@ -36,7 +36,7 @@ jobs:
       run: nix-build ./nix/ci.nix --argstr ocamlVersion ${{ matrix.ocaml-version }}
 
   macos-tests:
-    name: Build and test (${{ matrix.os }})
+    name: Build and test (${{ matrix.os }}) (${{ matrix.ocaml-version }})
 
     strategy:
       matrix:
