@@ -6483,6 +6483,7 @@ let printer = object(self:'self)
           let lhs = self#simple_enough_to_be_lhs_dot_send e in
           let lhs = if needparens then makeList ~wrap:("(",")") [lhs] else lhs in
           Some (label (makeList [lhs; atom "#";]) (atom s.txt))
+        | Pexp_unreachable -> Some (atom ".")
         | _ -> None
       in
       match item with
