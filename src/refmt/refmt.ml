@@ -107,7 +107,7 @@ let version = "Reason " ^ Package.version ^ " @ " ^ Package.git_short_version
   in
   Cmd.info "refmt" ~version ~doc ~man
 
-let refmt_t =
+let refmt_t: [ `Error of bool * string | `Ok of unit ]  Cmd.t =
   let open Term in
   let open Refmt_args in
   let term = const refmt $ interface
@@ -120,7 +120,9 @@ let refmt_t =
               $ in_place
               $ input
   in
-  Cmd.v top_level_info (Term.ret term)
+  Cmd.v top_level_info term
 
 let () =
-  exit (Cmd.eval refmt_t)
+  match Cmd.eval_value' refmt_t with
+  | `Exit _ -> exit 1
+  | _ -> exit 0
