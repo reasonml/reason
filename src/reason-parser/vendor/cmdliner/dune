@@ -1,5 +1,4 @@
 (library
- (name ReasonCmdliner)
+ (name vendored_cmdliner)
  (public_name reason.cmdliner)
- (wrapped false)
- (flags :standard -w -3-27-32-35-50))
+ (flags :standard -w -27-32-35-50))

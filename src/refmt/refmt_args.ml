@@ -1,5 +1,5 @@
-module Cmdliner = Vendored_cmdliner
-open Cmdliner
+
+open Vendored_cmdliner
 
 let interface =
   let doc = "parse AST as an interface" in
@@ -43,7 +43,7 @@ let print =
 let print_width =
   let docv = "COLS" in
   let doc = "wrapping width for printing the AST" in
-  let env = Arg.env_var "REFMT_PRINT_WIDTH" ~doc in
+  let env = Cmd.Env.info "REFMT_PRINT_WIDTH" ~doc in
   Arg.(value & opt (int) (80) & info ["w"; "print-width"] ~docv ~doc ~env)
 
 let heuristics_file =
