@@ -181,5 +181,6 @@ let refmt_t: [ `Error of bool * string | `Ok of unit ]  Cmd.t =
 
 let () =
   match Cmd.eval_value' refmt_t with
+  | `Exit 0 -> exit 0
   | `Exit _ -> exit 1
   | _ -> exit 0
