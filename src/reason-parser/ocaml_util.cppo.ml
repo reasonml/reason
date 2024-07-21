@@ -12,5 +12,9 @@ let print_loc ppf loc =
 
 
 let print_error loc f ppf x =
+#if OCAML_VERSION >= (4,0,8)
   let error = Location.error_of_printer ~loc f x in
+#else
+  let error = Location.error_of_printer loc f x in
+#endif
   Location.print_report ppf error
