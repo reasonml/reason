@@ -191,6 +191,7 @@ module Term : sig
   (** [product t0 t1] is [app (app (map (fun x y -> (x, y)) t0) t1)] *)
 
   (** [let] operators. *)
+(*
   module Syntax : sig
     val ( let+ ) : 'a t -> ('a -> 'b) -> 'b t
     (** [( let+ )] is {!map}. *)
@@ -198,6 +199,7 @@ module Term : sig
     val ( and+ ) : 'a t -> 'b t -> ('a * 'b) t
     (** [( and* )] is {!product}. *)
   end
+*)
 
   (** {1 Interacting with Cmdliner's evaluation} *)
 
