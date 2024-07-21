@@ -1888,7 +1888,6 @@ signature:
   | signature_items SEMI signature { $1 @ $3 }
 ;
 
-
 signature_item:
   | item_attributes
     LET as_loc(val_ident) COLON core_type
@@ -1896,14 +1895,26 @@ signature_item:
       Psig_value (Ast_helper.Val.mk $3 $5 ~attrs:$1 ~loc)
     }
   | item_attributes
-    EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
+    EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type EQUAL primitive_declaration
     { let loc = mklocation $symbolstartpos $endpos in
-      Psig_value (Ast_helper.Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc)
+      let psig_prim =
+        Ppxlib.Parsetree.Psig_value (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc)
+      in
+      match $3 with
+      | None -> psig_prim
+      | Some (ext_attrs, ext_id) ->
+        (Psig_extension ((ext_id, PSig [mksig ~loc psig_prim]), ext_attrs))
     }
   | item_attributes
-    EXTERNAL as_loc(val_ident) COLON core_type SEMI
+    EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type SEMI
     { let loc = mklocation $symbolstartpos $endpos in
-      Psig_value (Ast_helper.Val.mk $3 $5 ~prim:[""] ~attrs:$1 ~loc)
+      let psig_prim =
+        Ppxlib.Parsetree.Psig_value (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc)
+      in
+      match $3 with
+      | None -> psig_prim
+      | Some (ext_attrs, ext_id) ->
+        (Ppxlib.Parsetree.Psig_extension ((ext_id, PSig [mksig ~loc psig_prim]), ext_attrs))
     }
   | type_declarations
     { let (nonrec_flag, tyl) = $1 in Psig_type (nonrec_flag, tyl) }
