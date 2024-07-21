@@ -5,6 +5,12 @@
 
 (rule
  (targets ocaml_util.ml)
+ (deps ocaml_util.cppo.ml)
+ (action
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
+
+(rule
+ (targets ocaml_util.ml)
  (deps
   ../generate/select.exe
   ocaml_util.ml-5.2

@@ -1,6 +1,11 @@
+#if OCAML_VERSION >= (4,0,6)
 let warn_latin1 lexbuf =
   Location.deprecated (Location.curr lexbuf) "ISO-Latin1 characters in identifiers"
-;;
+#else
+let warn_latin1 lexbuf =
+  Location.prerr_warning (Location.curr lexbuf)
+    (Warnings.Deprecated "ISO-Latin1 characters in identifiers")
+#endif
 
 let print_loc ppf loc =
   Location.print_loc ppf loc
