@@ -162,7 +162,7 @@ let expression_immediate_extension_sugar x =
   | Some (name, expr) ->
     match expr.pexp_desc with
     | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _ | Pexp_function _
-    | Pexp_newtype _ | Pexp_try _ | Pexp_match _ ->
+    | Pexp_newtype _ | Pexp_try _ | Pexp_match _ (* | Pexp_letmodule _ *) ->
       (Some name, expr)
     | _ -> (None, x)
 
@@ -7204,6 +7204,7 @@ let printer = object(self:'self)
              `let%private a = 1` *)
           | Psig_value ({ pval_prim = [_]; _ } as vd) -> self#primitive_declaration ~extension vd
           | Psig_value vd -> self#val_binding ~extension vd
+          | Psig_module pmd -> self#psig_module ~extension pmd
           | _ -> self#payload "%%" extension (PSig [item])
         end
     | _ -> self#signature_item' item
@@ -7223,6 +7224,36 @@ let printer = object(self:'self)
       ~docAttrs
       ~loc:vd.pval_loc
       ~layout
+      ()
+
+  method psig_module ?extension pmd =
+    let layout =
+      let prefix = add_extension_sugar "module" extension in
+      match pmd.pmd_type.pmty_desc with
+      | Pmty_alias alias ->
+        label ~space:true
+          (makeList ~postSpace:true [
+             atom prefix;
+             atom (moduleIdent pmd.pmd_name);
+             atom "="
+           ])
+          (self#longident_loc alias)
+      | _ ->
+        let letPattern =
+          makeList
+            [makeList ~postSpace:true [atom prefix; (atom (moduleIdent pmd.pmd_name))];
+             atom ":"]
+        in
+        (self#module_type letPattern pmd.pmd_type)
+    in
+    let {stdAttrs; docAttrs} =
+      partitionAttributes ~partDoc:true pmd.pmd_attributes
+    in
+    self#attachDocAttrsToLayout
+      ~stdAttrs
+      ~docAttrs
+      ~loc:pmd.pmd_name.loc
+      ~layout:(self#attach_std_item_attrs stdAttrs @@ layout)
       ()
 
   method signature_item' x : Layout.t =
@@ -7272,45 +7303,7 @@ let printer = object(self:'self)
                  (class_description ~class_keyword:true x)::
                  (List.map class_description xs)
             )
-        | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}; pmd_attributes} ->
-            let {stdAttrs; docAttrs} =
-              partitionAttributes ~partDoc:true pmd_attributes
-            in
-            let layout =
-              self#attach_std_item_attrs stdAttrs @@
-              label ~space:true
-                (makeList ~postSpace:true [
-                   atom "module";
-                   atom (moduleIdent pmd_name);
-                   atom "="
-                 ])
-                (self#longident_loc alias)
-            in
-            self#attachDocAttrsToLayout
-              ~stdAttrs
-              ~docAttrs
-              ~loc:pmd_name.loc
-              ~layout
-              ()
-        | Psig_module pmd ->
-            let {stdAttrs; docAttrs} =
-              partitionAttributes ~partDoc:true pmd.pmd_attributes
-            in
-            let letPattern =
-              makeList
-                [makeList ~postSpace:true [atom "module"; (atom (moduleIdent pmd.pmd_name))];
-                 atom ":"]
-            in
-            let layout =
-              self#attach_std_item_attrs stdAttrs @@
-              (self#module_type letPattern pmd.pmd_type)
-            in
-            self#attachDocAttrsToLayout
-              ~stdAttrs
-              ~docAttrs
-              ~loc:pmd.pmd_name.loc
-              ~layout
-              ()
+        | Psig_module pmd -> self#psig_module pmd
         | Psig_open od ->
           let {stdAttrs; docAttrs} =
             partitionAttributes ~partDoc:true od.popen_attributes
@@ -7629,6 +7622,12 @@ let printer = object(self:'self)
                `let%private a = 1` *)
             | Pstr_value (rf, vb_list) -> self#bindings ~extension (rf, vb_list)
             | Pstr_primitive vd -> self#primitive_declaration ~extension vd
+            | Pstr_module binding ->
+                let bindingName = atom ~loc:binding.pmb_name.loc (moduleIdent binding.pmb_name) in
+                let module_binding =
+                  let prefix = add_extension_sugar "module" (Some extension) in
+                  self#let_module_binding prefix bindingName binding.pmb_expr in
+                self#attach_std_item_attrs binding.pmb_attributes module_binding
             | _ -> self#attach_std_item_attrs attrs (self#payload "%%" extension (PStr [item]))
           end
       | _ -> self#structure_item item

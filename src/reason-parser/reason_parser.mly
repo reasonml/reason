@@ -1664,15 +1664,16 @@ structure:
 ;
 
 opt_LET_MODULE_ident:
-  | opt_LET_MODULE as_loc(mod_ident) { $2 }
-  | opt_LET_MODULE as_loc(LIDENT)
-    { syntax_error $2.loc lowercase_module_msg; { $2 with txt = Some $2.txt } }
+  | opt_LET_MODULE item_extension_sugar as_loc(mod_ident) { Some $2, $3 }
+  | opt_LET_MODULE as_loc(mod_ident) { None, $2 }
+  | opt_LET_MODULE item_extension_sugar? as_loc(LIDENT)
+    { syntax_error $3.loc lowercase_module_msg; $2, { $3 with txt = Some $3.txt } }
 ;
 
 opt_LET_MODULE_REC_ident:
-  | opt_LET_MODULE REC as_loc(mod_ident) { $3 }
-  | opt_LET_MODULE REC as_loc(LIDENT)
-    { syntax_error $3.loc lowercase_module_msg; { $3 with txt = Some $3.txt } }
+  | opt_LET_MODULE item_extension_sugar? REC as_loc(mod_ident) { $2, $4 }
+  | opt_LET_MODULE item_extension_sugar? REC as_loc(LIDENT)
+    { syntax_error $4.loc lowercase_module_msg; $2, { $4 with txt = Some $4.txt } }
 ;
 
 structure_item:
@@ -1708,11 +1709,17 @@ structure_item:
       { mkstr(Pstr_exception (Ast_helper.Te.mk_exception ~loc:$1.pext_loc $1)) }
     | item_attributes opt_LET_MODULE_ident module_binding_body
       { let loc = mklocation $symbolstartpos $endpos in
-        mkstr(Pstr_module (Ast_helper.Mb.mk $2 $3 ~attrs:$1 ~loc)) }
+        let ext, letmod = $2 in
+        wrap_str_ext
+          ~loc
+          (mkstr(Pstr_module (Ast_helper.Mb.mk letmod $3 ~attrs:$1 ~loc)))
+          ext
+      }
     | item_attributes opt_LET_MODULE_REC_ident module_binding_body
       and_module_bindings*
       { let loc = mklocation $symbolstartpos $endpos($2) in
-        mkstr (Pstr_recmodule ((Ast_helper.Mb.mk $2 $3 ~attrs:$1 ~loc) :: $4))
+        let _ext, letmodule = $2 in
+        mkstr (Pstr_recmodule ((Ast_helper.Mb.mk letmodule $3 ~attrs:$1 ~loc) :: $4))
       }
     | item_attributes MODULE TYPE OF? as_loc(ident)
       { let loc = mklocation $symbolstartpos $endpos in
@@ -1931,25 +1938,33 @@ signature_item:
     { Psig_exception $1 }
   | item_attributes opt_LET_MODULE_ident module_declaration
     { let loc = mklocation $symbolstartpos $endpos in
-      Psig_module (Ast_helper.Md.mk $2 $3 ~attrs:$1 ~loc)
+      let ext, letmod = $2 in
+      wrap_sig_ext
+        ~loc
+        (Psig_module (Ast_helper.Md.mk letmod $3 ~attrs:$1 ~loc))
+        ext
     }
   | item_attributes opt_LET_MODULE_ident EQUAL as_loc(mod_longident)
     { let loc = mklocation $symbolstartpos $endpos in
       let loc_mod = mklocation $startpos($4) $endpos($4) in
-      Psig_module (
-        Ast_helper.Md.mk
-            $2
+      let ext, letmod = $2 in
+      wrap_sig_ext
+        ~loc
+        (Psig_module
+          (Ast_helper.Md.mk
+            letmod
             (Ast_helper.Mty.alias ~loc:loc_mod $4)
             ~attrs:$1
-            ~loc
-            )
+            ~loc))
+        ext
     }
   | item_attributes opt_LET_MODULE as_loc(UIDENT) COLONEQUAL as_loc(mod_ext_longident)
     { Psig_modsubst (Ast_helper.Ms.mk $3 $5 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos))}
   | item_attributes opt_LET_MODULE_REC_ident module_type_body(COLON)
     and_module_rec_declaration*
     { let loc = mklocation $symbolstartpos $endpos($3) in
-      Psig_recmodule (Ast_helper.Md.mk $2 $3 ~attrs:$1 ~loc :: $4) }
+      let _ext, letmodule = $2 in
+      Psig_recmodule (Ast_helper.Md.mk letmodule $3 ~attrs:$1 ~loc :: $4) }
   | item_attributes MODULE TYPE as_loc(ident)
     { let loc = mklocation $symbolstartpos $endpos in
       Psig_modtype (Ast_helper.Mtd.mk $4 ~attrs:$1 ~loc)
@@ -2536,7 +2551,14 @@ mark_position_exp
 seq_expr_no_seq [@recover.expr default_expr ()] (semi):
 | expr semi { $1 }
 | opt_LET_MODULE_ident module_binding_body SEMI seq_expr(SEMI?)
-  { mkexp (Pexp_letmodule($1, $2, $4)) }
+ { let loc = mklocation $symbolstartpos $endpos in
+   let ext, letmod = $1 in
+   let exp = mkexp (Pexp_letmodule(letmod, $2, $4)) in
+   match ext with
+   | None -> exp
+   | Some (ext_attrs, ext_id) ->
+     mkexp ~loc (Pexp_extension (ext_id, PStr [mkstrexp exp ext_attrs]))
+  }
 | item_attributes LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr(SEMI?)
   { let loc = (mklocation $startpos($1) $endpos($4)) in
     let me = Ast_helper.Mod.ident ~loc $5 in

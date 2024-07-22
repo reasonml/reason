@@ -54,3 +54,7 @@ Format general interface syntax
   
   let%foo foo: bar;
   let%foo foo: bar;
+  
+  module%foo X: Y;
+  
+  module%foo X = Y;

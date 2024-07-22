@@ -523,3 +523,20 @@ module type TypeWithExternalExtension = {
   external%foo bar: string => string = "";
   [%%foo: external bar: int => int = "hello" ];
 }
+
+module%foo X = Y
+
+module%foo X = {
+  let x = 1;
+};
+
+let x = {
+  let module%foo X = {
+    let x = 1;
+  };
+  ()
+};
+
+module%foo rec X: Y = {
+  let x = 1;
+}
