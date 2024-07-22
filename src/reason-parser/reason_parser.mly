@@ -1687,18 +1687,18 @@ structure_item:
     | item_attributes
       EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type EQUAL primitive_declaration
       { let loc = mklocation $symbolstartpos $endpos in
-        let pstr_prim =
-          mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc))
-        in
-        wrap_str_ext ~loc pstr_prim $3
+        wrap_str_ext
+          ~loc
+          (mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc)))
+          $3
       }
     | item_attributes
       EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type SEMI
       { let loc = mklocation $symbolstartpos $endpos in
-        let pstr_prim =
-          mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc))
-        in
-        wrap_str_ext ~loc pstr_prim $3
+        wrap_str_ext
+          ~loc
+          (mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc)))
+          $3
       }
     | type_declarations
       { let (nonrec_flag, tyl) = $1 in mkstr(Pstr_type (nonrec_flag, tyl)) }
@@ -1898,25 +1898,28 @@ signature:
 
 signature_item:
   | item_attributes
-    LET as_loc(val_ident) COLON core_type
+    LET item_extension_sugar? as_loc(val_ident) COLON core_type
     { let loc = mklocation $startpos($2) $endpos in
-      Psig_value (Ast_helper.Val.mk $3 $5 ~attrs:$1 ~loc)
+      wrap_sig_ext
+        ~loc
+        (Psig_value (Ast_helper.Val.mk $4 $6 ~attrs:$1 ~loc))
+        $3
     }
   | item_attributes
     EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type EQUAL primitive_declaration
     { let loc = mklocation $symbolstartpos $endpos in
-      let psig_prim =
-        Ppxlib.Parsetree.Psig_value (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc)
-      in
-      wrap_sig_ext ~loc psig_prim $3
+      wrap_sig_ext
+        ~loc
+        (Psig_value (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc))
+        $3
     }
   | item_attributes
     EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type SEMI
     { let loc = mklocation $symbolstartpos $endpos in
-      let psig_prim =
-        Ppxlib.Parsetree.Psig_value (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc)
-      in
-      wrap_sig_ext ~loc psig_prim $3
+      wrap_sig_ext
+        ~loc
+        (Psig_value (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc))
+        $3
     }
   | type_declarations
     { let (nonrec_flag, tyl) = $1 in Psig_type (nonrec_flag, tyl) }
