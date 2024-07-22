@@ -8,6 +8,7 @@
 - support parsing and printing of `external%extension` (@anmonteiro, [#2750](https://github.com/reasonml/reason/pull/2750), [#2766](https://github.com/reasonml/reason/pull/2766), [#2767](https://github.com/reasonml/reason/pull/2767))
 - install `refmt` manpage (@anmonteiro, [#2760](https://github.com/reasonml/reason/pull/2760))
 - add support for parsing / printing of refutation clause in `switch` (@anmonteiro, [#2765](https://github.com/reasonml/reason/pull/2765))
+- support `let%ppx` in signatures (@anmonteiro, [#2770](https://github.com/reasonml/reason/pull/2770))
 
 ## 3.11.0
 
