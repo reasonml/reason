@@ -51,3 +51,6 @@ Format general interface syntax
   
   external%foo bar: string => string;
   external%foo bar: int => int = "hello";
+  
+  let%foo foo: bar;
+  let%foo foo: bar;

@@ -7203,9 +7203,27 @@ let printer = object(self:'self)
           (* In case of a value or `external`, the extension gets inlined
              `let%private a = 1` *)
           | Psig_value ({ pval_prim = [_]; _ } as vd) -> self#primitive_declaration ~extension vd
-          | _ -> self#signature_item' item
+          | Psig_value vd -> self#val_binding ~extension vd
+          | _ -> self#payload "%%" extension (PSig [item])
         end
     | _ -> self#signature_item' item
+
+  method val_binding ?extension vd =
+    let intro = add_extension_sugar "let" extension in
+    let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true vd.pval_attributes in
+    let layout = self#attach_std_item_attrs stdAttrs
+      (formatTypeConstraint
+         (label ~space:true (atom intro)
+            (source_map ~loc:vd.pval_name.loc
+               (protectIdentifier vd.pval_name.txt)))
+        (self#core_type vd.pval_type))
+    in
+    self#attachDocAttrsToLayout
+      ~stdAttrs
+      ~docAttrs
+      ~loc:vd.pval_loc
+      ~layout
+      ()
 
   method signature_item' x : Layout.t =
     let item: Layout.t =
@@ -7213,24 +7231,10 @@ let printer = object(self:'self)
         | Psig_type (rf, l) ->
             self#type_def_list (rf, l)
         | Psig_value vd ->
-            if vd.pval_prim != [] then
-              self#primitive_declaration vd
-            else
-              let intro = atom "let" in
-              let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true vd.pval_attributes in
-              let layout = self#attach_std_item_attrs stdAttrs
-                (formatTypeConstraint
-                   (label ~space:true intro
-                      (source_map ~loc:vd.pval_name.loc
-                         (protectIdentifier vd.pval_name.txt)))
-                  (self#core_type vd.pval_type))
-              in
-              self#attachDocAttrsToLayout
-                ~stdAttrs
-                ~docAttrs
-                ~loc:vd.pval_loc
-                ~layout
-                ()
+          if vd.pval_prim != [] then
+            self#primitive_declaration vd
+          else
+            self#val_binding vd
         | Psig_typext te ->
             self#type_extension te
         | Psig_exception ed ->
