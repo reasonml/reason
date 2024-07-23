@@ -1,4 +1,4 @@
-## Unreleased
+## 3.12.0
 
 - Add `\u{hex-escape}` syntax (@anmonteiro,
   [#2738](https://github.com/reasonml/reason/pull/2738))
