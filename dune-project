@@ -33,7 +33,7 @@
  (depends
   (ocaml
    (and
-    (>= "4.03")
+    (>= "4.06")
     (< "5.3")))
   (ocamlfind :build)
   (dune-build-info
@@ -56,7 +56,7 @@
  (depends
   (ocaml
    (and
-    (>= "4.03")
+    (>= "4.06")
     (< "5.3")))
   (reason
    (= :version))
