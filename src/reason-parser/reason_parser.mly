@@ -2566,10 +2566,9 @@ seq_expr_no_seq [@recover.expr default_expr ()] (semi):
    | Some (ext_attrs, ext_id) ->
      mkexp ~loc (Pexp_extension (ext_id, PStr [mkstrexp exp ext_attrs]))
   }
-| item_attributes LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr(SEMI?)
+| item_attributes LET? OPEN override_flag module_expr SEMI seq_expr(SEMI?)
   { let loc = (mklocation $startpos($1) $endpos($4)) in
-    let me = Ast_helper.Mod.ident ~loc $5 in
-    let od = Ast_helper.Opn.mk ~override:$4 ~loc me in
+    let od = Ast_helper.Opn.mk ~override:$4 ~loc $5 in
     let exp = mkexp (Pexp_open(od, $7)) in
     { exp with pexp_attributes = $1 }
   }

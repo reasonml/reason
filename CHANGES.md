@@ -1,3 +1,8 @@
+## Unreleased
+
+- Extend open to arbitrary module expression (@anmonteiro,
+  [#2773](https://github.com/reasonml/reason/pull/2773))
+
 ## 3.12.0
 
 - Add `\u{hex-escape}` syntax (@anmonteiro,
