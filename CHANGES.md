@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Support `module%ppx` syntax (@anmonteiro,
+  [#2771](https://github.com/reasonml/reason/pull/2771))
 - Extend open to arbitrary module expression (@anmonteiro,
   [#2773](https://github.com/reasonml/reason/pull/2773))
 
