@@ -7616,6 +7616,39 @@ let printer = object(self:'self)
     | Pmod_constraint _
     | Pmod_structure _ -> self#simple_module_expr x
 
+  method recmodule ?extension decls =
+    let items = List.mapi (fun i xx ->
+      let {stdAttrs; docAttrs} =
+        partitionAttributes ~partDoc:true xx.pmb_attributes
+      in
+      let layout =
+        self#attach_std_item_attrs stdAttrs @@
+        self#let_module_binding
+          (if i == 0
+          then
+            add_extension_sugar "module" extension ^ " rec"
+          else "and")
+          (atom (moduleIdent xx.pmb_name))
+          xx.pmb_expr
+      in
+      let layoutWithDocAttrs =
+        self#attachDocAttrsToLayout
+         ~stdAttrs
+         ~docAttrs
+         ~loc:xx.pmb_name.loc
+         ~layout
+         ()
+      in
+      (extractLocModuleBinding xx, layoutWithDocAttrs)
+    ) decls
+    in
+    makeNonIndentedBreakingList
+      (groupAndPrint
+        ~xf:(fun (_, layout) -> layout)
+        ~getLoc:(fun (loc, _) -> loc)
+        ~comments:self#comments
+        items)
+
   method structure ?(indent=Some 0) ?wrap structureItems =
     (* We don't have any way to know if an extension is placed at the top level by the parsetree
     while there's a difference syntactically (% for structure_items/expressons and %% for top_level).
@@ -7635,6 +7668,7 @@ let printer = object(self:'self)
                   let prefix = add_extension_sugar "module" (Some extension) in
                   self#let_module_binding prefix bindingName binding.pmb_expr in
                 self#attach_std_item_attrs binding.pmb_attributes module_binding
+            | Pstr_recmodule decls -> self#recmodule ~extension decls
             | _ -> self#attach_std_item_attrs attrs (self#payload "%%" extension (PStr [item]))
           end
       | _ -> self#structure_item item
@@ -7796,34 +7830,7 @@ let printer = object(self:'self)
               ~prefix:"include"
               moduleExpr
         | Pstr_recmodule decls -> (* 3.07 *)
-            let items = List.mapi (fun i xx ->
-              let {stdAttrs; docAttrs} =
-                partitionAttributes ~partDoc:true xx.pmb_attributes
-              in
-              let layout =
-                self#attach_std_item_attrs stdAttrs @@
-                self#let_module_binding
-                  (if i == 0 then "module rec" else "and")
-                  (atom (moduleIdent xx.pmb_name))
-                  xx.pmb_expr
-              in
-              let layoutWithDocAttrs =
-                self#attachDocAttrsToLayout
-                 ~stdAttrs
-                 ~docAttrs
-                 ~loc:xx.pmb_name.loc
-                 ~layout
-                 ()
-              in
-              (extractLocModuleBinding xx, layoutWithDocAttrs)
-            ) decls
-            in
-            makeNonIndentedBreakingList
-              (groupAndPrint
-                ~xf:(fun (_, layout) -> layout)
-                ~getLoc:(fun (loc, _) -> loc)
-                ~comments:self#comments
-                items)
+          self#recmodule decls
         | Pstr_attribute a -> self#floating_attribute a
         | Pstr_extension ((_extension, PStr []) as extension, attrs) ->
           (* Extension with attributes and without PStr gets printed inline *)

@@ -703,7 +703,7 @@ Format modules
     ();
   };
   
-  module rec X: Y = {
+  module%foo rec X: Y = {
     let x = 1;
   };
 /* From http://stackoverflow.com/questions/1986374/  higher-order-type-constructors-and-functors-in-ocaml */

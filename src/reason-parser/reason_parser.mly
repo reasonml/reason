@@ -1718,8 +1718,11 @@ structure_item:
     | item_attributes opt_LET_MODULE_REC_ident module_binding_body
       and_module_bindings*
       { let loc = mklocation $symbolstartpos $endpos($2) in
-        let _ext, letmodule = $2 in
-        mkstr (Pstr_recmodule ((Ast_helper.Mb.mk letmodule $3 ~attrs:$1 ~loc) :: $4))
+        let ext, letmodule = $2 in
+        wrap_str_ext
+          ~loc
+          (mkstr (Pstr_recmodule ((Ast_helper.Mb.mk letmodule $3 ~attrs:$1 ~loc) :: $4)))
+          ext
       }
     | item_attributes MODULE TYPE OF? as_loc(ident)
       { let loc = mklocation $symbolstartpos $endpos in
