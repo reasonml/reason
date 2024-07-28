@@ -162,7 +162,7 @@ let expression_immediate_extension_sugar x =
   | Some (name, expr) ->
     match expr.pexp_desc with
     | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _ | Pexp_function _
-    | Pexp_newtype _ | Pexp_try _ | Pexp_match _ (* | Pexp_letmodule _ *) ->
+    | Pexp_newtype _ | Pexp_try _ | Pexp_match _ ->
       (Some name, expr)
     | _ -> (None, x)
 
@@ -6236,8 +6236,9 @@ let printer = object(self:'self)
         | ([], Pexp_letop _) -> false
         | ([], Pexp_sequence _) -> false
         | ([], Pexp_letmodule _) -> false
-        | ([], Pexp_open (me, e)) ->
-          me.popen_override == Fresh && self#isSeriesOfOpensFollowedByNonSequencyExpression e
+        | ([], Pexp_open ({ popen_override; popen_expr = { pmod_desc = Pmod_ident _; _ }; _ }, e)) ->
+          popen_override == Fresh && self#isSeriesOfOpensFollowedByNonSequencyExpression e
+        | ([], Pexp_open _) -> false
         | ([], Pexp_letexception _) -> false
         | ([], Pexp_extension ({txt}, _)) -> txt = "mel.obj"
         | _ -> true

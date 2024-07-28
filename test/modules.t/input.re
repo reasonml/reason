@@ -540,3 +540,18 @@ let x = {
 module%foo rec X: Y = {
   let x = 1;
 }
+
+let f = () => {
+  open {
+    let x = 1;
+  };
+  ();
+};
+
+let f = () => {
+  let open {
+    let x = 1;
+  };
+  ();
+};
+
