@@ -8147,6 +8147,11 @@ let printer = object(self:'self)
             makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true
               (List.map self#attribute cbAttrs @ cbArgs)
         else makeList cbArgs in
+        let (retCb, cbArgs) = (match retCb.pexp_desc with
+        | Pexp_constraint (a, t) -> (a, makeList [cbArgs; atom ": "; self#core_type t])
+        | _ -> (retCb, cbArgs)
+        )
+        in
         let theCallbackArg = match argLbl with
           | Optional s -> makeList ([atom namedArgSym; atom s; atom "=?"]@[cbArgs])
           | Labelled s -> makeList ([atom namedArgSym; atom s; atom "="]@[cbArgs])
