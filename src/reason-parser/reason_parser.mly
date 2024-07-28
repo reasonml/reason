@@ -426,7 +426,9 @@ let makeFrag loc (body: Ppxlib.Parsetree.expression) =
 
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
-let mkstrexp e attrs =
+let mkstrexp ?loc e attrs =
+  let loc = match loc with None -> e.Ppxlib.pexp_loc | Some loc -> loc in
+  let e = { e with pexp_loc = loc } in
   { Ppxlib.Parsetree.pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
 let ghexp_constraint loc e (t1, t2) =
@@ -793,11 +795,11 @@ let wrap_sig_ext ~loc body ext =
     Ppxlib.Parsetree.Psig_extension ((ext_id, PSig [mksig ~loc body]), ext_attrs)
 
 let expression_extension ?loc (ext_attrs, ext_id) item_expr =
-  let extension = (ext_id, Ppxlib.Parsetree.PStr [mkstrexp item_expr []]) in
   let loc = match loc with
     | Some loc -> loc
     | None -> make_ghost_loc (dummy_loc ())
   in
+  let extension = (ext_id, Ppxlib.Parsetree.PStr [mkstrexp ~loc item_expr []]) in
   Ast_helper.Exp.extension ~loc ~attrs:ext_attrs extension
 
 (* There's no more need for these functions - this was for the following:
@@ -2888,8 +2890,8 @@ jsx_without_leading_less:
 ;
 
 optional_expr_extension:
-  | (* empty *) { fun exp -> exp }
-  | item_extension_sugar { fun exp -> expression_extension $1 exp  }
+  | (* empty *) { fun ~loc:_ exp -> exp }
+  | item_extension_sugar { fun ~loc exp -> expression_extension ~loc $1 exp  }
 ;
 
 (*
@@ -2907,7 +2909,8 @@ mark_position_exp
   ( simple_expr
     { $1 }
   | FUN optional_expr_extension fun_def(EQUALGREATER,non_arrowed_core_type)
-    { $2 $3 }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc $3 }
   | ES6_FUN es6_parameters EQUALGREATER expr
     { let (ps, uncurried) = $2 in
       let exp = List.fold_right mkexp_fun ps $4 in
@@ -2930,21 +2933,27 @@ mark_position_exp
      such as below_BAR in order to let the entire list "build up"
    *)
   | FUN optional_expr_extension match_cases(expr) %prec below_BAR
-    { $2 (mkexp (Pexp_function $3)) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_function $3)) }
   | SWITCH optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr(SEMI?)) RBRACE
-    { $2 (mkexp (Pexp_match ($3, $5))) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_match ($3, $5))) }
   | TRY optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr(SEMI?)) RBRACE
-    { $2 (mkexp (Pexp_try ($3, $5))) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_try ($3, $5))) }
   | IF optional_expr_extension parenthesized_expr
        simple_expr ioption(preceded(ELSE,expr))
-    { $2 (mkexp (Pexp_ifthenelse($3, $4, $5))) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_ifthenelse($3, $4, $5))) }
   | WHILE optional_expr_extension parenthesized_expr simple_expr
-    { $2 (mkexp (Pexp_while($3, $4))) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_while($3, $4))) }
   | FOR optional_expr_extension LPAREN pattern IN expr direction_flag expr RPAREN
     simple_expr
-    { $2 (mkexp (Pexp_for($4, $6, $8, $7, $10))) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_for($4, $6, $8, $7, $10))) }
   | LPAREN COLONCOLON RPAREN LPAREN expr COMMA expr RPAREN
     { let loc_colon = mklocation $startpos($2) $endpos($2) in
       let loc = mklocation $symbolstartpos $endpos in
