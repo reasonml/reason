@@ -7689,7 +7689,7 @@ let printer = object(self:'self)
       let loc_end = last.pstr_loc.loc_end in
       let items =
         groupAndPrint
-          ~xf:self#structure_item
+          ~xf:structure_item
           ~getLoc:(fun x -> x.pstr_loc)
           ~comments:self#comments
           structureItems
