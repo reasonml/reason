@@ -6,9 +6,12 @@
   [#2773](https://github.com/reasonml/reason/pull/2773))
 - Wrap `let lazy patterns = ..` in parentheses (`let lazy(patterns) = ..`)
   (@anmonteiro, [#2774](https://github.com/reasonml/reason/pull/2774))
-- Print poly variants as normal variansts (@Sander Spies) [#2708](https://github.com/reasonml/reason/pull/2708)
-- Improve printing of anonymous function return type
-- Improve printing of destructuring with local open. [#2684](https://github.com/reasonml/reason/pull/2684)
+- Print poly variants as normal variansts (@Sander Spies,
+  [#2708](https://github.com/reasonml/reason/pull/2708))
+- Improve printing of anonymous function return type (@Sander Spies,
+  [#2686](https://github.com/reasonml/reason/pull/2686))
+- Improve printing of destructuring with local open (@Sander Spies,
+  [#2684](https://github.com/reasonml/reason/pull/2684)).
 
 ## 3.12.0
 
