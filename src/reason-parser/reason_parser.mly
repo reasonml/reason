@@ -2828,7 +2828,7 @@ jsx:
       (* TODO: Make this tag check simply a warning *)
       let endName = Reason_syntax_util.parse_lid $4 in
       let _ = ensureTagsAreEqual start endName loc in
-      let siblings = if List.length $3 > 0 then $3 else [] in
+      let siblings = $3 in
       component [
         (Labelled "children", mktailexp_extension loc siblings None);
         (Nolabel, mkexp_constructor_unit loc loc)
@@ -2869,7 +2869,7 @@ jsx_without_leading_less:
     (* TODO: Make this tag check simply a warning *)
     let endName = Reason_syntax_util.parse_lid $4 in
     let _ = ensureTagsAreEqual start endName loc in
-    let siblings = if List.length $3 > 0 then $3 else [] in
+    let siblings = $3 in
     component [
       (Labelled "children", mktailexp_extension loc siblings None);
       (Nolabel, mkexp_constructor_unit loc loc)
