@@ -162,7 +162,7 @@ let expression_immediate_extension_sugar x =
   | Some (name, expr) ->
     match expr.pexp_desc with
     | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _ | Pexp_function _
-    | Pexp_newtype _ | Pexp_try _ | Pexp_match _ ->
+    | Pexp_newtype _ | Pexp_try _ | Pexp_match _ (* | Pexp_letmodule _ *) ->
       (Some name, expr)
     | _ -> (None, x)
 
@@ -5516,6 +5516,28 @@ let printer = object(self:'self)
         itemsLayout
 
   method letList expr =
+    let letModuleBinding ?extension s me =
+      let prefixText = add_extension_sugar "module" extension in
+      let bindingName = atom ~loc:s.loc (moduleIdent s) in
+      let moduleExpr = me in
+      let letModuleLayout =
+        (self#let_module_binding prefixText bindingName moduleExpr) in
+      let letModuleLoc = {
+        loc_start = s.loc.loc_start;
+        loc_end = me.pmod_loc.loc_end;
+        loc_ghost = false
+      } in
+      (* Just like the bindings, have to synthesize a location since the
+       * Pexp location is parsed (potentially) beginning with the open
+       * brace {} in the let sequence. *)
+      let layout = source_map ~loc:letModuleLoc letModuleLayout in
+      let (_, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in
+      let loc = {
+        letModuleLoc with
+        loc_end = return.pmod_loc.loc_end
+      } in
+      (loc, layout)
+    in
     (* Recursively transform a nested ast of "let-items", into a flat
      * list containing the location indicating start/end of the "let-item" and
      * its layout. *)
@@ -5576,26 +5598,8 @@ let printer = object(self:'self)
             processLetList ((loc, layout)::acc) e
           )
         | ([], Pexp_letmodule (s, me, e)) ->
-            let prefixText = "module" in
-            let bindingName = atom ~loc:s.loc (moduleIdent s) in
-            let moduleExpr = me in
-            let letModuleLayout =
-              (self#let_module_binding prefixText bindingName moduleExpr) in
-            let letModuleLoc = {
-              loc_start = s.loc.loc_start;
-              loc_end = me.pmod_loc.loc_end;
-              loc_ghost = false
-            } in
-            (* Just like the bindings, have to synthesize a location since the
-             * Pexp location is parsed (potentially) beginning with the open
-             * brace {} in the let sequence. *)
-          let layout = source_map ~loc:letModuleLoc letModuleLayout in
-          let (_, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in
-          let loc = {
-            letModuleLoc with
-            loc_end = return.pmod_loc.loc_end
-          } in
-         processLetList ((loc, layout)::acc) e
+          let loc, layout = letModuleBinding s me in
+          processLetList ((loc, layout)::acc) e
         | ([], Pexp_letexception (extensionConstructor, expr)) ->
             let exc = self#exception_declaration extensionConstructor in
             let layout = source_map ~loc:extensionConstructor.pext_loc exc in
@@ -5623,6 +5627,9 @@ let printer = object(self:'self)
             let bindingsLoc = self#bindingsLocationRange ~extension:expr l in
             let layout = source_map ~loc:bindingsLoc bindingsLayout in
             processLetList ((extractLocationFromValBindList expr l, layout)::acc) e
+          | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_letmodule (s, me, e)}) ->
+            let loc, layout = letModuleBinding ~extension s me in
+            processLetList ((loc, layout)::acc) e
           | Some (extension, e) ->
             let layout = self#attach_std_item_attrs ~extension [] (self#unparseExpr e) in
             (expr.pexp_loc, layout)::acc
@@ -6458,7 +6465,7 @@ let printer = object(self:'self)
               | None -> Some (self#extension e)
               | Some (_, x') ->
                 match x'.pexp_desc with
-                | Pexp_let _ ->
+                | Pexp_let _ | Pexp_letmodule _  ->
                   Some (makeLetSequence (self#letList x))
                 | _ -> Some (self#extension e)
           end
@@ -7204,6 +7211,8 @@ let printer = object(self:'self)
              `let%private a = 1` *)
           | Psig_value ({ pval_prim = [_]; _ } as vd) -> self#primitive_declaration ~extension vd
           | Psig_value vd -> self#val_binding ~extension vd
+          | Psig_module pmd -> self#psig_module ~extension pmd
+          | Psig_recmodule pmd -> self#psig_recmodule ~extension pmd
           | _ -> self#payload "%%" extension (PSig [item])
         end
     | _ -> self#signature_item' item
@@ -7224,6 +7233,75 @@ let printer = object(self:'self)
       ~loc:vd.pval_loc
       ~layout
       ()
+
+  method psig_module ?extension pmd =
+    let layout =
+      let prefix = add_extension_sugar "module" extension in
+      match pmd.pmd_type.pmty_desc with
+      | Pmty_alias alias ->
+        label ~space:true
+          (makeList ~postSpace:true [
+             atom prefix;
+             atom (moduleIdent pmd.pmd_name);
+             atom "="
+           ])
+          (self#longident_loc alias)
+      | _ ->
+        let letPattern =
+          makeList
+            [makeList ~postSpace:true [atom prefix; (atom (moduleIdent pmd.pmd_name))];
+             atom ":"]
+        in
+        (self#module_type letPattern pmd.pmd_type)
+    in
+    let {stdAttrs; docAttrs} =
+      partitionAttributes ~partDoc:true pmd.pmd_attributes
+    in
+    self#attachDocAttrsToLayout
+      ~stdAttrs
+      ~docAttrs
+      ~loc:pmd.pmd_name.loc
+      ~layout:(self#attach_std_item_attrs stdAttrs @@ layout)
+      ()
+
+  method psig_recmodule ?extension decls =
+    let items = List.mapi (fun i xx ->
+      let {stdAttrs; docAttrs} =
+        partitionAttributes ~partDoc:true xx.pmd_attributes
+      in
+      let letPattern =
+        makeList [
+          makeList ~postSpace:true [
+            atom (if i == 0
+                  then
+                    add_extension_sugar "module" extension ^ " rec"
+                  else "and");
+            atom (moduleIdent xx.pmd_name)
+          ];
+         atom ":"
+        ]
+      in
+      let layout =
+        self#attach_std_item_attrs stdAttrs
+          (self#module_type ~space:true letPattern xx.pmd_type)
+      in
+      let layoutWithDocAttrs =
+        self#attachDocAttrsToLayout
+         ~stdAttrs
+         ~docAttrs
+         ~loc:xx.pmd_name.loc
+         ~layout
+         ()
+      in
+      (extractLocModDecl xx, layoutWithDocAttrs)
+    ) decls
+    in
+    makeNonIndentedBreakingList
+      (groupAndPrint
+        ~xf:(fun (_, layout) -> layout)
+        ~getLoc:(fun (loc, _) -> loc)
+        ~comments:self#comments
+        items)
 
   method signature_item' x : Layout.t =
     let item: Layout.t =
@@ -7272,45 +7350,7 @@ let printer = object(self:'self)
                  (class_description ~class_keyword:true x)::
                  (List.map class_description xs)
             )
-        | Psig_module {pmd_name; pmd_type={pmty_desc=Pmty_alias alias}; pmd_attributes} ->
-            let {stdAttrs; docAttrs} =
-              partitionAttributes ~partDoc:true pmd_attributes
-            in
-            let layout =
-              self#attach_std_item_attrs stdAttrs @@
-              label ~space:true
-                (makeList ~postSpace:true [
-                   atom "module";
-                   atom (moduleIdent pmd_name);
-                   atom "="
-                 ])
-                (self#longident_loc alias)
-            in
-            self#attachDocAttrsToLayout
-              ~stdAttrs
-              ~docAttrs
-              ~loc:pmd_name.loc
-              ~layout
-              ()
-        | Psig_module pmd ->
-            let {stdAttrs; docAttrs} =
-              partitionAttributes ~partDoc:true pmd.pmd_attributes
-            in
-            let letPattern =
-              makeList
-                [makeList ~postSpace:true [atom "module"; (atom (moduleIdent pmd.pmd_name))];
-                 atom ":"]
-            in
-            let layout =
-              self#attach_std_item_attrs stdAttrs @@
-              (self#module_type letPattern pmd.pmd_type)
-            in
-            self#attachDocAttrsToLayout
-              ~stdAttrs
-              ~docAttrs
-              ~loc:pmd.pmd_name.loc
-              ~layout
-              ()
+        | Psig_module pmd -> self#psig_module pmd
         | Psig_open od ->
           let {stdAttrs; docAttrs} =
             partitionAttributes ~partDoc:true od.popen_attributes
@@ -7361,42 +7401,7 @@ let printer = object(self:'self)
             ~layout
             ()
         | Psig_class_type l -> self#class_type_declaration_list l
-        | Psig_recmodule decls ->
-            let items = List.mapi (fun i xx ->
-              let {stdAttrs; docAttrs} =
-                partitionAttributes ~partDoc:true xx.pmd_attributes
-              in
-              let letPattern =
-                makeList [
-                  makeList ~postSpace:true [
-                    atom (if i == 0 then "module rec" else "and");
-                    atom (moduleIdent xx.pmd_name)
-                  ];
-                 atom ":"
-                ]
-              in
-              let layout =
-                self#attach_std_item_attrs stdAttrs
-                  (self#module_type ~space:true letPattern xx.pmd_type)
-              in
-              let layoutWithDocAttrs =
-                self#attachDocAttrsToLayout
-                 ~stdAttrs
-                 ~docAttrs
-                 ~loc:xx.pmd_name.loc
-                 ~layout
-                 ()
-              in
-              (extractLocModDecl xx, layoutWithDocAttrs)
-            ) decls
-            in
-            makeNonIndentedBreakingList
-              (groupAndPrint
-                ~xf:(fun (_, layout) -> layout)
-                ~getLoc:(fun (loc, _) -> loc)
-                ~comments:self#comments
-                items)
-
+        | Psig_recmodule decls -> self#psig_recmodule decls
         | Psig_attribute a -> self#floating_attribute a
         | Psig_extension (({loc}, _) as ext, attrs) ->
           let {stdAttrs; docAttrs} =
@@ -7616,6 +7621,39 @@ let printer = object(self:'self)
     | Pmod_constraint _
     | Pmod_structure _ -> self#simple_module_expr x
 
+  method recmodule ?extension decls =
+    let items = List.mapi (fun i xx ->
+      let {stdAttrs; docAttrs} =
+        partitionAttributes ~partDoc:true xx.pmb_attributes
+      in
+      let layout =
+        self#attach_std_item_attrs stdAttrs @@
+        self#let_module_binding
+          (if i == 0
+          then
+            add_extension_sugar "module" extension ^ " rec"
+          else "and")
+          (atom (moduleIdent xx.pmb_name))
+          xx.pmb_expr
+      in
+      let layoutWithDocAttrs =
+        self#attachDocAttrsToLayout
+         ~stdAttrs
+         ~docAttrs
+         ~loc:xx.pmb_name.loc
+         ~layout
+         ()
+      in
+      (extractLocModuleBinding xx, layoutWithDocAttrs)
+    ) decls
+    in
+    makeNonIndentedBreakingList
+      (groupAndPrint
+        ~xf:(fun (_, layout) -> layout)
+        ~getLoc:(fun (loc, _) -> loc)
+        ~comments:self#comments
+        items)
+
   method structure ?(indent=Some 0) ?wrap structureItems =
     (* We don't have any way to know if an extension is placed at the top level by the parsetree
     while there's a difference syntactically (% for structure_items/expressons and %% for top_level).
@@ -7629,6 +7667,13 @@ let printer = object(self:'self)
                `let%private a = 1` *)
             | Pstr_value (rf, vb_list) -> self#bindings ~extension (rf, vb_list)
             | Pstr_primitive vd -> self#primitive_declaration ~extension vd
+            | Pstr_module binding ->
+                let bindingName = atom ~loc:binding.pmb_name.loc (moduleIdent binding.pmb_name) in
+                let module_binding =
+                  let prefix = add_extension_sugar "module" (Some extension) in
+                  self#let_module_binding prefix bindingName binding.pmb_expr in
+                self#attach_std_item_attrs binding.pmb_attributes module_binding
+            | Pstr_recmodule decls -> self#recmodule ~extension decls
             | _ -> self#attach_std_item_attrs attrs (self#payload "%%" extension (PStr [item]))
           end
       | _ -> self#structure_item item
@@ -7789,35 +7834,7 @@ let printer = object(self:'self)
             self#moduleExpressionToFormattedApplicationItems
               ~prefix:"include"
               moduleExpr
-        | Pstr_recmodule decls -> (* 3.07 *)
-            let items = List.mapi (fun i xx ->
-              let {stdAttrs; docAttrs} =
-                partitionAttributes ~partDoc:true xx.pmb_attributes
-              in
-              let layout =
-                self#attach_std_item_attrs stdAttrs @@
-                self#let_module_binding
-                  (if i == 0 then "module rec" else "and")
-                  (atom (moduleIdent xx.pmb_name))
-                  xx.pmb_expr
-              in
-              let layoutWithDocAttrs =
-                self#attachDocAttrsToLayout
-                 ~stdAttrs
-                 ~docAttrs
-                 ~loc:xx.pmb_name.loc
-                 ~layout
-                 ()
-              in
-              (extractLocModuleBinding xx, layoutWithDocAttrs)
-            ) decls
-            in
-            makeNonIndentedBreakingList
-              (groupAndPrint
-                ~xf:(fun (_, layout) -> layout)
-                ~getLoc:(fun (loc, _) -> loc)
-                ~comments:self#comments
-                items)
+        | Pstr_recmodule decls -> self#recmodule decls
         | Pstr_attribute a -> self#floating_attribute a
         | Pstr_extension ((_extension, PStr []) as extension, attrs) ->
           (* Extension with attributes and without PStr gets printed inline *)
