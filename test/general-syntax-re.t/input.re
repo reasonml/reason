@@ -1246,6 +1246,14 @@ let testCallNamedArgs = (foo: ((~a: int, ~b: int=?) => int), a, b) =>
 let Foo.{name} = bar;
 let Foo.Bar.{name} = bar;
 
+let Foo.{
+  destruct1,
+  destruct2,
+  destruct3,
+  destruct4,
+  destruct5,
+} = fooBar;
+
 let Foo.[ name ] = bar;
 let Foo.Bar.[ name ] = bar;
 
@@ -1284,3 +1292,10 @@ let x = 1.123g;
 
 let x = switch () { | _ => .};
 
+let%foo Foo.{
+  destruct1,
+  destruct2,
+  destruct3,
+  destruct4,
+  destruct5,
+} = fooBar;
