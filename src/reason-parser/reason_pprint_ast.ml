@@ -8147,7 +8147,7 @@ let printer = object(self:'self)
             makeList ~break:IfNeed ~inline:(true, true) ~postSpace:true
               (List.map self#attribute cbAttrs @ cbArgs)
         else makeList cbArgs in
-        let (retCb, cbArgs) = (match retCb.pexp_desc with 
+        let (retCb, cbArgs) = (match retCb.pexp_desc with
         | Pexp_constraint (a, t) -> (a, makeList [cbArgs; atom ": "; self#core_type t])
         | _ -> (retCb, cbArgs)
         )

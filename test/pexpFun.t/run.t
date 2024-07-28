@@ -93,3 +93,10 @@ Format function expressipns (pexpFun)
   let foo = () => {
     x((): string => "foo");
   };
+  
+  x((): string => "foo");
+  
+  let x = {
+    let y = (): string => "foo";
+    ();
+  };
