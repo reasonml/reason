@@ -7813,10 +7813,9 @@ let printer = object(self:'self)
             self#attach_std_item_attrs binding.pmb_attributes module_binding
         | Pstr_open od ->
             self#attach_std_item_attrs od.popen_attributes @@
-            makeList ~postSpace:true [
-              atom ("open" ^ (override od.popen_override));
-              self#moduleExpressionToFormattedApplicationItems od.popen_expr;
-            ]
+            label ~space:true
+              (atom ("open" ^ (override od.popen_override)))
+              (self#moduleExpressionToFormattedApplicationItems od.popen_expr)
         | Pstr_modtype x ->
             let name = atom x.pmtd_name.txt in
             let letPattern = makeList ~postSpace:true [atom "module type"; name; atom "="] in

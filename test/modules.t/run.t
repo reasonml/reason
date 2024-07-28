@@ -722,4 +722,8 @@ Format modules
   
     ();
   };
+  
+  open {
+    let x = 1;
+  };
 /* From http://stackoverflow.com/questions/1986374/  higher-order-type-constructors-and-functors-in-ocaml */
