@@ -35,18 +35,6 @@ module type Ast = sig
       printf "end\n"
     )
   *)
-  module Parsetree : sig
-    type structure
-    type signature
-    type toplevel_phrase
-    type core_type
-    type expression
-    type pattern
-    type case
-    type type_declaration
-    type type_extension
-    type extension_constructor
-  end
   module Outcometree : sig
     type out_value
     type out_type
@@ -56,21 +44,7 @@ module type Ast = sig
     type out_type_extension
     type out_phrase
   end
-  module Ast_mapper : sig
-    type mapper
-  end
   (*$*)
-  module Config : sig
-    val ast_impl_magic_number : string
-    val ast_intf_magic_number : string
-  end
-  val shallow_identity : Ast_mapper.mapper
-  val map_signature : Ast_mapper.mapper -> Parsetree.signature -> Parsetree.signature
-  val map_structure : Ast_mapper.mapper -> Parsetree.structure -> Parsetree.structure
-  val make_top_mapper
-    :  signature:(Parsetree.signature -> Parsetree.signature)
-    -> structure:(Parsetree.structure -> Parsetree.structure)
-    -> Ast_mapper.mapper
 end
 
 (* Shortcuts for talking about ast types outside of the module language *)
@@ -78,16 +52,6 @@ end
 type 'a _types = 'a constraint 'a
   = <
     (*$ foreach_type (fun _ s -> printf "%-21s : _;\n" s) *)
-    structure             : _;
-    signature             : _;
-    toplevel_phrase       : _;
-    core_type             : _;
-    expression            : _;
-    pattern               : _;
-    case                  : _;
-    type_declaration      : _;
-    type_extension        : _;
-    extension_constructor : _;
     out_value             : _;
     out_type              : _;
     out_class_type        : _;
@@ -95,7 +59,6 @@ type 'a _types = 'a constraint 'a
     out_sig_item          : _;
     out_type_extension    : _;
     out_phrase            : _;
-    mapper                : _;
     (*$*)
   >
 ;;
@@ -104,26 +67,6 @@ type 'a _types = 'a constraint 'a
     printf "type 'a get_%s =\n" s;
     printf " 'x constraint 'a _types = < %s : 'x; .. >\n" s
   ) *)
-type 'a get_structure =
-  'x constraint 'a _types = < structure : 'x; .. >
-type 'a get_signature =
-  'x constraint 'a _types = < signature : 'x; .. >
-type 'a get_toplevel_phrase =
-  'x constraint 'a _types = < toplevel_phrase : 'x; .. >
-type 'a get_core_type =
-  'x constraint 'a _types = < core_type : 'x; .. >
-type 'a get_expression =
-  'x constraint 'a _types = < expression : 'x; .. >
-type 'a get_pattern =
-  'x constraint 'a _types = < pattern : 'x; .. >
-type 'a get_case =
-  'x constraint 'a _types = < case : 'x; .. >
-type 'a get_type_declaration =
-  'x constraint 'a _types = < type_declaration : 'x; .. >
-type 'a get_type_extension =
-  'x constraint 'a _types = < type_extension : 'x; .. >
-type 'a get_extension_constructor =
-  'x constraint 'a _types = < extension_constructor : 'x; .. >
 type 'a get_out_value =
   'x constraint 'a _types = < out_value : 'x; .. >
 type 'a get_out_type =
@@ -138,8 +81,6 @@ type 'a get_out_type_extension =
   'x constraint 'a _types = < out_type_extension : 'x; .. >
 type 'a get_out_phrase =
   'x constraint 'a _types = < out_phrase : 'x; .. >
-type 'a get_mapper =
-  'x constraint 'a _types = < mapper : 'x; .. >
 (*$*)
 
 module type OCaml_version = sig
@@ -148,16 +89,6 @@ module type OCaml_version = sig
   val string_version : string
   type types = <
     (*$ foreach_type (fun m s -> printf "%-21s : Ast.%s.%s;\n" s m s)*)
-    structure             : Ast.Parsetree.structure;
-    signature             : Ast.Parsetree.signature;
-    toplevel_phrase       : Ast.Parsetree.toplevel_phrase;
-    core_type             : Ast.Parsetree.core_type;
-    expression            : Ast.Parsetree.expression;
-    pattern               : Ast.Parsetree.pattern;
-    case                  : Ast.Parsetree.case;
-    type_declaration      : Ast.Parsetree.type_declaration;
-    type_extension        : Ast.Parsetree.type_extension;
-    extension_constructor : Ast.Parsetree.extension_constructor;
     out_value             : Ast.Outcometree.out_value;
     out_type              : Ast.Outcometree.out_type;
     out_class_type        : Ast.Outcometree.out_class_type;
@@ -165,7 +96,6 @@ module type OCaml_version = sig
     out_sig_item          : Ast.Outcometree.out_sig_item;
     out_type_extension    : Ast.Outcometree.out_type_extension;
     out_phrase            : Ast.Outcometree.out_phrase;
-    mapper                : Ast.Ast_mapper.mapper;
     (*$*)
   > _types
   type _ witnesses += Version : types witnesses
@@ -176,16 +106,6 @@ module Make_witness(Ast : Ast) =
 struct
   type types = <
     (*$ foreach_type (fun m s -> printf "%-21s : Ast.%s.%s;\n" s m s)*)
-    structure             : Ast.Parsetree.structure;
-    signature             : Ast.Parsetree.signature;
-    toplevel_phrase       : Ast.Parsetree.toplevel_phrase;
-    core_type             : Ast.Parsetree.core_type;
-    expression            : Ast.Parsetree.expression;
-    pattern               : Ast.Parsetree.pattern;
-    case                  : Ast.Parsetree.case;
-    type_declaration      : Ast.Parsetree.type_declaration;
-    type_extension        : Ast.Parsetree.type_extension;
-    extension_constructor : Ast.Parsetree.extension_constructor;
     out_value             : Ast.Outcometree.out_value;
     out_type              : Ast.Outcometree.out_type;
     out_class_type        : Ast.Outcometree.out_class_type;
@@ -193,7 +113,6 @@ struct
     out_sig_item          : Ast.Outcometree.out_sig_item;
     out_type_extension    : Ast.Outcometree.out_type_extension;
     out_phrase            : Ast.Outcometree.out_phrase;
-    mapper                : Ast.Ast_mapper.mapper;
     (*$*)
   > _types
   type _ witnesses += Version : types witnesses
@@ -206,24 +125,13 @@ type 'types ocaml_version =
     (*$ let sep = with_then_and () in
       foreach_type (fun m s ->
           printf "%t type Ast.%s.%s = 'types get_%s\n" sep m s s) *)
-    with type Ast.Parsetree.structure = 'types get_structure
-     and type Ast.Parsetree.signature = 'types get_signature
-     and type Ast.Parsetree.toplevel_phrase = 'types get_toplevel_phrase
-     and type Ast.Parsetree.core_type = 'types get_core_type
-     and type Ast.Parsetree.expression = 'types get_expression
-     and type Ast.Parsetree.pattern = 'types get_pattern
-     and type Ast.Parsetree.case = 'types get_case
-     and type Ast.Parsetree.type_declaration = 'types get_type_declaration
-     and type Ast.Parsetree.type_extension = 'types get_type_extension
-     and type Ast.Parsetree.extension_constructor = 'types get_extension_constructor
-     and type Ast.Outcometree.out_value = 'types get_out_value
+    with type Ast.Outcometree.out_value = 'types get_out_value
      and type Ast.Outcometree.out_type = 'types get_out_type
      and type Ast.Outcometree.out_class_type = 'types get_out_class_type
      and type Ast.Outcometree.out_module_type = 'types get_out_module_type
      and type Ast.Outcometree.out_sig_item = 'types get_out_sig_item
      and type Ast.Outcometree.out_type_extension = 'types get_out_type_extension
      and type Ast.Outcometree.out_phrase = 'types get_out_phrase
-     and type Ast.Ast_mapper.mapper = 'types get_mapper
      (*$*)
   )
 
@@ -234,16 +142,6 @@ type ('a, 'b) type_comparison =
 
 let compare_ocaml_version
     (*$ foreach_type (fun _ s -> printf "(type %s1) (type %s2)\n" s s) *)
-    (type structure1) (type structure2)
-    (type signature1) (type signature2)
-    (type toplevel_phrase1) (type toplevel_phrase2)
-    (type core_type1) (type core_type2)
-    (type expression1) (type expression2)
-    (type pattern1) (type pattern2)
-    (type case1) (type case2)
-    (type type_declaration1) (type type_declaration2)
-    (type type_extension1) (type type_extension2)
-    (type extension_constructor1) (type extension_constructor2)
     (type out_value1) (type out_value2)
     (type out_type1) (type out_type2)
     (type out_class_type1) (type out_class_type2)
@@ -251,20 +149,9 @@ let compare_ocaml_version
     (type out_sig_item1) (type out_sig_item2)
     (type out_type_extension1) (type out_type_extension2)
     (type out_phrase1) (type out_phrase2)
-    (type mapper1) (type mapper2)
     (*$*)
     ((module A) : <
      (*$ foreach_type (fun _ s -> printf "%-21s : %s1;\n" s s) *)
-     structure             : structure1;
-     signature             : signature1;
-     toplevel_phrase       : toplevel_phrase1;
-     core_type             : core_type1;
-     expression            : expression1;
-     pattern               : pattern1;
-     case                  : case1;
-     type_declaration      : type_declaration1;
-     type_extension        : type_extension1;
-     extension_constructor : extension_constructor1;
      out_value             : out_value1;
      out_type              : out_type1;
      out_class_type        : out_class_type1;
@@ -272,21 +159,10 @@ let compare_ocaml_version
      out_sig_item          : out_sig_item1;
      out_type_extension    : out_type_extension1;
      out_phrase            : out_phrase1;
-     mapper                : mapper1;
      (*$*)
      > ocaml_version)
     ((module B) : <
      (*$ foreach_type (fun _ s -> printf "%-21s : %s2;\n" s s) *)
-     structure             : structure2;
-     signature             : signature2;
-     toplevel_phrase       : toplevel_phrase2;
-     core_type             : core_type2;
-     expression            : expression2;
-     pattern               : pattern2;
-     case                  : case2;
-     type_declaration      : type_declaration2;
-     type_extension        : type_extension2;
-     extension_constructor : extension_constructor2;
      out_value             : out_value2;
      out_type              : out_type2;
      out_class_type        : out_class_type2;
@@ -294,7 +170,6 @@ let compare_ocaml_version
      out_sig_item          : out_sig_item2;
      out_type_extension    : out_type_extension2;
      out_phrase            : out_phrase2;
-     mapper                : mapper2;
      (*$*)
      > ocaml_version)
   : (A.types, B.types) type_comparison
@@ -308,16 +183,6 @@ let compare_ocaml_version
 type ('from, 'to_) migration_functions = {
   (*$ foreach_type (fun _ s ->
       printf "copy_%s: 'from get_%s -> 'to_ get_%s;\n" s s s) *)
-  copy_structure: 'from get_structure -> 'to_ get_structure;
-  copy_signature: 'from get_signature -> 'to_ get_signature;
-  copy_toplevel_phrase: 'from get_toplevel_phrase -> 'to_ get_toplevel_phrase;
-  copy_core_type: 'from get_core_type -> 'to_ get_core_type;
-  copy_expression: 'from get_expression -> 'to_ get_expression;
-  copy_pattern: 'from get_pattern -> 'to_ get_pattern;
-  copy_case: 'from get_case -> 'to_ get_case;
-  copy_type_declaration: 'from get_type_declaration -> 'to_ get_type_declaration;
-  copy_type_extension: 'from get_type_extension -> 'to_ get_type_extension;
-  copy_extension_constructor: 'from get_extension_constructor -> 'to_ get_extension_constructor;
   copy_out_value: 'from get_out_value -> 'to_ get_out_value;
   copy_out_type: 'from get_out_type -> 'to_ get_out_type;
   copy_out_class_type: 'from get_out_class_type -> 'to_ get_out_class_type;
@@ -325,23 +190,12 @@ type ('from, 'to_) migration_functions = {
   copy_out_sig_item: 'from get_out_sig_item -> 'to_ get_out_sig_item;
   copy_out_type_extension: 'from get_out_type_extension -> 'to_ get_out_type_extension;
   copy_out_phrase: 'from get_out_phrase -> 'to_ get_out_phrase;
-  copy_mapper: 'from get_mapper -> 'to_ get_mapper;
   (*$*)
 }
 
 let id x = x
 let migration_identity : ('a, 'a) migration_functions = {
   (*$ foreach_type (fun _ s -> printf "copy_%s = id;\n" s) *)
-  copy_structure = id;
-  copy_signature = id;
-  copy_toplevel_phrase = id;
-  copy_core_type = id;
-  copy_expression = id;
-  copy_pattern = id;
-  copy_case = id;
-  copy_type_declaration = id;
-  copy_type_extension = id;
-  copy_extension_constructor = id;
   copy_out_value = id;
   copy_out_type = id;
   copy_out_class_type = id;
@@ -349,7 +203,6 @@ let migration_identity : ('a, 'a) migration_functions = {
   copy_out_sig_item = id;
   copy_out_type_extension = id;
   copy_out_phrase = id;
-  copy_mapper = id;
   (*$*)
 }
 
@@ -357,16 +210,6 @@ let compose f g x = f (g x)
 let migration_compose (ab : ('a, 'b) migration_functions) (bc : ('b, 'c) migration_functions) : ('a, 'c) migration_functions = {
   (*$ foreach_type (fun _ s ->
       printf "copy_%-21s = compose bc.copy_%-21s ab.copy_%s;\n" s s s) *)
-  copy_structure             = compose bc.copy_structure             ab.copy_structure;
-  copy_signature             = compose bc.copy_signature             ab.copy_signature;
-  copy_toplevel_phrase       = compose bc.copy_toplevel_phrase       ab.copy_toplevel_phrase;
-  copy_core_type             = compose bc.copy_core_type             ab.copy_core_type;
-  copy_expression            = compose bc.copy_expression            ab.copy_expression;
-  copy_pattern               = compose bc.copy_pattern               ab.copy_pattern;
-  copy_case                  = compose bc.copy_case                  ab.copy_case;
-  copy_type_declaration      = compose bc.copy_type_declaration      ab.copy_type_declaration;
-  copy_type_extension        = compose bc.copy_type_extension        ab.copy_type_extension;
-  copy_extension_constructor = compose bc.copy_extension_constructor ab.copy_extension_constructor;
   copy_out_value             = compose bc.copy_out_value             ab.copy_out_value;
   copy_out_type              = compose bc.copy_out_type              ab.copy_out_type;
   copy_out_class_type        = compose bc.copy_out_class_type        ab.copy_out_class_type;
@@ -374,7 +217,6 @@ let migration_compose (ab : ('a, 'b) migration_functions) (bc : ('b, 'c) migrati
   copy_out_sig_item          = compose bc.copy_out_sig_item          ab.copy_out_sig_item;
   copy_out_type_extension    = compose bc.copy_out_type_extension    ab.copy_out_type_extension;
   copy_out_phrase            = compose bc.copy_out_phrase            ab.copy_out_phrase;
-  copy_mapper                = compose bc.copy_mapper                ab.copy_mapper;
   (*$*)
 }
 
@@ -385,16 +227,6 @@ module type Migrate_module = sig
   module To : Ast
   (*$ foreach_type (fun m s ->
       printf "val copy_%-21s: From.%s.%s -> To.%s.%s\n" s m s m s) *)
-  val copy_structure            : From.Parsetree.structure -> To.Parsetree.structure
-  val copy_signature            : From.Parsetree.signature -> To.Parsetree.signature
-  val copy_toplevel_phrase      : From.Parsetree.toplevel_phrase -> To.Parsetree.toplevel_phrase
-  val copy_core_type            : From.Parsetree.core_type -> To.Parsetree.core_type
-  val copy_expression           : From.Parsetree.expression -> To.Parsetree.expression
-  val copy_pattern              : From.Parsetree.pattern -> To.Parsetree.pattern
-  val copy_case                 : From.Parsetree.case -> To.Parsetree.case
-  val copy_type_declaration     : From.Parsetree.type_declaration -> To.Parsetree.type_declaration
-  val copy_type_extension       : From.Parsetree.type_extension -> To.Parsetree.type_extension
-  val copy_extension_constructor: From.Parsetree.extension_constructor -> To.Parsetree.extension_constructor
   val copy_out_value            : From.Outcometree.out_value -> To.Outcometree.out_value
   val copy_out_type             : From.Outcometree.out_type -> To.Outcometree.out_type
   val copy_out_class_type       : From.Outcometree.out_class_type -> To.Outcometree.out_class_type
@@ -402,7 +234,6 @@ module type Migrate_module = sig
   val copy_out_sig_item         : From.Outcometree.out_sig_item -> To.Outcometree.out_sig_item
   val copy_out_type_extension   : From.Outcometree.out_type_extension -> To.Outcometree.out_type_extension
   val copy_out_phrase           : From.Outcometree.out_phrase -> To.Outcometree.out_phrase
-  val copy_mapper               : From.Ast_mapper.mapper -> To.Ast_mapper.mapper
   (*$*)
 end
 
@@ -415,16 +246,6 @@ struct
     let open A_to_B in
     {
       (*$ foreach_type (fun _ s -> printf "copy_%s;\n" s) *)
-      copy_structure;
-      copy_signature;
-      copy_toplevel_phrase;
-      copy_core_type;
-      copy_expression;
-      copy_pattern;
-      copy_case;
-      copy_type_declaration;
-      copy_type_extension;
-      copy_extension_constructor;
       copy_out_value;
       copy_out_type;
       copy_out_class_type;
@@ -432,7 +253,6 @@ struct
       copy_out_sig_item;
       copy_out_type_extension;
       copy_out_phrase;
-      copy_mapper;
       (*$*)
     }
 end
@@ -467,16 +287,6 @@ type 'from immediate_migration =
 
 let immediate_migration
     (*$ foreach_type (fun _ s -> printf "(type %s)\n" s) *)
-    (type structure)
-    (type signature)
-    (type toplevel_phrase)
-    (type core_type)
-    (type expression)
-    (type pattern)
-    (type case)
-    (type type_declaration)
-    (type type_extension)
-    (type extension_constructor)
     (type out_value)
     (type out_type)
     (type out_class_type)
@@ -484,20 +294,9 @@ let immediate_migration
     (type out_sig_item)
     (type out_type_extension)
     (type out_phrase)
-    (type mapper)
     (*$*)
     ((module A) : <
      (*$ foreach_type (fun _ s -> printf "%-21s : %s;\n" s s) *)
-     structure             : structure;
-     signature             : signature;
-     toplevel_phrase       : toplevel_phrase;
-     core_type             : core_type;
-     expression            : expression;
-     pattern               : pattern;
-     case                  : case;
-     type_declaration      : type_declaration;
-     type_extension        : type_extension;
-     extension_constructor : extension_constructor;
      out_value             : out_value;
      out_type              : out_type;
      out_class_type        : out_class_type;
@@ -505,7 +304,6 @@ let immediate_migration
      out_sig_item          : out_sig_item;
      out_type_extension    : out_type_extension;
      out_phrase            : out_phrase;
-     mapper                : mapper;
      (*$*)
      > ocaml_version)
     direction
@@ -521,16 +319,6 @@ let immediate_migration
 
 let migrate
     (*$ foreach_type (fun _ s -> printf "(type %s1) (type %s2)\n" s s) *)
-    (type structure1) (type structure2)
-    (type signature1) (type signature2)
-    (type toplevel_phrase1) (type toplevel_phrase2)
-    (type core_type1) (type core_type2)
-    (type expression1) (type expression2)
-    (type pattern1) (type pattern2)
-    (type case1) (type case2)
-    (type type_declaration1) (type type_declaration2)
-    (type type_extension1) (type type_extension2)
-    (type extension_constructor1) (type extension_constructor2)
     (type out_value1) (type out_value2)
     (type out_type1) (type out_type2)
     (type out_class_type1) (type out_class_type2)
@@ -538,20 +326,9 @@ let migrate
     (type out_sig_item1) (type out_sig_item2)
     (type out_type_extension1) (type out_type_extension2)
     (type out_phrase1) (type out_phrase2)
-    (type mapper1) (type mapper2)
     (*$*)
     ((module A) : <
      (*$ foreach_type (fun _ s -> printf "%-21s : %s1;\n" s s) *)
-     structure             : structure1;
-     signature             : signature1;
-     toplevel_phrase       : toplevel_phrase1;
-     core_type             : core_type1;
-     expression            : expression1;
-     pattern               : pattern1;
-     case                  : case1;
-     type_declaration      : type_declaration1;
-     type_extension        : type_extension1;
-     extension_constructor : extension_constructor1;
      out_value             : out_value1;
      out_type              : out_type1;
      out_class_type        : out_class_type1;
@@ -559,21 +336,10 @@ let migrate
      out_sig_item          : out_sig_item1;
      out_type_extension    : out_type_extension1;
      out_phrase            : out_phrase1;
-     mapper                : mapper1;
      (*$*)
      > ocaml_version)
     ((module B) : <
      (*$ foreach_type (fun _ s -> printf "%-21s : %s2;\n" s s) *)
-     structure             : structure2;
-     signature             : signature2;
-     toplevel_phrase       : toplevel_phrase2;
-     core_type             : core_type2;
-     expression            : expression2;
-     pattern               : pattern2;
-     case                  : case2;
-     type_declaration      : type_declaration2;
-     type_extension        : type_extension2;
-     extension_constructor : extension_constructor2;
      out_value             : out_value2;
      out_type              : out_type2;
      out_class_type        : out_class_type2;
@@ -581,7 +347,6 @@ let migrate
      out_sig_item          : out_sig_item2;
      out_type_extension    : out_type_extension2;
      out_phrase            : out_phrase2;
-     mapper                : mapper2;
      (*$*)
      > ocaml_version)
   : (A.types, B.types) migration_functions
@@ -607,16 +372,6 @@ let migrate
 module Convert (A : OCaml_version) (B : OCaml_version) = struct
   let {
     (*$ foreach_type (fun _ s -> printf "copy_%s;\n" s) *)
-    copy_structure;
-    copy_signature;
-    copy_toplevel_phrase;
-    copy_core_type;
-    copy_expression;
-    copy_pattern;
-    copy_case;
-    copy_type_declaration;
-    copy_type_extension;
-    copy_extension_constructor;
     copy_out_value;
     copy_out_type;
     copy_out_class_type;
@@ -624,7 +379,6 @@ module Convert (A : OCaml_version) (B : OCaml_version) = struct
     copy_out_sig_item;
     copy_out_type_extension;
     copy_out_phrase;
-    copy_mapper;
     (*$*)
   } : (A.types, B.types) migration_functions =
     migrate (module A) (module B)
@@ -739,6 +493,20 @@ module OCaml_500 = struct
   let string_version = "5.0"
 end
 let ocaml_500 : OCaml_500.types ocaml_version = (module OCaml_500)
+module OCaml_51 = struct
+  module Ast = Ast_51
+  include Make_witness(Ast_51)
+  let version = 510
+  let string_version = "5.1"
+end
+let ocaml_51 : OCaml_51.types ocaml_version = (module OCaml_51)
+module OCaml_52 = struct
+  module Ast = Ast_52
+  include Make_witness(Ast_52)
+  let version = 520
+  let string_version = "5.2"
+end
+let ocaml_52 : OCaml_52.types ocaml_version = (module OCaml_52)
 (*$*)
 
 let all_versions : (module OCaml_version) list = [
@@ -758,6 +526,8 @@ let all_versions : (module OCaml_version) list = [
   (module OCaml_413 : OCaml_version);
   (module OCaml_414 : OCaml_version);
   (module OCaml_500 : OCaml_version);
+  (module OCaml_51 : OCaml_version);
+  (module OCaml_52 : OCaml_version);
   (*$*)
 ]
 
@@ -792,10 +562,14 @@ include Register_migration(OCaml_413)(OCaml_414)
     (Migrate_parsetree_413_414)(Migrate_parsetree_414_413)
 include Register_migration(OCaml_414)(OCaml_500)
     (Migrate_parsetree_414_500)(Migrate_parsetree_500_414)
+include Register_migration(OCaml_500)(OCaml_51)
+    (Migrate_parsetree_500_51)(Migrate_parsetree_51_500)
+include Register_migration(OCaml_51)(OCaml_52)
+    (Migrate_parsetree_51_52)(Migrate_parsetree_52_51)
 (*$*)
 
 module OCaml_current = OCaml_OCAML_VERSION
 let ocaml_current : OCaml_current.types ocaml_version = (module OCaml_current)
 
 (* Make sure the preprocessing worked as expected *)
-let _f (x : Parsetree.expression) : OCaml_current.Ast.Parsetree.expression = x
+let _f (x : Outcometree.out_type) : OCaml_current.Ast.Outcometree.out_type = x

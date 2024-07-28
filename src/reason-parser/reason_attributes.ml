@@ -1,5 +1,4 @@
-open Reason_omp
-open Ast_411
+open Ppxlib
 open Location
 open Parsetree
 
@@ -18,7 +17,7 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
   match attrs with
   | [] ->
     {arityAttrs=[]; docAttrs=[]; stdAttrs=[]; jsxAttrs=[]; stylisticAttrs=[]; uncurried = false}
-  | ({ attr_name = {txt = "bs"}; attr_payload = PStr []; _ } as attr)::atTl ->
+  | ({ attr_name = {txt = ("u" | "bs")}; attr_payload = PStr []; _ } as attr)::atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     if allowUncurry then
       {partition with uncurried = true}
@@ -40,6 +39,9 @@ let rec partitionAttributes ?(partDoc=false) ?(allowUncurry=true) attrs : attrib
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with stylisticAttrs=attr::partition.stylisticAttrs}
   | ({ attr_name = {txt="reason.preserve_braces"}; _} as attr) :: atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    {partition with stylisticAttrs=attr::partition.stylisticAttrs}
+  | ({ attr_name = {txt="reason.openSyntaxNotation"}; _} as attr) :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     {partition with stylisticAttrs=attr::partition.stylisticAttrs}
   | atHd :: atTl ->
@@ -89,3 +91,9 @@ let maybe_remove_stylistic_attrs attrs should_preserve =
       | { attr_name = {txt="reason.raw_literal"}; _} -> true
       | _ -> false)
       attrs
+
+let is_open_notation_attr { attr_name = {txt}; _} =
+  txt = "reason.openSyntaxNotation"
+
+let has_open_notation_attr stylisticAttrs =
+  List.exists is_open_notation_attr stylisticAttrs

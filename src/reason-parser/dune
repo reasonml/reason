@@ -5,37 +5,9 @@
 
 (rule
  (targets ocaml_util.ml)
- (deps
-  ../generate/select.exe
-  ocaml_util.ml-5.0
-  ocaml_util.ml-5.00
-  ocaml_util.ml-4.14
-  ocaml_util.ml-4.13
-  ocaml_util.ml-4.12
-  ocaml_util.ml-4.11
-  ocaml_util.ml-4.10
-  ocaml_util.ml-4.09
-  ocaml_util.ml-4.08
-  ocaml_util.ml-4.07
-  ocaml_util.ml-4.06
-  ocaml_util.ml-default)
+ (deps ocaml_util.cppo.ml)
  (action
-  (with-stdout-to
-   %{targets}
-   (run
-    ../generate/select.exe
-    ocaml_util.ml-5.0
-    ocaml_util.ml-5.00
-    ocaml_util.ml-4.14
-    ocaml_util.ml-4.13
-    ocaml_util.ml-4.12
-    ocaml_util.ml-4.11
-    ocaml_util.ml-4.10
-    ocaml_util.ml-4.09
-    ocaml_util.ml-4.08
-    ocaml_util.ml-4.07
-    ocaml_util.ml-4.06
-    ocaml_util.ml-default))))
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
 
 (menhir
  (flags --strict --inspection --unused-tokens --table --cmly)
@@ -121,4 +93,9 @@
   reason_parser_explain_raw
   reason_parser_explain
   reason_parser_recover)
- (libraries reason.ocaml-migrate-parsetree menhirLib reason.easy_format))
+ (modules_without_implementation reason_parser_def)
+ (libraries
+  reason.ocaml-migrate-parsetree
+  menhirLib
+  reason.easy_format
+  ppxlib))

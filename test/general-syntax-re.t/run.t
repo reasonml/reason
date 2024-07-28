@@ -1470,3 +1470,13 @@ Format general implementation syntax
     open OM;
     as self;
   };
+  
+  // Arbitrary precision literals
+  
+  let x = 1G;
+  let x = 1.123g;
+  
+  let x =
+    switch () {
+    | _ => .
+    };

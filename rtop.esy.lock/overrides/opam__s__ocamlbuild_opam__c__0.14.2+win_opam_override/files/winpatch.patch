@@ -1,0 +1,11 @@
+--- ./Makefile
++++ ./Makefile
+@@ -271,7 +271,7 @@
+ 	echo '  "ocamlbuild.byte" {"ocamlbuild.byte"}' >> ocamlbuild.install
+ ifeq ($(OCAML_NATIVE), true)
+ 	echo '  "ocamlbuild.native" {"ocamlbuild.native"}' >> ocamlbuild.install
+-	echo '  "ocamlbuild.native" {"ocamlbuild"}' >> ocamlbuild.install
++	echo "  \"ocamlbuild.native\" {\"ocamlbuild${EXE}\"}" >> ocamlbuild.install
+ else
+ 	echo '  "ocamlbuild.byte" {"ocamlbuild"}' >> ocamlbuild.install
+ endif

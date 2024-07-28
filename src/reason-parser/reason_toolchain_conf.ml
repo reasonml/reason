@@ -1,8 +1,13 @@
-open Reason_omp
-include Ast_411
+open Ppxlib
 
-module From_current = Convert(OCaml_current)(OCaml_411)
-module To_current = Convert(OCaml_411)(OCaml_current)
+module From_current = struct
+  include Selected_ast.Of_ocaml
+  include Reason_omp.Convert (Reason_omp.OCaml_current) (Reason_omp.OCaml_414)
+end
+module To_current = struct
+  include Selected_ast.To_ocaml
+  include Reason_omp.Convert (Reason_omp.OCaml_414) (Reason_omp.OCaml_current)
+end
 
 module type Toolchain = sig
   (* Parsing *)

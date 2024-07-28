@@ -75,3 +75,14 @@ Mod.Update(
 );
 
 Mod.Update((acc, curr) => string_of_int(curr), "", lst);
+
+let foo = () => {
+  x(() => ("foo": string));
+};
+
+x(() => ("foo": string));
+
+let x = {
+  let y = () => ("foo": string);
+  ()
+};

@@ -8,7 +8,7 @@
      was too fine to be captured by the grammar rules
 *)
 
-open Reason_omp.Ast_411
+open Ppxlib
 
 type lexing_error =
   | Illegal_character of char
@@ -17,7 +17,6 @@ type lexing_error =
   | Unterminated_string
   | Unterminated_string_in_comment of Location.t * Location.t
   | Keyword_as_label of string
-  | Literal_overflow of string
   | Invalid_literal of string
 
 type ast_error =

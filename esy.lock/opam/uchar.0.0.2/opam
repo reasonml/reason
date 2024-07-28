@@ -32,5 +32,8 @@ compiler. See [LICENSE](LICENSE) for details.
 url {
   src:
     "https://github.com/ocaml/uchar/releases/download/v0.0.2/uchar-0.0.2.tbz"
-  checksum: "md5=c9ba2c738d264c420c642f7bb1cf4a36"
+  checksum: [
+    "sha256=47397f316cbe76234af53c74a1f9452154ba3bdb54fced5caac959f50f575af0"
+    "md5=c9ba2c738d264c420c642f7bb1cf4a36"
+  ]
 }

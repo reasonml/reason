@@ -39,3 +39,16 @@ let not : string => string;
 let other : string => not;
 
 include (module type of Bos.Cmd) with type t = Bos.Cmd.t;
+
+external%foo bar: string => string = "";
+[%%foo: external bar: int => int = "hello" ];
+
+[%%foo: let foo: bar];
+let%foo foo: bar;
+
+module%foo X: Y;
+
+module%foo X = Y;
+
+module%foo rec X: Y;
+

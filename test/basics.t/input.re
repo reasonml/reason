@@ -29,9 +29,9 @@ let l2 =
 let argIsUnderscore1 = _ => 34;
 
 let argIsUnderscore2 = (_ => 34);
-  
+
 let argIsUnderscore3 = _ : int => 34;
-  
+
 let argIsUnderscore4 = (_ : int => 34);
 
 let argIsUnderscore5 = (_: int) => 34;

@@ -14,11 +14,8 @@
   patching the right parts, through the power of types(tm)
 *)
 
-open Reason_omp
-open Ast_411
-
+open Ppxlib
 open Asttypes
-open Ast_mapper
 open Parsetree
 open Longident
 
@@ -403,19 +400,27 @@ let map_core_type f typ =
     | other -> other
   }
 
+(* class supery= Ppxlib.Ast_traverse.map *)
+
 (** identifier_mapper maps all identifiers in an AST with a mapping function f
   this is used by swap_operator_mapper right below, to traverse the whole AST
   and swapping the symbols listed above.
   *)
-let identifier_mapper f super =
-let map_fields fields = List.map(fun (lid,x) -> (map_lident f lid, x)) fields in
-let map_name ({txt} as name) = {name with txt=(f txt)} in
-let map_lid lid = map_lident f lid in
-let map_label label = map_arg_label f label in
-{ super with
-  expr = begin fun mapper expr ->
-    let expr =
-      match expr with
+
+
+class identifier_mapper f =
+
+  let map_fields fields = List.map(fun (lid,x) -> (map_lident f lid, x)) fields in
+  let map_name ({txt} as name) = {name with txt=(f txt)} in
+  let map_lid lid = map_lident f lid in
+  let map_label label = map_arg_label f label in
+
+  object
+    inherit Ast_traverse.map as super
+
+    method! expression (expr: Parsetree.expression) =
+      let expr =
+        match expr with
         | { pexp_desc = Pexp_ident lid } ->
           { expr with pexp_desc = Pexp_ident (map_lid lid) }
         | { pexp_desc = Pexp_fun (label, eo, pat, e) } when !rename_labels ->
@@ -452,128 +457,125 @@ let map_label label = map_arg_label f label in
           { expr with
             pexp_desc = Pexp_newtype ({ s with txt = f s.txt }, e) }
         | _ -> expr
-    in
-    super.expr mapper expr
-  end;
-  pat = begin fun mapper pat ->
-    let pat =
-      match pat with
-        | { ppat_desc = Ppat_var name } ->
-          { pat with ppat_desc = Ppat_var (map_name name) }
-        | { ppat_desc = Ppat_alias (p, name) } ->
-          { pat with ppat_desc = Ppat_alias (p, map_name name) }
-        | { ppat_desc = Ppat_variant (s, po) } ->
-          { pat with
-            ppat_desc = Ppat_variant (f s, po) }
-        | { ppat_desc = Ppat_record (fields, closed) } when !rename_labels ->
-          { pat with
-            ppat_desc = Ppat_record (map_fields fields, closed) }
-        | { ppat_desc = Ppat_type lid } ->
-          { pat with ppat_desc = Ppat_type (map_lid lid) }
-        | _ -> pat
-    in
-    super.pat mapper pat
-  end;
-  value_description = begin fun mapper desc ->
-    let desc' =
-      { desc with
-        pval_name = map_name  desc.pval_name }
-    in
-    super.value_description mapper desc'
-  end;
-  type_declaration = begin fun mapper type_decl ->
-    let type_decl' =
-      { type_decl with ptype_name = map_name type_decl.ptype_name }
-    in
-    let type_decl'' = match type_decl'.ptype_kind with
-    | Ptype_record lst when !rename_labels ->
-      { type_decl'
-        with ptype_kind = Ptype_record (List.map (fun lbl ->
-          { lbl with pld_name = map_name lbl.pld_name })
-        lst) }
-    | _ -> type_decl'
-    in
-    super.type_declaration mapper type_decl''
-  end;
-  typ = begin fun mapper typ ->
-    super.typ mapper (map_core_type f typ)
-  end;
-  class_declaration = begin fun mapper class_decl ->
-    let class_decl' =
-      { class_decl
-      with pci_name = map_name class_decl.pci_name
-        ;  pci_expr = map_class_expr f class_decl.pci_expr
-         }
-    in
-    super.class_declaration mapper class_decl'
-  end;
-  class_field = begin fun mapper class_field ->
-    let class_field_desc' = match class_field.pcf_desc with
-    | Pcf_inherit (ovf, e, lo) ->
-      Pcf_inherit (ovf, map_class_expr f e, lo)
-    | Pcf_val (lbl, mut, kind) ->
-      Pcf_val ({lbl with txt = f lbl.txt}, mut, kind)
-    | Pcf_method (lbl, priv, kind) ->
-      Pcf_method ({lbl with txt = f lbl.txt}, priv, kind)
-    | x -> x
-    in
-    super.class_field mapper { class_field with pcf_desc = class_field_desc' }
-  end;
-  class_type_field = begin fun mapper class_type_field ->
-    let class_type_field_desc' = match class_type_field.pctf_desc with
-    | Pctf_inherit class_type ->
-      Pctf_inherit (map_class_type f class_type)
-    | Pctf_val (lbl, mut, vf, ct) ->
-      Pctf_val ({ lbl with txt = f lbl.txt }, mut, vf, ct)
-    | Pctf_method (lbl, pf, vf, ct) ->
-      Pctf_method ({ lbl with txt = f lbl.txt }, pf, vf, ct)
-    | x -> x
-    in
-    super.class_type_field mapper
-      { class_type_field
-      with pctf_desc = class_type_field_desc' }
-  end;
-  class_type_declaration = begin fun mapper class_type_decl ->
-    let class_type_decl' =
-      { class_type_decl
-      with pci_name = map_name class_type_decl.pci_name }
-    in
-    super.class_type_declaration mapper class_type_decl'
-  end;
-  module_type_declaration = begin fun mapper module_type_decl ->
-    let module_type_decl' =
-      { module_type_decl
-        with pmtd_name = map_name module_type_decl.pmtd_name }
-    in
-    super.module_type_declaration mapper module_type_decl'
-  end;
-}
+      in
+      super#expression expr
 
-let remove_stylistic_attrs_mapper_maker super =
-  let open Ast_411 in
-  let open Ast_mapper in
-{ super with
-  expr = begin fun mapper expr ->
-    let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
-      Reason_attributes.partitionAttributes ~allowUncurry:false expr.pexp_attributes
-    in
-    let expr = if stylisticAttrs != [] then
-      { expr with pexp_attributes = arityAttrs @ docAttrs @ stdAttrs @ jsxAttrs }
-    else expr
-    in
-    super.expr mapper expr
-  end;
-  pat = begin fun mapper pat ->
-    let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
-      Reason_attributes.partitionAttributes ~allowUncurry:false pat.ppat_attributes
-    in
-    let pat = if stylisticAttrs != [] then
-      { pat with ppat_attributes = arityAttrs @ docAttrs @ stdAttrs @ jsxAttrs }
-    else pat
-    in
-    super.pat mapper pat
-  end;
-}
+      method! pattern pat =
+        let pat =
+          match pat with
+            | { ppat_desc = Ppat_var name } ->
+              { pat with ppat_desc = Ppat_var (map_name name) }
+            | { ppat_desc = Ppat_alias (p, name) } ->
+              { pat with ppat_desc = Ppat_alias (p, map_name name) }
+            | { ppat_desc = Ppat_variant (s, po) } ->
+              { pat with
+                ppat_desc = Ppat_variant (f s, po) }
+            | { ppat_desc = Ppat_record (fields, closed) } when !rename_labels ->
+              { pat with
+                ppat_desc = Ppat_record (map_fields fields, closed) }
+            | { ppat_desc = Ppat_type lid } ->
+              { pat with ppat_desc = Ppat_type (map_lid lid) }
+            | _ -> pat
+        in
+        super#pattern pat
+
+      method! value_description desc =
+        let desc' =
+          { desc with
+            pval_name = map_name  desc.pval_name }
+        in
+        super#value_description desc'
+
+      method! type_declaration type_decl =
+        let type_decl' =
+          { type_decl with ptype_name = map_name type_decl.ptype_name }
+        in
+        let type_decl'' = match type_decl'.ptype_kind with
+        | Ptype_record lst when !rename_labels ->
+          { type_decl'
+            with ptype_kind = Ptype_record (List.map (fun lbl ->
+              { lbl with pld_name = map_name lbl.pld_name })
+            lst) }
+        | _ -> type_decl'
+        in
+        super#type_declaration type_decl''
+
+      method! core_type typ = super#core_type (map_core_type f typ)
+
+      method! class_declaration class_decl =
+        let class_decl' =
+          { class_decl
+          with pci_name = map_name class_decl.pci_name
+            ;  pci_expr = map_class_expr f class_decl.pci_expr
+             }
+        in
+        super#class_declaration class_decl'
+
+      method! class_field class_field =
+        let class_field_desc' = match class_field.pcf_desc with
+        | Pcf_inherit (ovf, e, lo) ->
+          Pcf_inherit (ovf, map_class_expr f e, lo)
+        | Pcf_val (lbl, mut, kind) ->
+          Pcf_val ({lbl with txt = f lbl.txt}, mut, kind)
+        | Pcf_method (lbl, priv, kind) ->
+          Pcf_method ({lbl with txt = f lbl.txt}, priv, kind)
+        | x -> x
+        in
+        super#class_field { class_field with pcf_desc = class_field_desc' }
+
+      method! class_type_field class_type_field =
+        let class_type_field_desc' = match class_type_field.pctf_desc with
+        | Pctf_inherit class_type ->
+          Pctf_inherit (map_class_type f class_type)
+        | Pctf_val (lbl, mut, vf, ct) ->
+          Pctf_val ({ lbl with txt = f lbl.txt }, mut, vf, ct)
+        | Pctf_method (lbl, pf, vf, ct) ->
+          Pctf_method ({ lbl with txt = f lbl.txt }, pf, vf, ct)
+        | x -> x
+        in
+        super#class_type_field
+          { class_type_field
+            with pctf_desc = class_type_field_desc' }
+
+      method! class_type_declaration class_type_decl =
+        let class_type_decl' =
+          { class_type_decl
+          with pci_name = map_name class_type_decl.pci_name }
+        in
+        super#class_type_declaration class_type_decl'
+
+      method! module_type_declaration module_type_decl =
+        let module_type_decl' =
+          { module_type_decl
+            with pmtd_name = map_name module_type_decl.pmtd_name }
+        in
+        super#module_type_declaration module_type_decl'
+  end
+
+let remove_stylistic_attrs_mapper_maker =
+  object
+    inherit Ast_traverse.map as super
+
+    method! expression expr =
+      let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
+        Reason_attributes.partitionAttributes ~allowUncurry:false expr.pexp_attributes
+      in
+      let expr = if stylisticAttrs != [] then
+        { expr with pexp_attributes = arityAttrs @ docAttrs @ stdAttrs @ jsxAttrs }
+      else expr
+      in
+      super#expression expr
+
+    method! pattern pat =
+      let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
+        Reason_attributes.partitionAttributes ~allowUncurry:false pat.ppat_attributes
+      in
+      let pat = if stylisticAttrs != [] then
+        { pat with ppat_attributes = arityAttrs @ docAttrs @ stdAttrs @ jsxAttrs }
+      else pat
+      in
+      super#pattern pat
+  end
 
 let escape_stars_slashes str =
   if String.contains str '/' then
@@ -585,7 +587,7 @@ let escape_stars_slashes str =
     str
 
 let remove_stylistic_attrs_mapper =
-  remove_stylistic_attrs_mapper_maker Ast_mapper.default_mapper
+  remove_stylistic_attrs_mapper_maker
 
 let let_monad_symbols = [ '$'; '&'; '*'; '+'; '-'; '/'; '<'; '='; '>'; '@';
                           '^'; '|'; '.'; '!']
@@ -625,16 +627,8 @@ let is_andop s =
 #endif
 
 #if OCAML_VERSION >= (4, 8, 0)
-let noop_mapper super =
-  let noop = fun _mapper x -> x in
-  { super with
-    expr = noop;
-    structure = noop;
-    structure_item = noop;
-    signature = noop;
-    signature_item = noop; }
 (* Don't need to backport past 4.08 *)
-let backport_letopt_mapper = noop_mapper
+let backport_letopt_mapper = new Ast_traverse.map
 let expand_letop_identifier s = s
 let compress_letop_identifier s = s
 #else
@@ -728,64 +722,70 @@ let compress_letop_identifier s = s
  *
  * (let+)((and+)(y, b), ((x, a)) => x + a)
  *)
-let backport_letopt_mapper super =
-  let open Ast_411 in
-  let open Ast_mapper in
-{ super with
-  expr = fun mapper expr ->
-    match expr.pexp_desc with
-    | Pexp_letop { let_; ands; body } ->
-      (* coalesce the initial 'let' and any subsequent 'and's into a final
-         Pattern (for the argument of the continuation function) and
-         Expression (the first arg ot the let function)
+let backport_letopt_mapper =
+  object
+    inherit Ast_traverse.map as super
 
-          let+ a = b
-          and+ c = d
-          and+ e = f
-          and+ g = h
+    method! expression expr =
+      match expr.pexp_desc with
+      | Pexp_letop { let_; ands; body } ->
+        (* coalesce the initial 'let' and any subsequent 'and's into a final
+           Pattern (for the argument of the continuation function) and
+           Expression (the first arg ot the let function)
 
-         produces the pattern (a, (c, (e, g)))
-         and the expression (and+)(b, (and+)(d, (and+)(f, h)))
-      *)
-      let rec loop = function
-        | [] -> assert false
-        | {pbop_op; pbop_pat; pbop_exp}::[] -> (pbop_pat, pbop_exp, pbop_op)
-        | {pbop_op; pbop_pat; pbop_exp; pbop_loc}::rest ->
-          let (pattern, expr, op) = loop rest in
-          let and_op_ident = Ast_helper.Exp.ident
-            ~loc:op.loc
-            (Location.mkloc (Longident.Lident op.txt) op.loc)
-          in
-          (
-            Ast_helper.Pat.tuple ~loc:pbop_loc [pbop_pat; pattern],
-            Ast_helper.Exp.apply ~loc:pbop_loc and_op_ident [(Nolabel, pbop_exp); (Nolabel, expr)],
-            pbop_op
-          )
-      in
-      let (pattern, expr, _) = loop (let_::ands) in
-      let let_op_ident = Ast_helper.Exp.ident
-        ~loc:let_.pbop_op.loc
-        (Location.mkloc (Longident.Lident let_.pbop_op.txt) let_.pbop_op.loc)
-      in
-      super.expr mapper {expr with
-        pexp_desc = Pexp_apply (let_op_ident,  [
-          (Nolabel, expr);
-          (Nolabel, Ast_helper.Exp.fun_ ~loc:let_.pbop_loc Nolabel None pattern body)
-        ])}
-    | _ -> super.expr mapper expr
-}
+            let+ a = b
+            and+ c = d
+            and+ e = f
+            and+ g = h
+
+           produces the pattern (a, (c, (e, g)))
+           and the expression (and+)(b, (and+)(d, (and+)(f, h)))
+        *)
+        let rec loop = function
+          | [] -> assert false
+          | {pbop_op; pbop_pat; pbop_exp}::[] -> (pbop_pat, pbop_exp, pbop_op)
+          | {pbop_op; pbop_pat; pbop_exp; pbop_loc}::rest ->
+            let (pattern, expr, op) = loop rest in
+            let and_op_ident = Ast_helper.Exp.ident
+              ~loc:op.loc
+              {Location.txt = (Longident.Lident op.txt); loc = op.loc}
+            in
+            (
+              Ast_helper.Pat.tuple ~loc:pbop_loc [pbop_pat; pattern],
+              Ast_helper.Exp.apply ~loc:pbop_loc and_op_ident [(Nolabel, pbop_exp); (Nolabel, expr)],
+              pbop_op
+            )
+        in
+        let (pattern, expr, _) = loop (let_::ands) in
+        let let_op_ident = Ast_helper.Exp.ident
+          ~loc:let_.pbop_op.loc
+          { Location.txt = (Longident.Lident let_.pbop_op.txt); loc = let_.pbop_op.loc }
+        in
+        super#expression {expr with
+          pexp_desc = Pexp_apply (let_op_ident,  [
+            (Nolabel, expr);
+            (Nolabel, Ast_helper.Exp.fun_ ~loc:let_.pbop_loc Nolabel None pattern body)
+          ])}
+      | _ -> super#expression expr
+  end
 #endif
 
 (** escape_stars_slashes_mapper escapes all stars and slashes in an AST *)
-let escape_stars_slashes_mapper = identifier_mapper escape_stars_slashes
+class escape_stars_slashes_mapper = object
+  inherit identifier_mapper escape_stars_slashes
+end
 
 (* To be used in parser, transform a token into an ast node with different identifier
  *)
-let reason_to_ml_swap_operator_mapper = identifier_mapper reason_to_ml_swap
+class reason_to_ml_swap_operator_mapper = object
+  inherit identifier_mapper reason_to_ml_swap
+end
 
 (* To be used in printer, transform an ast node into a token with different identifier
  *)
-let ml_to_reason_swap_operator_mapper = identifier_mapper ml_to_reason_swap
+class ml_to_reason_swap_operator_mapper = object
+  inherit identifier_mapper ml_to_reason_swap
+end
 
 (* attribute_equals tests an attribute is txt
  *)
@@ -809,19 +809,19 @@ let normalized_attributes attribute attributes =
   List.filter (fun x -> not (attribute_equals attribute x)) attributes
 
 (* apply_mapper family applies an ast_mapper to an ast *)
-let apply_mapper_to_structure s mapper = mapper.structure mapper s
-let apply_mapper_to_signature s mapper = mapper.signature mapper s
-let apply_mapper_to_type      s mapper = mapper.typ       mapper s
-let apply_mapper_to_expr      s mapper = mapper.expr      mapper s
-let apply_mapper_to_pattern   s mapper = mapper.pat       mapper s
+let apply_mapper_to_structure mapper s= mapper#structure s
+let apply_mapper_to_signature mapper s= mapper#signature s
+let apply_mapper_to_type      mapper s= mapper#core_type s
+let apply_mapper_to_expr      mapper s= mapper#expression s
+let apply_mapper_to_pattern   mapper s= mapper#pattern s
 
-let apply_mapper_to_toplevel_phrase toplevel_phrase mapper =
+let apply_mapper_to_toplevel_phrase mapper toplevel_phrase =
   match toplevel_phrase with
-  | Ptop_def x -> Ptop_def (apply_mapper_to_structure x mapper)
+  | Ptop_def x -> Ptop_def (apply_mapper_to_structure mapper x)
   | x -> x
 
-let apply_mapper_to_use_file use_file mapper =
-  List.map (fun x -> apply_mapper_to_toplevel_phrase x mapper) use_file
+let apply_mapper_to_use_file mapper use_file =
+  List.map (fun x -> apply_mapper_to_toplevel_phrase mapper x) use_file
 
 let map_first f = function
   | [] -> invalid_arg "Syntax_util.map_first: empty list"
@@ -842,11 +842,11 @@ let location_contains loc1 loc2 =
   loc1.loc_end.Lexing.pos_cnum >= loc2.loc_end.Lexing.pos_cnum
 
 #if OCAML_VERSION >= (4, 8, 0)
-let split_compiler_error (err : Location.error) =
-  (err.main.loc, Format.asprintf "%t" err.main.txt)
+let split_compiler_error (err : Location.Error.t) =
+  (Location.Error.get_location err, Format.asprintf "%s" (Location.Error.message err))
 #else
-let split_compiler_error (err : Location.error) =
-  (err.loc, err.msg)
+let split_compiler_error (err : Location.Error.t) =
+  (Location.Error.get_location err, Location.Error.message err)
 #endif
 
 let explode_str str =
@@ -856,7 +856,7 @@ let explode_str str =
     loop [] (String.length str - 1)
 
 module Clflags = struct
-  include Clflags
+  include Ocaml_common.Clflags
 
 #if OCAML_VERSION >= (4, 8, 0)
   let fast = unsafe
@@ -865,7 +865,12 @@ end
 
 let parse_lid s =
 #if OCAML_VERSION >= (4, 6, 0)
-  match Longident.unflatten (String.split_on_char '.' s) with
+  let unflatten l =
+    match l with
+    | [] -> None
+    | hd :: tl -> Some (List.fold_left (fun p s -> Ldot(p, s)) (Lident hd) tl)
+  in
+  match unflatten (String.split_on_char '.' s) with
   | Some lid -> lid
   | None -> failwith (Format.asprintf "parse_lid: unable to parse '%s' to longident" s)
 #else

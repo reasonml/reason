@@ -231,6 +231,21 @@ let lexeme_operator lexbuf =
 
 (* To translate escape sequences *)
 
+let hex_digit_value d = (* assert (d in '0'..'9' 'a'..'f' 'A'..'F') *)
+  let d = Char.code d in
+  if d >= 97 then d - 87 else
+  if d >= 65 then d - 55 else
+  d - 48
+
+let hex_num_value lexbuf ~first ~last =
+  let rec loop acc i = match i > last with
+  | true -> acc
+  | false ->
+      let value = hex_digit_value (Lexing.lexeme_char lexbuf i) in
+      loop (16 * acc + value) (i + 1)
+  in
+  loop 0 first
+
 let char_for_backslash = function
   | 'n' -> '\010'
   | 'r' -> '\013'
@@ -250,17 +265,24 @@ let char_for_decimal_code lexbuf i =
   ) else Char.chr c
 
 let char_for_hexadecimal_code lexbuf i =
-  let d1 = Char.code (Lexing.lexeme_char lexbuf i) in
-  let val1 = if d1 >= 97 then d1 - 87
-             else if d1 >= 65 then d1 - 55
-             else d1 - 48
+  let byte = hex_num_value lexbuf ~first:i ~last:(i+1) in
+  Char.chr byte
+
+let uchar_for_uchar_escape lexbuf =
+  let err e =
+    raise_error (Location.curr lexbuf) (Illegal_escape (Lexing.lexeme lexbuf ^ e));
+    Uchar.of_char 'u'
   in
-  let d2 = Char.code (Lexing.lexeme_char lexbuf (i+1)) in
-  let val2 = if d2 >= 97 then d2 - 87
-             else if d2 >= 65 then d2 - 55
-             else d2 - 48
-  in
-  Char.chr (val1 * 16 + val2)
+  let len = Lexing.lexeme_end lexbuf - Lexing.lexeme_start lexbuf in
+  let first = 3 (* skip opening \u{ *) in
+  let last = len - 2 (* skip closing } *) in
+  let digit_count = last - first + 1 in
+  match digit_count > 6 with
+  | true -> err ", too many digits, expected 1 to 6 hexadecimal digits"
+  | false ->
+      let cp = hex_num_value lexbuf ~first ~last in
+      if Uchar.is_valid cp then Uchar.unsafe_of_int cp else
+      err (", " ^ Printf.sprintf "%X" cp ^ " is not a Unicode scalar value")
 
 (* To convert integer literals, allowing max_int + 1 (PR#4210) *)
 
@@ -326,6 +348,8 @@ let kwdopchar = ['$' '&' '*' '+' '-' '/' '<' '=' '>' '@' '^' '|' '.' '!']
 
 let decimal_literal = ['0'-'9'] ['0'-'9' '_']*
 
+let hex_digit =
+  ['0'-'9' 'A'-'F' 'a'-'f']
 let hex_literal =
   '0' ['x' 'X'] ['0'-'9' 'A'-'F' 'a'-'f']['0'-'9' 'A'-'F' 'a'-'f' '_']*
 let oct_literal =
@@ -816,6 +840,14 @@ and string rawbuf txtbuf = parse
       begin match txtbuf with
       | None -> ()
       | Some buf -> Buffer.add_char buf (char_for_decimal_code lexbuf 1);
+      end;
+      string rawbuf txtbuf lexbuf
+    }
+  | '\\' 'u' '{' hex_digit+ '}'
+    { store_lexeme rawbuf lexbuf;
+      begin match txtbuf with
+      | None -> ()
+      | Some buf -> Buffer.add_utf_8_uchar buf (uchar_for_uchar_escape lexbuf)
       end;
       string rawbuf txtbuf lexbuf
     }

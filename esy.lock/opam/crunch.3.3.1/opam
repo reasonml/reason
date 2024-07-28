@@ -1,0 +1,53 @@
+opam-version: "2.0"
+maintainer:   "MirageOS team"
+authors:      ["Anil Madhavapeddy" "Thomas Gazagnaire" "Stefanie Schirmer" "Hannes Mehnert"]
+homepage:     "https://github.com/mirage/ocaml-crunch"
+bug-reports:  "https://github.com/mirage/ocaml-crunch/issues"
+doc:          "https://mirage.github.io/ocaml-crunch/"
+license:      "ISC"
+dev-repo:     "git+https://github.com/mirage/ocaml-crunch.git"
+tags:         ["org:mirage" "org:xapi-project"]
+
+depends: [
+  "ocaml" {>= "4.08.0"}
+  "cmdliner" {>= "1.1"}
+  "ptime"
+  "dune" {>= "2.5"}
+  "lwt" {with-test}
+  "mirage-kv" {with-test & >= "3.0.0"}
+  "mirage-kv-mem" {with-test & >= "3.0.0"}
+  "fmt" {with-test}
+]
+conflicts: [
+  "mirage-kv" {< "3.0.0"}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+     name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+synopsis: "Convert a filesystem into a static OCaml module"
+description: """
+`ocaml-crunch` takes a directory of files and compiles them into a standalone
+OCaml module which serves the contents directly from memory.  This can be
+convenient for libraries that need a few embedded files (such as a web server)
+and do not want to deal with all the trouble of file configuration.
+"""
+url {
+  src:
+    "https://github.com/mirage/ocaml-crunch/releases/download/v3.3.1/crunch-3.3.1.tbz"
+  checksum: [
+    "sha256=2c5ba0d4110bcbb7731cba4eafb6c44a7487c3f88c1ad47401271b69ffa8ed6a"
+    "sha512=5aaa1b67456dd2f5e3ab450ea547e62fba2b0341a49f3b24669162dce91b6ea1158c1594d60c6df3e416e719484411c50ae61017c40b2f75ee90401aa543bd08"
+  ]
+}
+x-commit-hash: "bd4f0195b35c602b8b83886bc8731e649b1e3f9c"

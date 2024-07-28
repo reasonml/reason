@@ -1,5 +1,4 @@
-open Reason_omp
-open Ast_411
+open Ppxlib
 
 type t = Parsetree.structure
 let err = Printer_maker.err
@@ -46,18 +45,24 @@ let print printtype filename parsedAsML output_chan output_formatter =
      * interface file.
      *)
     output_value output_chan (
-      Config.ast_impl_magic_number, filename, ast, comments, parsedAsML, false
+      Ocaml_common.Config.ast_impl_magic_number, filename, ast, comments, parsedAsML, false
     );
   )
   | `Binary -> fun (ast, _) ->
     let ast =
-      Reason_syntax_util.(apply_mapper_to_structure ast (backport_letopt_mapper remove_stylistic_attrs_mapper))
+      ast
+      |> Reason_syntax_util.(apply_mapper_to_structure remove_stylistic_attrs_mapper)
+      |> Reason_syntax_util.(apply_mapper_to_structure backport_letopt_mapper)
     in
-    Ast_io.to_channel output_chan filename
-      (Ast_io.Impl ((module OCaml_current),
-                    Reason_toolchain.To_current.copy_structure ast))
+    Ppxlib__.Utils.Ast_io.write
+      output_chan
+      { Ppxlib__.Utils.Ast_io.input_name = filename;
+        input_version = Obj.magic (module Ppxlib_ast.Compiler_version: Ppxlib_ast.OCaml_version);
+        ast = Impl ast
+      }
+      ~add_ppx_context:false
   | `AST -> fun (ast, _) -> (
-    Printast.implementation output_formatter
+    Ocaml_common.Printast.implementation output_formatter
       (Reason_toolchain.To_current.copy_structure ast)
   )
   | `None -> (fun _ -> ())

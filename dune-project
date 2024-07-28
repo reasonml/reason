@@ -33,8 +33,8 @@
  (depends
   (ocaml
    (and
-    (>= "4.03")
-    (< "5.1")))
+    (>= "4.06")
+    (< "5.3")))
   (ocamlfind :build)
   (dune-build-info
    (>= 2.9.3))
@@ -43,19 +43,23 @@
   (merlin-extend
    (>= "0.6"))
   fix
-  ppx_derivers))
+  ppx_derivers
+  cppo
+  (ppxlib
+   (>= "0.28.0"))))
 
 (package
  (name rtop)
  (synopsis "Reason toplevel")
  (description
-  "rtop is the toplevel (or REPL) for Reason, based on utop (https://github.com/diml/utop).")
+  "rtop is the toplevel (or REPL) for Reason, based on utop (https://github.com/ocaml-community/utop).")
  (depends
   (ocaml
    (and
-    (>= "4.03")
-    (< "5.1")))
+    (>= "4.06")
+    (< "5.3")))
   (reason
    (= :version))
   (utop
-   (>= "2.0"))))
+   (>= "2.0"))
+  cppo))

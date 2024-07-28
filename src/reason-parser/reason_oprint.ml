@@ -84,10 +84,9 @@
   patching the right parts, through the power of types(tm)
 *)
 
-open Reason_omp
-open Ast_411
-
 open Format
+module Reason_ast = Reason_omp.Ast_414
+module Outcometree = Reason_ast.Outcometree
 open Outcometree
 
 exception Ellipsis
@@ -243,16 +242,26 @@ let pr_present =
 let pr_vars =
   print_list (fun ppf s -> fprintf ppf "'%s" s) (fun ppf -> fprintf ppf "@ ")
 
-type label =
-  | Nonlabeled
-  | Labeled of string
-  | Optional of string
-
 let get_label lbl =
-  if lbl = "" then Nonlabeled
+  if lbl = "" then Reason_ast.Asttypes.Nolabel
   else if String.get lbl 0 = '?' then
     Optional (String.sub lbl 1 @@ String.length lbl - 1)
-  else Labeled lbl
+  else Labelled lbl
+
+let get_arg_suffix ppf lab =
+  match get_label lab with
+    | Nolabel -> ""
+    | Labelled lab ->
+        pp_print_string ppf "~";
+        pp_print_string ppf lab;
+        pp_print_string ppf ": ";
+        ""
+    | Optional lab ->
+        pp_print_string ppf "~";
+        pp_print_string ppf lab;
+        pp_print_string ppf ": ";
+        "=?"
+
 
 let rec print_out_type ppf =
   function
@@ -266,20 +275,7 @@ let rec print_out_type ppf =
       print_out_type_1 ~uncurried:false ppf ty
 
 and print_arg ppf (lab, typ) =
-  let suffix =
-    match get_label lab with
-    | Nonlabeled -> ""
-    | Labeled lab ->
-        pp_print_string ppf "~";
-        pp_print_string ppf lab;
-        pp_print_string ppf ": ";
-        ""
-    | Optional lab ->
-        pp_print_string ppf "~";
-        pp_print_string ppf lab;
-        pp_print_string ppf ": ";
-        "=?"
-  in
+  let suffix = get_arg_suffix ppf lab in
   print_out_type_2 ppf typ;
   pp_print_string ppf suffix;
 
@@ -331,7 +327,9 @@ and print_simple_out_type ppf =
   (* same for `Js.Internal.fn(...)`. Either might shown *)
   | Otyp_constr (
       (Oide_dot (
-        (Oide_dot ((Oide_ident { printed_name = "Js" }), "Internal") | Oide_ident { printed_name = "Js_internal" }),
+        (Oide_dot
+          ((Oide_ident { printed_name = "Js" }), "Internal")
+          | Oide_ident { printed_name = "Js_internal" }),
         ("fn" | "meth" as name)
       ) as id),
       ([Otyp_variant(_, Ovar_fields [variant, _, tys], _, _); result] as tyl)
@@ -363,7 +361,7 @@ and print_simple_out_type ppf =
       | res ->
         begin match name  with
         | "fn" -> print_out_type_1 ~uncurried:true ppf res
-        | "meth" -> fprintf ppf "@[<0>(%a)@ [@bs.meth]@]" (print_out_type_1 ~uncurried:false) res
+        | "meth" -> fprintf ppf "@[<0>(%a)@ [@mel.meth]@]" (print_out_type_1 ~uncurried:false) res
         | _ -> assert false
         end
       end
@@ -396,7 +394,7 @@ and print_simple_out_type ppf =
           pp_close_box ppf ()
         end
       | res ->
-        fprintf ppf "@[<0>(%a)@ [@bs.this]@]" (print_out_type_1 ~uncurried:false) res
+        fprintf ppf "@[<0>(%a)@ [@mel.this]@]" (print_out_type_1 ~uncurried:false) res
       end
   (* also BuckleScript-specific. Turns Js.t({. foo: bar}) into {. "foo": bar} *)
   | Otyp_constr (
@@ -451,15 +449,15 @@ and print_simple_out_type ppf =
       fprintf ppf "@[<1>%a@]" print_out_type ty;
   | Otyp_abstract | Otyp_open
   | Otyp_sum _ | Otyp_record _ | Otyp_manifest (_, _) -> ()
-  | Otyp_module (p, n, tyl) ->
+
+  | Otyp_module (p, ntyls) ->
       fprintf ppf "@[<1>(module %a" print_ident p;
       let first = ref true in
-      List.iter2
-        (fun s t ->
+      List.iter
+        (fun (s, t) ->
           let sep = if !first then (first := false; "with") else "and" in
-          fprintf ppf " %s type %s = %a" sep s print_out_type t
-        )
-        n tyl;
+          fprintf ppf " %s type %s = %a" sep s print_out_type t)
+        ntyls;
       fprintf ppf ")@]"
   | Otyp_attribute (t, attr) ->
         fprintf ppf "@[<1>(%a [@@%s])@]" print_out_type t attr.oattr_name
@@ -520,15 +518,12 @@ and print_typargs ppf =
 
 let out_type = ref print_out_type
 
-(* Class types *)
 let variance = function
- (* co, contra *)
- | false, false -> ""
- | true, true -> ""
- | true, false -> "+"
- | false, true -> "-"
+ | Reason_omp.Ast_414.Asttypes.NoVariance -> ""
+ | Covariant -> "+"
+ | Contravariant -> "-"
 
-let type_parameter ppf (ty, var) =
+let type_parameter ppf (ty, (var, _)) =
   fprintf ppf "%s%s"
     (variance var)
     (if ty = "_" then ty else "'"^ty)
@@ -636,13 +631,19 @@ and print_out_signature ppf =
         match items with
             Osig_typext(ext, Oext_next) :: items ->
               gather_extensions
-                ((ext.oext_name, ext.oext_args, ext.oext_ret_type) :: acc)
+                ( { ocstr_name = ext.oext_name;
+                    ocstr_args = ext.oext_args;
+                    ocstr_return_type = ext.oext_ret_type;
+                  } :: acc)
                 items
           | _ -> (List.rev acc, items)
       in
       let exts, items =
         gather_extensions
-          [(ext.oext_name, ext.oext_args, ext.oext_ret_type)]
+          [ { ocstr_name = ext.oext_name
+            ; ocstr_args = ext.oext_args
+            ; ocstr_return_type = ext.oext_ret_type
+            } ]
           items
       in
       let te =
@@ -670,7 +671,11 @@ and print_out_sig_item ppf =
         print_out_class_type clt
   | Osig_typext (ext, Oext_exception) ->
       fprintf ppf "@[<2>exception %a@]"
-        print_out_constr (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+        print_out_constr
+        { ocstr_name = ext.oext_name
+        ; ocstr_args = ext.oext_args
+        ; ocstr_return_type = ext.oext_ret_type
+        }
   | Osig_typext (ext, _) ->
       print_out_extension_constructor ppf ext
   | Osig_modtype (name, Omty_abstract) ->
@@ -698,14 +703,14 @@ and print_out_sig_item ppf =
     let printAttributes ppf = List.iter (fun a -> fprintf ppf "[@@%s]" a.oattr_name) in
     let keyword = if oval_prims = [] then "let" else "external" in
     let (hackyBucklescriptExternalAnnotation, rhsValues) = List.partition (fun item ->
-      (* "BS:" is considered as a bucklescript external annotation, `[@bs.module]` and the sort.
+      (* "BS:" is considered as a bucklescript external annotation, `[@mel.module]` and the sort.
 
-        "What's going on here? Isn't [@bs.foo] supposed to be an attribute in oval_attributes?"
+        "What's going on here? Isn't [@mel.foo] supposed to be an attribute in oval_attributes?"
         Usually yes. But here, we're intercepting things a little too late. BuckleScript already
         finished its pre/post-processing work before we get to print anything. The original
         attribute is already gone, replaced by a "BS:asdfasdfasd" thing here.
       *)
-      String.length item >= 3 && item.[0] = 'B' && item.[1] = 'S' && item.[2] = ':'
+      String.length item >= 4 && item.[0] = 'M' && item.[1] = 'E' && item.[1] = 'L' && item.[3] = ':'
     ) oval_prims in
     let print_right_hand_side ppf =
       function
@@ -715,7 +720,7 @@ and print_out_sig_item ppf =
           List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
     in
     fprintf ppf "@[<2>%a%a%s %a:@ %a%a@]"
-      (fun ppf -> List.iter (fun _ -> fprintf ppf "[@@bs...]@ ")) hackyBucklescriptExternalAnnotation
+      (fun ppf -> List.iter (fun _ -> fprintf ppf "[@@mel...]@ ")) hackyBucklescriptExternalAnnotation
       printAttributes oval_attributes
       keyword
       value_ident oval_name
@@ -754,8 +759,8 @@ and print_out_type_decl kwd ppf td =
     | _ -> td.otype_type
   in
   let print_private ppf = function
-    Asttypes.Private -> fprintf ppf " pri"
-  | Asttypes.Public -> ()
+    Reason_omp.Ast_414.Asttypes.Private -> fprintf ppf " pri"
+  | Public -> ()
   in
   let print_out_tkind ppf = function
   | Otyp_abstract -> ()
@@ -779,7 +784,7 @@ and print_out_type_decl kwd ppf td =
     print_out_tkind ty
     print_constraints
 
-and print_out_constr ppf (name, tyl,ret_type_opt) =
+and print_out_constr ppf {ocstr_name =name; ocstr_args = tyl; ocstr_return_type = ret_type_opt} =
   match ret_type_opt with
   | None ->
       begin match tyl with
@@ -832,8 +837,12 @@ and print_out_extension_constructor ppf ext =
   in
   fprintf ppf "@[<hv 2>type %t +=%s@;<1 2>%a@]"
     print_extended_type
-    (if ext.oext_private = Asttypes.Private then " pri" else "")
-    print_out_constr (ext.oext_name, ext.oext_args, ext.oext_ret_type)
+    (if ext.oext_private = Reason_omp.Ast_414.Asttypes.Private then " pri" else "")
+    print_out_constr
+    { ocstr_name = ext.oext_name
+    ; ocstr_args = ext.oext_args
+    ; ocstr_return_type = ext.oext_ret_type
+    }
 
 and print_out_type_extension ppf te =
   let print_extended_type ppf =
@@ -855,7 +864,7 @@ and print_out_type_extension ppf te =
   in
   fprintf ppf "@[<hv 2>type %t +=%s@;<1 2>%a@]"
     print_extended_type
-    (if te.otyext_private = Asttypes.Private then " pri" else "")
+    (if te.otyext_private = Reason_omp.Ast_414.Asttypes.Private then " pri" else "")
     (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
     te.otyext_constructors
 
@@ -878,13 +887,13 @@ let rec print_items ppf =
         match items with
             (Osig_typext(ext, Oext_next), None) :: items ->
               gather_extensions
-                ((ext.oext_name, ext.oext_args, ext.oext_ret_type) :: acc)
+                ({ocstr_name = ext.oext_name; ocstr_args = ext.oext_args; ocstr_return_type = ext.oext_ret_type} :: acc)
                 items
           | _ -> (List.rev acc, items)
       in
       let exts, items =
         gather_extensions
-          [(ext.oext_name, ext.oext_args, ext.oext_ret_type)]
+          [{ ocstr_name = ext.oext_name; ocstr_args = ext.oext_args; ocstr_return_type = ext.oext_ret_type}]
           items
       in
       let te =

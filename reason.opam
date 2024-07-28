@@ -16,13 +16,15 @@ homepage: "https://reasonml.github.io/"
 bug-reports: "https://github.com/reasonml/reason/issues"
 depends: [
   "dune" {>= "2.9"}
-  "ocaml" {>= "4.03" & < "5.1"}
+  "ocaml" {>= "4.06" & < "5.3"}
   "ocamlfind" {build}
   "dune-build-info" {>= "2.9.3"}
   "menhir" {>= "20180523"}
   "merlin-extend" {>= "0.6"}
   "fix"
   "ppx_derivers"
+  "cppo"
+  "ppxlib" {>= "0.28.0"}
   "odoc" {with-doc}
 ]
 build: [

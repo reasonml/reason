@@ -15,5 +15,8 @@ depends: [
 synopsis: "Strict impure trie tree"
 url {
   src: "https://github.com/kandu/trie/archive/1.0.0.tar.gz"
-  checksum: "md5=84519b5f8bd92490bfc68a52f706ba14"
+  checksum: [
+    "sha256=c2f8054ea44216e6a3a961b28f7630e0e3dbfbd1b504ae741be230cbe32498ea"
+    "md5=84519b5f8bd92490bfc68a52f706ba14"
+  ]
 }

@@ -1,0 +1,31 @@
+opam-version: "2.0"
+maintainer: "The stdlib-shims programmers"
+authors: "The stdlib-shims programmers"
+homepage: "https://github.com/ocaml/stdlib-shims"
+doc: "https://ocaml.github.io/stdlib-shims/"
+dev-repo: "git+https://github.com/ocaml/stdlib-shims.git"
+bug-reports: "https://github.com/ocaml/stdlib-shims/issues"
+tags: ["stdlib" "compatibility" "org:ocaml"]
+license: ["LGPL-2.1-only WITH OCaml-LGPL-linking-exception"]
+depends: [
+  "dune"
+  "ocaml" {>= "4.02.3"}
+]
+build: [ "dune" "build" "-p" name "-j" jobs ]
+synopsis: "Backport some of the new stdlib features to older compiler"
+description: """
+Backport some of the new stdlib features to older compiler,
+such as the Stdlib module.
+
+This allows projects that require compatibility with older compiler to
+use these new features in their code.
+"""
+x-commit-hash: "fb6815e5d745f07fd567c11671149de6ef2e74c8"
+url {
+  src:
+    "https://github.com/ocaml/stdlib-shims/releases/download/0.3.0/stdlib-shims-0.3.0.tbz"
+  checksum: [
+    "sha256=babf72d3917b86f707885f0c5528e36c63fccb698f4b46cf2bab5c7ccdd6d84a"
+    "sha512=1151d7edc8923516e9a36995a3f8938d323aaade759ad349ed15d6d8501db61ffbe63277e97c4d86149cf371306ac23df0f581ec7e02611f58335126e1870980"
+  ]
+}

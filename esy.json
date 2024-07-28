@@ -1,7 +1,6 @@
 {
   "name": "reason-cli",
-  "notes":
-    "This is just the dev package config (also built as globally installable reason-cli). See ./refmt.json ./rtop.json for individual release package configs.",
+  "notes": "This is just the dev package config (also built as globally installable reason-cli). See ./refmt.json ./rtop.json for individual release package configs.",
   "license": "MIT",
   "version": "3.8.2",
   "dependencies": {
@@ -9,14 +8,14 @@
     "@opam/dune-build-info": "> 3.0.0",
     "@opam/fix": "*",
     "@opam/menhir": " >= 20180523.0.0",
-    "@opam/merlin-extend": " >= 0.6",
-    "@opam/ocamlfind": "1.9.5",
-    "@opam/ppx_derivers": "< 2.0.0",
+    "@opam/merlin-extend": " >= 0.6.1",
+    "@opam/ocamlfind": "*",
+    "@opam/ppx_derivers": "*",
+    "@opam/ppxlib": "> 0.28.x",
     "@opam/utop": " >= 1.17.0",
     "ocaml": " >= 4.3.0 < 4.15.0"
   },
   "devDependencies": {
-    "@opam/ocaml-lsp-server": "1.15.1-4.14",
     "@opam/odoc": "*",
     "ocaml": "~4.14.0"
   },
@@ -52,9 +51,5 @@
       ],
       "rewritePrefix": true
     }
-  },
-  "scripts": {
-    "test": "esy x make test-once-installed",
-    "doc": "esy dune build @doc"
   }
 }

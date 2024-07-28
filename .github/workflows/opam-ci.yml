@@ -18,7 +18,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          - macos-13
           - windows-latest
 
         ocaml-compiler:
@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v2
@@ -48,7 +48,7 @@ jobs:
         with:
           path: ~/.opam
           key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
-      
+
       - name: Load opam cache when Windows
         if: runner.os == 'Windows'
         id: opam-cache-windows
@@ -64,7 +64,7 @@ jobs:
         run: opam exec -- dune build -p reason,rtop
 
       - name: Test
-        run: opam exec -- dune runtest
+        run: opam exec -- dune runtest -p reason,rtop
 
       - name: Save cache when not Windows
         uses: actions/cache/save@v3
