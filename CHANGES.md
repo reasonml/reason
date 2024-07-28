@@ -4,6 +4,8 @@
   [#2771](https://github.com/reasonml/reason/pull/2771))
 - Extend open to arbitrary module expression (@anmonteiro,
   [#2773](https://github.com/reasonml/reason/pull/2773))
+- Wrap `let lazy patterns = ..` in parentheses (`let lazy(patterns) = ..`)
+  (@anmonteiro, [#2774](https://github.com/reasonml/reason/pull/2774))
 
 ## 3.12.0
 
