@@ -368,7 +368,10 @@ Print the formatted file
   /**
    * Test no conflict with polymorphic variant types.
    */
-  type thisType = [ | `Foo | `Bar];
+  type thisType = [
+    | `Foo
+    | `Bar
+  ];
   type t('a) = [< thisType] as 'a;
   
   let asd =
@@ -590,7 +593,7 @@ Print the formatted file
 
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
-  File "formatted.re", line 460, characters 23-26:
+  File "formatted.re", line 463, characters 23-26:
   460 |   <Optional1 required=?zzz />;
                                ^^^
   Warning 43: the label required is not optional.
