@@ -50,3 +50,5 @@ module%foo X: Y;
 
 module%foo X = Y;
 
+module%foo rec X: Y;
+

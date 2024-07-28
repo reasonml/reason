@@ -7212,6 +7212,7 @@ let printer = object(self:'self)
           | Psig_value ({ pval_prim = [_]; _ } as vd) -> self#primitive_declaration ~extension vd
           | Psig_value vd -> self#val_binding ~extension vd
           | Psig_module pmd -> self#psig_module ~extension pmd
+          | Psig_recmodule pmd -> self#psig_recmodule ~extension pmd
           | _ -> self#payload "%%" extension (PSig [item])
         end
     | _ -> self#signature_item' item
@@ -7262,6 +7263,45 @@ let printer = object(self:'self)
       ~loc:pmd.pmd_name.loc
       ~layout:(self#attach_std_item_attrs stdAttrs @@ layout)
       ()
+
+  method psig_recmodule ?extension decls =
+    let items = List.mapi (fun i xx ->
+      let {stdAttrs; docAttrs} =
+        partitionAttributes ~partDoc:true xx.pmd_attributes
+      in
+      let letPattern =
+        makeList [
+          makeList ~postSpace:true [
+            atom (if i == 0
+                  then
+                    add_extension_sugar "module" extension ^ " rec"
+                  else "and");
+            atom (moduleIdent xx.pmd_name)
+          ];
+         atom ":"
+        ]
+      in
+      let layout =
+        self#attach_std_item_attrs stdAttrs
+          (self#module_type ~space:true letPattern xx.pmd_type)
+      in
+      let layoutWithDocAttrs =
+        self#attachDocAttrsToLayout
+         ~stdAttrs
+         ~docAttrs
+         ~loc:xx.pmd_name.loc
+         ~layout
+         ()
+      in
+      (extractLocModDecl xx, layoutWithDocAttrs)
+    ) decls
+    in
+    makeNonIndentedBreakingList
+      (groupAndPrint
+        ~xf:(fun (_, layout) -> layout)
+        ~getLoc:(fun (loc, _) -> loc)
+        ~comments:self#comments
+        items)
 
   method signature_item' x : Layout.t =
     let item: Layout.t =
@@ -7361,42 +7401,7 @@ let printer = object(self:'self)
             ~layout
             ()
         | Psig_class_type l -> self#class_type_declaration_list l
-        | Psig_recmodule decls ->
-            let items = List.mapi (fun i xx ->
-              let {stdAttrs; docAttrs} =
-                partitionAttributes ~partDoc:true xx.pmd_attributes
-              in
-              let letPattern =
-                makeList [
-                  makeList ~postSpace:true [
-                    atom (if i == 0 then "module rec" else "and");
-                    atom (moduleIdent xx.pmd_name)
-                  ];
-                 atom ":"
-                ]
-              in
-              let layout =
-                self#attach_std_item_attrs stdAttrs
-                  (self#module_type ~space:true letPattern xx.pmd_type)
-              in
-              let layoutWithDocAttrs =
-                self#attachDocAttrsToLayout
-                 ~stdAttrs
-                 ~docAttrs
-                 ~loc:xx.pmd_name.loc
-                 ~layout
-                 ()
-              in
-              (extractLocModDecl xx, layoutWithDocAttrs)
-            ) decls
-            in
-            makeNonIndentedBreakingList
-              (groupAndPrint
-                ~xf:(fun (_, layout) -> layout)
-                ~getLoc:(fun (loc, _) -> loc)
-                ~comments:self#comments
-                items)
-
+        | Psig_recmodule decls -> self#psig_recmodule decls
         | Psig_attribute a -> self#floating_attribute a
         | Psig_extension (({loc}, _) as ext, attrs) ->
           let {stdAttrs; docAttrs} =
@@ -7829,8 +7834,7 @@ let printer = object(self:'self)
             self#moduleExpressionToFormattedApplicationItems
               ~prefix:"include"
               moduleExpr
-        | Pstr_recmodule decls -> (* 3.07 *)
-          self#recmodule decls
+        | Pstr_recmodule decls -> self#recmodule decls
         | Pstr_attribute a -> self#floating_attribute a
         | Pstr_extension ((_extension, PStr []) as extension, attrs) ->
           (* Extension with attributes and without PStr gets printed inline *)

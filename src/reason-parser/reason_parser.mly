@@ -1966,8 +1966,12 @@ signature_item:
   | item_attributes opt_LET_MODULE_REC_ident module_type_body(COLON)
     and_module_rec_declaration*
     { let loc = mklocation $symbolstartpos $endpos($3) in
-      let _ext, letmodule = $2 in
-      Psig_recmodule (Ast_helper.Md.mk letmodule $3 ~attrs:$1 ~loc :: $4) }
+      let ext, letmodule = $2 in
+      wrap_sig_ext
+        ~loc
+        (Psig_recmodule (Ast_helper.Md.mk letmodule $3 ~attrs:$1 ~loc :: $4))
+        ext
+    }
   | item_attributes MODULE TYPE as_loc(ident)
     { let loc = mklocation $symbolstartpos $endpos in
       Psig_modtype (Ast_helper.Mtd.mk $4 ~attrs:$1 ~loc)

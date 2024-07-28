@@ -58,3 +58,5 @@ Format general interface syntax
   module%foo X: Y;
   
   module%foo X = Y;
+  
+  module%foo rec X: Y;
