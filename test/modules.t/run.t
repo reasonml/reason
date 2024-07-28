@@ -689,4 +689,21 @@ Format modules
     external%foo bar: string => string;
     external%foo bar: int => int = "hello";
   };
+  
+  module%foo X = Y;
+  
+  module%foo X = {
+    let x = 1;
+  };
+  
+  let x = {
+    module%foo X = {
+      let x = 1;
+    };
+    ();
+  };
+  
+  module rec X: Y = {
+    let x = 1;
+  };
 /* From http://stackoverflow.com/questions/1986374/  higher-order-type-constructors-and-functors-in-ocaml */

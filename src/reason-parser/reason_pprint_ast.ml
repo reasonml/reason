@@ -5516,6 +5516,28 @@ let printer = object(self:'self)
         itemsLayout
 
   method letList expr =
+    let letModuleBinding ?extension s me =
+      let prefixText = add_extension_sugar "module" extension in
+      let bindingName = atom ~loc:s.loc (moduleIdent s) in
+      let moduleExpr = me in
+      let letModuleLayout =
+        (self#let_module_binding prefixText bindingName moduleExpr) in
+      let letModuleLoc = {
+        loc_start = s.loc.loc_start;
+        loc_end = me.pmod_loc.loc_end;
+        loc_ghost = false
+      } in
+      (* Just like the bindings, have to synthesize a location since the
+       * Pexp location is parsed (potentially) beginning with the open
+       * brace {} in the let sequence. *)
+      let layout = source_map ~loc:letModuleLoc letModuleLayout in
+      let (_, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in
+      let loc = {
+        letModuleLoc with
+        loc_end = return.pmod_loc.loc_end
+      } in
+      (loc, layout)
+    in
     (* Recursively transform a nested ast of "let-items", into a flat
      * list containing the location indicating start/end of the "let-item" and
      * its layout. *)
@@ -5576,26 +5598,8 @@ let printer = object(self:'self)
             processLetList ((loc, layout)::acc) e
           )
         | ([], Pexp_letmodule (s, me, e)) ->
-            let prefixText = "module" in
-            let bindingName = atom ~loc:s.loc (moduleIdent s) in
-            let moduleExpr = me in
-            let letModuleLayout =
-              (self#let_module_binding prefixText bindingName moduleExpr) in
-            let letModuleLoc = {
-              loc_start = s.loc.loc_start;
-              loc_end = me.pmod_loc.loc_end;
-              loc_ghost = false
-            } in
-            (* Just like the bindings, have to synthesize a location since the
-             * Pexp location is parsed (potentially) beginning with the open
-             * brace {} in the let sequence. *)
-          let layout = source_map ~loc:letModuleLoc letModuleLayout in
-          let (_, return) = self#curriedFunctorPatternsAndReturnStruct moduleExpr in
-          let loc = {
-            letModuleLoc with
-            loc_end = return.pmod_loc.loc_end
-          } in
-         processLetList ((loc, layout)::acc) e
+          let loc, layout = letModuleBinding s me in
+          processLetList ((loc, layout)::acc) e
         | ([], Pexp_letexception (extensionConstructor, expr)) ->
             let exc = self#exception_declaration extensionConstructor in
             let layout = source_map ~loc:extensionConstructor.pext_loc exc in
@@ -5623,6 +5627,9 @@ let printer = object(self:'self)
             let bindingsLoc = self#bindingsLocationRange ~extension:expr l in
             let layout = source_map ~loc:bindingsLoc bindingsLayout in
             processLetList ((extractLocationFromValBindList expr l, layout)::acc) e
+          | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_letmodule (s, me, e)}) ->
+            let loc, layout = letModuleBinding ~extension s me in
+            processLetList ((loc, layout)::acc) e
           | Some (extension, e) ->
             let layout = self#attach_std_item_attrs ~extension [] (self#unparseExpr e) in
             (expr.pexp_loc, layout)::acc
@@ -6458,7 +6465,7 @@ let printer = object(self:'self)
               | None -> Some (self#extension e)
               | Some (_, x') ->
                 match x'.pexp_desc with
-                | Pexp_let _ ->
+                | Pexp_let _ | Pexp_letmodule _  ->
                   Some (makeLetSequence (self#letList x))
                 | _ -> Some (self#extension e)
           end
