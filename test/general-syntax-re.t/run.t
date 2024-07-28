@@ -1480,3 +1480,11 @@ Format general implementation syntax
     switch () {
     | _ => .
     };
+  
+  let%foo Foo.{
+    destruct1,
+    destruct2,
+    destruct3,
+    destruct4,
+    destruct5,
+  } = fooBar;

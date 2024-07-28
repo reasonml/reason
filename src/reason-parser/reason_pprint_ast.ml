@@ -5312,9 +5312,9 @@ let printer = object(self:'self)
          forms of explicit polymorphic annotations in the parse tree, and how
          we must recover them here.
        *)
-      | [], (Ppat_open (lid, {ppat_desc = Ppat_record(l, closed); _})) -> 
-        (* 
-         Special case handling for: 
+      | [], (Ppat_open (lid, {ppat_desc = Ppat_record(l, closed); _})) ->
+        (*
+         Special case handling for:
 
          let Foo.{
            destruct1,
@@ -5328,10 +5328,10 @@ let printer = object(self:'self)
         let upUntilEqual =
           let pat = self#patternRecord l closed in
           label
-            (label ~space:true 
-              (atom "let") 
-              (label 
-                (self#longident_loc lid) 
+            (label ~space:true
+              (atom prefixText)
+              (label
+                (self#longident_loc lid)
                 (atom ("."))
               )
             )
