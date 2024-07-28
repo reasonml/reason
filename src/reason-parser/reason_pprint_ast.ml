@@ -3245,7 +3245,7 @@ let printer = object(self:'self)
               source_map ~loc:x.ppat_loc
                 (self#constructor_pattern (atom ("`" ^ l)) p
                    ~polyVariant:true ~arityIsClear:true)
-        | Ppat_lazy p -> label ~space:true (atom "lazy") (self#simple_pattern p)
+        | Ppat_lazy p -> label (atom "lazy") (formatPrecedence (self#simple_pattern p))
         | Ppat_construct (({txt} as li), po) when not (txt = Lident "::")-> (* FIXME The third field always false *)
             let formattedConstruction = match po with
               (* TODO: Check the explicit_arity field on the pattern/constructor
@@ -3434,7 +3434,8 @@ let printer = object(self:'self)
           | Ppat_variant (l, None) -> makeList[atom "`"; atom l]
           | Ppat_constraint _ ->
               formatPrecedence (self#pattern x)
-          | Ppat_lazy p ->formatPrecedence (label ~space:true (atom "lazy") (self#simple_pattern p))
+          | Ppat_lazy p ->
+            formatPrecedence (label (atom "lazy") (formatPrecedence (self#simple_pattern p)))
           | Ppat_extension e -> self#extension e
           | Ppat_exception p ->
               (*
