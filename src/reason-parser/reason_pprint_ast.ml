@@ -6660,8 +6660,15 @@ let printer = object(self:'self)
           PStr [{ pstr_desc = Pstr_eval ({ pexp_desc = Pexp_constant (Pconst_string(text, _, None)) } , _);
                   pstr_loc }]
       ; _ } ->
+      let break = if text = "" then Layout.IfNeed else Always_rec in
       let text = if text = "" then "/**/" else "/**" ^ text ^ "*/" in
-      makeList ~inline:(true, true) ~postSpace:true ~preSpace:true ~indent:0 ~break:IfNeed [atom ~loc:pstr_loc text]
+      makeList
+        ~inline:(true, true)
+        ~postSpace:true
+        ~preSpace:true
+        ~indent:0
+        ~break
+        [atom ~loc:pstr_loc text]
     | { attr_name; attr_payload; _ } -> self#payload "@" attr_name attr_payload
 
   (* [@@ ... ] Attributes that occur after a major item in a structure/class *)
