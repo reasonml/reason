@@ -692,6 +692,22 @@ Format variants
     | `HOVER
     | `ACTIVE
   ];
+  
+  /* [| purposely without space */
+  type apiKeyError = [
+    | `Dev
+    | `Prod
+  ];
+  
+  /* other polyvar variations */
+  type apiKeyError = [
+    | `Dev
+    | `Prod
+  ];
+  type apiKeyError = [
+    | `Dev
+    | `Prod
+  ];
 /* Doesn't work because we've correctly annotated parse tree nodes with   explicit_arity! */
 /* let notTupled: notTupleVariant = NotActuallyATuple intTuple; /*Doesn't work! */  */
 /* Doesn't work because we've correctly annotated parse tree nodes with   explicit_arity! */

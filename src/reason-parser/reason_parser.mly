@@ -4646,6 +4646,7 @@ mark_position_typ
     { mktyp(Ptyp_constr($1, [])) }
   | object_record_type
     { $1 }
+  | LBRACKETBAR row_field_list RBRACKET
   | LBRACKET row_field_list RBRACKET
     { mktyp(Ptyp_variant ($2, Closed, None)) }
   | LBRACKETGREATER loption(row_field_list) RBRACKET
