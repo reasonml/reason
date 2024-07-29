@@ -76,8 +76,8 @@ Format general implementation syntax
     list(int);
   type firstTwoShouldBeGroupedAndFirstThree =
     (
-      ~first: (list(int) => list(int)) =>
-              list(int)
+      ~first:
+        (list(int) => list(int)) => list(int)
     ) =>
     list(int);
   
@@ -840,17 +840,16 @@ Format general implementation syntax
   
   type typeWithNestedNamedArgs =
     (
-      ~outerOne: (~innerOne: int, ~innerTwo: int) =>
-                 int,
+      ~outerOne:
+        (~innerOne: int, ~innerTwo: int) => int,
       ~outerTwo: int
     ) =>
     int;
   
   type typeWithNestedOptionalNamedArgs =
     (
-      ~outerOne: (~innerOne: int, ~innerTwo: int) =>
-                 int
-                   =?,
+      ~outerOne:
+        (~innerOne: int, ~innerTwo: int) => int=?,
       ~outerTwo: int=?
     ) =>
     int;
