@@ -542,7 +542,10 @@ Format wrapping in .re files
    */
   let result =
     acceptsTwoThings(
-      {age: 20, name: "a"},
+      {
+        age: 20,
+        name: "a",
+      },
       {
         fieldOne: 10,
         fieldtwo: [10, 20],

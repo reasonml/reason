@@ -754,12 +754,24 @@ Format basicStructures
   /* no punning available for a single field. Can't tell the difference with a scope + expression */
   let componentA = {props: props};
   /* pun for real */
-  let componentB = {props, state: ()};
+  let componentB = {
+    props,
+    state: (),
+  };
   /* pun fields with module prefix too */
   let foo = {Foo.foo: foo};
-  let bar = {Foo.foo, bar: 1};
-  let bar = {bar: 1, Foo.foo};
-  let bar = {Foo.foo, Bar.bar};
+  let bar = {
+    Foo.foo,
+    bar: 1,
+  };
+  let bar = {
+    bar: 1,
+    Foo.foo,
+  };
+  let bar = {
+    Foo.foo,
+    Bar.bar,
+  };
   
   ({M.x, y}) => 1;
   

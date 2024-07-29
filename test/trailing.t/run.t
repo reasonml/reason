@@ -2,11 +2,21 @@ Format trailing
   $ refmt ./input.re
   let x = {"obj": obj};
   
-  let x = {"key": key, "keyTwo": keyTwo};
+  let x = {
+    "key": key,
+    "keyTwo": keyTwo,
+  };
   
-  let x = {...x, "key": key};
+  let x = {
+    ...x,
+    "key": key,
+  };
   
-  let x = {...x, "key": key, "keyTwo": keyTwo};
+  let x = {
+    ...x,
+    "key": key,
+    "keyTwo": keyTwo,
+  };
   
   type t = {. "x": int};
   
@@ -18,11 +28,21 @@ Format trailing
   
   let x = {"obj": 0};
   
-  let x = {"key": 0, "keyTwo": 1};
+  let x = {
+    "key": 0,
+    "keyTwo": 1,
+  };
   
-  let x = {...x, "key": 0};
+  let x = {
+    ...x,
+    "key": 0,
+  };
   
-  let x = {...x, "key": 0, "keyTwo": 1};
+  let x = {
+    ...x,
+    "key": 0,
+    "keyTwo": 1,
+  };
   
   type t = {. "x": int};
   

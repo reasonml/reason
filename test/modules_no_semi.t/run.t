@@ -555,7 +555,10 @@ Format modules no semi
       M.[foo, bar];
     };
     let z = {
-      M.{x: 10, y: 20};
+      M.{
+        x: 10,
+        y: 20,
+      };
     };
     let z = {
       M.(M2.(value));
@@ -590,7 +593,10 @@ Format modules no semi
     };
     let z = {
       open! M;
-      {x: 10, y: 20};
+      {
+        x: 10,
+        y: 20,
+      };
     };
     let z = {
       open! M;
