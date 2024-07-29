@@ -2512,9 +2512,12 @@ let printer = object(self:'self)
     let t = match lbl with
     | Nolabel -> typ
     | Labelled lbl ->
-        makeList ~sep:(Sep " ") [atom (namedArgSym ^ lbl ^ ":"); typ]
+        label ~space:true (atom (namedArgSym ^ lbl ^ ":")) typ
     | Optional lbl ->
-        makeList ~sep:(Sep " ") [atom (namedArgSym ^ lbl ^ ":"); label typ (atom "=?")]
+        label
+          ~space:true
+          (atom (namedArgSym ^ lbl ^ ":"))
+          (label typ (atom "=?"))
     in
     if uncurried then
       makeList ~postSpace:true [atom "."; t]

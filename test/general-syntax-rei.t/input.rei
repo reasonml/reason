@@ -52,3 +52,15 @@ module%foo X = Y;
 
 module%foo rec X: Y;
 
+let wrapReasonForJs:
+  (
+    ~component: componentSpec(
+                  'state,
+                  'initialState,
+                  'retainedProps,
+                  'initialRetainedPropssssssssssssssssss,
+                  'action
+                )
+  ) =>
+  reactClass;
+
