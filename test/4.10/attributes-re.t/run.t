@@ -25,7 +25,8 @@ Print the formatted file
   /**removed text on type def*/
   [@itemAttributeOnTypeDef]
   type itemText = int;
-  type nodeText = /**removed text on item*/ int;
+  type nodeText =
+    /**removed text on item*/ int;
   /**removed text on type def*/
   [@itemAttributeOnTypeDef]
   type nodeAndItemText =
@@ -35,7 +36,8 @@ Print the formatted file
   [@itemAttributeOnTypeDef]
   type itemDoc = int;
   [@itemAttributeOnTypeDef]
-  type nodeDoc = /**removed text on item*/ int;
+  type nodeDoc =
+    /**removed text on item*/ int;
   /**removed doc on type def*/
   [@itemAttributeOnTypeDef]
   type nodeAndItemDoc =
@@ -831,8 +833,8 @@ Print the formatted file
 
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
-  File "formatted.re", line 503, characters 4-10:
-  503 |     concat;
+  File "formatted.re", line 505, characters 4-10:
+  505 |     concat;
             ^^^^^^
   Warning 10: this expression should have type unit.
 
