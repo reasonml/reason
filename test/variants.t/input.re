@@ -427,3 +427,11 @@ type widget_state = [
     | `HOVER
     | `ACTIVE
   ];
+
+/* [| purposely without space */
+type apiKeyError = [|`Dev |`Prod];
+
+/* other polyvar variations */
+type apiKeyError = [ | `Dev |`Prod];
+type apiKeyError = [ `Dev |`Prod];
+
