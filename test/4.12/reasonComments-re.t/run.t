@@ -758,10 +758,10 @@ Print the formatted file
   };
   
   /** doc let */
- let letter: q = {
-   a: 42,
-   b: "answer",
- };
+  let letter: q = {
+    a: 42,
+    b: "answer",
+  };
 
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
