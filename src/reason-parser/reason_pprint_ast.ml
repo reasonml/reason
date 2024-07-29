@@ -4048,9 +4048,17 @@ let printer = object(self:'self)
     let x = {x with pexp_attributes = (stylisticAttrs @ arityAttrs @ stdAttrs @ jsxAttrs) } in
     (* If there's any attributes, recurse without them, then apply them to
        the ends of functions, or simplify infix printings then append. *)
-    if stdAttrs != [] then
+    match stdAttrs, x.pexp_desc with
+    | _, Pexp_letop _ ->
+      (* `Pexp_letop` is a bit different than `let` bindings because the
+         attributes are in `Pexp_letop` rather than the `value_binding` type
+         (check https://github.com/ocaml/ocaml/issues/9301 too), so we must
+         treat it a bit differently if we want to print the attributes inside
+         the braces. *)
+      FunctionApplication [ makeLetSequence (self#letList x) ]
+    | _ :: _, _ ->
       let withoutVisibleAttrs = {x with pexp_attributes=(stylisticAttrs @ arityAttrs @ jsxAttrs)} in
-      let attributesAsList = (List.map self#attribute stdAttrs) in
+      let attributesAsList = List.map self#attribute stdAttrs in
       let itms = match self#unparseExprRecurse withoutVisibleAttrs with
         | SpecificInfixPrecedence ({reducePrecedence}, wrappedRule) ->
             let itm = self#unparseResolvedRule wrappedRule in
@@ -4070,7 +4078,7 @@ let printer = object(self:'self)
           ~postSpace:true
           (List.concat [attributesAsList; itms])
       ]
-    else
+    | [], _ ->
     match self#simplest_expression x with
     | Some se -> Simple se
     | None ->
@@ -5588,13 +5596,20 @@ let printer = object(self:'self)
            let bindingsLoc = self#bindingsLocationRange l in
            let layout = source_map ~loc:bindingsLoc bindingsLayout in
            processLetList ((bindingsLoc, layout)::acc) e
-        | ([], Pexp_letop ( {body; _} as op)) ->
+        | (attrs, Pexp_letop ( {body; _} as op)) ->
           (* For "letList" bindings, the start/end isn't as simple as with
            * module value bindings. For "let lists", the sequences were formed
            * within braces {}. The parser relocates the first let binding to the
            * first brace. *)
            let bindingsLayout = self#letop_bindings op in
            let bindingsLoc = self#bindingOpsLocationRange op in
+           let bindingsLayout =
+            makeList
+              ~break:IfNeed
+              ~inline:(true, true)
+              ~postSpace:true
+              ((self#attributes attrs) @ [ bindingsLayout  ])
+           in
            let layout = source_map ~loc:bindingsLoc bindingsLayout in
            processLetList ((bindingsLoc, layout)::acc) body
         | (attrs, Pexp_open (me, e))
@@ -6499,7 +6514,7 @@ let printer = object(self:'self)
               | None -> Some (self#extension e)
               | Some (_, x') ->
                 match x'.pexp_desc with
-                | Pexp_let _ | Pexp_letmodule _  ->
+                | Pexp_let _ | Pexp_letop _ | Pexp_letmodule _  ->
                   Some (makeLetSequence (self#letList x))
                 | _ -> Some (self#extension e)
           end

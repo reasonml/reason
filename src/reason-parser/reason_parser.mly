@@ -2584,12 +2584,12 @@ seq_expr_no_seq [@recover.expr default_expr ()] (semi):
   { let loc = mklocation $symbolstartpos $endpos in
     expr_of_let_bindings ~loc $1 (ghunit ~loc ())
   }
-| as_loc(LETOP) letop_bindings SEMI seq_expr(SEMI?)
-  { let (pbop_pat, pbop_exp, rev_ands) = $2 in
+| item_attributes as_loc(LETOP) letop_bindings SEMI seq_expr(SEMI?)
+  { let (pbop_pat, pbop_exp, rev_ands) = $3 in
     let ands = List.rev rev_ands in
-    let pbop_loc = mklocation $symbolstartpos $endpos($2) in
-    let let_ = {Ppxlib.Parsetree.pbop_op = $1; pbop_pat; pbop_exp; pbop_loc} in
-    mkexp ~loc:pbop_loc (Pexp_letop { let_; ands; body = $4}) }
+    let pbop_loc = mklocation $startpos($2) $endpos($3) in
+    let let_ = {Ppxlib.Parsetree.pbop_op = $2; pbop_pat; pbop_exp; pbop_loc} in
+    mkexp ~attrs:$1 ~loc:pbop_loc (Pexp_letop { let_; ands; body = $5}) }
 ;
 
 seq_expr(semi):
