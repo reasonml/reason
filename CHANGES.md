@@ -12,6 +12,8 @@
   [#2686](https://github.com/reasonml/reason/pull/2686))
 - Improve printing of destructuring with local open (@Sander Spies,
   [#2684](https://github.com/reasonml/reason/pull/2684)).
+- Parse and print attributes in binding `let` ops (@anmonteiro,
+  [#2777](https://github.com/reasonml/reason/pull/2777)).
 
 ## 3.12.0
 
