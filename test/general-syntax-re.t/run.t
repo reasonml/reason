@@ -262,7 +262,10 @@ Format general implementation syntax
     y: int,
     z: int,
   };
-  let point2D = {x: 20, y: 30};
+  let point2D = {
+    x: 20,
+    y: 30,
+  };
   
   let point3D: point3D = {
     x: 10,
@@ -282,7 +285,10 @@ Format general implementation syntax
   
   let res1 = printPoint(point2D);
   let res2 =
-    printPoint({x: point3D.x, y: point3D.y});
+    printPoint({
+      x: point3D.x,
+      y: point3D.y,
+    });
   
   /*
       When () were used to indicate sequences, the parser used seq_expr not only
@@ -310,7 +316,10 @@ Format general implementation syntax
     printPoint(
       addPoints(
         point2D,
-        {x: point3D.x, y: point3D.y},
+        {
+          x: point3D.x,
+          y: point3D.y,
+        },
       ),
     );
   
@@ -324,10 +333,16 @@ Format general implementation syntax
     dateHired: int,
   };
   
-  let o: person = {name: "bob", age: 10};
+  let o: person = {
+    name: "bob",
+    age: 10,
+  };
   
   /* Parens needed? Nope! */
-  let o: person = {name: "bob", age: 10};
+  let o: person = {
+    name: "bob",
+    age: 10,
+  };
   
   let printPerson = (p: person) => {
     let q: person = p;
@@ -1400,9 +1415,30 @@ Format general implementation syntax
   foo(~a=Foo.a);
   
   /* https://github.com/facebook/reason/issues/2155#issuecomment-422077648 */
-  true ? (Update({...a, b: 1}), None) : x;
-  true ? {...a, b: 1} : a;
-  true ? (a, {...a, b: 1}) : a;
+  true
+    ? (
+      Update({
+        ...a,
+        b: 1,
+      }),
+      None,
+    )
+    : x;
+  true
+    ? {
+      ...a,
+      b: 1,
+    }
+    : a;
+  true
+    ? (
+      a,
+      {
+        ...a,
+        b: 1,
+      },
+    )
+    : a;
   
   true ? ([x, ...xs]) => f(x, xs) : a;
   

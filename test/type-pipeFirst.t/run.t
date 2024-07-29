@@ -16,7 +16,10 @@ Print the formatted file
     x: int,
     y: int,
   };
-  let coord = {x: 1, y: 1};
+  let coord = {
+    x: 1,
+    y: 1,
+  };
   
   /* parses as (coord.x)->a->b->c */
   let t2: int = coord.x->a->b->c;

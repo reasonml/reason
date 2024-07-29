@@ -83,9 +83,21 @@ Print the formatted file
   let b = 0;
   let c = 0;
   /* All of these will be printed as punned because they have more than one field. */
-  let firstFieldPunned = {a, b, c};
-  let sndFieldPunned = {a, b, c};
-  let thirdFieldPunned = {a, b, c};
+  let firstFieldPunned = {
+    a,
+    b,
+    c,
+  };
+  let sndFieldPunned = {
+    a,
+    b,
+    c,
+  };
+  let thirdFieldPunned = {
+    a,
+    b,
+    c,
+  };
   let singlePunAcceptedIfExtended = {
     ...firstFieldPunned,
     a,

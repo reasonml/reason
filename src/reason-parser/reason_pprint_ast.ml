@@ -2873,7 +2873,7 @@ let printer = object(self:'self)
       source_map ~loc:pld.pld_loc recordRow
     in
     let rows = List.map recordRow lbls in
-    (* if a record has more than 1 row, always break *)
+    (* if a record type has more than 1 row, always break *)
     let break =
       match rows with
       | [] | [ _ ] -> Layout.IfNeed
@@ -6226,7 +6226,7 @@ let printer = object(self:'self)
         | (Pexp_record (recordRows, optionalGadt), _, _) ->
             forceBreak := true;
             let keyWithColon = makeList (maybeQuoteFirstElem li [atom ":"]) in
-            let value = self#unparseRecord ~forceBreak: true recordRows optionalGadt in
+            let value = self#unparseRecord ~forceBreak:true recordRows optionalGadt in
             label ~space:true keyWithColon value
         | (Pexp_extension (s, p), _, _) when s.txt = "mel.obj" ->
             forceBreak := true;
@@ -6283,9 +6283,15 @@ let printer = object(self:'self)
         in
         firstRow::(getRows l)
     in
+    let break =
+      (* if a record has more than 1 row, always break *)
+      match !forceBreak, allRows with
+      | false, ([] | [ _ ]) -> Layout.IfNeed
+      | _ -> Layout.Always_rec
+    in
     makeList
       ~wrap:(lwrap ^ "{" ,"}" ^ rwrap)
-      ~break:(if !forceBreak then Layout.Always else Layout.IfNeed)
+      ~break
       ~sep:commaTrail
       ~postSpace:true
       (groupAndPrint ~xf:fst ~getLoc:snd ~comments:self#comments allRows)

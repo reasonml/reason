@@ -314,7 +314,11 @@ Print the formatted file
     | ({from: None, to_: None}: intRange) => (
         None: optIntRange
       )
-    | {from, to_} => Some({from, to_});
+    | {from, to_} =>
+      Some({
+        from,
+        to_,
+      });
 
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
