@@ -14,6 +14,14 @@
   [#2684](https://github.com/reasonml/reason/pull/2684)).
 - Parse and print attributes in binding `let` ops (@anmonteiro,
   [#2777](https://github.com/reasonml/reason/pull/2777)).
+- Parse polymorphic variants starting with `[|` (@anmonteiro,
+  [#2781](https://github.com/reasonml/reason/pull/2781))
+- Always add a line break in records with 2 or more fields (@anmonteiro,
+  [#2779](https://github.com/reasonml/reason/pull/2779))
+- Always break nonempty doc comments after `*/` (@anmonteiro,
+  [#2780](https://github.com/reasonml/reason/pull/2780))
+- Improve printing of arrows with labelled arguments (@anmonteiro,
+  [#2778](https://github.com/reasonml/reason/pull/2778))
 
 ## 3.12.0
 
