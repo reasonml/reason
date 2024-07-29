@@ -195,8 +195,8 @@ let longident_same l1 l2 =
 (* A variant of List.for_all2 that returns false instead of failing on lists
    of different size *)
 let for_all2' pred l1 l2 =
-  List.length l1 = List.length l2 &&
-  List.for_all2 pred l1 l2
+  try List.for_all2 pred l1 l2
+  with | _ -> false
 
 (*
    Checks to see if two types are the same modulo the process of varification
@@ -1244,7 +1244,7 @@ let formatComment_ txt =
 let formatComment comment =
   source_map ~loc:(Comment.location comment) (formatComment_ comment)
 
-let rec append ?(space=false) txt = function
+let[@tail_mod_cons] rec append ?(space=false) txt = function
   | Layout.SourceMap (loc, sub) ->
     Layout.SourceMap (loc, append ~space txt sub)
   | Sequence (config, l) when snd config.wrap <> "" ->
@@ -1254,21 +1254,19 @@ let rec append ?(space=false) txt = function
     Sequence (config, [atom txt])
   | Sequence ({sep=NoSep} as config, l)
   | Sequence ({sep=Sep("")} as config, l) ->
-    let len = List.length l in
-    let sub = List.mapi (fun i layout ->
-        (* append to the end of the list *)
-        if i + 1 = len then
-          append ~space txt layout
-        else
-          layout
-      ) l in
+    let sub = appendSub txt ~space l in
     Sequence (config, sub)
   | Label (formatter, left, right) ->
     Label (formatter, left, append ~space txt right)
   | Whitespace(info, sub) ->
       Whitespace(info, append ~space txt sub)
   | layout ->
-    inline ~postSpace:space layout (atom txt)
+      (inline [@tailcall false]) ~postSpace:space layout (atom txt)
+and[@tail_mod_cons] appendSub txt ~space layouts =
+  match layouts with
+  | [] -> []
+  | [ layout ] -> [ append ~space txt layout ]
+  | layout :: xs -> layout :: appendSub txt ~space xs
 
 let appendSep spaceBeforeSep sep layout =
   append (if spaceBeforeSep then " " ^ sep else sep) layout
@@ -1315,18 +1313,18 @@ let unbreaklayout = preOrderWalk (function
 let consolidateSeparator l = preOrderWalk (function
   | Sequence (listConfig, sublayouts) when listConfig.sep != NoSep && listConfig.sepLeft ->
      (* TODO: Support !sepLeft, and this should apply to the *first* separator if !sepLeft.  *)
-     let sublayoutsLen = List.length sublayouts in
-     let mapSublayout i layout =
-        match (listConfig.sep, (i + 1 = sublayoutsLen)) with
+    let[@tail_mod_cons] rec mapSublayout layouts =
+        match (listConfig.sep, layouts) with
         | (NoSep, _) -> raise (NotPossible "We already covered this case. This shouldn't happen.")
-        | (Sep _, true) -> layout
-        | (SepFinal (sepStr, _), false)
-        | (Sep sepStr, false) ->
+        | (Sep _, [ layout ]) -> [ layout ]
+        | ((SepFinal (sepStr, _) | Sep sepStr), layout :: l2 :: xs) ->
           flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace ~sepStr:sepStr layout
-        | (SepFinal (_, finalSepStr), true) ->
-          flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace ~sepStr:finalSepStr layout
+          :: mapSublayout (l2 :: xs)
+        | (SepFinal (_, finalSepStr), [ layout ]) ->
+          [ flattenCommentAndSep ~spaceBeforeSep:listConfig.preSpace ~sepStr:finalSepStr layout ]
+        | (_, []) -> []
      in
-     let layoutsWithSepAndComment = List.mapi mapSublayout sublayouts in
+     let layoutsWithSepAndComment = mapSublayout sublayouts in
      let sep = Layout.NoSep in
      let preSpace = false in
      Sequence ({listConfig with sep; preSpace}, layoutsWithSepAndComment)
@@ -1801,13 +1799,21 @@ let format_layout ?comments ppf layout =
   Format.fprintf ppf "%s\n" trimmed;
   Format.pp_print_flush ppf ()
 
+let rev_and_len xs =
+  let rec rev_and_len acc len xs =
+    match xs with
+    | [] -> (acc, len)
+    | x :: xs -> rev_and_len (x :: acc) (len + 1) xs
+  in
+  rev_and_len [] 0 xs
+
 let partitionFinalWrapping listTester wrapFinalItemSetting x =
-  let rev = List.rev x in
+  let (rev, len) = rev_and_len x in
   match (rev, wrapFinalItemSetting) with
     | ([], _) -> raise (NotPossible "shouldnt be partitioning 0 label attachments")
     | (_, NeverWrapFinalItem) -> None
     | (last::revEverythingButLast, WrapFinalListyItemIfFewerThan max) ->
-        if not (listTester last) || (List.length x) >= max then
+        if not (listTester last) || len >= max then
           None
         else
           Some (List.rev revEverythingButLast, last)
@@ -2184,35 +2190,36 @@ let formatComputedInfixChain infixChainList =
      * foo
      * |> f
      * |> z *)
-    if List.length group < 2 then
-      makeList ~inline:(true, true) ~sep:(Sep " ") group
-    (* Basic equality operators require special formatting, we can't give it
-     * 'classic' infix operator formatting, otherwise we would get
-     * let example =
-     *  true
-     *  != false
-     *  && "a"
-     *  == "b"
-     *  *)
-    else if List.mem currentToken equalityOperators then
-      let hd = List.hd group in
-      let tl = makeList ~inline:(true, true) ~sep:(Sep " ") (List.tl group) in
-      makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
-    else if currentToken.[0] = '#' then
-      let isSharpEqual = currentToken = sharpOpEqualToken in
-      makeList ~postSpace:isSharpEqual group
-    else
-      (* Represents `|> f` in foo |> f
-       * We need a label here to indent possible closing parens
-       * on the same height as the infix operator
-       * e.g.
-       * >|= (
-       *   fun body =>
-       *     Printf.sprintf
-       *       "okokok" uri meth headers body
-       * )   <-- notice how this closing paren is on the same height as >|=
-       *)
-      label ~break:`Never ~space:true (atom currentToken) (List.nth group 1)
+    match group with
+    | [] | [ _ ] -> makeList ~inline:(true, true) ~sep:(Sep " ") group
+    | _ ->
+      (* Basic equality operators require special formatting, we can't give it
+       * 'classic' infix operator formatting, otherwise we would get
+       * let example =
+       *  true
+       *  != false
+       *  && "a"
+       *  == "b"
+       *  *)
+      if List.mem currentToken equalityOperators then
+        let hd = List.hd group in
+        let tl = makeList ~inline:(true, true) ~sep:(Sep " ") (List.tl group) in
+        makeList ~inline:(true, true) ~sep:(Sep " ") ~break:IfNeed [hd; tl]
+      else if currentToken.[0] = '#' then
+        let isSharpEqual = currentToken = sharpOpEqualToken in
+        makeList ~postSpace:isSharpEqual group
+      else
+        (* Represents `|> f` in foo |> f
+         * We need a label here to indent possible closing parens
+         * on the same height as the infix operator
+         * e.g.
+         * >|= (
+         *   fun body =>
+         *     Printf.sprintf
+         *       "okokok" uri meth headers body
+         * )   <-- notice how this closing paren is on the same height as >|=
+         *)
+        label ~break:`Never ~space:true (atom currentToken) (List.nth group 1)
   in
   let rec print acc group currentToken l =
     match l with
@@ -2863,11 +2870,11 @@ let printer = object(self:'self)
       source_map ~loc:pld.pld_loc recordRow
     in
     let rows = List.map recordRow lbls in
-    (* if a record has more than 2 rows, always break *)
+    (* if a record has more than 1 row, always break *)
     let break =
-      if List.length rows >= 2
-      then Layout.Always_rec
-      else Layout.IfNeed
+      match rows with
+      | [] | [ _ ] -> Layout.IfNeed
+      | _ -> Layout.Always_rec
     in
     source_map ?loc:assumeRecordLoc
       (makeList ~wrap ~sep:commaTrail ~postSpace:true ~break rows)
@@ -3547,7 +3554,10 @@ let printer = object(self:'self)
       | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
       in
       if hasLabelledChildrenLiteral && hasSingleNonLabelledUnitAndIsAtTheEnd l then
-        if List.length (Longident.flatten_exn loc.txt) > 1 then
+        match Longident.flatten_exn loc.txt with
+        | [] | [ _ ] ->
+          Some (self#formatJSXComponent (Longident.last_exn loc.txt) l)
+        | _ ->
           if Longident.last_exn loc.txt = "createElement" then
             begin match extract_apps [] app with
               | ftor::args ->
@@ -3556,7 +3566,6 @@ let printer = object(self:'self)
               | _ -> None
             end
           else None
-        else Some (self#formatJSXComponent (Longident.last_exn loc.txt) l)
       else None
     )
     | _ -> None
@@ -6320,11 +6329,12 @@ let printer = object(self:'self)
       | Open -> atom ".."
     in
     (* if an object has more than 2 rows, always break for readability *)
-    let rows_layout = makeList
-        ~inline:(true, true) ~postSpace:true ~sep:commaTrail rows
-        ~break:(if List.length rows >= 2
-                then Layout.Always_rec
-                else Layout.IfNeed)
+    let rows_layout =
+      let break = match rows with
+        | [] | [ _ ] -> Layout.IfNeed
+        | _ -> Layout.Always_rec
+      in
+      makeList ~break ~inline:(true, true) ~postSpace:true ~sep:commaTrail rows
     in
     makeList
       ~break:Layout.IfNeed
@@ -7520,7 +7530,11 @@ let printer = object(self:'self)
           ~comments:self#comments
           s
         in
-        let shouldBreakLabel = if List.length s > 0 then `Always else `Auto in
+        let shouldBreakLabel =
+          match s with
+          | [] -> `Auto
+          | _ -> `Always
+        in
         label
           ~indent:0
           ~break:shouldBreakLabel
@@ -7533,7 +7547,7 @@ let printer = object(self:'self)
               (source_map
                  ~loc:x.pmty_loc
                  (makeList
-                    ~break:(if List.length s > 0 then Always else IfNeed)
+                    ~break:(match s with | [] -> IfNeed | _ -> Always)
                     ~inline:(true, true)
                     ~postSpace:true
                     ~sep:(SepFinal (";", ";"))
