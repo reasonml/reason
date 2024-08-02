@@ -3691,7 +3691,7 @@ field_expr:
    *
    * After `blah`, the parser couldn't tell whether to reduce `label` or
    * `val_ident`. So inlining the terminal here to avoid the whole decision.
-   * Another approach would have been to place the `label` rule at at a precedence
+   * Another approach would have been to place the `label` rule at a precedence
    * of below_COLON or something.
    *)
  | as_loc(LIDENT) COLON expr

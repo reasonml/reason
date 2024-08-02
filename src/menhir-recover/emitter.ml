@@ -48,7 +48,7 @@ end = struct
         | xs -> Seq xs
 
   (* Find sharing opportunities.
-     If the same sequence of action occurs multiple times, the funtion
+     If the same sequence of action occurs multiple times, the function
      will associate a unique identifier to the sequence.
 
      [share actions] returns a pair
