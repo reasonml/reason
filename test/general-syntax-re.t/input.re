@@ -1299,3 +1299,26 @@ let%foo Foo.{
   destruct4,
   destruct5,
 } = fooBar;
+
+open%foo Bar;
+open! %foo Bar;
+
+let () = {
+  let open%foo Bar;
+  switch (1 + 1) {
+  | 2 => ()
+  | _ => ()
+  };
+};
+
+let () = {
+  let open%foo Bar;
+  3
+};
+
+let () = {
+  let open%foo Bar;
+  let x = 1;
+  3
+};
+

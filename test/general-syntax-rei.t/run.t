@@ -73,3 +73,7 @@ Format general interface syntax
         )
     ) =>
     reactClass;
+  
+  open%foo Bar;
+  
+  open! %foo Bar;

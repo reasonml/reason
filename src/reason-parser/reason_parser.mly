@@ -1732,8 +1732,7 @@ structure_item:
     | item_attributes MODULE TYPE OF? as_loc(ident) module_type_body(EQUAL)
       { let loc = mklocation $symbolstartpos $endpos in
         mkstr(Pstr_modtype (Ast_helper.Mtd.mk $5 ~typ:$6 ~attrs:$1 ~loc)) }
-    | open_declaration
-      { mkstr(Pstr_open $1) }
+    | open_declaration { $1 }
     | item_attributes CLASS class_declaration_details and_class_declaration*
       { let (ident, binding, virt, params) = $3 in
         let loc = mklocation $symbolstartpos $endpos($3) in
@@ -1982,8 +1981,7 @@ signature_item:
     { let loc = mklocation $symbolstartpos $endpos in
       Psig_modtype (Ast_helper.Mtd.mk $4 ~typ:$5 ~loc ~attrs:$1)
     }
-  | open_description
-    { Psig_open $1 }
+  | open_description { $1 }
   | item_attributes INCLUDE module_type
     { let loc = mklocation $symbolstartpos $endpos in
       Ppxlib.Parsetree.Psig_include (Ast_helper.Incl.mk $3 ~attrs:$1 ~loc)
@@ -2005,13 +2003,28 @@ signature_items:
 ;
 
 open_declaration:
-  item_attributes OPEN override_flag module_expr
-  { Ast_helper.Opn.mk $4 ~override:$3 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
+  item_attributes OPEN override_flag item_extension_sugar? module_expr
+  {
+    let loc = mklocation $symbolstartpos $endpos in
+    let opn =
+      Ppxlib.Pstr_open
+        (Ast_helper.Opn.mk $5 ~override:$3 ~attrs:$1 ~loc)
+    in
+    wrap_str_ext
+     ~loc
+     (mkstr opn)
+     $4
+  }
 ;
 
 open_description:
-  item_attributes OPEN override_flag as_loc(mod_longident)
-  { Ast_helper.Opn.mk $4 ~override:$3 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
+  item_attributes OPEN override_flag item_extension_sugar? as_loc(mod_longident)
+  { let loc = mklocation $symbolstartpos $endpos in
+    let opn =
+      Ppxlib.Psig_open (Ast_helper.Opn.mk $5 ~override:$3 ~attrs:$1 ~loc)
+    in
+    wrap_sig_ext ~loc opn $4
+  }
 ;
 
 module_declaration:
@@ -2573,6 +2586,16 @@ seq_expr_no_seq [@recover.expr default_expr ()] (semi):
     let od = Ast_helper.Opn.mk ~override:$4 ~loc $5 in
     let exp = mkexp (Pexp_open(od, $7)) in
     { exp with pexp_attributes = $1 }
+  }
+| item_attributes LET? OPEN item_extension_sugar module_expr SEMI seq_expr(SEMI?)
+  { let loc = (mklocation $startpos($1) $endpos($4)) in
+    let od = Ast_helper.Opn.mk ~override:Fresh ~loc $5 in
+    let exp =
+      let exp = mkexp (Pexp_open(od, $7)) in
+      { exp with pexp_attributes = $1 }
+    in
+    let (ext_attrs, ext_id)  = $4 in
+    mkexp ~loc (Pexp_extension (ext_id, PStr [mkstrexp exp ext_attrs]))
   }
 | str_exception_declaration SEMI seq_expr(SEMI?) {
    mkexp (Pexp_letexception ($1, $3)) }

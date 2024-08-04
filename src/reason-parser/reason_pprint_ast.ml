@@ -169,6 +169,20 @@ let add_extension_sugar keyword = function
   | None -> keyword
   | Some str -> keyword ^ "%" ^ str.txt
 
+let override = function
+  | Override -> "!"
+  | Fresh -> ""
+
+let add_open_extension_sugar ~override:open_override extension =
+  let base = "open" in
+  match extension, open_override with
+  | extension, Fresh -> add_extension_sugar base extension
+  | None, Override -> base ^ (override open_override)
+  | Some _, Override ->
+    (* need to add a space between `!` and `%foo` otherwise it can't be
+       parsed back *)
+    add_extension_sugar (base ^ (override open_override) ^ " ") extension
+
 let string_equal : string -> string -> bool = (=)
 
 let string_loc_equal: string Asttypes.loc -> string Asttypes.loc -> bool =
@@ -715,10 +729,6 @@ let needs_spaces txt =
 let rec orList = function (* only consider ((A|B)|C)*)
   | {ppat_desc = Ppat_or (p1, p2)} -> (orList p1) @ (orList p2)
   | x -> [x]
-
-let override = function
-  | Override -> "!"
-  | Fresh -> ""
 
 (* variance encoding: need to sync up with the [parser.mly] *)
 let type_variance = function
@@ -5566,6 +5576,29 @@ let printer = object(self:'self)
         ~inline:(true, true)
         itemsLayout
 
+  method pexp_open ~attrs ?extension expr me =
+    let openLayout = label ~space:true
+      (atom (add_open_extension_sugar ~override:me.popen_override extension))
+      (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
+    in
+    let attrsOnOpen =
+      makeList ~inline:(true, true) ~postSpace:true ~break:Always
+      ((self#attributes attrs)@[openLayout])
+    in
+    (* Just like the bindings, have to synthesize a location since the
+    * Pexp location is parsed (potentially) beginning with the open
+    * brace {} in the let sequence. *)
+    let layout = source_map ~loc:me.popen_loc attrsOnOpen in
+    let loc = {
+      me.popen_loc with
+      loc_start = {
+        me.popen_loc.loc_start with
+        pos_lnum = expr.pexp_loc.loc_start.pos_lnum
+      }
+    }
+    in
+    loc, layout
+
   method letList expr =
     let letModuleBinding ?extension s me =
       let prefixText = add_extension_sugar "module" extension in
@@ -5625,7 +5658,6 @@ let printer = object(self:'self)
         | (attrs, Pexp_open (me, e))
             (* Add this when check to make sure these are handled as regular "simple expressions" *)
             when not (self#isSeriesOfOpensFollowedByNonSequencyExpression {expr with pexp_attributes = []}) ->
-          let overrideStr = match me.popen_override with | Override -> "!" | Fresh -> "" in
           if (Reason_attributes.has_open_notation_attr stylisticAttrs) then (
             (Location.none, label
               (label
@@ -5634,25 +5666,7 @@ let printer = object(self:'self)
               (makeLetSequence ~wrap:("(", ")") (self#letList e))) :: acc
           )
           else (
-            let openLayout = label ~space:true
-              (atom ("open" ^ overrideStr))
-              (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
-            in
-            let attrsOnOpen =
-              makeList ~inline:(true, true) ~postSpace:true ~break:Always
-              ((self#attributes attrs)@[openLayout])
-            in
-            (* Just like the bindings, have to synthesize a location since the
-            * Pexp location is parsed (potentially) beginning with the open
-            * brace {} in the let sequence. *)
-            let layout = source_map ~loc:me.popen_loc attrsOnOpen in
-            let loc = {
-              me.popen_loc with
-              loc_start = {
-                me.popen_loc.loc_start with
-                pos_lnum = expr.pexp_loc.loc_start.pos_lnum
-              }
-            } in
+            let loc, layout = self#pexp_open ~attrs expr me in
             processLetList ((loc, layout)::acc) e
           )
         | ([], Pexp_letmodule (s, me, e)) ->
@@ -5687,6 +5701,9 @@ let printer = object(self:'self)
             processLetList ((extractLocationFromValBindList expr l, layout)::acc) e
           | Some (extension, {pexp_attributes = []; pexp_desc = Pexp_letmodule (s, me, e)}) ->
             let loc, layout = letModuleBinding ~extension s me in
+            processLetList ((loc, layout)::acc) e
+          | Some (extension, {pexp_attributes = attrs; pexp_desc = Pexp_open (me, e)}) ->
+            let loc, layout = self#pexp_open ~attrs ~extension expr me in
             processLetList ((loc, layout)::acc) e
           | Some (extension, e) ->
             let layout = self#attach_std_item_attrs ~extension [] (self#unparseExpr e) in
@@ -7288,6 +7305,7 @@ let printer = object(self:'self)
           | Psig_value vd -> self#val_binding ~extension vd
           | Psig_module pmd -> self#psig_module ~extension pmd
           | Psig_recmodule pmd -> self#psig_recmodule ~extension pmd
+          | Psig_open od -> self#psig_open ~extension od
           | _ -> self#payload "%%" extension (PSig [item])
         end
     | _ -> self#signature_item' item
@@ -7378,6 +7396,26 @@ let printer = object(self:'self)
         ~comments:self#comments
         items)
 
+  method psig_open ?extension od =
+    let {Reason_attributes.stdAttrs; docAttrs} =
+      Reason_attributes.partitionAttributes ~partDoc:true od.popen_attributes
+    in
+    let layout =
+      let open_prefix =
+        add_open_extension_sugar ~override:od.popen_override extension
+      in
+      self#attach_std_item_attrs stdAttrs @@
+      label ~space:true
+        (atom open_prefix)
+        (self#longident_loc od.popen_expr)
+    in
+    self#attachDocAttrsToLayout
+      ~stdAttrs
+      ~docAttrs
+      ~loc:od.popen_expr.loc
+      ~layout
+      ()
+
   method signature_item' x : Layout.t =
     let item: Layout.t =
       match x.psig_desc with
@@ -7426,22 +7464,7 @@ let printer = object(self:'self)
                  (List.map class_description xs)
             )
         | Psig_module pmd -> self#psig_module pmd
-        | Psig_open od ->
-          let {Reason_attributes.stdAttrs; docAttrs} =
-            Reason_attributes.partitionAttributes ~partDoc:true od.popen_attributes
-          in
-          let layout =
-            self#attach_std_item_attrs stdAttrs @@
-            label ~space:true
-              (atom ("open" ^ (override od.popen_override)))
-              (self#longident_loc od.popen_expr)
-          in
-          self#attachDocAttrsToLayout
-            ~stdAttrs
-            ~docAttrs
-            ~loc:od.popen_expr.loc
-            ~layout
-            ()
+        | Psig_open od -> self#psig_open od
         | Psig_include incl ->
           let {Reason_attributes.stdAttrs; docAttrs} =
             Reason_attributes.partitionAttributes ~partDoc:true incl.pincl_attributes
@@ -7733,6 +7756,15 @@ let printer = object(self:'self)
         ~comments:self#comments
         items)
 
+  method pstr_open ?extension od =
+    let open_prefix =
+      add_open_extension_sugar ~override:od.popen_override extension
+    in
+    self#attach_std_item_attrs od.popen_attributes @@
+    label ~space:true
+      (atom open_prefix)
+      (self#moduleExpressionToFormattedApplicationItems od.popen_expr)
+
   method structure ?(indent=Some 0) ?wrap structureItems =
     (* We don't have any way to know if an extension is placed at the top level by the parsetree
     while there's a difference syntactically (% for structure_items/expressons and %% for top_level).
@@ -7753,6 +7785,7 @@ let printer = object(self:'self)
                   self#let_module_binding prefix bindingName binding.pmb_expr in
                 self#attach_std_item_attrs binding.pmb_attributes module_binding
             | Pstr_recmodule decls -> self#recmodule ~extension decls
+            | Pstr_open od -> self#pstr_open ~extension od
             | _ -> self#attach_std_item_attrs attrs (self#payload "%%" extension (PStr [item]))
           end
       | _ -> self#structure_item item
@@ -7890,11 +7923,7 @@ let printer = object(self:'self)
             let bindingName = atom ~loc:binding.pmb_name.loc (moduleIdent binding.pmb_name) in
             let module_binding = self#let_module_binding "module" bindingName binding.pmb_expr in
             self#attach_std_item_attrs binding.pmb_attributes module_binding
-        | Pstr_open od ->
-            self#attach_std_item_attrs od.popen_attributes @@
-            label ~space:true
-              (atom ("open" ^ (override od.popen_override)))
-              (self#moduleExpressionToFormattedApplicationItems od.popen_expr)
+        | Pstr_open od -> self#pstr_open od
         | Pstr_modtype x ->
             let name = atom x.pmtd_name.txt in
             let letPattern = makeList ~postSpace:true [atom "module type"; name; atom "="] in
