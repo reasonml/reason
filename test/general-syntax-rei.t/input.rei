@@ -64,3 +64,7 @@ let wrapReasonForJs:
   ) =>
   reactClass;
 
+open%foo Bar;
+
+open! %foo Bar;
+
