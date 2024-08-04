@@ -1,5 +1,3 @@
-open Reason_errors
-
 module P = Reason_recover_parser
 module Lexer = Reason_lexer
 
@@ -33,7 +31,7 @@ let rec loop lexer parser =
     (* Impossible to reach this case? *)
     let _, loc_start, loc_end = token in
     let loc = {Location. loc_start; loc_end; loc_ghost = false} in
-    raise_fatal_error (Parsing_error "Syntax error") loc
+    Reason_errors.raise_fatal_error (Parsing_error "Syntax error") loc
   | P.Success (x, docstrings) ->
     (x, docstrings)
 
@@ -62,7 +60,7 @@ let rec skip_phrase lexer =
     match Lexer.token lexer with
     | (Reason_parser.SEMI | Reason_parser.EOF), _, _ -> ()
     | _ -> skip_phrase lexer
-  with Reason_error (Lexing_error ( Unterminated_comment _
+  with Reason_errors.Reason_error (Lexing_error ( Unterminated_comment _
                                   | Unterminated_string
                                   | Unterminated_string_in_comment _
                                   | Illegal_character _) , _ ) ->
@@ -71,7 +69,7 @@ let rec skip_phrase lexer =
 let safeguard_parsing lexbuf fn =
   try fn ()
   with
-  | Reason_error _ as err
+  | Reason_errors.Reason_error _ as err
     when !Location.input_name = "//toplevel//"->
     skip_phrase (Lexer.init lexbuf);
     raise err

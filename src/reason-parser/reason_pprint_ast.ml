@@ -49,13 +49,7 @@
 module Easy_format = Vendored_easy_format
 
 open Ppxlib
-open Asttypes
-open Location
-open Longident
-open Parsetree
 open Easy_format
-open Reason_syntax_util
-open Reason_attributes
 
 module Comment = Reason_comment
 module Layout = Reason_layout
@@ -512,8 +506,8 @@ let printedStringAndFixity = function
       else
         AlmostSimplePrefix s
   )
-  | s when is_letop s -> Letop s
-  | s when is_andop s -> Andop s
+  | s when Reason_syntax_util.is_letop s -> Letop s
+  | s when Reason_syntax_util.is_andop s -> Andop s
   | _ -> Normal
 
 
@@ -1505,13 +1499,13 @@ let rec looselyAttachComment ~breakAncestors layout comment =
       match (Layout.get_location left, Layout.get_location right) with
       | (None, None) ->
         (left, looselyAttachComment ~breakAncestors right comment)
-      | (_, Some loc2) when location_contains loc2 location ->
+      | (_, Some loc2) when Reason_syntax_util.location_contains loc2 location ->
         (left, looselyAttachComment ~breakAncestors right comment)
-      | (Some loc1, _) when location_contains loc1 location ->
+      | (Some loc1, _) when Reason_syntax_util.location_contains loc1 location ->
         (looselyAttachComment ~breakAncestors left comment, right)
-      | (Some loc1, Some _) when location_is_before location loc1 ->
+      | (Some loc1, Some _) when Reason_syntax_util.location_is_before location loc1 ->
         (prependSingleLineComment comment left, right)
-      | (Some _, Some loc2) when location_is_before location loc2 ->
+      | (Some _, Some loc2) when Reason_syntax_util.location_is_before location loc2 ->
         (left, prependSingleLineComment comment right)
       | _ -> (left, appendComment ~breakAncestors right comment)
     in
@@ -1563,7 +1557,7 @@ let rec insertSingleLineComment layout comment =
       | hd::tl ->
         let afterComment =
           match Layout.get_location hd with
-          | Some loc when location_contains loc location ->
+          | Some loc when Reason_syntax_util.location_contains loc location ->
             insertSingleLineComment hd comment :: tl
           | Some loc ->
             Layout.SourceMap (loc, (prependSingleLineComment comment hd)) :: tl
@@ -1578,13 +1572,13 @@ let rec insertSingleLineComment layout comment =
     let newLeft, newRight = match (leftLoc, rightLoc) with
       | (None, None) ->
         (left, insertSingleLineComment right comment)
-      | (_, Some loc2) when location_contains loc2 location ->
+      | (_, Some loc2) when Reason_syntax_util.location_contains loc2 location ->
         (left, insertSingleLineComment right comment)
-      | (Some loc1, _) when location_contains loc1 location ->
+      | (Some loc1, _) when Reason_syntax_util.location_contains loc1 location ->
         (insertSingleLineComment left comment, right)
-      | (Some loc1, Some _) when location_is_before location loc1 ->
+      | (Some loc1, Some _) when Reason_syntax_util.location_is_before location loc1 ->
         (prependSingleLineComment comment left, right)
-      | (Some _, Some loc2) when location_is_before location loc2 ->
+      | (Some _, Some loc2) when Reason_syntax_util.location_is_before location loc2 ->
         (left, prependSingleLineComment comment right)
       | _ ->
         (left, breakline right (formatComment comment))
@@ -1973,7 +1967,7 @@ let typeApplicationFinalWrapping typeApplicationItems =
 let protectIdentifier txt =
   let needs_parens = needs_parens txt in
   let txt =
-    if is_andop txt || is_letop txt then
+    if Reason_syntax_util.is_andop txt || Reason_syntax_util.is_letop txt then
       Reason_syntax_util.compress_letop_identifier txt
     else
       txt
@@ -2083,7 +2077,7 @@ let isJSXComponent expr =
   match expr with
   | ({pexp_desc= Pexp_apply ({pexp_desc=Pexp_ident _}, args); pexp_attributes})
   | ({pexp_desc= Pexp_apply ({pexp_desc=Pexp_letmodule(_,_,_)}, args); pexp_attributes}) ->
-    let {jsxAttrs} = partitionAttributes pexp_attributes in
+    let {Reason_attributes.jsxAttrs} = Reason_attributes.partitionAttributes pexp_attributes in
     let hasLabelledChildrenLiteral = List.exists (function
       | (Labelled "children", _) -> true
       | _ -> false
@@ -2439,7 +2433,7 @@ let printer = object(self:'self)
   method non_arrowed_core_type x = self#non_arrowed_non_simple_core_type x
 
   method core_type2 x =
-    let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
+    let {Reason_attributes.stdAttrs; uncurried} = Reason_attributes.partitionAttributes x.ptyp_attributes in
     let uncurried = uncurried || try Hashtbl.find uncurriedTable x.ptyp_loc with | Not_found -> false in
     if stdAttrs != [] then
       formatAttributed
@@ -2492,7 +2486,7 @@ let printer = object(self:'self)
 
   (* Same as core_type2 but can be aliased *)
   method core_type x =
-    let {stdAttrs; uncurried} = partitionAttributes x.ptyp_attributes in
+    let {Reason_attributes.stdAttrs; uncurried} = Reason_attributes.partitionAttributes x.ptyp_attributes in
     let () = if uncurried then Hashtbl.add uncurriedTable x.ptyp_loc true in
     if stdAttrs != [] then
       formatAttributed
@@ -2698,7 +2692,7 @@ let printer = object(self:'self)
           (atom eq_symbol)
           td
       in
-      let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true td.ptype_attributes in
+      let {Reason_attributes.stdAttrs; docAttrs} = Reason_attributes.partitionAttributes ~partDoc:true td.ptype_attributes in
       let layout = self#attach_std_item_attrs stdAttrs itm in
       self#attachDocAttrsToLayout
         ~stdAttrs
@@ -2745,7 +2739,7 @@ let printer = object(self:'self)
    * not parsed or printed correctly. *)
   method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
     let {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes} = x in
-    let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true pcd_attributes in
+    let {Reason_attributes.stdAttrs; docAttrs} = Reason_attributes.partitionAttributes ~partDoc:true pcd_attributes in
     let ampersand_helper i arg =
       let ct = self#core_type arg in
       let ct = match arg.ptyp_desc with
@@ -2856,7 +2850,7 @@ let printer = object(self:'self)
       let recordRow = match pld.pld_attributes with
       | [] -> recordRow
       | attrs ->
-          let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true attrs in
+          let {Reason_attributes.stdAttrs; docAttrs} = Reason_attributes.partitionAttributes ~partDoc:true attrs in
         let stdAttrsLayout =
           makeList ~inline:(true, true) ~postSpace:true (self#attributes stdAttrs)
         in
@@ -3027,7 +3021,7 @@ let printer = object(self:'self)
     "hello", None.
   *)
   method non_arrowed_non_simple_core_type x =
-    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
+    let {Reason_attributes.stdAttrs} = Reason_attributes.partitionAttributes x.ptyp_attributes in
     if stdAttrs != [] then
       formatAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -3044,7 +3038,7 @@ let printer = object(self:'self)
     | t -> self#core_type t
 
   method non_arrowed_simple_core_type x =
-    let {stdAttrs} = partitionAttributes x.ptyp_attributes in
+    let {Reason_attributes.stdAttrs} = Reason_attributes.partitionAttributes x.ptyp_attributes in
     if stdAttrs != [] then
       formatSimpleAttributed
         (self#non_arrowed_simple_core_type {x with ptyp_attributes=[]})
@@ -3209,7 +3203,7 @@ let printer = object(self:'self)
    * Assumes visually rendered attributes have already been rendered.
    *)
   method pattern_at_least_as_simple_as_alias_or_or x =
-    let {arityAttrs=_; stdAttrs} = partitionAttributes x.ppat_attributes in
+    let {Reason_attributes.arityAttrs=_; stdAttrs} = Reason_attributes.partitionAttributes x.ppat_attributes in
     match stdAttrs, x.ppat_desc with
       | [], Ppat_or (p1, p2) ->
         self#or_pattern p1 p2
@@ -3249,7 +3243,7 @@ let printer = object(self:'self)
    *)
   method pattern_at_least_as_simple_as_application x =
     (* TODOATTRIBUTES: Handle the stdAttrs here *)
-    let {stdAttrs; arityAttrs} = partitionAttributes x.ppat_attributes in
+    let {Reason_attributes.stdAttrs; arityAttrs} = Reason_attributes.partitionAttributes x.ppat_attributes in
     let formattedPattern =
       match x.ppat_desc with
         | Ppat_variant (l, Some p) ->
@@ -3303,7 +3297,7 @@ let printer = object(self:'self)
    * Assumes visually rendered attributes have already been rendered.
    *)
   method pattern x =
-    let {arityAttrs=_; stdAttrs} = partitionAttributes x.ppat_attributes in
+    let {Reason_attributes.arityAttrs=_; stdAttrs} = Reason_attributes.partitionAttributes x.ppat_attributes in
     match stdAttrs, x.ppat_desc with
       | [], Ppat_constraint (p, ct) ->
           let (pat, typ) = begin match (p, ct) with
@@ -3377,7 +3371,7 @@ let printer = object(self:'self)
     else unwrapped_layout
 
   method simple_pattern x =
-    let {arityAttrs; stdAttrs} = partitionAttributes x.ppat_attributes in
+    let {Reason_attributes.arityAttrs; stdAttrs} = Reason_attributes.partitionAttributes x.ppat_attributes in
     if stdAttrs != [] then
       formatSimpleAttributed
         (self#simple_pattern {x with ppat_attributes=arityAttrs})
@@ -3441,7 +3435,7 @@ let printer = object(self:'self)
           | Ppat_tuple l ->
              self#patternTuple l
           | Ppat_constant c ->
-            let raw_literal, _ = extract_raw_literal x.ppat_attributes in
+            let raw_literal, _ = Reason_attributes.extract_raw_literal x.ppat_attributes in
             (self#constant ?raw_literal c)
           | Ppat_interval (c1, c2) ->
             makeList ~postSpace:true [self#constant c1; atom ".."; self#constant c2]
@@ -3498,7 +3492,7 @@ let printer = object(self:'self)
 
 
   method simple_get_application x =
-    let {stdAttrs; jsxAttrs} = partitionAttributes x.pexp_attributes in
+    let {Reason_attributes.stdAttrs; jsxAttrs} = Reason_attributes.partitionAttributes x.pexp_attributes in
     match (x.pexp_desc, stdAttrs, jsxAttrs) with
     | (_, _::_, []) -> None (* Has some printed attributes - not simple *)
     | (Pexp_apply ({pexp_desc=Pexp_ident loc}, l), [], _jsx::_) -> (
@@ -3724,7 +3718,7 @@ let printer = object(self:'self)
 
   (* This method may not even be needed *)
   method unparseUnattributedExpr x =
-    match partitionAttributes x.pexp_attributes with
+    match Reason_attributes.partitionAttributes x.pexp_attributes with
     | {docAttrs = []; stdAttrs = []} -> self#unparseExpr x
     | _ -> makeList ~wrap:("(",")") [self#unparseExpr x]
 
@@ -3751,7 +3745,7 @@ let printer = object(self:'self)
          * Some((-1)) should be printed as Some(-1). This is in contrast with
          * 1 + (-1) where we print the parens for readability. *)
           let raw_literal, pexp_attributes =
-            extract_raw_literal pexp_attributes
+            Reason_attributes.extract_raw_literal pexp_attributes
           in
           let constant = self#constant ?raw_literal ~parens:forceParens c in
           begin match pexp_attributes with
@@ -4052,10 +4046,14 @@ let printer = object(self:'self)
     let x = self#process_underscore_application x in
     (* If there are any attributes, render unary like `(~-) x [@ppx]`, and infix like `(+) x y [@attr]` *)
 
-    let {arityAttrs; stdAttrs; jsxAttrs; stylisticAttrs; uncurried} =
-      partitionAttributes ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried x) x.pexp_attributes
+    let {Reason_attributes.arityAttrs; stdAttrs; jsxAttrs; stylisticAttrs; uncurried} =
+      Reason_attributes.partitionAttributes ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried x) x.pexp_attributes
     in
-    let stylisticAttrs = Reason_attributes.maybe_remove_stylistic_attrs stylisticAttrs preserve_braces in
+    let stylisticAttrs =
+      Reason_attributes.maybe_remove_stylistic_attrs
+        stylisticAttrs
+        ~should_preserve:preserve_braces
+    in
     let () = if uncurried then Hashtbl.add uncurriedTable x.pexp_loc true in
     let x = {x with pexp_attributes = (stylisticAttrs @ arityAttrs @ stdAttrs @ jsxAttrs) } in
     (* If there's any attributes, recurse without them, then apply them to
@@ -4302,7 +4300,7 @@ let printer = object(self:'self)
         let leftItm = self#unparseResolvedRule (
           self#ensureExpression ~reducesOnToken:prec e
         ) in
-        let {stdAttrs} = partitionAttributes e.pexp_attributes in
+        let {Reason_attributes.stdAttrs} = Reason_attributes.partitionAttributes e.pexp_attributes in
         let formattedLeftItm = if stdAttrs == [] then
             leftItm
           else
@@ -4392,7 +4390,7 @@ let printer = object(self:'self)
      *)
     | _ -> (
       match parent with
-      | Some parent when has_open_notation_attr parent.pexp_attributes ->
+      | Some parent when Reason_attributes.has_open_notation_attr parent.pexp_attributes ->
         makeList
           ~break:IfNeed
           ~inline:(true, false)
@@ -4597,7 +4595,7 @@ let printer = object(self:'self)
       | (Labelled "children", expr) :: tail ->
           processArguments tail processedAttrs (Some [self#dotdotdotChild expr])
       | (Optional lbl, expression) :: tail ->
-        let {jsxAttrs; _} = partitionAttributes expression.pexp_attributes in
+        let {Reason_attributes.jsxAttrs; _} = Reason_attributes.partitionAttributes expression.pexp_attributes in
         let value_has_jsx = jsxAttrs != [] in
         let nextAttr =
           match expression.pexp_desc with
@@ -4613,7 +4611,7 @@ let printer = object(self:'self)
                 (self#dont_preserve_braces#simplifyUnparseExpr ~wrap:("{","}") expression) in
         processArguments tail (nextAttr :: processedAttrs) children
       | (Labelled lbl, expression) :: tail ->
-         let {jsxAttrs; _} = partitionAttributes expression.pexp_attributes in
+         let {Reason_attributes.jsxAttrs; _} = Reason_attributes.partitionAttributes expression.pexp_attributes in
          let value_has_jsx = jsxAttrs != [] in
          let nextAttr =
            match expression.pexp_desc with
@@ -4730,7 +4728,7 @@ let printer = object(self:'self)
    *)
   method formatPexpFun ?(prefix=(atom "")) ?(wrap=("","")) expression =
     let (lwrap, rwrap) = wrap in
-    let {stdAttrs; uncurried} = partitionAttributes expression.pexp_attributes in
+    let {Reason_attributes.stdAttrs; uncurried} = Reason_attributes.partitionAttributes expression.pexp_attributes in
     if uncurried then Hashtbl.add uncurriedTable expression.pexp_loc true;
 
     let (args, ret) =
@@ -5050,7 +5048,7 @@ let printer = object(self:'self)
   method curriedPatternsAndReturnVal x =
     let uncurried = try Hashtbl.find uncurriedTable x.pexp_loc with | Not_found -> false in
     let rec extract_args xx =
-      let {stdAttrs} = partitionAttributes ~allowUncurry:false xx.pexp_attributes in
+      let {Reason_attributes.stdAttrs} = Reason_attributes.partitionAttributes ~allowUncurry:false xx.pexp_attributes in
       if stdAttrs != [] then
         ([], xx)
       else match xx.pexp_desc with
@@ -5312,7 +5310,7 @@ let printer = object(self:'self)
     self#binding prefixText ~attrs:pvb_attributes ~loc:pvb_loc ~pat:pvb_pat pvb_expr
 
   method binding_op prefixText { pbop_pat; pbop_loc; pbop_exp } =
-    self#binding (escape_stars_slashes prefixText) ~loc:pbop_loc ~pat:pbop_pat pbop_exp
+    self#binding (Reason_syntax_util.escape_stars_slashes prefixText) ~loc:pbop_loc ~pat:pbop_pat pbop_exp
 
   method binding prefixText ?(attrs=[]) ~loc ~pat expr = (* TODO: print attributes *)
     let body = match pat.ppat_attributes, pat.ppat_desc with
@@ -5452,7 +5450,7 @@ let printer = object(self:'self)
         let appTerms = self#unparseExprApplicationItems expr in
         self#formatSimplePatternBinding prefixText layoutPattern None appTerms
     in
-    let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true attrs in
+    let {Reason_attributes.stdAttrs; docAttrs} = Reason_attributes.partitionAttributes ~partDoc:true attrs in
     let body = makeList ~inline:(true, true) [body] in
     let layout = self#attach_std_item_attrs stdAttrs (source_map ~loc:loc body) in
     self#attachDocAttrsToLayout
@@ -5544,14 +5542,14 @@ let printer = object(self:'self)
         itemsLayout
 
   method letop_bindings { let_; ands } =
-    let label = compress_letop_identifier (let_.pbop_op.txt) in
+    let label = Reason_syntax_util.compress_letop_identifier (let_.pbop_op.txt) in
     let let_item = self#binding_op label let_ in
     match ands with
     | [] -> let_item
     | l ->
       let and_items = List.map (fun x ->
         let loc = extractLocBindingOp x in
-        let layout = self#binding_op (compress_letop_identifier x.pbop_op.txt) x in
+        let layout = self#binding_op (Reason_syntax_util.compress_letop_identifier x.pbop_op.txt) x in
         (loc, layout)
       ) l
       in
@@ -5595,8 +5593,8 @@ let printer = object(self:'self)
      * list containing the location indicating start/end of the "let-item" and
      * its layout. *)
     let rec processLetList acc expr =
-      let {stdAttrs; arityAttrs; jsxAttrs; stylisticAttrs} =
-        partitionAttributes ~allowUncurry:false expr.pexp_attributes
+      let {Reason_attributes.stdAttrs; arityAttrs; jsxAttrs; stylisticAttrs} =
+        Reason_attributes.partitionAttributes ~allowUncurry:false expr.pexp_attributes
       in
       match (stdAttrs, expr.pexp_desc) with
         | ([], Pexp_let (rf, l, e)) ->
@@ -5628,7 +5626,7 @@ let printer = object(self:'self)
             (* Add this when check to make sure these are handled as regular "simple expressions" *)
             when not (self#isSeriesOfOpensFollowedByNonSequencyExpression {expr with pexp_attributes = []}) ->
           let overrideStr = match me.popen_override with | Override -> "!" | Fresh -> "" in
-          if (has_open_notation_attr stylisticAttrs) then (
+          if (Reason_attributes.has_open_notation_attr stylisticAttrs) then (
             (Location.none, label
               (label
                 (self#moduleExpressionToFormattedApplicationItems me.popen_expr)
@@ -5894,7 +5892,7 @@ let printer = object(self:'self)
 
   (* Expressions requiring parens, in most contexts such as separated by infix *)
   method expression_requiring_parens_in_infix x =
-    let {stdAttrs} = partitionAttributes x.pexp_attributes in
+    let {Reason_attributes.stdAttrs} = Reason_attributes.partitionAttributes x.pexp_attributes in
     assert (stdAttrs == []);
     (* keep the incoming expression around, an expr with
      * immediate extension sugar might contain less than perfect location
@@ -6312,7 +6310,7 @@ let printer = object(self:'self)
   method unparseObject ?wrap:((lwrap,rwrap)=("", "")) ?(withStringKeys=false) l o =
     let core_field_type = fun { pof_desc; pof_attributes; _ } -> match pof_desc with
       | Otag ({txt}, ct) ->
-        let l = extractStdAttrs pof_attributes in
+        let l = Reason_attributes.extractStdAttrs pof_attributes in
         let row =
           let rowKey = if withStringKeys then
               (makeList ~wrap:("\"", "\"") [atom txt])
@@ -6392,7 +6390,7 @@ let printer = object(self:'self)
     | _ -> assert false
 
   method should_preserve_requested_braces expr =
-    let {stylisticAttrs} = partitionAttributes expr.pexp_attributes in
+    let {Reason_attributes.stylisticAttrs} = Reason_attributes.partitionAttributes expr.pexp_attributes in
     match expr.pexp_desc with
     | Pexp_ifthenelse _
     | Pexp_try _ -> false
@@ -6404,7 +6402,8 @@ let printer = object(self:'self)
         Reason_attributes.has_preserve_braces_attrs stylisticAttrs
 
   method simplest_expression x =
-    let {stdAttrs; jsxAttrs; stylisticAttrs; arityAttrs} = partitionAttributes x.pexp_attributes in
+    let {Reason_attributes.stdAttrs; jsxAttrs; stylisticAttrs; arityAttrs} =
+      Reason_attributes.partitionAttributes x.pexp_attributes in
     let hasJsxAttribute = jsxAttrs != [] in
     if stdAttrs != [] then
       None
@@ -6483,7 +6482,7 @@ let printer = object(self:'self)
             Some (ensureSingleTokenSticksToLabel (self#longident_loc li))
         | Pexp_constant c ->
             (* Constants shouldn't break when to the right of a label *)
-          let raw_literal, _ = extract_raw_literal x.pexp_attributes in
+          let raw_literal, _ = Reason_attributes.extract_raw_literal x.pexp_attributes in
             Some (ensureSingleTokenSticksToLabel
                     (self#constant ?raw_literal c))
         | Pexp_pack me ->
@@ -6589,7 +6588,7 @@ let printer = object(self:'self)
       (* No braces - very simple *)
       | {pexp_desc = Pexp_ident li} -> self#longident_loc li
       | {pexp_desc = Pexp_constant constant} as x ->
-          let raw_literal, _ = extract_raw_literal x.pexp_attributes in
+          let raw_literal, _ = Reason_attributes.extract_raw_literal x.pexp_attributes in
           self#constant ?raw_literal constant
       | _ ->
           (* Currently spreading a list, or having a list as a child must be
@@ -6689,13 +6688,13 @@ let printer = object(self:'self)
   method attributes l = List.map self#attribute l
 
   method attach_std_attrs l toThis =
-    let l = extractStdAttrs l in
+    let l = Reason_attributes.extractStdAttrs l in
     match l with
       | [] -> toThis
       | _::_ -> makeList ~postSpace:true (List.concat [self#attributes l; [toThis]])
 
   method attach_std_item_attrs ?(allowUncurry=true) ?extension l toThis =
-    let attrs = partitionAttributes ~allowUncurry l in
+    let attrs = Reason_attributes.partitionAttributes ~allowUncurry l in
     match extension, attrs.stdAttrs with
     | None, [] -> toThis
     | Some id, _ ->
@@ -6718,8 +6717,8 @@ let printer = object(self:'self)
           [self#type_variant_leaf_nobar {pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes; pcd_vars = vars}]
       | Pext_rebind id ->
           [atom pcd_name.txt; atom "="; (self#longident_loc id)] in
-    let {stdAttrs; docAttrs} =
-      partitionAttributes ~partDoc:true ed.pext_attributes
+    let {Reason_attributes.stdAttrs; docAttrs} =
+      Reason_attributes.partitionAttributes ~partDoc:true ed.pext_attributes
     in
     let layout =
       self#attach_std_item_attrs
@@ -6829,7 +6828,8 @@ let printer = object(self:'self)
     match vd.pval_attributes with
     | [] -> primDecl
     | attrs ->
-        let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true attrs in
+        let {Reason_attributes.stdAttrs; docAttrs} =
+          Reason_attributes.partitionAttributes ~partDoc:true attrs in
         let docs = List.map self#item_attribute docAttrs in
         let formattedDocs = makeList ~postSpace:true docs in
         let attrs = List.map self#item_attribute stdAttrs in
@@ -6936,8 +6936,8 @@ let printer = object(self:'self)
             (self#class_params_def ls)
       in
       let includingEqual = makeList ~postSpace:true [upToName; atom "="] in
-      let {stdAttrs; docAttrs} =
-        partitionAttributes ~partDoc:true pci_attributes
+      let {Reason_attributes.stdAttrs; docAttrs} =
+        Reason_attributes.partitionAttributes ~partDoc:true pci_attributes
       in
       let layout =
         self#attach_std_item_attrs stdAttrs @@
@@ -7146,7 +7146,7 @@ let printer = object(self:'self)
         source_map ~loc:p.ppat_loc field :: fields
 
   method simple_class_expr x =
-    let {stdAttrs} = partitionAttributes x.pcl_attributes in
+    let {Reason_attributes.stdAttrs} = Reason_attributes.partitionAttributes x.pcl_attributes in
     if stdAttrs != [] then
       formatSimpleAttributed
         (self#simple_class_expr {x with pcl_attributes=[]})
@@ -7211,7 +7211,7 @@ let printer = object(self:'self)
     gatherOpens [] x
 
   method class_expr x =
-    let {stdAttrs} = partitionAttributes x.pcl_attributes in
+    let {Reason_attributes.stdAttrs} = Reason_attributes.partitionAttributes x.pcl_attributes in
     (* We cannot handle the attributes here. Must handle them in each item *)
     if stdAttrs != [] then
       (* Do not need a "simple" attributes precedence wrapper. *)
@@ -7294,7 +7294,7 @@ let printer = object(self:'self)
 
   method val_binding ?extension vd =
     let intro = add_extension_sugar "let" extension in
-    let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true vd.pval_attributes in
+    let {Reason_attributes.stdAttrs; docAttrs} = Reason_attributes.partitionAttributes ~partDoc:true vd.pval_attributes in
     let layout = self#attach_std_item_attrs stdAttrs
       (formatTypeConstraint
          (label ~space:true (atom intro)
@@ -7329,8 +7329,8 @@ let printer = object(self:'self)
         in
         (self#module_type letPattern pmd.pmd_type)
     in
-    let {stdAttrs; docAttrs} =
-      partitionAttributes ~partDoc:true pmd.pmd_attributes
+    let {Reason_attributes.stdAttrs; docAttrs} =
+      Reason_attributes.partitionAttributes ~partDoc:true pmd.pmd_attributes
     in
     self#attachDocAttrsToLayout
       ~stdAttrs
@@ -7341,8 +7341,8 @@ let printer = object(self:'self)
 
   method psig_recmodule ?extension decls =
     let items = List.mapi (fun i xx ->
-      let {stdAttrs; docAttrs} =
-        partitionAttributes ~partDoc:true xx.pmd_attributes
+      let {Reason_attributes.stdAttrs; docAttrs} =
+        Reason_attributes.partitionAttributes ~partDoc:true xx.pmd_attributes
       in
       let letPattern =
         makeList [
@@ -7407,7 +7407,7 @@ let printer = object(self:'self)
                 patternAux
                 ([(self#class_constructor_type x.pci_expr)], None)
               in
-              let {stdAttrs; docAttrs} = partitionAttributes ~partDoc:true x.pci_attributes in
+              let {Reason_attributes.stdAttrs; docAttrs} = Reason_attributes.partitionAttributes ~partDoc:true x.pci_attributes in
               let layout = self#attach_std_item_attrs stdAttrs withColon in
               source_map ~loc:pci_loc
                 (self#attachDocAttrsToLayout
@@ -7427,8 +7427,8 @@ let printer = object(self:'self)
             )
         | Psig_module pmd -> self#psig_module pmd
         | Psig_open od ->
-          let {stdAttrs; docAttrs} =
-            partitionAttributes ~partDoc:true od.popen_attributes
+          let {Reason_attributes.stdAttrs; docAttrs} =
+            Reason_attributes.partitionAttributes ~partDoc:true od.popen_attributes
           in
           let layout =
             self#attach_std_item_attrs stdAttrs @@
@@ -7443,8 +7443,8 @@ let printer = object(self:'self)
             ~layout
             ()
         | Psig_include incl ->
-          let {stdAttrs; docAttrs} =
-            partitionAttributes ~partDoc:true incl.pincl_attributes
+          let {Reason_attributes.stdAttrs; docAttrs} =
+            Reason_attributes.partitionAttributes ~partDoc:true incl.pincl_attributes
           in
           let layout =
             self#attach_std_item_attrs stdAttrs @@
@@ -7463,8 +7463,8 @@ let printer = object(self:'self)
             | None -> makeList ~postSpace:true [atom "module type"; name]
             | Some mt -> self#module_type letPattern mt
           in
-          let {stdAttrs; docAttrs} =
-            partitionAttributes ~partDoc:true x.pmtd_attributes
+          let {Reason_attributes.stdAttrs; docAttrs} =
+            Reason_attributes.partitionAttributes ~partDoc:true x.pmtd_attributes
           in
           let layout =
             self#attach_std_item_attrs stdAttrs main
@@ -7479,8 +7479,8 @@ let printer = object(self:'self)
         | Psig_recmodule decls -> self#psig_recmodule decls
         | Psig_attribute a -> self#floating_attribute a
         | Psig_extension (({loc}, _) as ext, attrs) ->
-          let {stdAttrs; docAttrs} =
-            partitionAttributes ~partDoc:true attrs
+          let {Reason_attributes.stdAttrs; docAttrs} =
+            Reason_attributes.partitionAttributes ~partDoc:true attrs
           in
           let layout =
             self#attach_std_item_attrs stdAttrs (self#item_extension ext)
@@ -7496,8 +7496,8 @@ let printer = object(self:'self)
           let main = makeList ~postSpace:true
             [atom "module"; name; atom ":="; self#longident_loc pms_manifest]
           in
-          let {stdAttrs; docAttrs} =
-            partitionAttributes ~partDoc:true pms_attributes
+          let {Reason_attributes.stdAttrs; docAttrs} =
+            Reason_attributes.partitionAttributes ~partDoc:true pms_attributes
           in
           let layout =
             self#attach_std_item_attrs stdAttrs main
@@ -7702,8 +7702,8 @@ let printer = object(self:'self)
 
   method recmodule ?extension decls =
     let items = List.mapi (fun i xx ->
-      let {stdAttrs; docAttrs} =
-        partitionAttributes ~partDoc:true xx.pmb_attributes
+      let {Reason_attributes.stdAttrs; docAttrs} =
+        Reason_attributes.partitionAttributes ~partDoc:true xx.pmb_attributes
       in
       let layout =
         self#attach_std_item_attrs stdAttrs @@
@@ -7866,7 +7866,8 @@ let printer = object(self:'self)
     let item = (
       match term.pstr_desc with
         | Pstr_eval (e, attrs) ->
-            let {stdAttrs; jsxAttrs; uncurried} = partitionAttributes attrs in
+            let {Reason_attributes.stdAttrs; jsxAttrs; uncurried} =
+              Reason_attributes.partitionAttributes attrs in
             if uncurried then Hashtbl.add uncurriedTable e.pexp_loc true;
             let layout = self#attach_std_item_attrs stdAttrs (self#unparseUnattributedExpr e) in
             (* If there was a JSX attribute BUT JSX component wasn't detected,
@@ -7922,8 +7923,8 @@ let printer = object(self:'self)
             (* In case of a value, the extension gets inlined `let%lwt a = 1` *)
             | Pstr_value (rf, l) -> self#bindings ~extension (rf, l)
             | _ ->
-                let {stdAttrs; docAttrs} =
-                  partitionAttributes ~partDoc:true attrs
+                let {Reason_attributes.stdAttrs; docAttrs} =
+                  Reason_attributes.partitionAttributes ~partDoc:true attrs
                 in
                 let item = self#structure_item item in
                 let layout =
@@ -7942,8 +7943,8 @@ let printer = object(self:'self)
     let formatOneTypeExtStandard prepend ({ptyext_path} as te) =
       let name = self#longident_loc ptyext_path in
       let item = self#formatOneTypeExt prepend name (atom "+=") te in
-      let {stdAttrs; docAttrs} =
-        partitionAttributes ~partDoc:true te.ptyext_attributes
+      let {Reason_attributes.stdAttrs; docAttrs} =
+        Reason_attributes.partitionAttributes ~partDoc:true te.ptyext_attributes
       in
       let layout = self#attach_std_item_attrs stdAttrs item in
       self#attachDocAttrsToLayout
@@ -8212,7 +8213,8 @@ let printer = object(self:'self)
          *   MyModuleBlah.toList(argument)
          *)
         let (argLbl, cb) = callbackArg in
-        let {stdAttrs; uncurried} = partitionAttributes cb.pexp_attributes in
+        let {Reason_attributes.stdAttrs; uncurried} =
+          Reason_attributes.partitionAttributes cb.pexp_attributes in
         let cbAttrs = stdAttrs in
         if uncurried then Hashtbl.add uncurriedTable cb.pexp_loc true;
         let (cbArgs, retCb) = self#curriedPatternsAndReturnVal {cb with pexp_attributes = []} in
@@ -8400,12 +8402,12 @@ let add_explicit_arity loc attributes =
   { attr_name = { txt="explicit_arity"; loc }
   ; attr_payload = PStr []
   ; attr_loc = loc
-  } :: normalized_attributes "explicit_arity" attributes
+  } :: Reason_syntax_util.normalized_attributes "explicit_arity" attributes
 
 (* explicit_arity_exists check if expilcit_arity exists
  *)
 let explicit_arity_not_exists attributes =
-  not (attribute_exists "explicit_arity" attributes)
+  not (Reason_syntax_util.attribute_exists "explicit_arity" attributes)
 
 (* wrap_expr_with_tuple wraps an expression
  * with tuple as a sole argument.
@@ -8485,29 +8487,29 @@ let preprocessing_mapper f a =
 let core_type ppf x =
   format_layout ppf
     (printer#core_type
-      (preprocessing_mapper apply_mapper_to_type x))
+      (preprocessing_mapper Reason_syntax_util.apply_mapper_to_type x))
 
 let pattern ppf x =
   format_layout ppf
     (printer#pattern
-      (preprocessing_mapper apply_mapper_to_pattern x))
+      (preprocessing_mapper Reason_syntax_util.apply_mapper_to_pattern x))
 
 let signature (comments : Comment.t list) ppf x =
   List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
     (printer#signature
-      (preprocessing_mapper apply_mapper_to_signature x))
+      (preprocessing_mapper Reason_syntax_util.apply_mapper_to_signature x))
 
 let structure (comments : Comment.t list) ppf x =
   List.iter (fun comment -> printer#trackComment comment) comments;
   format_layout ppf ~comments
     (printer#structure
-      (preprocessing_mapper apply_mapper_to_structure x))
+      (preprocessing_mapper Reason_syntax_util.apply_mapper_to_structure x))
 
 let expression ppf x =
   format_layout ppf
     (printer#unparseExpr
-      (preprocessing_mapper apply_mapper_to_expr x))
+      (preprocessing_mapper Reason_syntax_util.apply_mapper_to_expr x))
 
 let case_list = case_list
 

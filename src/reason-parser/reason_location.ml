@@ -1,5 +1,3 @@
-module Comment = Reason_comment
-
 module Range = struct
   (** [t] represents an interval, including endpoints,
    * delimited by two linenumbers. *)
@@ -24,8 +22,7 @@ module Range = struct
   }
 
   (** check whether [range] contains the [loc] *)
-  let containsLoc range loc =
-    let open Location in
+  let containsLoc range (loc: Location.t) =
     range.lnum_start <= loc.loc_start.pos_lnum
     && range.lnum_end >= loc.loc_end.pos_lnum
 
@@ -52,9 +49,8 @@ module Range = struct
     (* compute the amount of lines the comments occupy in the given range *)
     let h = match comments with
     | Some(comments) ->
-      List.fold_left (fun acc (curr : Comment.t) ->
-        let cl = Comment.location curr in
-        let open Location in
+      List.fold_left (fun acc (curr : Reason_comment.t) ->
+        let cl = Reason_comment.location curr in
         let startLnum = cl.loc_start.pos_lnum in
         let endLnum = cl.loc_end.pos_lnum in
         if containsLoc range cl then

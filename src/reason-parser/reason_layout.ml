@@ -1,6 +1,4 @@
 module Easy_format = Vendored_easy_format
-module Comment = Reason_comment
-module Range = Reason_location.Range
 
 type break_criterion =
   | Never
@@ -40,9 +38,9 @@ type separator =
 module WhitespaceRegion = struct
   type t = {
     (* range of the region *)
-    range: Range.t;
+    range: Reason_location.Range.t;
     (* inserted comments into the whitespace region *)
-    comments: Comment.t list;
+    comments: Reason_comment.t list;
     (* amount of newlines to be interleaved *)
     newlines: int;
   }
@@ -189,7 +187,6 @@ let dump ppf layout =
     | Easy e ->
       printf "%s Easy: '%s' \n" indent (string_of_easy e)
     | Whitespace (region, sublayout) ->
-      let open WhitespaceRegion in
       printf" %s Whitespace (%d) [%d %d]:\n" indent region.newlines region.range.lnum_start region.range.lnum_end;
       (traverse (indent_more indent) sublayout)
   in

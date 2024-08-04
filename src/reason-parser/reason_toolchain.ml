@@ -78,13 +78,7 @@
  *   let lst = [ ];
  *)
 
-open Reason_toolchain_conf
 open Ppxlib
-
-open Location
-open Lexing
-
-module Comment = Reason_comment
 
 let setup_lexbuf use_stdin filename =
   (* Use custom method of lexing from the channel to keep track of the input so that we can
@@ -125,7 +119,9 @@ let rec right_expand_comment should_scan_next_line source loc_start =
     | _ -> (c, false, loc_start)
 
 
-module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = struct
+module Create_parse_entrypoint
+  (Toolchain_impl: Reason_toolchain_conf.Toolchain_spec)
+  : Reason_toolchain_conf.Toolchain = struct
 
   let buffer_add_lexbuf buf skip lexbuf =
     let bytes = lexbuf.Lexing.lex_buffer in
@@ -191,7 +187,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
       if contents = "" then
         let _  = Parsing.clear_parser() in
         let make_regular (text, location) =
-          Comment.make ~location Comment.Regular text in
+          Reason_comment.make ~location Reason_comment.Regular text in
         (ast, List.map make_regular unmodified_comments)
       else
         let rec classifyAndNormalizeComments unmodified_comments =
@@ -205,7 +201,7 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                 left_expand_comment false contents physical_loc.loc_start.pos_cnum
               in
               if Reason_syntax_util.isLineComment txt then
-                let comment = Comment.make
+                let comment = Reason_comment.make
                   ~location:physical_loc
                   (if eol_start then SingleLine else EndOfLine)
                   txt
@@ -250,8 +246,8 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                 loc'.loc_start.pos_lnum == location.loc_end.pos_lnum
               in
               let category = match (eol_start, eol_end, classifiedTail) with
-                | (true, true, _) -> Comment.SingleLine
-                | (false, true, _) -> Comment.EndOfLine
+                | (true, true, _) -> Reason_comment.SingleLine
+                | (false, true, _) -> Reason_comment.EndOfLine
                 | (false, false, comment :: _)
                   (* End of line comment is one that has nothing but newlines or
                    * other comments its right, and has some AST to the left of it.
@@ -259,13 +255,13 @@ module Create_parse_entrypoint (Toolchain_impl: Toolchain_spec) :Toolchain = str
                    *
                    *    | Y(int, int); /* eol1 */ /* eol2 */
                    *)
-                  when Comment.category comment = Comment.EndOfLine
-                    && just_after (Comment.location comment) ->
-                  Comment.EndOfLine
-                | _ -> Comment.Regular
+                  when Reason_comment.category comment = Reason_comment.EndOfLine
+                    && just_after (Reason_comment.location comment) ->
+                  Reason_comment.EndOfLine
+                | _ -> Reason_comment.Regular
               in
               let comment =
-                Comment.make ~location category original_comment_contents
+                Reason_comment.make ~location category original_comment_contents
               in
               comment :: classifiedTail
             )
@@ -358,5 +354,5 @@ end
 
 module ML = Create_parse_entrypoint (Reason_toolchain_ocaml)
 module RE = Create_parse_entrypoint (Reason_toolchain_reason)
-module From_current = From_current
-module To_current = To_current
+module From_current = Reason_toolchain_conf.From_current
+module To_current = Reason_toolchain_conf.To_current

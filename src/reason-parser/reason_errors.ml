@@ -11,7 +11,6 @@
 *)
 
 open Ppxlib
-open Format
 
 type lexing_error =
   | Illegal_character of char
@@ -65,41 +64,41 @@ let recover_non_fatal_errors f =
 
 let format_lexing_error ppf = function
   | Illegal_character c ->
-      fprintf ppf "Illegal character (%s)" (Char.escaped c)
+      Format.fprintf ppf "Illegal character (%s)" (Char.escaped c)
   | Illegal_escape s ->
-      fprintf ppf "Illegal backslash escape in string or character (%s)" s
+      Format.fprintf ppf "Illegal backslash escape in string or character (%s)" s
   | Unterminated_comment _ ->
-      fprintf ppf "Comment not terminated"
+      Format.fprintf ppf "Comment not terminated"
   | Unterminated_string ->
-      fprintf ppf "String literal not terminated"
+      Format.fprintf ppf "String literal not terminated"
   | Unterminated_string_in_comment (_, loc) ->
-      fprintf ppf "This comment contains an unterminated string literal@.\
+      Format.fprintf ppf "This comment contains an unterminated string literal@.\
                    %aString literal begins here"
         Ocaml_util.print_loc loc
   | Keyword_as_label kwd ->
-      fprintf ppf "`%s' is a keyword, it cannot be used as label name" kwd
+      Format.fprintf ppf "`%s' is a keyword, it cannot be used as label name" kwd
   | Invalid_literal s ->
-      fprintf ppf "Invalid literal %s" s
+      Format.fprintf ppf "Invalid literal %s" s
 
 let format_parsing_error ppf msg =
-  fprintf ppf "%s" msg
+  Format.fprintf ppf "%s" msg
 
 let format_ast_error ppf = function
   | Not_expecting (loc, nonterm) ->
-    fprintf ppf
+    Format.fprintf ppf
       "Syntax error: %a%s not expected."
       Ocaml_util.print_loc loc nonterm
   | Applicative_path loc ->
-    fprintf ppf
+    Format.fprintf ppf
       "Syntax error: %aapplicative paths of the form F(X).t \
        are not supported when the option -no-app-func is set."
       Ocaml_util.print_loc loc
   | Variable_in_scope (loc, var) ->
-    fprintf ppf "%aIn this scoped type, variable '%s \
+    Format.fprintf ppf "%aIn this scoped type, variable '%s \
                  is reserved for the local type %s."
       Ocaml_util.print_loc loc var var
   | Other_syntax_error msg ->
-    fprintf ppf "%s" msg
+    Format.fprintf ppf "%s" msg
 
 let format_error ppf = function
   | Lexing_error err -> format_lexing_error ppf err
