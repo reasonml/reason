@@ -1,11 +1,9 @@
 open Ppxlib
-open Reason_toolchain_conf
 
 (* The OCaml parser keep doc strings in the comment list.
      To avoid duplicating comments, we need to filter comments that appear
      as doc strings is the AST out of the comment list. *)
 let doc_comments_filter () =
-  let open Parsetree in
   let seen = Hashtbl.create 7 in
   let mapper =
     object
@@ -54,21 +52,21 @@ let parse_and_filter_doc_comments iter fn lexbuf=
 let implementation lexbuf =
   parse_and_filter_doc_comments
     (fun it stru -> it#structure stru)
-    (fun lexbuf -> From_current.copy_structure
+    (fun lexbuf -> Reason_toolchain_conf.From_current.copy_structure
                      (OCaml_parser.implementation Lexer.token lexbuf))
     lexbuf
 
 let core_type lexbuf =
   parse_and_filter_doc_comments
     (fun it ty -> it#core_type ty)
-    (fun lexbuf -> From_current.copy_core_type
+    (fun lexbuf -> Reason_toolchain_conf.From_current.copy_core_type
                      (OCaml_parser.parse_core_type Lexer.token lexbuf))
     lexbuf
 
 let interface lexbuf =
   parse_and_filter_doc_comments
     (fun it sig_ -> it#signature sig_)
-    (fun lexbuf -> From_current.copy_signature
+    (fun lexbuf -> Reason_toolchain_conf.From_current.copy_signature
                      (OCaml_parser.interface Lexer.token lexbuf))
     lexbuf
 
@@ -79,7 +77,7 @@ let filter_toplevel_phrase it = function
 let toplevel_phrase lexbuf =
   parse_and_filter_doc_comments
     filter_toplevel_phrase
-    (fun lexbuf -> From_current.copy_toplevel_phrase
+    (fun lexbuf -> Reason_toolchain_conf.From_current.copy_toplevel_phrase
                      (OCaml_parser.toplevel_phrase Lexer.token lexbuf))
     lexbuf
 
@@ -88,7 +86,7 @@ let use_file lexbuf =
     (fun it result -> List.map (filter_toplevel_phrase it) result)
     (fun lexbuf ->
       List.map
-        From_current.copy_toplevel_phrase
+        Reason_toolchain_conf.From_current.copy_toplevel_phrase
         (OCaml_parser.use_file Lexer.token lexbuf))
     lexbuf
 
@@ -139,7 +137,7 @@ let safeguard_parsing lexbuf fn =
  * printer that formats comments *and* line wrapping! (yet) *)
 let format_interface_with_comments (signature, _) formatter =
   Ocaml_common.Pprintast.signature formatter
-    (To_current.copy_signature signature)
+    (Reason_toolchain_conf.To_current.copy_signature signature)
 
 let format_implementation_with_comments (structure, _) formatter =
   let structure =
@@ -148,6 +146,6 @@ let format_implementation_with_comments (structure, _) formatter =
     |> Reason_syntax_util.(apply_mapper_to_structure remove_stylistic_attrs_mapper)
   in
   Ocaml_common.Pprintast.structure formatter
-    (To_current.copy_structure structure)
+    (Reason_toolchain_conf.To_current.copy_structure structure)
 
 module Lexer = Lexer_impl

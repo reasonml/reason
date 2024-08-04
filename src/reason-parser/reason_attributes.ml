@@ -1,6 +1,4 @@
 open Ppxlib
-open Location
-open Parsetree
 
 (** Kinds of attributes *)
 type attributesPartition = {
@@ -72,18 +70,19 @@ let without_stylistic_attrs attrs =
   in
   loop [] attrs
 
-let is_jsx_attribute { attr_name = {txt}; _} = txt = "JSX"
-
 (* TODO: Make this fast and not filter *)
-let has_jsx_attributes attrs = List.exists is_jsx_attribute attrs
+let has_jsx_attributes =
+  let is_jsx_attribute { attr_name = {txt}; _} = txt = "JSX" in
+  fun attrs -> List.exists is_jsx_attribute attrs
 
-let is_preserve_braces_attr { attr_name = {txt}; _} =
-  txt = "reason.preserve_braces"
+let has_preserve_braces_attrs =
+  let is_preserve_braces_attr { attr_name = {txt}; _} =
+    txt = "reason.preserve_braces"
+  in
+  fun stylisticAttrs ->
+    List.exists is_preserve_braces_attr stylisticAttrs
 
-let has_preserve_braces_attrs stylisticAttrs =
-  List.exists is_preserve_braces_attr stylisticAttrs
-
-let maybe_remove_stylistic_attrs attrs should_preserve =
+let maybe_remove_stylistic_attrs attrs ~should_preserve =
   if should_preserve then
     attrs
   else
@@ -92,8 +91,9 @@ let maybe_remove_stylistic_attrs attrs should_preserve =
       | _ -> false)
       attrs
 
-let is_open_notation_attr { attr_name = {txt}; _} =
-  txt = "reason.openSyntaxNotation"
-
-let has_open_notation_attr stylisticAttrs =
-  List.exists is_open_notation_attr stylisticAttrs
+let has_open_notation_attr =
+  let is_open_notation_attr { attr_name = {txt}; _} =
+    txt = "reason.openSyntaxNotation"
+  in
+  fun stylisticAttrs ->
+    List.exists is_open_notation_attr stylisticAttrs

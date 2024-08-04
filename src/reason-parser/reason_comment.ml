@@ -1,5 +1,3 @@
-open Location
-
 type category =
   | EndOfLine
   | SingleLine

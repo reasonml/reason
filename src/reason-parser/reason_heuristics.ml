@@ -1,7 +1,6 @@
 open Ppxlib
 
 let is_punned_labelled_expression e lbl =
-  let open Parsetree in
   match e.pexp_desc with
   | Pexp_ident { txt }
   | Pexp_constraint ({pexp_desc = Pexp_ident { txt }}, _)
@@ -17,8 +16,6 @@ let is_punned_labelled_expression e lbl =
  * where the sum of the string contents and identifier names are less than the print width
  *)
 let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
-  let open Parsetree in
-  let open Asttypes in
   let funLen = begin match funExpr.pexp_desc with
     | Pexp_ident ident ->
        let identList = Longident.flatten_exn ident.txt in
@@ -107,7 +104,6 @@ let isPipeFirst e = match Parsetree.(e.pexp_desc) with
   | _ -> false
 
 let isUnderscoreApplication expr =
-  let open Parsetree in
   match expr with
   | {pexp_attributes = []; pexp_desc = Pexp_fun(
         Nolabel,
