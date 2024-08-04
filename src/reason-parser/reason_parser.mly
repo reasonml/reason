@@ -1981,6 +1981,10 @@ signature_item:
     { let loc = mklocation $symbolstartpos $endpos in
       Psig_modtype (Ast_helper.Mtd.mk $4 ~typ:$5 ~loc ~attrs:$1)
     }
+  | item_attributes MODULE TYPE as_loc(ident) COLONEQUAL module_type
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_modtypesubst (Ast_helper.Mtd.mk $4 ~typ:$6 ~loc ~attrs:$1)
+    }
   | open_description { $1 }
   | item_attributes INCLUDE module_type
     { let loc = mklocation $symbolstartpos $endpos in
@@ -4382,7 +4386,11 @@ with_constraint:
       { Pwith_module ($2, $4) }
   | MODULE as_loc(UIDENT) COLONEQUAL as_loc(mod_ext_longident)
       { let lident = {$2 with txt=Longident.Lident $2.txt} in
-        Ppxlib.Parsetree.Pwith_modsubst (lident, $4) }
+        Pwith_modsubst (lident, $4) }
+  | MODULE TYPE as_loc(mty_longident) EQUAL module_type
+      { Ppxlib.Pwith_modtype ($3, $5) }
+  | MODULE TYPE as_loc(mty_longident) COLONEQUAL module_type
+      { Ppxlib.Pwith_modtypesubst ($3, $5) }
 ;
 
 (* Polymorphic types *)

@@ -7416,6 +7416,26 @@ let printer = object(self:'self)
       ~layout
       ()
 
+  method modtype x ~delim =
+    let name = atom x.pmtd_name.txt in
+    let letPattern = makeList ~postSpace:true [atom "module type"; name; atom delim] in
+    let main = match x.pmtd_type with
+      | None -> makeList ~postSpace:true [atom "module type"; name]
+      | Some mt -> self#module_type letPattern mt
+    in
+    let {Reason_attributes.stdAttrs; docAttrs} =
+      Reason_attributes.partitionAttributes ~partDoc:true x.pmtd_attributes
+    in
+    let layout =
+      self#attach_std_item_attrs stdAttrs main
+    in
+    self#attachDocAttrsToLayout
+      ~stdAttrs
+      ~docAttrs
+      ~loc:x.pmtd_name.loc
+      ~layout
+      ()
+
   method signature_item' x : Layout.t =
     let item: Layout.t =
       match x.psig_desc with
@@ -7479,25 +7499,7 @@ let printer = object(self:'self)
             ~loc:incl.pincl_mod.pmty_loc
             ~layout
             ()
-        | Psig_modtype x ->
-          let name = atom x.pmtd_name.txt in
-          let letPattern = makeList ~postSpace:true [atom "module type"; name; atom "="] in
-          let main = match x.pmtd_type with
-            | None -> makeList ~postSpace:true [atom "module type"; name]
-            | Some mt -> self#module_type letPattern mt
-          in
-          let {Reason_attributes.stdAttrs; docAttrs} =
-            Reason_attributes.partitionAttributes ~partDoc:true x.pmtd_attributes
-          in
-          let layout =
-            self#attach_std_item_attrs stdAttrs main
-          in
-          self#attachDocAttrsToLayout
-            ~stdAttrs
-            ~docAttrs
-            ~loc:x.pmtd_name.loc
-            ~layout
-            ()
+        | Psig_modtype x -> self#modtype x ~delim:"="
         | Psig_class_type l -> self#class_type_declaration_list l
         | Psig_recmodule decls -> self#psig_recmodule decls
         | Psig_attribute a -> self#floating_attribute a
@@ -7533,7 +7535,7 @@ let printer = object(self:'self)
             ()
         | Psig_typesubst l ->
           self#type_def_list ~eq_symbol:":=" (Recursive, l)
-        | Psig_modtypesubst _ -> assert false
+        | Psig_modtypesubst x -> self#modtype x ~delim:":="
     in
     source_map ~loc:x.psig_loc item
 
@@ -7638,7 +7640,17 @@ let printer = object(self:'self)
             atm;
             atom token;
             self#longident_loc li2
-          ] in
+          ]
+          in
+          let modtypeSub atm li modtype =
+            label
+              (makeList ~break:IfNeed ~sep:(Sep " ") [
+                atom "module type";
+                (self#longident li);
+                atm;
+              ])
+              (self#module_type (atom "") modtype)
+          in
           let typeAtom = atom "type" in
           let eqAtom = atom "=" in
           let destrAtom = atom ":=" in
@@ -7658,7 +7670,8 @@ let printer = object(self:'self)
                   destrAtom
                   td
             | Pwith_modsubst (s, li2) -> modSub (self#longident s.txt) li2 ":="
-            | Pwith_modtype (_, _)|Pwith_modtypesubst (_, _) -> assert false
+            | Pwith_modtype (s, modtype) -> modtypeSub eqAtom s.txt modtype
+            | Pwith_modtypesubst (s, modtype) -> modtypeSub destrAtom s.txt modtype
           in
           (match l with
             | [] -> self#module_type ~space letPattern mt

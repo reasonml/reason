@@ -732,4 +732,24 @@ Format modules
   open {
     let x = 1;
   };
+  
+  module X: {
+    module Z := Y;
+  
+    module type Foo := y;
+  } = {};
+  
+  module type t' = t with module type x = x;
+  
+  module type t3 =
+    t with module type x = {
+                            type t;
+                          };
+  
+  module type t' = t with module type x := x;
+  
+  module type t4 =
+    t with module type x := {
+                             type t;
+                           };
 /* From http://stackoverflow.com/questions/1986374/  higher-order-type-constructors-and-functors-in-ocaml */
