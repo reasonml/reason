@@ -1,5 +1,5 @@
 See the typed tree from ./input.re
-  $ cat ./input.re | outcome_printer
+  $ cat ./input.re | ../lib/outcometreePrinter.exe
   let x1: unit => int;
   let x2: 'a => int;
   let x3: (int, 'a) => int;

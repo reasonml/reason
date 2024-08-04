@@ -5,7 +5,5 @@
   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
 
 (executable
- (public_name outcome_printer)
  (name outcometreePrinter)
- (package reason)
  (libraries reason))
