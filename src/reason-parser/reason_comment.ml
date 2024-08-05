@@ -8,18 +8,19 @@ let string_of_category = function
   | EndOfLine -> "End of Line"
   | SingleLine -> "SingleLine"
 
-type t = {
-  location: Location.t;
-  category: category;
-  text: string;
-}
+type t =
+  { location : Location.t
+  ; category : category
+  ; text : string
+  }
 
 let category t = t.category
-
 let location t = t.location
 
 let dump ppf t =
-  Format.fprintf ppf "%d (%d:%d)-%d (%d:%d) -- %s:||%s||"
+  Format.fprintf
+    ppf
+    "%d (%d:%d)-%d (%d:%d) -- %s:||%s||"
     t.location.loc_start.pos_cnum
     t.location.loc_start.pos_lnum
     (t.location.loc_start.pos_cnum - t.location.loc_start.pos_bol)
@@ -29,8 +30,7 @@ let dump ppf t =
     (string_of_category t.category)
     t.text
 
-let dump_list ppf list =
-  List.iter (Format.fprintf ppf "%a\n" dump) list
+let dump_list ppf list = List.iter (Format.fprintf ppf "%a\n" dump) list
 
 let wrap t =
   match t.text with
@@ -38,28 +38,26 @@ let wrap t =
   | txt when Reason_syntax_util.isLineComment txt ->
     "//"
     (* single line comments of the form `// comment` have a `\n` at the end *)
-    ^ (String.sub txt 0 (String.length txt - 1))
+    ^ String.sub txt 0 (String.length txt - 1)
     ^ Reason_syntax_util.EOLMarker.string
   | txt when txt.[0] = '*' && txt.[1] <> '*' ->
-    (*CHECK: this comment printing seems fishy.
-      It apply to invalid docstrings.
-      In this case, it will add a spurious '*'.
-      E.g. /**
-            * bla */
-      In an invalid context is turned into
-           /***
-            * bla */
-      I think this case should be removed.
-    *)
+    (* CHECK: this comment printing seems fishy.
+     *  It apply to invalid docstrings.
+     *  In this case, it will add a spurious '*'.
+     *  E.g. /**
+     *        * bla */
+     *  In an invalid context is turned into
+     *       /***
+     *        * bla */
+     *  I think this case should be removed.
+     *)
     "/**" ^ txt ^ "*/"
   | txt -> "/*" ^ txt ^ "*/"
 
-let is_doc t =
-  String.length t.text > 0 && t.text.[0] == '*'
+let is_doc t = String.length t.text > 0 && t.text.[0] == '*'
+let make ~location category text = { text; category; location }
 
-let make ~location category text =
-  { text; category; location }
-
-let isLineComment {category; text} = match category with
+let isLineComment { category; text } =
+  match category with
   | SingleLine -> Reason_syntax_util.isLineComment text
   | EndOfLine | Regular -> false

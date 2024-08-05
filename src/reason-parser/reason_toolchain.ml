@@ -10,11 +10,9 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-
-
 (* Entry points in the parser *)
 
-(**
+(*
  * Provides a simple interface to the most common parsing entrypoints required
  * by editor/IDE toolchains, preprocessors, and pretty printers.
  *
@@ -81,48 +79,51 @@
 open Ppxlib
 
 let setup_lexbuf use_stdin filename =
-  (* Use custom method of lexing from the channel to keep track of the input so that we can
-     reformat tokens in the toolchain*)
+  (* Use custom method of lexing from the channel to keep track of the input so
+     that we can reformat tokens in the toolchain*)
   let lexbuf =
     match use_stdin with
-      | true -> Lexing.from_channel
-        stdin
-      | false ->
-        let file_chan = open_in filename in
-        seek_in file_chan 0;
-        Lexing.from_channel file_chan
+    | true -> Lexing.from_channel stdin
+    | false ->
+      let file_chan = open_in filename in
+      seek_in file_chan 0;
+      Lexing.from_channel file_chan
   in
   Location.init lexbuf filename;
   lexbuf
 
-
 let rec left_expand_comment should_scan_prev_line source loc_start =
-  if loc_start = 0 then
-    (String.unsafe_get source 0, true, 0)
+  if loc_start = 0
+  then String.unsafe_get source 0, true, 0
   else
     let c = String.unsafe_get source (loc_start - 1) in
     match c with
-    | '\t' | ' ' -> left_expand_comment should_scan_prev_line source (loc_start - 1)
-    | '\n' when should_scan_prev_line -> left_expand_comment should_scan_prev_line source (loc_start - 1)
-    | '\n' -> (c, true, loc_start)
-    | _ -> (c, false, loc_start)
+    | '\t' | ' ' ->
+      left_expand_comment should_scan_prev_line source (loc_start - 1)
+    | '\n' when should_scan_prev_line ->
+      left_expand_comment should_scan_prev_line source (loc_start - 1)
+    | '\n' -> c, true, loc_start
+    | _ -> c, false, loc_start
 
 let rec right_expand_comment should_scan_next_line source loc_start =
-  if loc_start = String.length source then
-    (String.unsafe_get source (String.length source - 1), true, String.length source)
+  if loc_start = String.length source
+  then
+    ( String.unsafe_get source (String.length source - 1)
+    , true
+    , String.length source )
   else
     let c = String.unsafe_get source loc_start in
     match c with
-    | '\t' | ' ' -> right_expand_comment should_scan_next_line source (loc_start + 1)
-    | '\n' when should_scan_next_line -> right_expand_comment should_scan_next_line source (loc_start + 1)
-    | '\n' -> (c, true, loc_start)
-    | _ -> (c, false, loc_start)
-
+    | '\t' | ' ' ->
+      right_expand_comment should_scan_next_line source (loc_start + 1)
+    | '\n' when should_scan_next_line ->
+      right_expand_comment should_scan_next_line source (loc_start + 1)
+    | '\n' -> c, true, loc_start
+    | _ -> c, false, loc_start
 
 module Create_parse_entrypoint
-  (Toolchain_impl: Reason_toolchain_conf.Toolchain_spec)
-  : Reason_toolchain_conf.Toolchain = struct
-
+    (Toolchain_impl : Reason_toolchain_conf.Toolchain_spec) :
+  Reason_toolchain_conf.Toolchain = struct
   let buffer_add_lexbuf buf skip lexbuf =
     let bytes = lexbuf.Lexing.lex_buffer in
     let start = lexbuf.Lexing.lex_start_pos + skip in
@@ -135,26 +136,27 @@ module Create_parse_entrypoint
     buffer_add_lexbuf buf skip lb;
     result
 
-  (* replaces Lexing.from_channel so we can keep track of the input for comment modification *)
+  (* replaces Lexing.from_channel so we can keep track of the input for comment
+     modification *)
   let keep_from_lexbuf buffer lexbuf =
     buffer_add_lexbuf buffer 0 lexbuf;
     let refill_buff = refill_buff buffer lexbuf.Lexing.refill_buff in
-    {lexbuf with refill_buff}
+    { lexbuf with refill_buff }
 
   let extensions_of_errors errors =
     ignore (Format.flush_str_formatter () : string);
     let error_extension (err, loc) =
       Reason_errors.report_error Format.str_formatter ~loc err;
       let msg = Format.flush_str_formatter () in
-      let due_to_recovery = match err with
+      let due_to_recovery =
+        match err with
         | Reason_errors.Parsing_error _ -> true
         | Reason_errors.Lexing_error _ -> false
         | Reason_errors.Ast_error _ -> false
       in
-      if due_to_recovery then
-        Reason_errors.error_extension_node_from_recovery loc msg
-      else
-        Reason_errors.error_extension_node loc msg
+      if due_to_recovery
+      then Reason_errors.error_extension_node_from_recovery loc msg
+      else Reason_errors.error_extension_node loc msg
     in
     List.map error_extension errors
 
@@ -164,19 +166,20 @@ module Create_parse_entrypoint
     Toolchain_impl.safeguard_parsing lexbuf (fun () ->
       let lexer =
         let insert_completion_ident =
-          !Reason_toolchain_conf.insert_completion_ident in
+          !Reason_toolchain_conf.insert_completion_ident
+        in
         Toolchain_impl.Lexer.init ?insert_completion_ident lexbuf
       in
       let ast, invalid_docstrings =
         let result =
           if !Reason_config.recoverable
-          then Reason_errors.recover_non_fatal_errors
-              (fun () -> parsing_fun lexer)
-          else (Ok (parsing_fun lexer), [])
+          then
+            Reason_errors.recover_non_fatal_errors (fun () -> parsing_fun lexer)
+          else Ok (parsing_fun lexer), []
         in
         match result with
         | Ok x, [] -> x
-        | Ok (x, ds), errors -> (attach_fun x (extensions_of_errors errors), ds)
+        | Ok (x, ds), errors -> attach_fun x (extensions_of_errors errors), ds
         | Error exn, _ -> raise exn
       in
       let unmodified_comments =
@@ -184,35 +187,38 @@ module Create_parse_entrypoint
       in
       let contents = Buffer.contents input_copy in
       Buffer.reset input_copy;
-      if contents = "" then
-        let _  = Parsing.clear_parser() in
+      if contents = ""
+      then
+        let _ = Parsing.clear_parser () in
         let make_regular (text, location) =
-          Reason_comment.make ~location Reason_comment.Regular text in
-        (ast, List.map make_regular unmodified_comments)
+          Reason_comment.make ~location Reason_comment.Regular text
+        in
+        ast, List.map make_regular unmodified_comments
       else
         let rec classifyAndNormalizeComments unmodified_comments =
           match unmodified_comments with
           | [] -> []
-          | hd :: tl -> (
-              let classifiedTail = classifyAndNormalizeComments tl in
-              let (txt, physical_loc) = hd in
-              (* When searching for "^" regexp, returns location of newline + 1 *)
-              let (stop_char, eol_start, virtual_start_pos) =
-                left_expand_comment false contents physical_loc.loc_start.pos_cnum
-              in
-              if Reason_syntax_util.isLineComment txt then
-                let comment = Reason_comment.make
+          | hd :: tl ->
+            let classifiedTail = classifyAndNormalizeComments tl in
+            let txt, physical_loc = hd in
+            (* When searching for "^" regexp, returns location of newline + 1 *)
+            let stop_char, eol_start, virtual_start_pos =
+              left_expand_comment false contents physical_loc.loc_start.pos_cnum
+            in
+            if Reason_syntax_util.isLineComment txt
+            then
+              let comment =
+                Reason_comment.make
                   ~location:physical_loc
                   (if eol_start then SingleLine else EndOfLine)
                   txt
-                in
-                comment :: classifiedTail
-              else
+              in
+              comment :: classifiedTail
+            else
               let one_char_before_stop_char =
-                if virtual_start_pos <= 1 then
-                  ' '
-                else
-                  String.unsafe_get contents (virtual_start_pos - 2)
+                if virtual_start_pos <= 1
+                then ' '
+                else String.unsafe_get contents (virtual_start_pos - 2)
               in
               (*
                *
@@ -228,35 +234,54 @@ module Create_parse_entrypoint
                *   false
                *
                *)
-              let should_scan_next_line = stop_char = '|' &&
-                                          (one_char_before_stop_char = ' ' ||
-                                           one_char_before_stop_char = '\n' ||
-                                           one_char_before_stop_char = '\t' ) in
-              let (_, eol_end, virtual_end_pos) = right_expand_comment should_scan_next_line contents physical_loc.loc_end.pos_cnum in
-              let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
-              let comment_length = (end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4) in
-              let original_comment_contents = String.sub contents (physical_loc.loc_start.pos_cnum + 2) comment_length in
-              let location = {
-                physical_loc with
-                loc_start = {physical_loc.loc_start with pos_cnum = virtual_start_pos};
-                loc_end = {physical_loc.loc_end with pos_cnum = virtual_end_pos}
-              } in
-              let just_after loc' =
-                loc'.loc_start.pos_cnum == location.loc_end.pos_cnum - 1 &&
-                loc'.loc_start.pos_lnum == location.loc_end.pos_lnum
+              let should_scan_next_line =
+                stop_char = '|'
+                && (one_char_before_stop_char = ' '
+                   || one_char_before_stop_char = '\n'
+                   || one_char_before_stop_char = '\t')
               in
-              let category = match (eol_start, eol_end, classifiedTail) with
-                | (true, true, _) -> Reason_comment.SingleLine
-                | (false, true, _) -> Reason_comment.EndOfLine
-                | (false, false, comment :: _)
-                  (* End of line comment is one that has nothing but newlines or
-                   * other comments its right, and has some AST to the left of it.
-                   * For example, there are two end of line comments in:
-                   *
-                   *    | Y(int, int); /* eol1 */ /* eol2 */
-                   *)
-                  when Reason_comment.category comment = Reason_comment.EndOfLine
-                    && just_after (Reason_comment.location comment) ->
+              let _, eol_end, virtual_end_pos =
+                right_expand_comment
+                  should_scan_next_line
+                  contents
+                  physical_loc.loc_end.pos_cnum
+              in
+              let end_pos_plus_one = physical_loc.loc_end.pos_cnum in
+              let comment_length =
+                end_pos_plus_one - physical_loc.loc_start.pos_cnum - 4
+              in
+              let original_comment_contents =
+                String.sub
+                  contents
+                  (physical_loc.loc_start.pos_cnum + 2)
+                  comment_length
+              in
+              let location =
+                { physical_loc with
+                  loc_start =
+                    { physical_loc.loc_start with pos_cnum = virtual_start_pos }
+                ; loc_end =
+                    { physical_loc.loc_end with pos_cnum = virtual_end_pos }
+                }
+              in
+              let just_after loc' =
+                loc'.loc_start.pos_cnum == location.loc_end.pos_cnum - 1
+                && loc'.loc_start.pos_lnum == location.loc_end.pos_lnum
+              in
+              let category =
+                match eol_start, eol_end, classifiedTail with
+                | true, true, _ -> Reason_comment.SingleLine
+                | false, true, _ -> Reason_comment.EndOfLine
+                | false, false, comment :: _
+                (* End of line comment is one that has nothing but newlines or
+                 * other comments its right, and has some AST to the left of it.
+                 * For example, there are two end of line comments in:
+                 *
+                 *    | Y(int, int); /* eol1 */ /* eol2 */
+                 *)
+                  when Reason_comment.category comment
+                       = Reason_comment.EndOfLine
+                       && just_after (Reason_comment.location comment) ->
                   Reason_comment.EndOfLine
                 | _ -> Reason_comment.Regular
               in
@@ -264,30 +289,29 @@ module Create_parse_entrypoint
                 Reason_comment.make ~location category original_comment_contents
               in
               comment :: classifiedTail
-            )
         in
-        let modified_and_comment_with_category = classifyAndNormalizeComments unmodified_comments in
-        let _  = Parsing.clear_parser() in
-        (ast, modified_and_comment_with_category)
-    )
+        let modified_and_comment_with_category =
+          classifyAndNormalizeComments unmodified_comments
+        in
+        let _ = Parsing.clear_parser () in
+        ast, modified_and_comment_with_category)
 
   let default_error lexbuf err =
-    if !Reason_config.recoverable then
-      let loc, msg = match err with
-        | Location.Error err ->
-          Reason_syntax_util.split_compiler_error err
+    if !Reason_config.recoverable
+    then
+      let loc, msg =
+        match err with
+        | Location.Error err -> Reason_syntax_util.split_compiler_error err
         | Reason_errors.Reason_error (e, loc) ->
           Reason_errors.report_error Format.str_formatter ~loc e;
-          (loc, Format.flush_str_formatter ())
+          loc, Format.flush_str_formatter ()
         | exn ->
-          (Location.of_lexbuf lexbuf, "default_error: " ^ Printexc.to_string exn)
+          Location.of_lexbuf lexbuf, "default_error: " ^ Printexc.to_string exn
       in
-      (loc, Reason_errors.error_extension_node loc msg)
-    else
-      raise err
+      loc, Reason_errors.error_extension_node loc msg
+    else raise err
 
-  let ignore_attach_errors x _extensions =
-    (* FIXME: attach errors in AST *) x
+  let ignore_attach_errors x _extensions = (* FIXME: attach errors in AST *) x
 
   (*
    * The canonical interface/implementations (with comments) are used with
@@ -300,48 +324,46 @@ module Create_parse_entrypoint
    *)
   let implementation_with_comments lexbuf =
     let attach impl extensions =
-      (impl @ List.map Ast_helper.Str.extension extensions)
+      impl @ List.map Ast_helper.Str.extension extensions
     in
-    try wrap_with_comments Toolchain_impl.implementation attach lexbuf
-    with err ->
+    try wrap_with_comments Toolchain_impl.implementation attach lexbuf with
+    | err ->
       let loc, error = default_error lexbuf err in
-      ([Ast_helper.Str.mk ~loc (Parsetree.Pstr_extension (error, []))], [])
+      [ Ast_helper.Str.mk ~loc (Parsetree.Pstr_extension (error, [])) ], []
 
   let core_type_with_comments lexbuf =
-    try wrap_with_comments Toolchain_impl.core_type ignore_attach_errors lexbuf
-    with err ->
+    try
+      wrap_with_comments Toolchain_impl.core_type ignore_attach_errors lexbuf
+    with
+    | err ->
       let loc, error = default_error lexbuf err in
-      (Ast_helper.Typ.mk ~loc (Parsetree.Ptyp_extension error), [])
+      Ast_helper.Typ.mk ~loc (Parsetree.Ptyp_extension error), []
 
   let interface_with_comments lexbuf =
     let attach impl extensions =
-      (impl @ List.map Ast_helper.Sig.extension extensions)
+      impl @ List.map Ast_helper.Sig.extension extensions
     in
-    try wrap_with_comments Toolchain_impl.interface attach lexbuf
-    with err ->
+    try wrap_with_comments Toolchain_impl.interface attach lexbuf with
+    | err ->
       let loc, error = default_error lexbuf err in
-      ([Ast_helper.Sig.mk ~loc (Parsetree.Psig_extension (error, []))], [])
+      [ Ast_helper.Sig.mk ~loc (Parsetree.Psig_extension (error, [])) ], []
 
   let toplevel_phrase_with_comments lexbuf =
     wrap_with_comments
-      Toolchain_impl.toplevel_phrase ignore_attach_errors lexbuf
+      Toolchain_impl.toplevel_phrase
+      ignore_attach_errors
+      lexbuf
 
   let use_file_with_comments lexbuf =
     wrap_with_comments Toolchain_impl.use_file ignore_attach_errors lexbuf
 
-  (** [ast_only] wraps a function to return only the ast component
-   *)
-  let ast_only f =
-    (fun lexbuf -> lexbuf |> f |> fst)
+  (** [ast_only] wraps a function to return only the ast component *)
+  let ast_only f lexbuf = lexbuf |> f |> fst
 
   let implementation = ast_only implementation_with_comments
-
   let core_type = ast_only core_type_with_comments
-
   let interface = ast_only interface_with_comments
-
   let toplevel_phrase = ast_only toplevel_phrase_with_comments
-
   let use_file = ast_only use_file_with_comments
 
   (* Printing *)

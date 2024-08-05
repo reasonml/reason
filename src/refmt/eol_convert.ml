@@ -5,9 +5,10 @@ let lf_to_crlf s =
     match String.index sz '\n' with
     | exception Not_found -> sz
     | idx ->
-        let l = (String.sub sz 0 idx) ^ "\r\n" in
-        let length = String.length sz in
-        l ^ (loop (String.sub sz (idx + 1) ((length - idx) - 1))) in
+      let l = String.sub sz 0 idx ^ "\r\n" in
+      let length = String.length sz in
+      l ^ loop (String.sub sz (idx + 1) (length - idx - 1))
+  in
   loop s
 
 let get_formatter output_channel eol =
@@ -17,8 +18,10 @@ let get_formatter output_channel eol =
     match eol with
     | LF -> out_functions.out_string s p n
     | CRLF ->
-        let str = String.sub s p n in
-        let str = lf_to_crlf str in
-        out_functions.out_string str 0 (String.length str) in
+      let str = String.sub s p n in
+      let str = lf_to_crlf str in
+      out_functions.out_string str 0 (String.length str)
+  in
   let new_functions = { out_functions with out_string } in
-  Format.pp_set_formatter_out_functions f new_functions; f
+  Format.pp_set_formatter_out_functions f new_functions;
+  f

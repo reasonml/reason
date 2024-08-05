@@ -1,8 +1,9 @@
 type 'a parser
 
 val initial :
-  (Lexing.position -> 'a Reason_parser.MenhirInterpreter.checkpoint) ->
-  Lexing.position -> 'a parser
+   (Lexing.position -> 'a Reason_parser.MenhirInterpreter.checkpoint)
+  -> Lexing.position
+  -> 'a parser
 
 type 'a step =
   | Intermediate of 'a parser

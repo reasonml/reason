@@ -5,17 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-
-let () = Reason_pprint_ast.configure
-  (* This can be made pluggable in the future. *)
-  ~width:80
-  ~assumeExplicitArity:false
-  ~constructorLists:[]
+let () =
+  Reason_pprint_ast.configure (* This can be made pluggable in the future. *)
+    ~width:80
+    ~assumeExplicitArity:false
+    ~constructorLists:[]
 
 let reasonFormatter = Reason_pprint_ast.createFormatter ()
 
-(* "Why would you ever pass in some of these to print into Reason?"
-"Because Merlin returns these as type signature sometimes" *)
+(* "Why would you ever pass in some of these to print into Reason?" "Because
+   Merlin returns these as type signature sometimes" *)
 
 (* int list *)
 let parseAsCoreType str formatter =
@@ -37,7 +36,8 @@ let parseAsInterface str formatter =
 
 (* sig val a: int list end *)
 (* This one is a hack; we should have our own parser entry point to module_type.
-But that'd require modifying compiler-libs, which we'll refrain from doing. *)
+   But that'd require modifying compiler-libs, which we'll refrain from
+   doing. *)
 let parseAsCoreModuleType str formatter =
   Lexing.from_string ("module X: " ^ str)
   |> Reason_toolchain.ML.interface
@@ -45,18 +45,32 @@ let parseAsCoreModuleType str formatter =
 
 (* Quirky merlin/ocaml output that doesn't really parse. *)
 let parseAsWeirdListSyntax str a =
-  if str = "type 'a list = [] | :: of 'a * 'a list" then "type list 'a = [] | :: of list 'a 'a"
-  (* Manually creating an error is tedious, so we'll put a hack here to throw the previous error. *)
+  if str = "type 'a list = [] | :: of 'a * 'a list"
+  then
+    "type list 'a = [] | :: of list 'a 'a"
+    (* Manually creating an error is tedious, so we'll put a hack here to throw
+       the previous error. *)
   else raise (Syntaxerr.Error a)
 
 let convert str =
   let formatter = Format.str_formatter in
-  try (parseAsCoreType str formatter; Format.flush_str_formatter ())
-  with Syntaxerr.Error _ ->
-  try (parseAsImplementation str formatter; Format.flush_str_formatter ())
-  with Syntaxerr.Error _ ->
-  try (parseAsInterface str formatter; Format.flush_str_formatter ())
-  with Syntaxerr.Error _ ->
-  try (parseAsCoreModuleType str formatter; Format.flush_str_formatter ())
-  with Syntaxerr.Error a ->
-  (parseAsWeirdListSyntax str a)
+  try
+    parseAsCoreType str formatter;
+    Format.flush_str_formatter ()
+  with
+  | Syntaxerr.Error _ ->
+    (try
+       parseAsImplementation str formatter;
+       Format.flush_str_formatter ()
+     with
+    | Syntaxerr.Error _ ->
+      (try
+         parseAsInterface str formatter;
+         Format.flush_str_formatter ()
+       with
+      | Syntaxerr.Error _ ->
+        (try
+           parseAsCoreModuleType str formatter;
+           Format.flush_str_formatter ()
+         with
+        | Syntaxerr.Error a -> parseAsWeirdListSyntax str a)))
