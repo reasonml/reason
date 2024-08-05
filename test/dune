@@ -6,7 +6,7 @@
 (cram
  (applies_to * \ lib rtopIntegration)
  (package reason)
- (deps %{bin:ocamlc} %{bin:refmt} %{bin:outcome_printer}))
+ (deps %{bin:ocamlc} %{bin:refmt} ./lib/outcometreePrinter.exe))
 
 (cram
  (applies_to rtopIntegration)
