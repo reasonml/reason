@@ -45,7 +45,7 @@ Make sure the OCaml's version is between the range of the `ocaml` field in esy.j
 1. Install the specific version you want with: `esy add ocaml@{{ ocaml_version }}`
 2. Run the test with: `esy dune runtest`
 
-### Setup the local enviroment with opam
+### Setup the local environment with opam
 
 The opam workflow is only tested in CI and isn't needed for development, but can become handy since you can install many switches with different versions of OCaml and load them when needed.
 
