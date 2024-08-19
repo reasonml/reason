@@ -1704,9 +1704,20 @@ structure_item:
           $3
       }
     | type_declarations
-      { let (nonrec_flag, tyl) = $1 in mkstr(Pstr_type (nonrec_flag, tyl)) }
+      {
+        let (nonrec_flag, tyl, loc, extension) = $1 in
+        wrap_str_ext
+          ~loc
+          (mkstr(Pstr_type (nonrec_flag, tyl)))
+          extension
+      }
     | str_type_extension
-      { mkstr(Pstr_typext $1) }
+      { let typext, loc, extension = $1 in
+        wrap_str_ext
+          ~loc
+          (mkstr(Pstr_typext typext))
+          extension
+      }
     | str_exception_declaration
       { mkstr(Pstr_exception (Ast_helper.Te.mk_exception ~loc:$1.pext_loc $1)) }
     | item_attributes opt_LET_MODULE_ident module_binding_body
@@ -1933,11 +1944,21 @@ signature_item:
         $3
     }
   | type_declarations
-    { let (nonrec_flag, tyl) = $1 in Psig_type (nonrec_flag, tyl) }
+    { let (nonrec_flag, tyl, loc, extension) = $1 in
+      wrap_sig_ext
+        ~loc
+        (Psig_type (nonrec_flag, tyl))
+        extension
+    }
    | type_subst_declarations
     { Psig_typesubst $1 }
   | sig_type_extension
-    { Psig_typext $1 }
+    { let (typext, loc, extension) = $1 in
+      wrap_sig_ext
+        ~loc
+        (Psig_typext typext)
+        extension
+     }
   | sig_exception_declaration
     { Psig_exception $1 }
   | item_attributes opt_LET_MODULE_ident module_declaration
@@ -4041,7 +4062,14 @@ type_declarations:
     let loc = mklocation $startpos($2) endpos in
     let ty = Ast_helper.Type.mk ident ~params:params ~cstrs:constraints
              ~kind ~priv ?manifest ~attrs:$1 ~loc in
-    ($3, ty :: and_types)
+    ($3, ty :: and_types, loc, None)
+  }
+  | item_attributes TYPE item_extension_sugar nonrec_flag type_declaration_details
+  { let (ident, params, constraints, kind, priv, manifest), endpos, and_types = $5 in
+    let loc = mklocation $startpos($2) endpos in
+    let ty = Ast_helper.Type.mk ident ~params:params ~cstrs:constraints
+             ~kind ~priv ?manifest ~attrs:$1 ~loc in
+    ($4, ty :: and_types, loc, Some $3)
   }
 ;
 
@@ -4296,7 +4324,8 @@ record_declaration:
 
 str_type_extension:
   attrs = item_attributes
-  TYPE flag = nonrec_flag
+  TYPE
+  flag = nonrec_flag
     ident = as_loc(itype_longident)
     params = type_variables_with_variance
   PLUSEQ priv = embedded(private_flag)
@@ -4304,13 +4333,29 @@ str_type_extension:
     attributed_ext_constructors(either(extension_constructor_declaration, extension_constructor_rebind))
   { if flag <> Recursive then
       not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
-    Ast_helper.Te.mk ~params ~priv ~attrs ident constructors
+    let loc = mklocation $startpos($2) $endpos in
+    (Ast_helper.Te.mk ~loc ~params ~priv ~attrs ident constructors, loc, None)
+  }
+  | attrs = item_attributes
+  TYPE
+    extension = item_extension_sugar
+  flag = nonrec_flag
+    ident = as_loc(itype_longident)
+    params = type_variables_with_variance
+  PLUSEQ priv = embedded(private_flag)
+  constructors =
+    attributed_ext_constructors(either(extension_constructor_declaration, extension_constructor_rebind))
+  { if flag <> Recursive then
+      not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
+    let loc = mklocation $startpos($2) $endpos in
+    (Ast_helper.Te.mk ~loc ~params ~priv ~attrs ident constructors, loc, Some extension)
   }
 ;
 
 sig_type_extension:
   attrs = item_attributes
-  TYPE flag = nonrec_flag
+  TYPE
+  flag = nonrec_flag
     ident = as_loc(itype_longident)
     params = type_variables_with_variance
   PLUSEQ priv = embedded(private_flag)
@@ -4318,7 +4363,22 @@ sig_type_extension:
     attributed_ext_constructors(extension_constructor_declaration)
   { if flag <> Recursive then
       not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
-    Ast_helper.Te.mk ~params ~priv ~attrs ident constructors
+    let loc = mklocation $startpos($2) $endpos in
+    (Ast_helper.Te.mk ~params ~priv ~attrs ident constructors, loc, None)
+  }
+  | attrs = item_attributes
+  TYPE
+  extension = item_extension_sugar
+  flag = nonrec_flag
+    ident = as_loc(itype_longident)
+    params = type_variables_with_variance
+  PLUSEQ priv = embedded(private_flag)
+  constructors =
+    attributed_ext_constructors(extension_constructor_declaration)
+  { if flag <> Recursive then
+      not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
+    let loc = mklocation $startpos($2) $endpos in
+    (Ast_helper.Te.mk ~params ~priv ~attrs ident constructors, loc, Some extension)
   }
 ;
 

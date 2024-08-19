@@ -2905,8 +2905,8 @@ let createFormatter () =
           in
           source_map ~loc:pext_loc everything
 
-        (* shared by [Pstr_type,Psig_type]*)
-        method type_def_list ?(eq_symbol = "=") (rf, l) =
+        (* shared by [Pstr_type, Psig_type]*)
+        method type_def_list ?(eq_symbol = "=") ?extension rf l =
           (* As oposed to used in type substitution. *)
           let formatOneTypeDefStandard prepend td =
             let itm =
@@ -2935,7 +2935,9 @@ let createFormatter () =
           | hd :: tl ->
             let first =
               match rf with
-              | Recursive -> formatOneTypeDefStandard (atom "type") hd
+              | Recursive ->
+                let label = add_extension_sugar "type" extension in
+                formatOneTypeDefStandard (atom label) hd
               | Nonrecursive -> formatOneTypeDefStandard (atom "type nonrec") hd
             in
             (match tl with
@@ -8644,6 +8646,8 @@ let createFormatter () =
             | Psig_module pmd -> self#psig_module ~extension pmd
             | Psig_recmodule pmd -> self#psig_recmodule ~extension pmd
             | Psig_open od -> self#psig_open ~extension od
+            | Psig_type (rf, l) -> self#type_def_list ~extension rf l
+            | Psig_typext te -> self#type_extension ~extension te
             | _ -> self#payload "%%" extension (PSig [ item ]))
           | _ -> self#signature_item' item
 
@@ -8802,7 +8806,7 @@ let createFormatter () =
         method signature_item' x : Layout.t =
           let item : Layout.t =
             match x.psig_desc with
-            | Psig_type (rf, l) -> self#type_def_list (rf, l)
+            | Psig_type (rf, l) -> self#type_def_list rf l
             | Psig_value vd ->
               if vd.pval_prim != []
               then self#primitive_declaration vd
@@ -8907,8 +8911,7 @@ let createFormatter () =
                 ~loc:pms_loc
                 ~layout
                 ()
-            | Psig_typesubst l ->
-              self#type_def_list ~eq_symbol:":=" (Recursive, l)
+            | Psig_typesubst l -> self#type_def_list ~eq_symbol:":=" Recursive l
             | Psig_modtypesubst x -> self#modtype x ~delim:":="
           in
           source_map ~loc:x.psig_loc item
@@ -9207,6 +9210,8 @@ let createFormatter () =
                 self#attach_std_item_attrs binding.pmb_attributes module_binding
               | Pstr_recmodule decls -> self#recmodule ~extension decls
               | Pstr_open od -> self#pstr_open ~extension od
+              | Pstr_type (rf, l) -> self#type_def_list ~extension rf l
+              | Pstr_typext te -> self#type_extension ~extension te
               | _ ->
                 self#attach_std_item_attrs
                   attrs
@@ -9359,7 +9364,7 @@ let createFormatter () =
                 let jsxAttrNodes = List.map self#attribute jsxAttrs in
                 makeList ~sep:(Sep " ") (jsxAttrNodes @ [ layout ]))
             | Pstr_type (_, []) -> assert false
-            | Pstr_type (rf, l) -> self#type_def_list (rf, l)
+            | Pstr_type (rf, l) -> self#type_def_list rf l
             | Pstr_value (rf, l) -> self#bindings (rf, l)
             | Pstr_typext te -> self#type_extension te
             | Pstr_exception ed ->
@@ -9426,7 +9431,7 @@ let createFormatter () =
           in
           source_map ~loc:term.pstr_loc item
 
-        method type_extension te =
+        method type_extension ?extension te =
           let formatOneTypeExtStandard prepend ({ ptyext_path } as te) =
             let name = self#longident_loc ptyext_path in
             let item = self#formatOneTypeExt prepend name (atom "+=") te in
@@ -9443,7 +9448,8 @@ let createFormatter () =
               ~layout
               ()
           in
-          formatOneTypeExtStandard (atom "type") te
+          let label = add_extension_sugar "type" extension in
+          formatOneTypeExtStandard (atom label) te
 
         (* [allowUnguardedSequenceBodies] allows sequence expressions {} to the
            right of `=>` to not be guarded in `{}` braces. *)
