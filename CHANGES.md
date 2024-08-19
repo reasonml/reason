@@ -26,6 +26,8 @@
   (@anmonteiro, [#2784](https://github.com/reasonml/reason/pull/2784))
 - Add support for module type substitutions
   (@anmonteiro, [#2785](https://github.com/reasonml/reason/pull/2785))
+- Support `type%foo` extension sugar syntax (@anmonteiro,
+  [#2790](https://github.com/reasonml/reason/pull/2790))
 
 ## 3.12.0
 
