@@ -794,6 +794,13 @@ let wrap_sig_ext ~loc body ext =
   | Some (ext_attrs, ext_id) ->
     Ppxlib.Psig_extension ((ext_id, PSig [mksig ~loc body]), ext_attrs)
 
+let mk_quotedext ~loc (id, idloc, str, delim) =
+  let exp_id = mkloc id idloc in
+  let e =
+    mkexp ~loc ~ghost:true (Pexp_constant (Pconst_string (str, loc, delim)))
+  in
+  (exp_id, Ppxlib.PStr [mkstrexp e []])
+
 let expression_extension ?loc (ext_attrs, ext_id) item_expr =
   let loc = match loc with
     | Some loc -> loc
@@ -1221,6 +1228,10 @@ let add_brace_attr (expr: Ppxlib.expression) =
 %token STAR
 %token <string * string option * string option> STRING
   [@recover.expr ("", None, None)] [@recover.cost 2]
+%token
+  <string * Location.t * string * string option> QUOTED_STRING_EXPR
+%token
+  <string * Location.t * string * string option> QUOTED_STRING_ITEM
 %token STRUCT
 %token THEN
 %token TILDE
@@ -5204,10 +5215,16 @@ item_extension_sugar:
 
 extension:
   LBRACKETPERCENT attr_id payload RBRACKET { ($2, $3) }
+  | QUOTED_STRING_EXPR
+    { let loc = mklocation $symbolstartpos $endpos in
+      mk_quotedext ~loc $1 }
 ;
 
 item_extension:
   LBRACKETPERCENTPERCENT attr_id payload RBRACKET { ($2, $3) }
+  | QUOTED_STRING_ITEM
+    { let loc = mklocation $symbolstartpos $endpos in
+      mk_quotedext ~loc $1 }
 ;
 
 payload:

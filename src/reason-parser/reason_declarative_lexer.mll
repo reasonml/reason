@@ -188,6 +188,16 @@ let set_lexeme_length buf n = (
                      with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
 )
 
+let compute_quoted_string_idloc {Location.loc_start = orig_loc } shift id =
+  let id_start_pos = orig_loc.Lexing.pos_cnum + shift in
+  let loc_start =
+    Lexing.{orig_loc with pos_cnum = id_start_pos }
+  in
+  let loc_end =
+    Lexing.{orig_loc with pos_cnum = id_start_pos + String.length id}
+  in
+  {Location. loc_start ; loc_end ; loc_ghost = false }
+
 (* This cut comment characters of the current buffer.
  * Operators (including "/*" and "//") are lexed with the same rule, and this
  * function cuts the lexeme at the beginning of an operator. *)
@@ -346,6 +356,9 @@ let dotsymbolchar =
   ['!' '$' '%' '&' '*' '+' '-' '/' ':' '=' '>' '?' '@' '^' '|' '\\' 'a'-'z' 'A'-'Z' '_' '0'-'9']
 let kwdopchar = ['$' '&' '*' '+' '-' '/' '<' '=' '>' '@' '^' '|' '.' '!']
 
+let ident = (lowercase | uppercase) identchar*
+let extattrident = ident ('.' ident)*
+
 let decimal_literal = ['0'-'9'] ['0'-'9' '_']*
 
 let hex_digit =
@@ -447,6 +460,52 @@ rule token state = parse
       let txt = flush_buffer raw_buffer in
       STRING (txt, None, Some delim)
     }
+  | "{%" (extattrident as id) "|"
+    {
+      let orig_loc = Location.curr lexbuf in
+      let string_start = lexbuf.lex_start_p in
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      if not (quoted_string raw_buffer "" lexbuf) then
+        raise_error start_loc Unterminated_string;
+      lexbuf.lex_start_p <- string_start;
+      let txt = flush_buffer raw_buffer in
+      let idloc = compute_quoted_string_idloc orig_loc 2 id in
+      QUOTED_STRING_EXPR (id, idloc, txt, Some "") }
+  | "{%" (extattrident as id) blank+ (lowercase* as delim) "|"
+    { let orig_loc = Location.curr lexbuf in
+      let string_start = lexbuf.lex_start_p in
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      if not (quoted_string raw_buffer delim lexbuf) then
+        raise_error start_loc Unterminated_string;
+      lexbuf.lex_start_p <- string_start;
+      let txt = flush_buffer raw_buffer in
+      let idloc = compute_quoted_string_idloc orig_loc 2 id in
+      QUOTED_STRING_EXPR (id, idloc, txt, Some delim) }
+  | "{%%" (extattrident as id) "|"
+    {
+      let orig_loc = Location.curr lexbuf in
+      let string_start = lexbuf.lex_start_p in
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      if not (quoted_string raw_buffer "" lexbuf) then
+        raise_error start_loc Unterminated_string;
+      lexbuf.lex_start_p <- string_start;
+      let txt = flush_buffer raw_buffer in
+      let idloc = compute_quoted_string_idloc orig_loc 3 id in
+      QUOTED_STRING_EXPR (id, idloc, txt, Some "") }
+  | "{%%" (extattrident as id) blank+ (lowercase* as delim) "|"
+    { let orig_loc = Location.curr lexbuf in
+      let string_start = lexbuf.lex_start_p in
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      if not (quoted_string raw_buffer delim lexbuf) then
+        raise_error start_loc Unterminated_string;
+      lexbuf.lex_start_p <- string_start;
+      let txt = flush_buffer raw_buffer in
+      let idloc = compute_quoted_string_idloc orig_loc 3 id in
+      QUOTED_STRING_EXPR (id, idloc, txt, Some delim) }
   | "'" newline "'"
     { (* newline can span multiple characters
          (if the newline starts with \13)

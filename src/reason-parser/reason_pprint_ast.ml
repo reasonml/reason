@@ -7710,10 +7710,25 @@ let createFormatter () =
                 | None, _ ->
                   (match expression_extension_sugar x with
                   | None -> Some (self#extension e)
-                  | Some (_, x') ->
+                  | Some ({ txt = ext; _ }, x') ->
                     (match x'.pexp_desc with
                     | Pexp_let _ | Pexp_letop _ | Pexp_letmodule _ ->
                       Some (makeLetSequence (self#letList x))
+                    | Pexp_constant (Pconst_string (i, _, Some delim)) ->
+                      let quoted_ext =
+                        wrap
+                          (fun ppf () ->
+                             Format.fprintf
+                               ppf
+                               "{%%%s%s%s|%s|%s}"
+                               ext
+                               (if delim != "" then " " else "")
+                               delim
+                               i
+                               delim)
+                          ()
+                      in
+                      Some quoted_ext
                     | _ -> Some (self#extension e))))
               | Pexp_open (me, e) ->
                 if self#isSeriesOfOpensFollowedByNonSequencyExpression x
