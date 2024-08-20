@@ -28,6 +28,8 @@
   (@anmonteiro, [#2785](https://github.com/reasonml/reason/pull/2785))
 - Support `type%foo` extension sugar syntax (@anmonteiro,
   [#2790](https://github.com/reasonml/reason/pull/2790))
+- Support quoted extensions (@anmonteiro,
+  [#2794](https://github.com/reasonml/reason/pull/2794))
 
 ## 3.12.0
 
