@@ -77,3 +77,8 @@ Format general interface syntax
   open%foo Bar;
   
   open! %foo Bar;
+  
+  type%foo t = int;
+  
+  type%x foo +=
+    | Int;

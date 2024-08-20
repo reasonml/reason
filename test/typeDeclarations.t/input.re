@@ -60,3 +60,7 @@ type a = array({. "someStringKeyThatCausesLineToBreak": string });
 type b = {
   punned: [@with_attribute] punned
 };
+
+type%x foo = int;
+
+type%x foo += Int;
