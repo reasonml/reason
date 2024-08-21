@@ -5,27 +5,37 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
+let default_parse_toplevel_phrase = !Toploop.parse_toplevel_phrase
+let reason_parse_toplevel_phrase =
+  Reason_util.correctly_catch_parse_errors
+  (fun x ->
+    let r =
+      Reason_toolchain.To_current.copy_toplevel_phrase
+        (Reason_toolchain.RE.toplevel_phrase x)
+  in
+#if OCAML_VERSION >= (5,2,0)
+  (* NOTE(anmonteiro): after https://github.com/ocaml/ocaml/pull/12029, we get a
+
+  Fatal error: exception Invalid_argument("index out of bounds")
+  Raised by primitive operation at Toploop.ends_with_lf in file "toplevel/toploop.ml"
+
+  Setting `lex_eof_reached` seems to avoid whatever check upstream is doing. *)
+  x.lex_eof_reached <- true;
+#endif
+  r)
+
+
 (* this file's triggered by utop/rtop *)
 let main () =
   if List.exists ((=) "camlp4o") !Topfind.predicates ||
      List.exists ((=) "camlp4r") !Topfind.predicates then
     print_endline "Reason is incompatible with camlp4!"
   else begin
-    Toploop.parse_toplevel_phrase := Reason_util.correctly_catch_parse_errors
-        (fun x ->
-          let r =  Reason_toolchain.To_current.copy_toplevel_phrase
-            (Reason_toolchain.RE.toplevel_phrase x)
-          in
-#if OCAML_VERSION >= (5,2,0)
-(* NOTE(anmonteiro): after https://github.com/ocaml/ocaml/pull/12029, we get a
-
-  Fatal error: exception Invalid_argument("index out of bounds")
-  Raised by primitive operation at Toploop.ends_with_lf in file "toplevel/toploop.ml"
-
-  Setting `lex_eof_reached` seems to avoid whatever check upstream is doing. *)
-          x.lex_eof_reached <- true;
-#endif
-          r);
+    Toploop.parse_toplevel_phrase := (fun t ->
+      if !Reason_utop.current_top = UTop then
+        default_parse_toplevel_phrase t
+      else
+        reason_parse_toplevel_phrase t);
     Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors
         (fun x -> List.map Reason_toolchain.To_current.copy_toplevel_phrase
             (Reason_toolchain.RE.use_file x));
