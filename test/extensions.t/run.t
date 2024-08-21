@@ -389,3 +389,6 @@ Format extensions
   external%foo x: int => int;
   external%foo x: int => int = "caml_prim";
   external%foo x: int => int = "caml_prim";
+  
+  {%%M.foo | <hello>{x} |};
+  let x = {%M.foo bar| <hello>{|x|} |bar};
