@@ -1129,6 +1129,20 @@ let createFormatter () =
       fn Format.str_formatter term;
       atom (Format.flush_str_formatter ())
 
+    let quoted_ext ?(pct = "%") extension i delim =
+      wrap
+        (fun ppf () ->
+           Format.fprintf
+             ppf
+             "{%s%s%s%s|%s|%s}"
+             pct
+             extension.txt
+             (if delim != "" then " " else "")
+             delim
+             i
+             delim)
+        ()
+
     (* Don't use `trim` since it kills line return too? *)
     let rec beginsWithStar_ line length idx =
       if idx = length
@@ -7710,25 +7724,12 @@ let createFormatter () =
                 | None, _ ->
                   (match expression_extension_sugar x with
                   | None -> Some (self#extension e)
-                  | Some ({ txt = ext; _ }, x') ->
+                  | Some (ext, x') ->
                     (match x'.pexp_desc with
                     | Pexp_let _ | Pexp_letop _ | Pexp_letmodule _ ->
                       Some (makeLetSequence (self#letList x))
                     | Pexp_constant (Pconst_string (i, _, Some delim)) ->
-                      let quoted_ext =
-                        wrap
-                          (fun ppf () ->
-                             Format.fprintf
-                               ppf
-                               "{%%%s%s%s|%s|%s}"
-                               ext
-                               (if delim != "" then " " else "")
-                               delim
-                               i
-                               delim)
-                          ()
-                      in
-                      Some quoted_ext
+                      Some (quoted_ext ext i delim)
                     | _ -> Some (self#extension e))))
               | Pexp_open (me, e) ->
                 if self#isSeriesOfOpensFollowedByNonSequencyExpression x
@@ -9227,6 +9228,12 @@ let createFormatter () =
               | Pstr_open od -> self#pstr_open ~extension od
               | Pstr_type (rf, l) -> self#type_def_list ~extension rf l
               | Pstr_typext te -> self#type_extension ~extension te
+              | Pstr_eval
+                  ( { pexp_desc =
+                        Pexp_constant (Pconst_string (i, _, Some delim))
+                    }
+                  , _ ) ->
+                quoted_ext ~pct:"%%" extension i delim
               | _ ->
                 self#attach_std_item_attrs
                   attrs

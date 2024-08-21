@@ -494,7 +494,7 @@ rule token state = parse
       lexbuf.lex_start_p <- string_start;
       let txt = flush_buffer raw_buffer in
       let idloc = compute_quoted_string_idloc orig_loc 3 id in
-      QUOTED_STRING_EXPR (id, idloc, txt, Some "") }
+      QUOTED_STRING_ITEM (id, idloc, txt, Some "") }
   | "{%%" (extattrident as id) blank+ (lowercase* as delim) "|"
     { let orig_loc = Location.curr lexbuf in
       let string_start = lexbuf.lex_start_p in
@@ -505,7 +505,7 @@ rule token state = parse
       lexbuf.lex_start_p <- string_start;
       let txt = flush_buffer raw_buffer in
       let idloc = compute_quoted_string_idloc orig_loc 3 id in
-      QUOTED_STRING_EXPR (id, idloc, txt, Some delim) }
+      QUOTED_STRING_ITEM (id, idloc, txt, Some delim) }
   | "'" newline "'"
     { (* newline can span multiple characters
          (if the newline starts with \13)
