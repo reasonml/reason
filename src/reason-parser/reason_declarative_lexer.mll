@@ -824,7 +824,7 @@ and comment buffer firstloc nestedloc = parse
         false
       )
     }
-  | "{" (lowercase* as delim) "|"
+  | "{" ('%' '%'? extattrident blank*)? (lowercase* as delim) "|"
     { store_lexeme buffer lexbuf;
       let stringloc = Location.curr lexbuf in
       let terminated_string = quoted_string buffer delim lexbuf in
