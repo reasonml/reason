@@ -2054,6 +2054,14 @@ let createFormatter () =
         settings.funcApplicationLabelStyle
         typeApplicationItems
 
+    let add_raw_identifier_prefix txt =
+      let prefix =
+        match Hashtbl.find Reason_declarative_lexer.keyword_table txt with
+        | _ -> "\\#"
+        | exception Not_found -> ""
+      in
+      prefix ^ txt
+
     (* add parentheses to binders when they are in fact infix or prefix
        operators *)
     let protectIdentifier txt =
@@ -2061,7 +2069,7 @@ let createFormatter () =
       let txt =
         if Reason_syntax_util.is_andop txt || Reason_syntax_util.is_letop txt
         then Reason_syntax_util.compress_letop_identifier txt
-        else txt
+        else txt |> add_raw_identifier_prefix
       in
       if not needs_parens
       then atom txt
@@ -2923,7 +2931,9 @@ let createFormatter () =
             let itm =
               self#formatOneTypeDef
                 prepend
-                (atom ~loc:td.ptype_name.loc td.ptype_name.txt)
+                (atom
+                   ~loc:td.ptype_name.loc
+                   (add_raw_identifier_prefix td.ptype_name.txt))
                 (atom eq_symbol)
                 td
             in
@@ -3411,6 +3421,9 @@ let createFormatter () =
                 let variant_helper i rf =
                   match rf.prf_desc with
                   | Rtag (label, opt_ampersand, ctl) ->
+                    let label =
+                      { label with txt = add_raw_identifier_prefix label.txt }
+                    in
                     let pcd_args = Pcstr_tuple ctl in
                     let all_attrs =
                       List.concat [ pcd_attributes; rf.prf_attributes ]
@@ -5038,7 +5051,7 @@ let createFormatter () =
                         ~polyVariant:true
                         ~arityIsClear:true
                         stdAttrs
-                        (atom ("`" ^ l))
+                        (atom ("`" ^ add_raw_identifier_prefix l))
                         eo
                     ]
               (* TODO: Should protect this identifier *)
@@ -7748,7 +7761,9 @@ let createFormatter () =
                          (self#core_type ct)
                      ])
               | Pexp_variant (l, None) ->
-                Some (ensureSingleTokenSticksToLabel (atom ("`" ^ l)))
+                Some
+                  (ensureSingleTokenSticksToLabel
+                     (atom ("`" ^ add_raw_identifier_prefix l)))
               | Pexp_record (l, eo) -> Some (self#unparseRecord l eo)
               | Pexp_array l -> Some (self#unparseSequence ~construct:`Array l)
               | Pexp_let _ | Pexp_sequence _ | Pexp_letmodule _
@@ -8276,12 +8291,13 @@ let createFormatter () =
             in
 
             let upToName =
+              let name = add_raw_identifier_prefix pci_name.txt in
               if ls == []
-              then label ~space:true (atom opener) (atom pci_name.txt)
+              then label ~space:true (atom opener) (atom name)
               else
                 label
                   ~space:true
-                  (label ~space:true (atom opener) (atom pci_name.txt))
+                  (label ~space:true (atom opener) (atom name))
                   (self#class_params_def ls)
             in
             let includingEqual =
@@ -8852,14 +8868,17 @@ let createFormatter () =
             ()
 
         method modtype x ~delim =
-          let name = atom x.pmtd_name.txt in
-          let letPattern =
-            makeList ~postSpace:true [ atom "module type"; name; atom delim ]
-          in
+          let name = atom (add_raw_identifier_prefix x.pmtd_name.txt) in
           let main =
             match x.pmtd_type with
             | None -> makeList ~postSpace:true [ atom "module type"; name ]
-            | Some mt -> self#module_type letPattern mt
+            | Some mt ->
+              let letPattern =
+                makeList
+                  ~postSpace:true
+                  [ atom "module type"; name; atom delim ]
+              in
+              self#module_type letPattern mt
           in
           let { Reason_attributes.stdAttrs; docAttrs; _ } =
             Reason_attributes.partitionAttributes
@@ -9425,6 +9444,7 @@ let createFormatter () =
               , None )
 
         method class_opening class_keyword name pci_virt ls =
+          let name = add_raw_identifier_prefix name in
           let firstToken = if class_keyword then "class" else "and" in
           match pci_virt, ls with
           (* When no class params, it's a very simple formatting for the
@@ -9480,14 +9500,17 @@ let createFormatter () =
               self#attach_std_item_attrs binding.pmb_attributes module_binding
             | Pstr_open od -> self#pstr_open od
             | Pstr_modtype x ->
-              let name = atom x.pmtd_name.txt in
-              let letPattern =
-                makeList ~postSpace:true [ atom "module type"; name; atom "=" ]
-              in
+              let name = atom (add_raw_identifier_prefix x.pmtd_name.txt) in
               let main =
                 match x.pmtd_type with
                 | None -> makeList ~postSpace:true [ atom "module type"; name ]
-                | Some mt -> self#module_type letPattern mt
+                | Some mt ->
+                  let letPattern =
+                    makeList
+                      ~postSpace:true
+                      [ atom "module type"; name; atom "=" ]
+                  in
+                  self#module_type letPattern mt
               in
               self#attach_std_item_attrs x.pmtd_attributes main
             | Pstr_class l -> self#class_declaration_list l

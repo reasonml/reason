@@ -385,6 +385,7 @@ let hex_float_literal =
   (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
 
 let literal_modifier = ['G'-'Z' 'g'-'z']
+let raw_ident_escape = "\\#"
 
 rule token state = parse
   | "\\" newline {
@@ -408,6 +409,8 @@ rule token state = parse
     { QUESTION }
   | "=?"
     { set_lexeme_length lexbuf 1; EQUAL }
+  | raw_ident_escape (lowercase identchar * as name)
+      { LIDENT name }
   | lowercase identchar *
     { let s = Lexing.lexeme lexbuf in
       try Hashtbl.find keyword_table s
@@ -521,7 +524,7 @@ rule token state = parse
     { CHAR (char_for_decimal_code lexbuf 2) }
   | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
     { CHAR (char_for_hexadecimal_code lexbuf 3) }
-  | "'" (("\\" _) as esc)
+  | "'" (("\\" [^ '#']) as esc)
     { raise_error (Location.curr lexbuf) (Illegal_escape esc);
       token state lexbuf
     }
