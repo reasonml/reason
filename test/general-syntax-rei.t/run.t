@@ -82,3 +82,9 @@ Format general interface syntax
   
   type%x foo +=
     | Int;
+  
+  module type x = {
+    let a: 'a. 'a => unit;
+  };
+  
+  let a: 'a. 'a => unit;
