@@ -3106,9 +3106,8 @@ let createFormatter () =
           let recordRow pld =
             let hasPunning = recordRowIsPunned pld in
             let name =
-              if hasPunning
-              then [ atom pld.pld_name.txt ]
-              else [ atom pld.pld_name.txt; atom ":" ]
+              let name = add_raw_identifier_prefix pld.pld_name.txt in
+              if hasPunning then [ atom name ] else [ atom name; atom ":" ]
             in
             let name = source_map ~loc:pld.pld_name.loc (makeList name) in
             let withMutable =

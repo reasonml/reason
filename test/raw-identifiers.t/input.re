@@ -26,3 +26,13 @@ type y = [ | \#module ]
 let x = `\#module
 
 external \#external: unit => unit = "external";
+
+type \#rec = {
+  \#type: \#type,
+  \#module: module_
+};
+
+let \#rec = {
+  \#type: \#type,
+  \#module: module_
+}
