@@ -30,6 +30,8 @@
   [#2790](https://github.com/reasonml/reason/pull/2790))
 - Support quoted extensions (@anmonteiro,
   [#2794](https://github.com/reasonml/reason/pull/2794))
+- Parse universal type variables in signature items (@anmonteiro,
+  [#2797](https://github.com/reasonml/reason/pull/2797))
 
 ## 3.12.0
 
