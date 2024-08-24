@@ -1931,7 +1931,7 @@ signature:
 
 signature_item:
   | item_attributes
-    LET item_extension_sugar? as_loc(val_ident) COLON core_type
+    LET item_extension_sugar? as_loc(val_ident) COLON poly_type
     { let loc = mklocation $startpos($2) $endpos in
       wrap_sig_ext
         ~loc

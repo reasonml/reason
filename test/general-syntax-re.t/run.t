@@ -1545,3 +1545,7 @@ Format general implementation syntax
     let x = 1;
     3;
   };
+  
+  module type x = {
+    let a: 'a. 'a => unit;
+  };
