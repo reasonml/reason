@@ -28,6 +28,16 @@ Test raw identifiers in Reason syntax
   let x = `\#module;
   
   external \#external: unit => unit = "external";
+  
+  type \#rec = {
+    \#type,
+    \#module: module_,
+  };
+  
+  let \#rec = {
+    \#type,
+    \#module: module_,
+  };
 
 Check idempotency
 
