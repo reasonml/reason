@@ -9913,9 +9913,13 @@ let createFormatter () =
                     "=> ", ")" ^ rightWrap
                   in
                   let wrap =
-                    if self#should_preserve_requested_braces retCb
-                    then leftWrap ^ "{", "}" ^ rightWrap
-                    else wrap
+                    match
+                      ( self#should_preserve_requested_braces retCb
+                      , self#isSeriesOfOpensFollowedByNonSequencyExpression
+                          { retCb with pexp_attributes = [] } )
+                    with
+                    | true, _ | _, false -> leftWrap ^ "{", "}" ^ rightWrap
+                    | _ -> wrap
                   in
                   let right =
                     source_map
