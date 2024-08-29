@@ -32,6 +32,8 @@
   [#2794](https://github.com/reasonml/reason/pull/2794))
 - Parse universal type variables in signature items (@anmonteiro,
   [#2797](https://github.com/reasonml/reason/pull/2797))
+- Fix formatting of callbacks with sequence expressions (@anmonteiro,
+  [#2799](https://github.com/reasonml/reason/pull/2799))
 
 ## 3.12.0
 
