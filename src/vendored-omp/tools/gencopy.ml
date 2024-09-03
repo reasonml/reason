@@ -68,10 +68,15 @@ module Main : sig end = struct
     Exp.let_ ?loc ?attrs (if recursive then Recursive else Nonrecursive) b body
 
   let func ?loc ?attrs l =
-    Exp.function_ ?loc ?attrs (List.map (fun (p, e) -> Exp.case p e) l)
+    Exp.function_ ?loc ?attrs []
+    None
+    (Pfunction_cases ((List.map (fun (p, e) -> Exp.case p e) l), Location.none, []))
 
   let lam ?loc ?attrs ?(label = Label.nolabel) ?default pat exp =
-    Exp.fun_ ?loc ?attrs label default pat exp
+    Exp.function_ ?loc ?attrs
+      [ { pparam_loc = Location.none; pparam_desc = (Pparam_val (label, default, pat)) } ]
+      None
+      (Pfunction_body exp)
 
   let pvar ?(loc = !default_loc) ?attrs s = Pat.var ~loc ?attrs (mkloc s loc)
 
@@ -198,8 +203,8 @@ module Main : sig end = struct
                 failwith "Inline records are not yet supported."
           in
           concrete (func (List.map case l))
-      | Type_abstract, Some t -> concrete (tyexpr_fun env t)
-      | Type_abstract, None -> failwith ("Abstract type " ^ ty)
+      | Type_abstract _, Some t -> concrete (tyexpr_fun env t)
+      | Type_abstract _, None -> failwith ("Abstract type " ^ ty)
       | Type_open, _ ->
           Format.eprintf "** Open types are not yet supported %s@." ty;
           ()
@@ -254,36 +259,15 @@ module Main : sig end = struct
     (* (fun x -> <expr> x) ====> <expr> *)
     let open Ast_mapper in
     let super = default_mapper in
-    let expr this e =
-      let e = super.expr this e in
-      let open Longident in
-      let open Parsetree in
-      match e.pexp_desc with
-      | Pexp_fun
-          ( Asttypes.Nolabel,
-            None,
-            { ppat_desc = Ppat_var { txt = id; _ }; _ },
-            { pexp_desc =
-                Pexp_apply
-                  ( f,
-                    [ ( Asttypes.Nolabel,
-                        { pexp_desc = Pexp_ident { txt = Lident id2; _ }; _ }
-                      )
-                    ] )
-            ; _
-            } )
-        when id = id2 ->
-          f
-      | _ -> e
-    in
     let value_binding this (vb : Parsetree.value_binding) =
       let pvb_pat = this.pat this vb.pvb_pat in
       let pvb_expr = super.expr this vb.pvb_expr in
       let pvb_attributes = this.attributes this vb.pvb_attributes in
       let pvb_loc = this.location this vb.pvb_loc in
-      { Parsetree.pvb_loc; pvb_attributes; pvb_expr; pvb_pat }
+      let pvb_constraint = vb.pvb_constraint in
+      { Parsetree.pvb_loc; pvb_attributes; pvb_expr; pvb_pat; pvb_constraint }
     in
-    { super with expr; value_binding }
+    { super with value_binding }
 
   let add_mapping s =
     let i =
@@ -300,7 +284,7 @@ module Main : sig end = struct
     [ ( "-I",
         String
           (fun s ->
-            Load_path.add_dir (Misc.expand_directory Config.standard_library s)
+            Load_path.add_dir ~hidden:false (Misc.expand_directory Config.standard_library s)
             ),
         "<dir> Add <dir> to the list of include directories" );
       ( "-map",
@@ -312,7 +296,7 @@ module Main : sig end = struct
   let usage = Printf.sprintf "%s [options] <type names>\n" Sys.argv.(0)
 
   let main () =
-    Load_path.init ~auto_include:Compmisc.auto_include [ Config.standard_library ];
+    Load_path.init ~auto_include:Compmisc.auto_include ~visible:[ Config.standard_library ] ~hidden:[];
     Arg.parse (Arg.align args) gen usage;
     let from_, to_ =
       match !module_mapping with
@@ -348,4 +332,3 @@ end
 
 (* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_500:Ast_414 Ast_500.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_500_414_migrate.ml *)
 (* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_414:Ast_500  Ast_414.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_414_500_migrate.ml *)
-
