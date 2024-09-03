@@ -18,6 +18,12 @@
  ;  (lint_flags --null))
  )
 
+(rule
+ (targets caml_format_doc.ml)
+ (deps caml_format_doc.cppo.ml)
+ (action
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
+
 ; Not needed for reason repo (vendored)
 ; (library
 ;  (name reason.migrate_parsetree_driver_main)
