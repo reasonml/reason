@@ -9296,6 +9296,9 @@ let createFormatter () =
          *)
 
         method let_module_binding prefixText bindingName moduleExpr =
+          let { Reason_attributes.stdAttrs; _ } =
+            Reason_attributes.partitionAttributes moduleExpr.pmod_attributes
+          in
           let argsList, return =
             self#curriedFunctorPatternsAndReturnStruct moduleExpr
           in
@@ -9317,6 +9320,7 @@ let createFormatter () =
               (Some (true, includingEqual))
               ( [ self#moduleExpressionToFormattedApplicationItems
                     unconstrainedRetTerm
+                  |> self#attach_std_item_attrs stdAttrs
                 ]
               , None )
           (* Simple module with type no constraint, no functor args. *)
@@ -9325,7 +9329,10 @@ let createFormatter () =
               prefixText
               bindingName
               None
-              ([ self#moduleExpressionToFormattedApplicationItems return ], None)
+              ( [ self#moduleExpressionToFormattedApplicationItems return
+                  |> self#attach_std_item_attrs stdAttrs
+                ]
+              , None )
           | _, _ ->
             (* A functor *)
             let argsWithConstraint, actualReturn =
@@ -9346,7 +9353,9 @@ let createFormatter () =
               ~arrow:"=>"
               (makeList [ bindingName; atom " =" ])
               argsWithConstraint
-              ( [ self#moduleExpressionToFormattedApplicationItems actualReturn ]
+              ( [ self#moduleExpressionToFormattedApplicationItems actualReturn
+                  |> self#attach_std_item_attrs stdAttrs
+                ]
               , None )
 
         method class_opening class_keyword name pci_virt ls =
