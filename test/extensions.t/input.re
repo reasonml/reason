@@ -388,4 +388,17 @@ let a = 3;
 [%%foo external x: int => int = "caml_prim"];
 external%foo x: int => int = "caml_prim";
 
+{%%M.foo| <hello>{x} |};
+let x = {%M.foo bar| <hello>{|x|} |bar};
+
+/* Double quotes inside quoted strings inside comments */
+/* {|"|}, and */
+/* [%foo {|"|}], and */
+/* {%foo|"|} should be valid inside comments */
+
+/* Comment delimiters inside quoted strings inside comments: */
+/* {|*)|}, and */
+/* [%foo {bar|*)|bar}], and */
+/* {%foo bar|*)|bar} should be valid inside comments */
+
 

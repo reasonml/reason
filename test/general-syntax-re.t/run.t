@@ -1523,3 +1523,29 @@ Format general implementation syntax
     destruct4,
     destruct5,
   } = fooBar;
+  
+  open%foo Bar;
+  open! %foo Bar;
+  
+  let () = {
+    open%foo Bar;
+    switch (1 + 1) {
+    | 2 => ()
+    | _ => ()
+    };
+  };
+  
+  let () = {
+    open%foo Bar;
+    3;
+  };
+  
+  let () = {
+    open%foo Bar;
+    let x = 1;
+    3;
+  };
+  
+  module type x = {
+    let a: 'a. 'a => unit;
+  };

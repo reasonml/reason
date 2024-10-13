@@ -1,0 +1,6 @@
+src/vendored-omp/**
+src/reason-parser/vendor/**
+test/**.cppo.ml
+src/**.cppo.ml
+src/**.cppo.mli
+rtop/**.cppo.ml

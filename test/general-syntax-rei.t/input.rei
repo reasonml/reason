@@ -64,3 +64,17 @@ let wrapReasonForJs:
   ) =>
   reactClass;
 
+open%foo Bar;
+
+open! %foo Bar;
+
+type%foo t = int;
+
+type%x foo += Int;
+
+module type x = {
+  let a: 'a. 'a => unit;
+};
+
+let a: 'a. 'a => unit;
+

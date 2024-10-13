@@ -22,6 +22,18 @@
   [#2780](https://github.com/reasonml/reason/pull/2780))
 - Improve printing of arrows with labelled arguments (@anmonteiro,
   [#2778](https://github.com/reasonml/reason/pull/2778))
+- Parse and print extensions in `open%foo` expressions and structure items
+  (@anmonteiro, [#2784](https://github.com/reasonml/reason/pull/2784))
+- Add support for module type substitutions
+  (@anmonteiro, [#2785](https://github.com/reasonml/reason/pull/2785))
+- Support `type%foo` extension sugar syntax (@anmonteiro,
+  [#2790](https://github.com/reasonml/reason/pull/2790))
+- Support quoted extensions (@anmonteiro,
+  [#2794](https://github.com/reasonml/reason/pull/2794))
+- Parse universal type variables in signature items (@anmonteiro,
+  [#2797](https://github.com/reasonml/reason/pull/2797))
+- Fix formatting of callbacks with sequence expressions (@anmonteiro,
+  [#2799](https://github.com/reasonml/reason/pull/2799))
 
 ## 3.12.0
 

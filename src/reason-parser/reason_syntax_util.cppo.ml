@@ -15,9 +15,6 @@
 *)
 
 open Ppxlib
-open Asttypes
-open Parsetree
-open Longident
 
 (* Rename labels in function definition/application and records *)
 let rename_labels = ref false
