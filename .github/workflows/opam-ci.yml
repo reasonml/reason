@@ -16,46 +16,47 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-13
-          - windows-latest
+        setup:
+          - {ocaml-compiler: '4.06.x', os: ubuntu-latest}
+          - {ocaml-compiler: '4.10.x', os: ubuntu-latest}
+          - {ocaml-compiler: '4.12.x', os: ubuntu-latest}
+          - {ocaml-compiler: '4.14.x', os: ubuntu-latest}
+          - {ocaml-compiler: '4.06.x', os: macos-13}
+          - {ocaml-compiler: '4.10.x', os: macos-13}
+          - {ocaml-compiler: '4.12.x', os: macos-13}
+          - {ocaml-compiler: '4.14.x', os: macos-13}
+            # looks like setup-ocaml@v3 can only run actions on windows for
+            # OCaml >= 4.13
+            # https://github.com/ocaml/setup-ocaml/issues/822#issuecomment-2215525942
+          - {ocaml-compiler: '4.14.x', os: windows-latest}
 
-        ocaml-compiler:
-          # Please keep the list in sync with the minimal version of OCaml in
-          # esy.json, reason.esy/reason.opam and rtop.esy/rtop.opam.
-          - 4.06.x # We support 4.06 because is the one that is used in BuckleScript / ReScript v9
-          - 4.10.x
-          - 4.12.x
-          - 4.14.x
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.setup.os }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
+      - name: Use OCaml ${{ matrix.setup.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v3
         with:
-          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          ocaml-compiler: ${{ matrix.setup.ocaml-compiler }}
           opam-pin: false
 
       - name: Load opam cache when not Windows
         if: runner.os != 'Windows'
         id: opam-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.opam
-          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+          key: opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
       - name: Load opam cache when Windows
         if: runner.os == 'Windows'
         id: opam-cache-windows
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: _opam
-          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+          key: opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
       - name: Install dependencies
         run: opam install . --deps-only
@@ -67,16 +68,16 @@ jobs:
         run: opam exec -- dune runtest -p reason,rtop
 
       - name: Save cache when not Windows
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: steps.opam-cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
         with:
           path: ~/.opam
-          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+          key: opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
       - name: Save cache when Windows
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: steps.opam-cache-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'
         with:
           path: _opam
-          key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+          key: opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 

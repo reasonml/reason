@@ -32,17 +32,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Install esy
-        run: npm install -g esy@0.7.3-beta.3
+        run: npm install -g esy@0.7.4
 
       - name: Restore global cache (~/.esy/source)
         id: global-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.esy/source
           key: esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
@@ -53,7 +52,7 @@ jobs:
 
       - name: Load dependencies cache
         id: deps-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
@@ -91,7 +90,7 @@ jobs:
         run: esy export-dependencies
 
       - name: Save global cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: steps.global-cache.outputs.cache-hit != 'true'
         with:
           path: ~/.esy/source
@@ -99,7 +98,7 @@ jobs:
 
       - name: Save dependencies cache
         if: steps.deps-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
