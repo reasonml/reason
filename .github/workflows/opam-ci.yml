@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Use OCaml ${{ matrix.ocaml-compiler }}
-        uses: ocaml/setup-ocaml@v2
+        uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.ocaml-compiler }}
           opam-pin: false
@@ -44,7 +44,7 @@ jobs:
       - name: Load opam cache when not Windows
         if: runner.os != 'Windows'
         id: opam-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.opam
           key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
@@ -52,7 +52,7 @@ jobs:
       - name: Load opam cache when Windows
         if: runner.os == 'Windows'
         id: opam-cache-windows
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: _opam
           key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
@@ -67,14 +67,14 @@ jobs:
         run: opam exec -- dune runtest -p reason,rtop
 
       - name: Save cache when not Windows
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: steps.opam-cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
         with:
           path: ~/.opam
           key: opam-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
       - name: Save cache when Windows
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: steps.opam-cache-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'
         with:
           path: _opam

@@ -27,7 +27,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - uses: cachix/install-nix-action@v27
+    - uses: cachix/install-nix-action@v29
       with:
         extra_nix_config: |
           extra-substituters = https://anmonteiro.nix-cache.workers.dev
@@ -53,7 +53,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - uses: cachix/install-nix-action@v27
+    - uses: cachix/install-nix-action@v29
       with:
         extra_nix_config: |
           extra-substituters = https://anmonteiro.nix-cache.workers.dev
