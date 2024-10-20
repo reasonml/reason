@@ -34,6 +34,8 @@
   [#2797](https://github.com/reasonml/reason/pull/2797))
 - Fix formatting of callbacks with sequence expressions (@anmonteiro,
   [#2799](https://github.com/reasonml/reason/pull/2799))
+- Fix printing of attributes on module expressions (@anmonteiro,
+  [#2803](https://github.com/reasonml/reason/pull/2803))
 
 ## 3.12.0
 

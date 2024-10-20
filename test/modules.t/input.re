@@ -572,3 +572,17 @@ module type t3 = t with module type x = { type t }
 module type t' = t with module type x := x
 
 module type t4 = t with module type x := { type t }
+
+module Foo =
+[@someattr]
+{
+  type t = string
+};
+
+let x = {
+  let module Foo =
+    [@someattr] {
+      type t = string
+    };
+  ()
+};
