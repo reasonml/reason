@@ -1,4 +1,4 @@
-## Unreleased
+## 3.13.0
 
 - Support `module%ppx` syntax (@anmonteiro,
   [#2771](https://github.com/reasonml/reason/pull/2771))
