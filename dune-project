@@ -41,7 +41,7 @@
   (menhir
    (>= "20180523"))
   (merlin-extend
-   (>= "0.6"))
+   (>= "0.6.2"))
   fix
   ppx_derivers
   cppo

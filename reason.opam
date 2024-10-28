@@ -20,7 +20,7 @@ depends: [
   "ocamlfind" {build}
   "dune-build-info" {>= "2.9.3"}
   "menhir" {>= "20180523"}
-  "merlin-extend" {>= "0.6"}
+  "merlin-extend" {>= "0.6.2"}
   "fix"
   "ppx_derivers"
   "cppo"
