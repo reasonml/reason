@@ -463,7 +463,7 @@ let comma ppf () = fprintf ppf ",@ "
 
 let pp_two_columns ?(sep = "|") ?max_lines ppf (lines: (string * string) list) =
   let left_column_size =
-    List.fold_left (fun acc (s, _) -> Int.max acc (String.length s)) 0 lines in
+    List.fold_left (fun acc (s, _) -> max acc (String.length s)) 0 lines in
   let lines_nb = List.length lines in
   let ellipsed_first, ellipsed_last =
     match max_lines with
