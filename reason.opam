@@ -43,7 +43,3 @@ build: [
   ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/reasonml/reason.git"
-pin-depends: [
-  [ "utop.dev" "git+https://github.com/ocaml-community/utop.git" ]
-]
-

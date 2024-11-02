@@ -1,0 +1,4 @@
+pin-depends: [
+  [ "utop.dev" "git+https://github.com/ocaml-community/utop.git" ]
+]
+
