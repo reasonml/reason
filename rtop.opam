@@ -16,8 +16,7 @@ depends: [
   "dune" {>= "2.9"}
   "ocaml" {>= "4.06" & < "5.4"}
   "reason" {= version}
-  "utop" {= "dev" & ocaml:version >= "5.3.0~~"}
-  "utop" {>= "2.0" & ocaml:version < "5.3.0~~"}
+  "utop" {= "dev" | >= "2.0"}
   "cppo"
   "odoc" {with-doc}
 ]
@@ -39,6 +38,6 @@ build: [
 ]
 dev-repo: "git+https://github.com/reasonml/reason.git"
 pin-depends: [
-  [ "utop.dev" "git+https://github.com/ocaml-community/utop.git" ] {ocaml:version >= "5.3.0~~"}
+  [ "utop.dev" "git+https://github.com/ocaml-community/utop.git" ]
 ]
 
