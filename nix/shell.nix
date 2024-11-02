@@ -7,7 +7,6 @@
 , curl
 , git
 , release-mode ? false
-, pkgs
 }:
 
 mkShell {
@@ -15,8 +14,8 @@ mkShell {
   nativeBuildInputs = with ocamlPackages; [
     utop
     merlin
-    # odoc
-    pkgs.ocaml-ng.ocamlPackages_5_2.ocamlformat
+    odoc
+    ocamlformat
   ];
   buildInputs =
     with ocamlPackages; (if release-mode then [ cacert curl dune-release git ] else [ ]);
