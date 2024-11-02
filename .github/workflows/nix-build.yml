@@ -21,6 +21,7 @@ jobs:
           - 5_0
           - 5_1
           - 5_2
+          - 5_3
 
     runs-on: ubuntu-latest
     steps:
@@ -44,6 +45,7 @@ jobs:
           - {ocaml-version: '5_2', os: macos-13}
           - {ocaml-version: '4_14', os: macos-14}
           - {ocaml-version: '5_2', os: macos-14}
+          - {ocaml-version: '5_3', os: macos-14}
     runs-on: ${{ matrix.setup.os }}
     steps:
     - uses: actions/checkout@v4
