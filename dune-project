@@ -60,5 +60,5 @@
     (< "5.4")))
   (reason
    (= :version))
-  (utop (= "dev"))
+  utop
   cppo))
