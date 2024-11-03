@@ -521,7 +521,6 @@ let pp_print_result  ~ok ~error ppf r =
 #if OCAML_VERSION >= (4,12,0)
 let pp_print_either  ~left ~right ppf e =
   ppf := Doc.either ~left:(doc_printer left) ~right:(doc_printer right) e !ppf
-#endif
 
 let comma ppf () = fprintf ppf ",@ "
 
@@ -545,6 +544,7 @@ let pp_two_columns ?(sep = "|") ?max_lines ppf (lines: (string * string) list) =
       else fprintf ppf "%*s %s %s@," left_column_size line_l sep line_r
     ) lines;
   fprintf ppf "@]"
+#endif
 
 let deprecated_printer pr ppf = ppf := Doc.add !ppf (Doc.Deprecated pr)
 #endif
