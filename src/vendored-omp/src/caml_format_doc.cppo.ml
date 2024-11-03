@@ -288,9 +288,10 @@ end
     | Acc_invalid_arg (_p, msg) ->  invalid_arg msg;
     | End_of_acc               -> doc
 
+#if OCAML_VERSION < (4,08,0)
   let kprintf k (CamlinternalFormatBasics.Format (fmt, _))  =
     CamlinternalFormat.make_printf
-      (fun acc doc -> doc |> compose_acc acc |> k )
+      (fun acc doc -> doc |> compose_acc acc |> k)
       End_of_acc fmt
 
   let printf doc = kprintf Fun.id doc
@@ -300,7 +301,7 @@ end
       End_of_acc fmt
 
   let msg fmt = kmsg Fun.id fmt
-
+#endif
 end
 
 (** Compatibility interface *)
@@ -449,6 +450,7 @@ module Driver = struct
     | End_of_acc               -> ()
 end
 
+#if OCAML_VERSION < (4,08,0)
 let kfprintf k ppf (CamlinternalFormatBasics.Format (fmt, _))  =
   CamlinternalFormat.make_printf
     (fun acc -> Driver.output_acc ppf acc; k ppf)
@@ -475,6 +477,7 @@ let kdoc_printf k fmt =
       k doc
     )
     ppf fmt
+#endif
 
 let doc_printer f x doc =
   let r = ref doc in
@@ -490,9 +493,11 @@ let compat = format_printer
 let compat1 f p1 = compat (f p1)
 let compat2 f p1 p2 = compat (f p1 p2)
 
+#if OCAML_VERSION < (4,08,0)
 let kasprintf k fmt =
   kdoc_printf (fun doc -> k (Format.asprintf "%a" Doc.format doc)) fmt
 let asprintf fmt = kasprintf Fun.id fmt
+#endif
 
 let pp_print_iter ?(pp_sep=pp_print_cut) iter elt ppf c =
       let sep = doc_printer pp_sep () in
