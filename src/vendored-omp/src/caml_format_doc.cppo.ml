@@ -267,7 +267,12 @@ end
     | Acc_formatting_gen (p, Acc_open_tag acc') ->
         let tag = to_string (compose_acc acc' empty) in
         let doc = compose_acc p doc in
-        doc |> open_tag (Format.String_tag tag)
+        doc |>
+#if OCAML_VERSION >= (4,08,0)
+        open_tag (Format.String_tag tag)
+#else
+        open_tag tag
+#endif
     | Acc_formatting_gen (p, Acc_open_box acc') ->
         let doc = compose_acc p doc in
         let box = to_string (compose_acc acc' empty) in
