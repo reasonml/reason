@@ -498,7 +498,9 @@ let pp_print_list ?(pp_sep=pp_print_cut) elt ppf l =
 
 let pp_print_array ?pp_sep elt ppf a =
   pp_print_iter ?pp_sep Array.iter elt ppf a
+#if OCAML_VERSION >= (4,07,0)
 let pp_print_seq ?pp_sep elt ppf s = pp_print_iter ?pp_sep Seq.iter elt ppf s
+#endif
 
 let pp_print_option  ?(none=fun _ () -> ()) elt ppf o =
   ppf := Doc.option ~none:(doc_printer none ()) (doc_printer elt) o !ppf
