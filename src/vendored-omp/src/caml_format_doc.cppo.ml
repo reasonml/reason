@@ -78,8 +78,18 @@ module Doc = struct
     | Text x -> Format.pp_print_string ppf x
     | Open_box { kind; indent } -> format_open_box_gen ppf kind indent
     | Close_box -> Format.pp_close_box ppf ()
-    | Open_tag tag -> Format.pp_open_stag ppf tag
-    | Close_tag -> Format.pp_close_stag ppf ()
+    | Open_tag tag ->
+#if OCAML_VERSION >= (4,08,0)
+        Format.pp_open_stag ppf tag
+#else
+        Format.pp_open_tag ppf tag
+#endif
+    | Close_tag ->
+#if OCAML_VERSION >= (4,08,0)
+        Format.pp_close_stag ppf ()
+#else
+        Format.pp_close_tag ppf ()
+#endif
     | Open_tbox -> Format.pp_open_tbox ppf ()
     | Tab_break {width;offset} -> Format.pp_print_tbreak ppf width offset
     | Set_tab -> Format.pp_set_tab ppf ()
@@ -346,7 +356,12 @@ module Driver = struct
       (fmting_lit:CamlinternalFormatBasics.formatting_lit)
     = match fmting_lit with
     | Close_box                 -> pp_close_box ppf ()
-    | Close_tag                 -> pp_close_stag ppf ()
+    | Close_tag                 ->
+#if OCAML_VERSION >= (4,08,0)
+        pp_close_stag ppf ()
+#else
+        pp_close_tag ppf ()
+#endif
     | Break (_, width, offset)  -> pp_print_break ppf width offset
     | FFlush                    -> pp_print_flush ppf ()
     | Force_newline             -> pp_force_newline ppf ()
@@ -388,7 +403,11 @@ module Driver = struct
         output_formatting_lit ppf f;
     | Acc_formatting_gen (p, Acc_open_tag acc') ->
         output_acc ppf p;
+#if OCAML_VERSION >= (4,08,0)
         pp_open_stag ppf (Format.String_tag (compute_tag output_acc acc'))
+#else
+        pp_open_stag ppf (compute_tag output_acc acc')
+#endif
     | Acc_formatting_gen (p, Acc_open_box acc') ->
         output_acc ppf p;
         let (indent, bty) =
