@@ -64,19 +64,31 @@ let init_reason () =
 
     (* Printing in Reason syntax *)
     let open Reason_toolchain.From_current in
-    let wrap f g fmt x = g fmt (f x) in
+    let wrap f g fmt x =
+      g fmt (f x)
+    in
+#if OCAML_VERSION >= (5,3,0)
+    let wrap_doc f g fmt x =
+      let doc_f =
+        Format_doc.deprecated_printer (fun fmt -> Format.fprintf fmt "%a" g (f x))
+      in
+      doc_f fmt
+#else
+    let wrap_doc = wrap
+#endif
+    in
     Toploop.print_out_value := wrap copy_out_value Reason_oprint.print_out_value;
-    Toploop.print_out_type := wrap copy_out_type Reason_oprint.print_out_type;
+    Toploop.print_out_type := wrap_doc copy_out_type Reason_oprint.print_out_type;
     Toploop.print_out_class_type :=
-      wrap copy_out_class_type Reason_oprint.print_out_class_type;
+      wrap_doc copy_out_class_type Reason_oprint.print_out_class_type;
     Toploop.print_out_module_type :=
-      wrap copy_out_module_type Reason_oprint.print_out_module_type;
+      wrap_doc copy_out_module_type Reason_oprint.print_out_module_type;
     Toploop.print_out_type_extension :=
-      wrap copy_out_type_extension Reason_oprint.print_out_type_extension;
+      wrap_doc copy_out_type_extension Reason_oprint.print_out_type_extension;
     Toploop.print_out_sig_item :=
-      wrap copy_out_sig_item Reason_oprint.print_out_sig_item;
+      wrap_doc copy_out_sig_item Reason_oprint.print_out_sig_item;
     Toploop.print_out_signature :=
-      wrap (List.map copy_out_sig_item) Reason_oprint.print_out_signature;
+      wrap_doc (List.map copy_out_sig_item) Reason_oprint.print_out_signature;
     Toploop.print_out_phrase :=
       wrap copy_out_phrase Reason_oprint.print_out_phrase;
     let current_show_fn =
@@ -122,7 +134,7 @@ let init_ocaml () =
 let toggle_syntax () =
   match !current_top with RTop -> init_ocaml () | UTop -> init_reason ()
 
-let _ =
+let () =
   Hashtbl.add
     (Toploop.directive_table [@ocaml.warning "-3"])
     "toggle_syntax"

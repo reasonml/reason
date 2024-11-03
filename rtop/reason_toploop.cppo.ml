@@ -31,6 +31,9 @@ let main () =
      List.exists ((=) "camlp4r") !Topfind.predicates then
     print_endline "Reason is incompatible with camlp4!"
   else begin
+#if OCAML_VERSION >= (5,3,0)
+    if not (Toploop.prepare Format.err_formatter ()) then raise (Compenv.Exit_with_status 2);
+#endif
     Toploop.parse_toplevel_phrase := (fun t ->
       if !Reason_utop.current_top = UTop then
         default_parse_toplevel_phrase t

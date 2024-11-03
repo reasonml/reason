@@ -33,7 +33,12 @@ let main () =
 #else
   Compmisc.init_path false;
 #endif
+
+#if OCAML_VERSION >= (5,3,0)
+  Env.set_current_unit (Unit_info.make ~source_file:filename Impl modulename);
+#else
   Env.set_unit_name modulename;
+#endif
 
   let ast = impl lexbuf in
   let ast = Reason_toolchain.To_current.copy_structure ast in
@@ -44,14 +49,20 @@ let main () =
   let (typedtree, _) =
 #endif
     Typemod.type_implementation
-#if OCAML_VERSION >= (5,2,0)
+#if  OCAML_VERSION >= (5,3,0)
+      (Unit_info.make ~source_file:modulename Impl modulename)
+#elif OCAML_VERSION >= (5,2,0)
       (Unit_info.make ~source_file:modulename modulename)
 #else
       modulename modulename modulename
 #endif
       env ast
   in
+#if  OCAML_VERSION >= (5,3,0)
+  let tree = Out_type.tree_of_signature typedtree.Typedtree.str_type in
+#else
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
+#endif
   let phrase = (Reason_omp.Ast_414.Outcometree.Ophr_signature
     (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)
   ) in
