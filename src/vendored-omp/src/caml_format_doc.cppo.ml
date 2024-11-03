@@ -95,7 +95,14 @@ module Doc = struct
     | Set_tab -> Format.pp_set_tab ppf ()
     | Close_tbox -> Format.pp_close_tbox ppf ()
     | Simple_break {spaces;indent} -> Format.pp_print_break ppf spaces indent
-    | Break {fits;breaks} -> Format.pp_print_custom_break ppf ~fits ~breaks
+    | Break {fits;breaks} ->
+#if OCAML_VERSION >= (4,08,0)
+        Format.pp_print_custom_break ppf ~fits ~breaks
+#else
+        let (_, width, _) = fits in
+        let (_, offset, _) = break in
+        Format.pp_print_break ppf width offset
+#endif
     | Flush {newline=true} -> Format.pp_print_newline ppf ()
     | Flush {newline=false} -> Format.pp_print_flush ppf ()
     | Newline -> Format.pp_force_newline ppf ()
