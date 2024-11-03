@@ -152,9 +152,11 @@ module Doc = struct
     | None -> none doc
     | Some x -> elt x doc
 
+#if OCAML_VERSION >= (4,12,0)
   let either ~left ~right x doc = match x with
     | Either.Left x -> left x doc
     | Either.Right x -> right x doc
+#endif
 
   let result ~ok ~error x doc = match x with
     | Ok x -> ok x doc
@@ -456,8 +458,10 @@ let pp_print_option  ?(none=fun _ () -> ()) elt ppf o =
 let pp_print_result  ~ok ~error ppf r =
    ppf := Doc.result ~ok:(doc_printer ok) ~error:(doc_printer error) r !ppf
 
+#if OCAML_VERSION >= (4,12,0)
 let pp_print_either  ~left ~right ppf e =
   ppf := Doc.either ~left:(doc_printer left) ~right:(doc_printer right) e !ppf
+#endif
 
 let comma ppf () = fprintf ppf ",@ "
 
