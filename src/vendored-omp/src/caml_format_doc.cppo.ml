@@ -26,7 +26,12 @@ module Doc = struct
     | HoV
     | B
 
-  type stag = Format.stag
+  type stag =
+#if OCAML_VERSION >= (4,08,0)
+    Format.stag
+#else
+    Format.tag
+#endif
 
   type element =
     | Text of string
