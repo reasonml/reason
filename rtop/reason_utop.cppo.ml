@@ -134,7 +134,7 @@ let init_ocaml () =
 let toggle_syntax () =
   match !current_top with RTop -> init_ocaml () | UTop -> init_reason ()
 
-let _ =
+let () =
   Hashtbl.add
     (Toploop.directive_table [@ocaml.warning "-3"])
     "toggle_syntax"
