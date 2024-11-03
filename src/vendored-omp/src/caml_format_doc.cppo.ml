@@ -288,7 +288,7 @@ end
     | Acc_invalid_arg (_p, msg) ->  invalid_arg msg;
     | End_of_acc               -> doc
 
-#if OCAML_VERSION < (4,08,0)
+#if OCAML_VERSION >= (4,08,0)
   let kprintf k (CamlinternalFormatBasics.Format (fmt, _))  =
     CamlinternalFormat.make_printf
       (fun acc doc -> doc |> compose_acc acc |> k)
@@ -450,7 +450,7 @@ module Driver = struct
     | End_of_acc               -> ()
 end
 
-#if OCAML_VERSION < (4,08,0)
+#if OCAML_VERSION >= (4,08,0)
 let kfprintf k ppf (CamlinternalFormatBasics.Format (fmt, _))  =
   CamlinternalFormat.make_printf
     (fun acc -> Driver.output_acc ppf acc; k ppf)
@@ -493,7 +493,7 @@ let compat = format_printer
 let compat1 f p1 = compat (f p1)
 let compat2 f p1 p2 = compat (f p1 p2)
 
-#if OCAML_VERSION < (4,08,0)
+#if OCAML_VERSION >= (4,08,0)
 let kasprintf k fmt =
   kdoc_printf (fun doc -> k (Format.asprintf "%a" Doc.format doc)) fmt
 let asprintf fmt = kasprintf Fun.id fmt
@@ -523,7 +523,7 @@ let pp_print_either  ~left ~right ppf e =
   ppf := Doc.either ~left:(doc_printer left) ~right:(doc_printer right) e !ppf
 #endif
 
-#if OCAML_VERSION < (4,08,0)
+#if OCAML_VERSION >= (4,08,0)
 let comma ppf () = fprintf ppf ",@ "
 
 let pp_two_columns ?(sep = "|") ?max_lines ppf (lines: (string * string) list) =
