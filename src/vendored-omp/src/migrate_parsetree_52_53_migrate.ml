@@ -1,3 +1,4 @@
+open Stdlib0
 module From = Ast_52
 module To = Ast_53
 let rec (copy_out_type_extension :
