@@ -381,12 +381,7 @@ module Driver = struct
       (fmting_lit:CamlinternalFormatBasics.formatting_lit)
     = match fmting_lit with
     | Close_box                 -> pp_close_box ppf ()
-    | Close_tag                 ->
-#if OCAML_VERSION >= (4,08,0)
-        pp_close_stag ppf ()
-#else
-        pp_close_tag ppf ()
-#endif
+    | Close_tag                 -> pp_close_stag ppf ()
     | Break (_, width, offset)  -> pp_print_break ppf width offset
     | FFlush                    -> pp_print_flush ppf ()
     | Force_newline             -> pp_force_newline ppf ()
@@ -428,11 +423,7 @@ module Driver = struct
         output_formatting_lit ppf f;
     | Acc_formatting_gen (p, Acc_open_tag acc') ->
         output_acc ppf p;
-#if OCAML_VERSION >= (4,08,0)
         pp_open_stag ppf (Format.String_tag (compute_tag output_acc acc'))
-#else
-        pp_open_stag ppf (compute_tag output_acc acc')
-#endif
     | Acc_formatting_gen (p, Acc_open_box acc') ->
         output_acc ppf p;
         let (indent, bty) =
