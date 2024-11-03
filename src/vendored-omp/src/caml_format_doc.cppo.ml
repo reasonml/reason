@@ -160,6 +160,12 @@ module Doc = struct
   let open_tag stag doc = add doc (Open_tag stag)
   let close_tag doc = add doc Close_tag
 
+
+#if OCAML_VERSION < (4,08,0)
+module Fun = struct
+  external id : 'a -> 'a = "%identity"
+end
+#endif
   let iter ?(sep=Fun.id) ~iter:iterator elt l doc =
     let first = ref true in
     let rdoc = ref doc in
