@@ -38,7 +38,12 @@ module Doc = struct
     | With_size of int
     | Open_box of { kind: box_type ; indent:int }
     | Close_box
-    | Open_tag of Format.stag
+    | Open_tag of
+#if OCAML_VERSION >= (4,08,0)
+    Format.stag
+#else
+    Format.tag
+#endif
     | Close_tag
     | Open_tbox
     | Tab_break of { width : int; offset : int }
