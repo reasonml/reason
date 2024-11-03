@@ -43,7 +43,6 @@ jobs:
         setup:
           - {ocaml-version: '5_2', os: macos-13}
           - {ocaml-version: '4_14', os: macos-14}
-          - {ocaml-version: '5_0', os: macos-14}
           - {ocaml-version: '5_2', os: macos-14}
     runs-on: ${{ matrix.setup.os }}
     steps:
