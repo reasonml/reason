@@ -423,7 +423,11 @@ module Driver = struct
         output_formatting_lit ppf f;
     | Acc_formatting_gen (p, Acc_open_tag acc') ->
         output_acc ppf p;
+#if OCAML_VERSION >= (4,08,0)
         pp_open_stag ppf (Format.String_tag (compute_tag output_acc acc'))
+#else
+        pp_open_stag ppf (compute_tag output_acc acc')
+#endif
     | Acc_formatting_gen (p, Acc_open_box acc') ->
         output_acc ppf p;
         let (indent, bty) =
