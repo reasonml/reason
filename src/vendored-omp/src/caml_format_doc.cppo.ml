@@ -133,7 +133,11 @@ module Doc = struct
   let int n doc = add doc (Text (string_of_int n))
   let float f doc = add doc (Text (string_of_float f))
   let char c doc = add doc (Text (String.make 1 c))
+#if OCAML_VERSION >= (4,08,0)
   let bool c doc = add doc (Text (Bool.to_string c))
+#else
+  let bool c doc = add doc (Text (string_of_bool c))
+#endif
 
   let break ~spaces ~indent doc = add doc (Simple_break {spaces; indent})
   let space doc = break ~spaces:1 ~indent:0 doc
