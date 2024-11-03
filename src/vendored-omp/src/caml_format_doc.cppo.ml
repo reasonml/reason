@@ -100,7 +100,7 @@ module Doc = struct
         Format.pp_print_custom_break ppf ~fits ~breaks
 #else
         let (_, width, _) = fits in
-        let (_, offset, _) = break in
+        let (_, offset, _) = breaks in
         Format.pp_print_break ppf width offset
 #endif
     | Flush {newline=true} -> Format.pp_print_newline ppf ()
