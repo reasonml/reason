@@ -16,7 +16,7 @@ depends: [
   "dune" {>= "2.9"}
   "ocaml" {>= "4.06" & < "5.4"}
   "reason" {= version}
-  "utop" {= "dev" | >= "2.0"}
+  "utop" {>= "2.0"}
   "cppo"
   "odoc" {with-doc}
 ]
@@ -37,7 +37,3 @@ build: [
   ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/reasonml/reason.git"
-pin-depends: [
-  [ "utop.dev" "git+https://github.com/ocaml-community/utop.git" ]
-]
-
