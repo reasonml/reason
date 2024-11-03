@@ -183,7 +183,9 @@ end
         doc |> elt a |> sep |> list ~sep elt q
 
   let array ?sep elt a doc = iter ?sep ~iter:Array.iter elt a doc
+#if OCAML_VERSION >= (4,07,0)
   let seq ?sep elt s doc = iter ?sep ~iter:Seq.iter elt s doc
+#endif
 
   let option ?(none=Fun.id) elt o doc = match o with
     | None -> none doc
