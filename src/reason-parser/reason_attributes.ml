@@ -54,6 +54,9 @@ let rec partitionAttributes ?(partDoc = false) ?(allowUncurry = true) attrs :
     ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     { partition with stylisticAttrs = attr :: partition.stylisticAttrs }
+  | ({ attr_name = { txt = "reason.quoted_extension" }; _ } as attr) :: atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    { partition with stylisticAttrs = attr :: partition.stylisticAttrs }
   | atHd :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     { partition with stdAttrs = atHd :: partition.stdAttrs }
@@ -99,6 +102,12 @@ let has_preserve_braces_attrs =
     txt = "reason.preserve_braces"
   in
   fun stylisticAttrs -> List.exists is_preserve_braces_attr stylisticAttrs
+
+let has_quoted_extension_attrs =
+  let is_quoted_extension_attr { attr_name = { txt }; _ } =
+    txt = "reason.quoted_extension"
+  in
+  fun stylisticAttrs -> List.exists is_quoted_extension_attr stylisticAttrs
 
 let maybe_remove_stylistic_attrs attrs ~should_preserve =
   if should_preserve

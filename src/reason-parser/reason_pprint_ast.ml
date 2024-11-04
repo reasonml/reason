@@ -7729,7 +7729,17 @@ let createFormatter () =
                     | Pexp_let _ | Pexp_letop _ | Pexp_letmodule _ ->
                       Some (makeLetSequence (self#letList x))
                     | Pexp_constant (Pconst_string (i, _, Some delim)) ->
-                      Some (quoted_ext ext i delim)
+                      let { Reason_attributes.stylisticAttrs; _ } =
+                        Reason_attributes.partitionAttributes
+                          ~allowUncurry:
+                            (Reason_heuristics.bsExprCanBeUncurried x')
+                          x'.pexp_attributes
+                      in
+                      if
+                        Reason_attributes.has_quoted_extension_attrs
+                          stylisticAttrs
+                      then Some (quoted_ext ext i delim)
+                      else Some (self#extension e)
                     | _ -> Some (self#extension e))))
               | Pexp_open (me, e) ->
                 if self#isSeriesOfOpensFollowedByNonSequencyExpression x
@@ -9229,11 +9239,23 @@ let createFormatter () =
               | Pstr_type (rf, l) -> self#type_def_list ~extension rf l
               | Pstr_typext te -> self#type_extension ~extension te
               | Pstr_eval
-                  ( { pexp_desc =
-                        Pexp_constant (Pconst_string (i, _, Some delim))
-                    }
+                  ( ({ pexp_desc =
+                         Pexp_constant (Pconst_string (i, _, Some delim))
+                     ; pexp_attributes
+                     ; _
+                     } as expr)
                   , _ ) ->
-                quoted_ext ~pct:"%%" extension i delim
+                let { Reason_attributes.stylisticAttrs; _ } =
+                  Reason_attributes.partitionAttributes
+                    ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried expr)
+                    pexp_attributes
+                in
+                if Reason_attributes.has_quoted_extension_attrs stylisticAttrs
+                then quoted_ext ~pct:"%%" extension i delim
+                else
+                  self#attach_std_item_attrs
+                    attrs
+                    (self#payload "%%" extension (PStr [ item ]))
               | _ ->
                 self#attach_std_item_attrs
                   attrs

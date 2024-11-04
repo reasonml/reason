@@ -403,9 +403,9 @@ Format extensions
   /* [%foo {bar|*)|bar}], and */
   /* {%foo bar|*)|bar} should be valid inside comments */
   
-  let x = {%raw |"just raw"|};
-  let y = {%raw js|"raw js"|js};
-  let z = {%raw j|"raw j"|j};
+  let x = [%raw {|"just raw"|}];
+  let y = [%raw {js|"raw js"|js}];
+  let z = [%raw {j|"raw j"|j}];
   
   let x1 = {%raw |"just raw"|};
   let y1 = {%raw js|"raw js"|js};
