@@ -23,10 +23,8 @@ jobs:
           - {ocaml-compiler: '4.14.x', os: ubuntu-latest}
           - {ocaml-compiler: 'ocaml-base-compiler.5.3.0~alpha1', os: ubuntu-latest}
           - {ocaml-compiler: '4.06.x', os: macos-13}
-          - {ocaml-compiler: '4.10.x', os: macos-13}
-          - {ocaml-compiler: '4.12.x', os: macos-13}
-          - {ocaml-compiler: '4.14.x', os: macos-13}
           - {ocaml-compiler: 'ocaml-base-compiler.5.3.0~alpha1', os: macos-13}
+          - {ocaml-compiler: 'ocaml-base-compiler.5.3.0~alpha1', os: macos-14}
             # looks like setup-ocaml@v3 can only run actions on windows for
             # OCaml >= 4.13
             # https://github.com/ocaml/setup-ocaml/issues/822#issuecomment-2215525942
