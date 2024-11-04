@@ -402,3 +402,10 @@ let x = {%M.foo bar| <hello>{|x|} |bar};
 /* {%foo bar|*)|bar} should be valid inside comments */
 
 
+let x = [%raw {|"just raw"|}]
+let y = [%raw {js|"raw js"|js}]
+let z = [%raw {j|"raw j"|j}]
+
+let x1 = {%raw |"just raw"|};
+let y1 = {%raw js|"raw js"|js};
+let z1 = {%raw j|"raw j"|j};
