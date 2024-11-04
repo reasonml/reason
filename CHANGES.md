@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Support OCaml 5.3 (@anmonteiro,
+  [#2800](https://github.com/reasonml/reason/pull/2800))
 - Fix: don't print all extension strings as quoted extensions (@anmonteiro,
   [#2809](https://github.com/reasonml/reason/pull/2809))
 
