@@ -7729,7 +7729,17 @@ let createFormatter () =
                     | Pexp_let _ | Pexp_letop _ | Pexp_letmodule _ ->
                       Some (makeLetSequence (self#letList x))
                     | Pexp_constant (Pconst_string (i, _, Some delim)) ->
-                      Some (quoted_ext ext i delim)
+                      let { Reason_attributes.stylisticAttrs; _ } =
+                        Reason_attributes.partitionAttributes
+                          ~allowUncurry:
+                            (Reason_heuristics.bsExprCanBeUncurried x')
+                          x'.pexp_attributes
+                      in
+                      if
+                        Reason_attributes.has_quoted_extension_attrs
+                          stylisticAttrs
+                      then Some (quoted_ext ext i delim)
+                      else Some (self#extension e)
                     | _ -> Some (self#extension e))))
               | Pexp_open (me, e) ->
                 if self#isSeriesOfOpensFollowedByNonSequencyExpression x
@@ -9229,11 +9239,23 @@ let createFormatter () =
               | Pstr_type (rf, l) -> self#type_def_list ~extension rf l
               | Pstr_typext te -> self#type_extension ~extension te
               | Pstr_eval
-                  ( { pexp_desc =
-                        Pexp_constant (Pconst_string (i, _, Some delim))
-                    }
+                  ( ({ pexp_desc =
+                         Pexp_constant (Pconst_string (i, _, Some delim))
+                     ; pexp_attributes
+                     ; _
+                     } as expr)
                   , _ ) ->
-                quoted_ext ~pct:"%%" extension i delim
+                let { Reason_attributes.stylisticAttrs; _ } =
+                  Reason_attributes.partitionAttributes
+                    ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried expr)
+                    pexp_attributes
+                in
+                if Reason_attributes.has_quoted_extension_attrs stylisticAttrs
+                then quoted_ext ~pct:"%%" extension i delim
+                else
+                  self#attach_std_item_attrs
+                    attrs
+                    (self#payload "%%" extension (PStr [ item ]))
               | _ ->
                 self#attach_std_item_attrs
                   attrs
@@ -9296,6 +9318,9 @@ let createFormatter () =
          *)
 
         method let_module_binding prefixText bindingName moduleExpr =
+          let { Reason_attributes.stdAttrs; _ } =
+            Reason_attributes.partitionAttributes moduleExpr.pmod_attributes
+          in
           let argsList, return =
             self#curriedFunctorPatternsAndReturnStruct moduleExpr
           in
@@ -9317,6 +9342,7 @@ let createFormatter () =
               (Some (true, includingEqual))
               ( [ self#moduleExpressionToFormattedApplicationItems
                     unconstrainedRetTerm
+                  |> self#attach_std_item_attrs stdAttrs
                 ]
               , None )
           (* Simple module with type no constraint, no functor args. *)
@@ -9325,7 +9351,10 @@ let createFormatter () =
               prefixText
               bindingName
               None
-              ([ self#moduleExpressionToFormattedApplicationItems return ], None)
+              ( [ self#moduleExpressionToFormattedApplicationItems return
+                  |> self#attach_std_item_attrs stdAttrs
+                ]
+              , None )
           | _, _ ->
             (* A functor *)
             let argsWithConstraint, actualReturn =
@@ -9346,7 +9375,9 @@ let createFormatter () =
               ~arrow:"=>"
               (makeList [ bindingName; atom " =" ])
               argsWithConstraint
-              ( [ self#moduleExpressionToFormattedApplicationItems actualReturn ]
+              ( [ self#moduleExpressionToFormattedApplicationItems actualReturn
+                  |> self#attach_std_item_attrs stdAttrs
+                ]
               , None )
 
         method class_opening class_keyword name pci_virt ls =

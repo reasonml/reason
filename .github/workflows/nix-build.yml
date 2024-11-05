@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
    branches:
-     - main
+     - master
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,13 +21,14 @@ jobs:
           - 5_0
           - 5_1
           - 5_2
+          - 5_3
 
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - uses: cachix/install-nix-action@v27
+    - uses: cachix/install-nix-action@v29
       with:
         extra_nix_config: |
           extra-substituters = https://anmonteiro.nix-cache.workers.dev
@@ -36,28 +37,24 @@ jobs:
       run: nix-build ./nix/ci.nix --argstr ocamlVersion ${{ matrix.ocaml-version }}
 
   macos-tests:
-    name: Build and test (${{ matrix.os }}) (${{ matrix.ocaml-version }})
+    name: Build and test (${{ matrix.setup.os }}) (${{ matrix.setup.ocaml-version }})
 
     strategy:
       matrix:
-        os:
-          - macos-13
-          - macos-14
-        ocaml-version:
-          - 4_14
-          - 5_0
-          - 5_2
-
-    runs-on: ${{ matrix.os }}
+        setup:
+          - {ocaml-version: '5_3', os: macos-13}
+          - {ocaml-version: '4_14', os: macos-14}
+          - {ocaml-version: '5_3', os: macos-14}
+    runs-on: ${{ matrix.setup.os }}
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
-    - uses: cachix/install-nix-action@v27
+    - uses: cachix/install-nix-action@v29
       with:
         extra_nix_config: |
           extra-substituters = https://anmonteiro.nix-cache.workers.dev
           extra-trusted-public-keys = ocaml.nix-cache.com-1:/xI2h2+56rwFfKyyFVbkJSeGqSIYMC/Je+7XXqGKDIY=
     - name: "Run nix-build"
-      run: nix-build ./nix/ci.nix --argstr ocamlVersion ${{ matrix.ocaml-version }}
+      run: nix-build ./nix/ci.nix --argstr ocamlVersion ${{ matrix.setup.ocaml-version }}
 

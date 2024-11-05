@@ -5,7 +5,9 @@ type old_location_error (*IF_NOT_AT_LEAST 408 = Location.error *) = {
     if_highlight: string;
   }
 
-type location_msg = (Format.formatter -> unit) Location.loc
+type location_msg =
+  (*IF_AT_LEAST 53 Format_doc.t Location.loc *)
+  (*IF_NOT_AT_LEAST 53 (Format.formatter -> unit) Location.loc *)
 
 type location_report_kind (*IF_AT_LEAST 408 = Location.report_kind *) =
   | Report_error
@@ -18,6 +20,7 @@ type location_report (*IF_AT_LEAST 408 = Location.report *) = {
   kind : location_report_kind;
   main : location_msg;
   sub : location_msg list;
+  (*IF_AT_LEAST 53 footnote: Format_doc.t option *)
 }
 
 type location_error (*IF_AT_LEAST 408 = Location.error *) (*IF_NOT_AT_LEAST 408 = old_location_error *)
@@ -44,7 +47,8 @@ let extension_of_error ~mk_pstr ~mk_extension ~mk_string_constant (error : locat
     let extension_of_report ({kind; main; sub} : location_report) =
       if kind <> Report_error then
         raise (Invalid_argument "extension_of_error: expected kind Report_error");
-      let str_of_pp pp_msg = Format.asprintf "%t" pp_msg in
+      (*IF_AT_LEAST 53 let str_of_pp pp_msg = Format.asprintf "%a" Format_doc.Doc.format pp_msg in *)
+      (*IF_NOT_AT_LEAST 53 let str_of_pp pp_msg = Format.asprintf "%t" pp_msg in *)
       let extension_of_sub (sub : location_msg) =
         { Location.loc = sub.loc; txt = "ocaml.error" },
         mk_pstr ([mk_string_constant (str_of_pp sub.txt)])
@@ -71,7 +75,8 @@ let _get_error_message_old location_error =
 let _get_error_message_new location_error =
   let buff = Buffer.create 128 in
   let ppf = Format.formatter_of_buffer buff in
-  location_error.main.txt ppf;
+  (*IF_AT_LEAST 53 Format_doc.Doc.format ppf location_error.main.txt; *)
+  (*IF_NOT_AT_LEAST 53 location_error.main.txt ppf; *)
   Format.pp_print_flush ppf ();
   Buffer.contents buff
 
@@ -83,7 +88,8 @@ let _set_error_message_old location_error msg =
   { location_error with msg; }
 
 let _set_error_message_new location_error msg =
-  let txt ppf = Format.pp_print_string ppf msg in
+  (*IF_AT_LEAST 53 let txt = Format_doc.Doc.msg "%s" msg in *)
+  (*IF_NOT_AT_LEAST 53 let txt ppf = Format.pp_print_string ppf msg in *)
   let main = { location_error.main with txt; } in
   { location_error with main }
 
@@ -96,11 +102,14 @@ let make_error_of_message_old ~loc msg ~sub =
   { loc; msg; sub; if_highlight = msg; }
 
 let make_error_of_message_new ~loc msg ~sub =
-  let mk_txt x ppf = Format.pp_print_string ppf x in
+  (*IF_AT_LEAST 53 let mk_txt x = Format_doc.Doc.msg "%s" x in  *)
+  (*IF_NOT_AT_LEAST 53 let mk_txt x ppf = Format.pp_print_string ppf x in *)
   let mk loc x = { Location.loc; txt = mk_txt x; } in
   { kind = Report_error;
     main = mk loc msg;
-    sub = List.map (fun (loc, msg) -> mk loc msg) sub; }
+    sub = List.map (fun (loc, msg) -> mk loc msg) sub;
+  (*IF_AT_LEAST 53 footnote = None *)
+  }
 
 let make_error_of_message ~loc msg ~sub =
   (*IF_NOT_AT_LEAST 408 make_error_of_message_old ~loc msg ~sub*)

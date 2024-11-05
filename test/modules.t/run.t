@@ -752,4 +752,19 @@ Format modules
     t with module type x := {
                              type t;
                            };
+  
+  module Foo =
+    [@someattr]
+    {
+      type t = string;
+    };
+  
+  let x = {
+    module Foo =
+      [@someattr]
+      {
+        type t = string;
+      };
+    ();
+  };
 /* From http://stackoverflow.com/questions/1986374/  higher-order-type-constructors-and-functors-in-ocaml */

@@ -6,7 +6,7 @@
 
 (cram enable)
 
-(version 3.8.2)
+(version 3.13.0)
 
 (generate_opam_files true)
 
@@ -34,14 +34,14 @@
   (ocaml
    (and
     (>= "4.06")
-    (< "5.3")))
+    (< "5.4")))
   (ocamlfind :build)
   (dune-build-info
    (>= 2.9.3))
   (menhir
    (>= "20180523"))
   (merlin-extend
-   (>= "0.6"))
+   (>= "0.6.2"))
   fix
   ppx_derivers
   cppo
@@ -57,7 +57,7 @@
   (ocaml
    (and
     (>= "4.06")
-    (< "5.3")))
+    (< "5.4")))
   (reason
    (= :version))
   (utop

@@ -797,7 +797,13 @@ let wrap_sig_ext ~loc body ext =
 let mk_quotedext ~loc (id, idloc, str, delim) =
   let exp_id = mkloc id idloc in
   let e =
-    mkexp ~loc ~ghost:true (Pexp_constant (Pconst_string (str, loc, delim)))
+    let attrs =
+      [ { Ppxlib.attr_name = mkloc "reason.quoted_extension" loc
+        ; attr_payload = PStr []
+        ; attr_loc = Location.none
+      } ]
+    in
+    mkexp ~loc ~ghost:true ~attrs (Pexp_constant (Pconst_string (str, loc, delim)))
   in
   (exp_id, Ppxlib.PStr [mkstrexp e []])
 

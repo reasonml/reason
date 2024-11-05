@@ -1,5 +1,12 @@
 ## Unreleased
 
+- Support OCaml 5.3 (@anmonteiro,
+  [#2800](https://github.com/reasonml/reason/pull/2800))
+- Fix: don't print all extension strings as quoted extensions (@anmonteiro,
+  [#2809](https://github.com/reasonml/reason/pull/2809))
+
+## 3.13.0
+
 - Support `module%ppx` syntax (@anmonteiro,
   [#2771](https://github.com/reasonml/reason/pull/2771))
 - Extend open to arbitrary module expression (@anmonteiro,
@@ -34,6 +41,8 @@
   [#2797](https://github.com/reasonml/reason/pull/2797))
 - Fix formatting of callbacks with sequence expressions (@anmonteiro,
   [#2799](https://github.com/reasonml/reason/pull/2799))
+- Fix printing of attributes on module expressions (@anmonteiro,
+  [#2803](https://github.com/reasonml/reason/pull/2803))
 
 ## 3.12.0
 
