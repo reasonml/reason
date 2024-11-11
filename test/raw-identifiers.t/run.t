@@ -38,6 +38,10 @@ Test raw identifiers in Reason syntax
     \#type,
     \#module: module_,
   };
+  
+  let true = x => x;
+  
+  let \#true = x => x;
 
 Check idempotency
 

@@ -36,3 +36,8 @@ let \#rec = {
   \#type: \#type,
   \#module: module_
 }
+
+let true = x => x;
+
+let \#true = x => x;
+
