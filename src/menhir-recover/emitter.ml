@@ -38,7 +38,7 @@ end = struct
     | Seq v -> (match normalize_actions v with [ x ] -> x | xs -> Seq xs)
     
   (* Find sharing opportunities.
-     If the same sequence of action occurs multiple times, the function
+     If the same sequence of actions occurs multiple times, the function
      will associate a unique identifier to the sequence.
      [share actions] returns a pair [(bindings, lookup) : action list array *
      (action list -> int option)]
