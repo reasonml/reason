@@ -1,5 +1,4 @@
-(*
- * Copyright (c) 2015-present, Facebook, Inc.
+(* Copyright (c) 2015-present, Facebook, Inc.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -42,7 +41,7 @@
  *  out of the use of this software, even if advised of the possibility of such
  *  damage.
  *
- *)
+*)
 
 (* TODO more fine-grained precedence pretty-printing *)
 
@@ -299,11 +298,12 @@ let expandLocation pos ~expand:(startPos, endPos) =
  * If there are no valid attributes, defaults to the passed location.
  * 1| [@attr]           --> notice how the "start" is determined
  * 2| let f = ...           by the attr on line 1, not the lnum of the `let`
- *)
+*)
 let rec firstAttrLoc loc = function
   | ({ attr_name = attrLoc; _ } : Parsetree.attribute) :: attrs ->
-    if attrLoc.loc.loc_start.pos_lnum < loc.loc_start.pos_lnum
-       && not attrLoc.loc.loc_ghost
+    if
+      attrLoc.loc.loc_start.pos_lnum < loc.loc_start.pos_lnum
+      && not attrLoc.loc.loc_ghost
     then firstAttrLoc attrLoc.loc attrs
     else firstAttrLoc loc attrs
   | [] -> loc
@@ -350,8 +350,7 @@ let rec sequentialIfBlocks x =
   | Some e -> [], Some e
   | None -> [], None
 
-(*
- * TODO: IDE integration beginning with Vim:
+(* TODO: IDE integration beginning with Vim:
  *
  * - Create recovering version of parser that creates regions of "unknown"
  *   content in between let sequence bindings (anything between semicolons,
@@ -365,10 +364,9 @@ let rec sequentialIfBlocks x =
  *   relegate highlighting of malformed regions to the editor which mostly does
  *   so based on token patterns.
  *
- *)
+*)
 
-(*
- *   @avoidSingleTokenWrapping
+(* @avoidSingleTokenWrapping
  *
  *  +-----------------------------+
  *  |+------+                     |     Another label
@@ -401,10 +399,9 @@ let rec sequentialIfBlocks x =
  *  case) as long as that nesting is
  *  done on the left hand side of the labels.
  *
- *)
+*)
 
-(*
- *  Table 2.1. Precedence and associativity.
+(*  Table 2.1. Precedence and associativity.
  *  Precedence from highest to lowest: From RWOC, modified to include !=
  *  ---------------------------------------
  *
@@ -441,7 +438,7 @@ let rec sequentialIfBlocks x =
  * something very common such as string concatenation or list appending.
  *
  * let x = tail & head;
- *)
+*)
 
 (* "Almost Simple Prefix" function applications parse with the rule:
 
@@ -483,8 +480,9 @@ let requireNoSpaceFor tok =
 let funToken = "fun"
 
 let getPrintableUnaryIdent s =
-  if List.mem s unary_minus_prefix_symbols
-     || List.mem s unary_plus_prefix_symbols
+  if
+    List.mem s unary_minus_prefix_symbols
+    || List.mem s unary_plus_prefix_symbols
   then String.sub s 1 (String.length s - 1)
   else s
 
@@ -502,8 +500,9 @@ let printedStringAndFixity = function
     when List.mem s.[0] almost_simple_prefix_symbols
          && (not (List.mem s special_infix_strings))
          && not (s = "?") ->
-    if (* What *kind* of prefix fixity? *)
-       List.mem s unary_plus_prefix_symbols
+    if
+      (* What *kind* of prefix fixity? *)
+      List.mem s unary_plus_prefix_symbols
     then UnaryPlusPrefix (getPrintableUnaryIdent s)
     else if List.mem s unary_minus_prefix_symbols
     then UnaryMinusPrefix (getPrintableUnaryIdent s)
@@ -836,7 +835,7 @@ type formatSettings =
      *      withArg
      *      withArg;
      *  }
-     *)
+    *)
     trySwitchIndent : int
   ; (* In the case of two term function application (when flattened), the first
      * term should become part of the label, and the second term should be able to wrap
@@ -859,7 +858,7 @@ type formatSettings =
      *        thatWouldntFitOnThe: true,
      *        firstLine: true
      *      };
-     *)
+    *)
     funcApplicationLabelStyle : funcApplicationLabelStyle
   ; funcCurriedPatternStyle : funcApplicationLabelStyle
   ; width : int
@@ -905,7 +904,7 @@ let defaultSettings =
      * We probably want some special listy label docking/wrapping mode for
      * curried function bindings.
      *
-     *)
+    *)
     funcCurriedPatternStyle = NeverWrapFinalItem
   ; width = 80
   ; assumeExplicitArity = false
@@ -961,31 +960,31 @@ let createFormatter () =
      * render: fn x => y,
      * }
      * somethingElse
-     *)
+    *)
 
     let isArityClear attrs =
       !configuredSettings.assumeExplicitArity
       || List.exists
            (function
-              | { attr_name = { txt = "explicit_arity" }; _ } -> true
-              | _ -> false)
+             | { attr_name = { txt = "explicit_arity" }; _ } -> true
+             | _ -> false)
            attrs
 
     let default_indent_body = settings.listsRecordsIndent * settings.space
 
     let makeList
-        ?listConfigIfCommentsInterleaved
-        ?listConfigIfEolCommentsInterleaved
-        ?(break = Layout.Never)
-        ?(wrap = "", "")
-        ?(inline = true, false)
-        ?(sep = Layout.NoSep)
-        ?(indent = default_indent_body)
-        ?(sepLeft = true)
-        ?(preSpace = false)
-        ?(postSpace = false)
-        ?(pad = false, false)
-        lst
+          ?listConfigIfCommentsInterleaved
+          ?listConfigIfEolCommentsInterleaved
+          ?(break = Layout.Never)
+          ?(wrap = "", "")
+          ?(inline = true, false)
+          ?(sep = Layout.NoSep)
+          ?(indent = default_indent_body)
+          ?(sepLeft = true)
+          ?(preSpace = false)
+          ?(postSpace = false)
+          ?(pad = false, false)
+          lst
       =
       let config =
         { Layout.listConfigIfCommentsInterleaved
@@ -1073,11 +1072,11 @@ let createFormatter () =
       ]
 
     let easyLabel
-        ?(break = `Auto)
-        ?(space = false)
-        ?(indent = settings.indentAfterLabels)
-        labelTerm
-        term
+          ?(break = `Auto)
+          ?(space = false)
+          ?(indent = settings.indentAfterLabels)
+          labelTerm
+          term
       =
       let settings =
         { label_break = break
@@ -1334,46 +1333,46 @@ let createFormatter () =
     let consolidateSeparator l =
       preOrderWalk
         (function
-           | Sequence (listConfig, sublayouts)
-             when listConfig.sep != NoSep && listConfig.sepLeft ->
-             (* TODO: Support !sepLeft, and this should apply to the *first*
+          | Sequence (listConfig, sublayouts)
+            when listConfig.sep != NoSep && listConfig.sepLeft ->
+            (* TODO: Support !sepLeft, and this should apply to the *first*
                 separator if !sepLeft. *)
-             let[@tail_mod_cons] rec mapSublayout layouts =
-               match listConfig.sep, layouts with
-               | NoSep, _ ->
-                 raise
-                   (NotPossible
-                      "We already covered this case. This shouldn't happen.")
-               | Sep _, [ layout ] -> [ layout ]
-               | (SepFinal (sepStr, _) | Sep sepStr), layout :: l2 :: xs ->
-                 flattenCommentAndSep
-                   ~spaceBeforeSep:listConfig.preSpace
-                   ~sepStr
-                   layout
-                 :: mapSublayout (l2 :: xs)
-               | SepFinal (_, finalSepStr), [ layout ] ->
-                 [ flattenCommentAndSep
-                     ~spaceBeforeSep:listConfig.preSpace
-                     ~sepStr:finalSepStr
-                     layout
-                 ]
-               | _, [] -> []
-             in
-             let layoutsWithSepAndComment = mapSublayout sublayouts in
-             let sep = Layout.NoSep in
-             let preSpace = false in
-             Sequence
-               ({ listConfig with sep; preSpace }, layoutsWithSepAndComment)
-           | layout -> layout)
+            let[@tail_mod_cons] rec mapSublayout layouts =
+              match listConfig.sep, layouts with
+              | NoSep, _ ->
+                raise
+                  (NotPossible
+                     "We already covered this case. This shouldn't happen.")
+              | Sep _, [ layout ] -> [ layout ]
+              | (SepFinal (sepStr, _) | Sep sepStr), layout :: l2 :: xs ->
+                flattenCommentAndSep
+                  ~spaceBeforeSep:listConfig.preSpace
+                  ~sepStr
+                  layout
+                :: mapSublayout (l2 :: xs)
+              | SepFinal (_, finalSepStr), [ layout ] ->
+                [ flattenCommentAndSep
+                    ~spaceBeforeSep:listConfig.preSpace
+                    ~sepStr:finalSepStr
+                    layout
+                ]
+              | _, [] -> []
+            in
+            let layoutsWithSepAndComment = mapSublayout sublayouts in
+            let sep = Layout.NoSep in
+            let preSpace = false in
+            Sequence
+              ({ listConfig with sep; preSpace }, layoutsWithSepAndComment)
+          | layout -> layout)
         l
 
     (** [insertLinesAboveItems layout] walks the [layout] and insert empty lines *)
     let insertLinesAboveItems items =
       preOrderWalk
         (function
-           | Whitespace (region, sub) ->
-             insertBlankLines (WhitespaceRegion.newlines region) sub
-           | layout -> layout)
+          | Whitespace (region, sub) ->
+            insertBlankLines (WhitespaceRegion.newlines region) sub
+          | layout -> layout)
         items
 
     let insertCommentIntoWhitespaceRegion comment region subLayout =
@@ -1387,22 +1386,20 @@ let createFormatter () =
       (* the comment inserted into the whitespace region is the first in the
          region *)
       | [] ->
-        (*
-         * 1| let a = 1;
+        (* 1| let a = 1;
          * 2|
          * 3| /* comment at end of whitespace region */
          * 4| let b = 2;
-         *)
+        *)
         if range.lnum_end = cl.loc_end.pos_lnum
         then
           let subLayout = breakline formattedComment subLayout in
           Layout.Whitespace (nextRegion, subLayout)
-          (*
-           * 1| let a = 1;
+          (* 1| let a = 1;
            * 2| /* comment at start of whitespace region */
            * 3|
            * 4| let b = 2;
-           *)
+          *)
         else if range.lnum_start = cl.loc_start.pos_lnum
         then
           let subLayout =
@@ -1410,13 +1407,12 @@ let createFormatter () =
           in
           let nextRegion = WhitespaceRegion.modifyNewlines nextRegion 0 in
           Whitespace (nextRegion, subLayout)
-          (*
-           * 1| let a = 1;
+          (* 1| let a = 1;
            * 2|
            * 3| /* comment floats in whitespace region */
            * 4|
            * 5| let b = 2;
-           *)
+          *)
         else
           let subLayout =
             breakline formattedComment (insertBlankLines 1 subLayout)
@@ -1428,35 +1424,32 @@ let createFormatter () =
         (* check if the comment is attached to the start of the region *)
         let attachedToStartRegion = cl.loc_start.pos_lnum = range.lnum_start in
         let nextRegion =
-          (*
-           * 1| let a = 1;
+          (* 1| let a = 1;
            * 2| /* comment sits on the beginning of the region */
            * 3| /* previous comment */
            * 4|
            * 5| let b = 2;
-           *)
+          *)
           if attachedToStartRegion
           then
             (* we don't want a newline between `let a = 1` and the `comment sits
              * on the beginning of the region` comment*)
             WhitespaceRegion.modifyNewlines nextRegion 0
-            (*
-             * 1| let a = 1;
+            (* 1| let a = 1;
              * 2|
              * 3| /* comment isn't located at the beginnin of a region*/
              * 4| /* previous comment */
              * 5|
              * 6| let b = 2;
-             *)
+            *)
           else nextRegion
         in
-        (*
-         * 1| let a = 1;
+        (* 1| let a = 1;
          * 2| /* comment */
          * 3|                      --> whitespace between
          * 4| /* previous comment */
          * 5| let b = 1;
-         *)
+        *)
         if Reason_location.hasSpaceBetween pcl cl
         then
           (* pcl.loc_start.pos_lnum - cl.loc_end.pos_lnum > 1 then *)
@@ -1465,13 +1458,12 @@ let createFormatter () =
           in
           let withComment = Layout.Whitespace (nextRegion, subLayout) in
           withComment
-          (*
-           * 1| let a = 1;
+          (* 1| let a = 1;
            * 2|
            * 3| /* comment */          | no whitespace between `comment`
            * 4| /* previous comment */ | and `previous comment`
            * 5| let b = 1;
-           *)
+          *)
         else
           let subLayout = breakline formattedComment subLayout in
           let withComment = Layout.Whitespace (nextRegion, subLayout) in
@@ -1601,7 +1593,7 @@ let createFormatter () =
          * It is clear that the sequence needs to always break here, otherwise
          * we get a parse error: let make = () => { // };
          * The closing brace and semicolon `};` would become part of the comment…
-         *)
+        *)
         let listConfig =
           if Reason_comment.isLineComment comment
           then { listConfig with break = Always_rec }
@@ -1692,7 +1684,7 @@ let createFormatter () =
      * Why should the comma have such an influence? Trailing commas and semicolons
      * may be inserted or removed, an we need end-of-line comments to never be
      * impacted by that. Therefore, never try to "perfectly" attach EOL comments.
-     *)
+    *)
     let rec tryPerfectlyAttachComment layout = function
       | None -> layout, None
       | Some comment -> perfectlyAttachComment comment layout
@@ -1718,8 +1710,9 @@ let createFormatter () =
         Layout.Label (labelFormatter, newLeft, newRight), comment
       | Layout.SourceMap (loc, subLayout) ->
         let commloc = Comment.location comment in
-        if loc.loc_end.Lexing.pos_lnum = loc.loc_start.Lexing.pos_lnum
-           && commloc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum
+        if
+          loc.loc_end.Lexing.pos_lnum = loc.loc_start.Lexing.pos_lnum
+          && commloc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum
         then
           ( Layout.SourceMap
               ( loc
@@ -1738,8 +1731,8 @@ let createFormatter () =
             then
               ( Layout.SourceMap (loc, attachCommentToNodeLeft comment layout)
               , None )
-            else if commloc.loc_start.Lexing.pos_cnum
-                    = loc.loc_end.Lexing.pos_cnum
+            else if
+              commloc.loc_start.Lexing.pos_cnum = loc.loc_end.Lexing.pos_cnum
             then
               ( Layout.SourceMap (loc, attachCommentToNodeRight layout comment)
               , None )
@@ -1778,10 +1771,10 @@ let createFormatter () =
       singleLines, List.rev endOfLines, regulars
 
     (*
-     * Partition single line comments based on a location into two lists:
+       * Partition single line comments based on a location into two lists:
      * - one contains the comments before/same height of that location
      * - the other contains the comments after the location
-     *)
+    *)
     let partitionSingleLineComments loc singleLineComments =
       let before, after =
         List.fold_left
@@ -1797,9 +1790,9 @@ let createFormatter () =
       List.rev before, after
 
     (*
-     * appends all [singleLineComments] after the [layout].
+       * appends all [singleLineComments] after the [layout].
      * [loc] marks the end of [layout]
-     *)
+    *)
     let appendSingleLineCommentsToEnd loc layout singleLineComments =
       let rec aux prevLoc layout i = function
         | comment :: cs ->
@@ -1827,7 +1820,7 @@ let createFormatter () =
       aux loc layout 0 singleLineComments
 
     (*
-     * For simplicity, the formatting of comments happens in two parts in context of a source map:
+       * For simplicity, the formatting of comments happens in two parts in context of a source map:
      * 1) insert the singleLineComments with the interleaving algorithm contained in
      *    `insertSingleLineComment` for all comments overlapping with the sourcemap.
      *    A `Layout.Whitespace` node signals an intent to preserve whitespace here.
@@ -1837,7 +1830,7 @@ let createFormatter () =
      *    file), the printing of the comments can be done in one pass with
      *    `appendSingleLineCommentsToEnd`. This is more performant and
      *    simplifies the implementation of comment attachment.
-     *)
+    *)
     let attachSingleLineComments singleLineComments = function
       | Layout.SourceMap (loc, subLayout) ->
         let before, after =
@@ -1993,7 +1986,7 @@ let createFormatter () =
      *
      * The outer list wrapping fixes #566: format should break the whole
      * application before breaking arguments.
-     *)
+    *)
     let formatIndentedApplication headApplicationItem argApplicationItems =
       makeList
         ~inline:(true, true)
@@ -2007,9 +2000,9 @@ let createFormatter () =
 
     (* The loc, is an optional location or the returned app terms *)
     let formatAttachmentApplication
-        finalWrapping
-        (attachTo : (bool * Layout.t) option)
-        (appTermItems, loc)
+          finalWrapping
+          (attachTo : (bool * Layout.t) option)
+          (appTermItems, loc)
       =
       let partitioning = finalWrapping appTermItems in
       match partitioning with
@@ -2095,7 +2088,7 @@ let createFormatter () =
     (* In some places parens shouldn't be printed for readability:
      * e.g. Some((-1)) should be printed as Some(-1)
      * In `1 + (-1)` -1 should be wrapped in parens for readability
-     *)
+    *)
     let constant ?raw_literal ?(parens = true) ppf = function
       | Pconst_char i -> Format.fprintf ppf "%C" i
       | Pconst_string (i, _, None) ->
@@ -2204,9 +2197,10 @@ let createFormatter () =
           | (Nolabel, _) :: _ -> false
           | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
         in
-        if jsxAttrs != []
-           && hasLabelledChildrenLiteral
-           && hasSingleNonLabelledUnitAndIsAtTheEnd args
+        if
+          jsxAttrs != []
+          && hasLabelledChildrenLiteral
+          && hasSingleNonLabelledUnitAndIsAtTheEnd args
         then true
         else false
       | _ -> false
@@ -2235,8 +2229,7 @@ let createFormatter () =
         true
       | _ -> false
 
-    (*
-     * Determines if the arguments of a constructor pattern match need
+    (* Determines if the arguments of a constructor pattern match need
      * special printing. If there's one argument & they have some kind of wrapping,
      * they're wrapping need to 'hug' the surrounding parens.
      * Example:
@@ -2250,7 +2243,7 @@ let createFormatter () =
      *  Notice how ({ and }) hug.
      *  This applies for records, arrays, tuples & lists.
      *  See `singleArgParenPattern` for the acutal formatting
-     *)
+    *)
     let isSingleArgParenPattern = function
       | [ { ppat_attributes = []; ppat_desc = Ppat_record _ } ]
       | [ { ppat_attributes = []; ppat_desc = Ppat_array _ } ]
@@ -2276,7 +2269,7 @@ let createFormatter () =
      * in a flattened version which allows flexible formatting.
      * E.g. we get
      *  [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
-     *)
+    *)
     let rec computeInfixChain = function
       | LayoutNode layoutNode -> [ Layout layoutNode ]
       | InfixTree (op, leftResolvedRule, rightResolvedRule) ->
@@ -2302,7 +2295,7 @@ let createFormatter () =
      *  |> f
      *  |> z
      *  when the print-width forces line breaks.
-     *)
+    *)
     let formatComputedInfixChain infixChainList =
       let layout_of_group group currentToken =
         (* Represents the `foo` in
@@ -2345,7 +2338,7 @@ let createFormatter () =
              *     Printf.sprintf
              *       "okokok" uri meth headers body
              * )   <-- notice how this closing paren is on the same height as >|=
-             *)
+            *)
             label
               ~break:`Never
               ~space:true
@@ -2455,7 +2448,7 @@ let createFormatter () =
            * 4| let c = 3;
            * `let b = 2` will mark the start of a new group
            * `let c = 3` will be added to the group containing `let b = 2`
-           *)
+          *)
           if Range.containsWhitespace ~range ~comments ()
           then group loc [ range, item ] (List.rev curr :: acc) xs
           else group loc ((range, item) :: curr) acc xs
@@ -2488,7 +2481,7 @@ let createFormatter () =
                   *
                   *  A Whitespace-node will automatically take care of the whitespace
                   *  interleaving between the comments.
-                  *)
+                 *)
                  let newlines = if i > 0 then 1 else 0 in
                  let region = WhitespaceRegion.make ~range ~newlines () in
                  let firstLayout = Layout.Whitespace (region, x) in
@@ -2533,7 +2526,7 @@ let createFormatter () =
          * 4| let b = 2;
          *  -> here the location diff will result into false info if we don't include
          *  the comments in the diffing
-         *)
+        *)
         val mutable comments = []
         method comments = comments
         method trackComment comment = comments <- comment :: comments
@@ -2704,22 +2697,21 @@ let createFormatter () =
          * physical location (as indicated by [td.ptype_loc]) begins with the
          * identifier and includes the constraints. *)
         method formatOneTypeDef
-            prepend
-            name
-            assignToken
-            ({ ptype_params; ptype_kind; ptype_loc } as td) =
+          prepend
+          name
+          assignToken
+          ({ ptype_params; ptype_kind; ptype_loc } as td) =
           let equalInitiatedSegments, constraints =
             self#type_declaration_binding_segments td
           in
           let formattedTypeParams = List.map self#type_param ptype_params in
           let binding = makeList ~postSpace:true [ prepend; name ] in
 
-          (*
-           *    /-----------everythingButConstraints--------------  | -constraints--\
+          (*    /-----------everythingButConstraints--------------  | -constraints--\
            *   /-innerL---| ------innerR--------------------------\
            *  /binding\     /typeparams\ /--equalInitiatedSegments-\
            *  type name      'v1    'v1  =  foo = private bar        constraint a = b
-           *)
+          *)
           let labelWithParams =
             match formattedTypeParams with
             | [] -> binding
@@ -2746,8 +2738,7 @@ let createFormatter () =
                   ~inline:(true, true)
                   (hd @ [ atom "=" ])
               in
-              (*
-               * Because we want a record as a label with the opening brace on the same line
+              (* Because we want a record as a label with the opening brace on the same line
                * and the closing brace indented at the beginning, we can't wrap it in a list here
                * Example:
                * type doubleEqualsRecord =
@@ -2755,7 +2746,7 @@ let createFormatter () =
                *    xx: int,
                *    yy: int
                *  };                               <- closing brace indentation
-               *)
+              *)
               let second =
                 match ptype_kind with
                 | Ptype_record _ -> List.hd hd2
@@ -2822,7 +2813,7 @@ let createFormatter () =
           source_map ~loc:te.ptyext_path.loc everything
 
         method type_extension_binding_segments
-            { pext_kind; pext_loc; pext_attributes; pext_name } =
+          { pext_kind; pext_loc; pext_attributes; pext_name } =
           let normalize lst =
             match lst with
             | [] -> raise (NotPossible "should not be called")
@@ -2881,7 +2872,7 @@ let createFormatter () =
               [ makeList ~postSpace:true [ prepend; r ] ], None
           in
           (*
-           *  The first element of the tuple represents constructor arguments,
+             *  The first element of the tuple represents constructor arguments,
            *  the second an optional formatted gadt.
            *
            *  Case 1: No constructor arguments, neither a gadt
@@ -2900,7 +2891,7 @@ let createFormatter () =
            *  Case 4: Has Constructor args & is a gadt
            *    type attr  = ..;
            *    type attr += | Point(int, int) :attr;
-           *)
+          *)
           let everything =
             match resolved with
             | [], None -> add_bar sourceMappedName pext_attributes None
@@ -2982,13 +2973,13 @@ let createFormatter () =
           | _ -> List.map (fun x -> self#type_variant_leaf x) lst
 
         method type_variant_leaf
-            ?opt_ampersand:(a = false)
-            ?polymorphic:(p = false) =
+          ?opt_ampersand:(a = false)
+          ?polymorphic:(p = false) =
           self#type_variant_leaf1 a p true
 
         method type_variant_leaf_nobar
-            ?opt_ampersand:(a = false)
-            ?polymorphic:(p = false) =
+          ?opt_ampersand:(a = false)
+          ?polymorphic:(p = false) =
           self#type_variant_leaf1 a p false
 
         (* TODOATTRIBUTES: Attributes on the entire variant leaf are likely
@@ -3049,7 +3040,7 @@ let createFormatter () =
            *     :expr 'a;                   ==> gadt res
            * The label & the gadt res form two separate units combined into a list.
            * This is necessary to properly align the closing '}' on the same height as the 'If'.
-           *)
+          *)
           let add_bar_2 ?gadt name args =
             let lbl = label name args in
             let fullLbl =
@@ -3182,7 +3173,7 @@ let createFormatter () =
            *        { (Ptype_open, Public, Some $2) }
            *    | EQUAL core_type EQUAL private_flag LBRACE label_declarations opt_comma RBRACE
            *        { (Ptype_record(List.rev $6), $4, Some $2) }
-           *)
+          *)
           let privateAtom = atom "pri" in
           let privatize scope lst =
             match scope with Public -> lst | Private -> privateAtom :: lst
@@ -3307,7 +3298,7 @@ let createFormatter () =
          * A "non arrowed, non simple" type would be one that is not-arrowed, and also
          * not "simple". Simple means it is "clearly one unit" like (a, b), identifier,
          * "hello", None.
-         *)
+        *)
         method non_arrowed_non_simple_core_type x =
           let { Reason_attributes.stdAttrs } =
             Reason_attributes.partitionAttributes x.ptyp_attributes
@@ -3491,8 +3482,7 @@ let createFormatter () =
             self#pattern_list_split_cons (pat1 :: acc) pat2
           | p -> List.rev acc, p
 
-        (*
-         * Adds parens to the right sub-tree when it is not a single node:
+        (* Adds parens to the right sub-tree when it is not a single node:
          *
          * A | B                   is formatted as    A | B
          * A | (B | C)             is formatted as    A | (B | C)
@@ -3504,7 +3494,7 @@ let createFormatter () =
          * (A | B) | C             is formatted as    A | B | C
          * A | B | C               is formatted as    A | B | C
          *
-         *)
+        *)
         method or_pattern p1 p2 =
           let p1_raw, p2_raw = self#pattern p1, self#pattern p2 in
           let left, right =
@@ -3520,8 +3510,7 @@ let createFormatter () =
             ~preSpace:true
             [ left; right ]
 
-        (*
-         * Renders level 3 or simpler patterns:
+        (* Renders level 3 or simpler patterns:
          *
          * Simpler
          * ^   -----------
@@ -3533,7 +3522,7 @@ let createFormatter () =
          * Complex
          *
          * Assumes visually rendered attributes have already been rendered.
-         *)
+        *)
         method pattern_at_least_as_simple_as_alias_or_or x =
           let { Reason_attributes.arityAttrs = _; stdAttrs } =
             Reason_attributes.partitionAttributes x.ppat_attributes
@@ -3575,7 +3564,7 @@ let createFormatter () =
          * pattern.
          *
          * Assumes visually rendered attributes have already been rendered.
-         *)
+        *)
         method pattern_at_least_as_simple_as_application x =
           (* TODOATTRIBUTES: Handle the stdAttrs here *)
           let { Reason_attributes.stdAttrs; arityAttrs } =
@@ -3648,7 +3637,7 @@ let createFormatter () =
          * Complex
          *
          * Assumes visually rendered attributes have already been rendered.
-         *)
+        *)
         method pattern x =
           let { Reason_attributes.arityAttrs = _; stdAttrs } =
             Reason_attributes.partitionAttributes x.ppat_attributes
@@ -3701,7 +3690,7 @@ let createFormatter () =
          *   type t = (module Console);
          *   In this case the "module" keyword needs to be printed to indicate
          *   usage of a first-class-module.
-         *)
+        *)
         method typ_package ?(protect = false) ?(mod_prefix = true) lid cstrs =
           let packageIdent =
             let packageIdent = self#longident_loc lid in
@@ -3760,8 +3749,7 @@ let createFormatter () =
                 source_map ~loc:x.ppat_loc (self#longident_loc li)
               | Ppat_any -> atom "_"
               | Ppat_var { loc; txt } ->
-                (*
-                 * To prevent this:
+                (* To prevent this:
                  *
                  *   let oneArgShouldWrapToAlignWith
                  *     theFunctionNameBinding => theFunctionNameBinding;
@@ -3779,7 +3767,7 @@ let createFormatter () =
                  * you'll get the following (even though it should wrap)
                  *
                  *   let oneArgShouldWrapToAlignWith theFunctionNameBinding => theFunctionNameBinding;
-                 *)
+                *)
                 source_map ~loc (protectIdentifier txt)
               | Ppat_array l -> self#patternArray l
               | Ppat_unpack s ->
@@ -3821,8 +3809,7 @@ let createFormatter () =
                      (formatPrecedence (self#simple_pattern p)))
               | Ppat_extension e -> self#extension e
               | Ppat_exception p ->
-                (*
-                 * An exception pattern with an alias should be wrapped in (...)
+                (* An exception pattern with an alias should be wrapped in (...)
                  * The rules for what goes to the right of the exception are a little (too) nuanced.
                  * It accepts "non simple" parameters, except in the case of `as`.
                  * Here we consistently apply "simplification" to the exception argument.
@@ -3831,7 +3818,7 @@ let createFormatter () =
                  *  parses correctly while
                  *   | Sys_error _ as exc => raise exc
                  *  results in incorrect parsing with type error otherwise.
-                 *)
+                *)
                 makeList
                   ~postSpace:true
                   [ atom "exception"; self#simple_pattern p ]
@@ -3902,8 +3889,9 @@ let createFormatter () =
               | (Nolabel, _) :: _ -> false
               | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
             in
-            if hasLabelledChildrenLiteral
-               && hasSingleNonLabelledUnitAndIsAtTheEnd l
+            if
+              hasLabelledChildrenLiteral
+              && hasSingleNonLabelledUnitAndIsAtTheEnd l
             then
               match loc.txt with
               | Ldot (moduleLid, "createElement") ->
@@ -3958,8 +3946,9 @@ let createFormatter () =
               | (Nolabel, _) :: _ -> false
               | _ :: rest -> hasSingleNonLabelledUnitAndIsAtTheEnd rest
             in
-            if hasLabelledChildrenLiteral
-               && hasSingleNonLabelledUnitAndIsAtTheEnd l
+            if
+              hasLabelledChildrenLiteral
+              && hasSingleNonLabelledUnitAndIsAtTheEnd l
             then
               match Longident.flatten_exn loc.txt with
               | [] | [ _ ] ->
@@ -4058,9 +4047,7 @@ let createFormatter () =
         (** Detects "sugar expressions" (sugar for array/string setters) and
             returns their separate parts. *)
 
-        (*
-         *
-         * How would we know not to print the sequence without { }; protecting the let a?
+        (* How would we know not to print the sequence without { }; protecting the let a?
          *
          *                        let a
          *                         |
@@ -4083,7 +4070,7 @@ let createFormatter () =
          * this case) a let, wrapping the first sequence expression in { } is
          * required.
          * ******************************************************************
-         *)
+        *)
 
         (** TODO: Configure the optional ability to print the *minimum* number
             of parens. It's simply a matter of changing [higherPrecedenceThan]
@@ -4195,7 +4182,7 @@ let createFormatter () =
          * let f = (a: bool) => 1;
          * TODO: in the future we should probably use the type ruleCategory
          * to 'automatically' ensure the validity of a constraint expr with parens...
-         *)
+        *)
         method unparseProtectedExpr ?(forceParens = false) e =
           let itm =
             match e with
@@ -4230,10 +4217,10 @@ let createFormatter () =
           source_map ~loc:e.pexp_loc itm
 
         method simplifyUnparseExpr
-            ?(inline = false)
-            ?(even_wrap_simple = false)
-            ?(wrap = "(", ")")
-            x =
+          ?(inline = false)
+          ?(even_wrap_simple = false)
+          ?(wrap = "(", ")")
+          x =
           match self#unparseExprRecurse x, even_wrap_simple with
           | SpecificInfixPrecedence (_, itm), _ ->
             formatPrecedence
@@ -4273,7 +4260,7 @@ let createFormatter () =
          * foo
          * ->f(a, b)
          * ->g(c, d)
-         *)
+        *)
         method formatPipeFirst e =
           let module PipeFirstTree = struct
             type exp = Parsetree.expression
@@ -4310,7 +4297,7 @@ let createFormatter () =
                      *  a |. (__x => foo(x, __x))
                      *
                      * Hence we don't need parens in this case.
-                     *)
+                    *)
                     | expr when Reason_heuristics.isUnderscoreApplication expr
                       ->
                       LayoutNode (self#unparseExpr expr)
@@ -4377,7 +4364,7 @@ let createFormatter () =
            * into
            *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
            * which can be processed for printing purposes.
-           *)
+          *)
           let rec flatten ?(uncurried = false) acc = function
             | { pexp_desc =
                   Pexp_apply
@@ -4420,7 +4407,7 @@ let createFormatter () =
            * that allows us to express the segments: "foo" "f(a, b)" "g(c, d)".
            * PipeFirstTree.t expresses those segments.
            *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
-           *)
+          *)
           let rec parse acc = function
             | PipeFirstTree.Exp e :: PipeFirstTree.Args args :: xs ->
               parse
@@ -4448,19 +4435,19 @@ let createFormatter () =
            *  foo->f(a, b)->g(c, d)
            * into
            *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
-           *)
+          *)
           let (flatNodes : PipeFirstTree.flatT) = flatten ~uncurried [] e in
           (* Turn
            *  [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]]
            * into
            *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
-           *)
+          *)
           let (pipetree : PipeFirstTree.t) = parse [] flatNodes in
           (* Turn
            *  [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
            * into
            *  [foo; ->f(a, b); ->g(c, d)]
-           *)
+          *)
           let pipeSegments =
             match pipetree with
             (* Special case printing of
@@ -4482,7 +4469,7 @@ let createFormatter () =
              *    aa,
              *    bb,
              *  )
-             *)
+            *)
             | [ ({ exp = { pexp_desc = Pexp_ident _ } } as hd); last ] ->
               let prefix =
                 Some
@@ -4505,12 +4492,12 @@ let createFormatter () =
            * foo
            * ->f(a, b)
            * ->g(c, d)
-           *)
+          *)
           makeList ~break:IfNeed ~inline:(true, true) pipeSegments
 
         (*
-         * Replace (__x) => foo(__x) with foo(_)
-         *)
+           * Replace (__x) => foo(__x) with foo(_)
+        *)
         method process_underscore_application x =
           let process_application expr =
             let process_arg (l, e) =
@@ -4935,7 +4922,7 @@ let createFormatter () =
                        *
                        * At this point the bla will be stripped (because it's a visible
                        * attribute) but the JSX will still be there.
-                       *)
+                      *)
 
                       (* this case also happens when we have something like:
                        * List.map((a) => a + 1, numbers);
@@ -4946,7 +4933,7 @@ let createFormatter () =
                        * describe("App", () =>
                        *   test("math", () =>
                        *     Expect.expect(1 + 2) |> toBe(3)));
-                       *)
+                      *)
                       let uncurried =
                         try Hashtbl.find uncurriedTable x.pexp_loc with
                         | Not_found -> false
@@ -5104,15 +5091,14 @@ let createFormatter () =
                   raise (Invalid_argument "No match for unparsing expression"))))
 
         method formatNonSequencyExpression ?parent e =
-          (*
-           * Instead of printing:
+          (* Instead of printing:
            *   let result =  { open Fmt; strf(foo);}
            *
            * We format as:
            *   let result = Fmt.(strf(foo))
            *
            * (Also see https://github.com/facebook/Reason/issues/114)
-           *)
+          *)
           match e.pexp_attributes, e.pexp_desc with
           | [], Pexp_record _ (* syntax sugar for M.{x:1} *)
           | [], Pexp_tuple _ (* syntax sugar for M.(a, b) *)
@@ -5124,7 +5110,7 @@ let createFormatter () =
           (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
            * E.g., avoid M.(M2.v) being printed as M.M2.v
            * Or ReasonReact.(<> {string("Test")} </>);
-           *)
+          *)
           | _ ->
             (match parent with
             | Some parent
@@ -5140,8 +5126,7 @@ let createFormatter () =
             | Some _ | None ->
               makeList ~wrap:("(", ")") ~break:IfNeed [ self#unparseExpr e ])
 
-        (*
-         * It's not enough to only check if precedence of an infix left/right is
+        (* It's not enough to only check if precedence of an infix left/right is
          * greater than the infix itself. We also should likely pay attention to
          * left/right associativity. So how do we render the minimum number of
          * parenthesis?
@@ -5249,7 +5234,7 @@ let createFormatter () =
          *       [  Pexp_apply  ] + third
          *          /     \
          *       first ::  second
-         *)
+        *)
 
         method classExpressionToFormattedApplicationItems =
           function
@@ -5302,8 +5287,7 @@ let createFormatter () =
             in
             makeList ~break:Never [ atom "..."; childLayout ]
 
-        (*
-         *    How JSX is formatted/wrapped. We want the attributes to wrap independently
+        (*    How JSX is formatted/wrapped. We want the attributes to wrap independently
          *    of children.
          *
          *    <xxx
@@ -5331,7 +5315,7 @@ let createFormatter () =
          *      +---------+
          *
          *      </tag>
-         *)
+        *)
         method formatJSXComponent componentName ?closeComponentName args =
           let self = self#inline_braces in
           let rec processArguments arguments processedAttrs children =
@@ -5515,8 +5499,7 @@ let createFormatter () =
                  ~postSpace:true
                  renderedChildren)
 
-        (*
-         * Format Pexp_fun expression: (a, b) => a + b;
+        (* Format Pexp_fun expression: (a, b) => a + b;
          * Example: the `onClick` prop with Pexp_fun in
          *  <div
          *    onClick={(event) => {
@@ -5532,7 +5515,7 @@ let createFormatter () =
          *  ~prefix -> prefixes the Pexp_fun layout, example `onClick=`
          *  ~wrap -> wraps the `Pexp_fun` in the tuple passed to wrap, e.g. `{` and
          *  `}` for jsx
-         *)
+        *)
         method formatPexpFun ?(prefix = atom "") ?(wrap = "", "") expression =
           let lwrap, rwrap = wrap in
           let { Reason_attributes.stdAttrs; uncurried } =
@@ -5589,7 +5572,7 @@ let createFormatter () =
                *
                * ```
                * (Notice to nonsense newline)
-               *)
+              *)
               let shouldPreserveBraces =
                 self#should_preserve_requested_braces return
               in
@@ -5609,7 +5592,7 @@ let createFormatter () =
                *   Js.log(event);
                *   handleChange(event);
                * }}
-               *)
+              *)
               let layout =
                 makeList
                   ~break:Always_rec
@@ -5646,7 +5629,7 @@ let createFormatter () =
            * });
            *
            * We should "hug" the parens here: ({ & }) should stick together.
-           *)
+          *)
           | { pmod_desc =
                 Pmod_apply
                   ( ({ pmod_desc = Pmod_ident _ } as m1)
@@ -5680,8 +5663,7 @@ let createFormatter () =
             then makeList ~postSpace:true [ atom prefix; functor_application ]
             else functor_application
 
-        (*
-         * Watch out, if you see something like below (sixteenTuple getting put on a
+        (* Watch out, if you see something like below (sixteenTuple getting put on a
          * newline), yet a paren-wrapped list wouldn't have had an extra newlin, you
          * might need to wrap the single token (sixteenTuple) in [ensureSingleTokenSticksToLabel].
          * let (
@@ -5694,13 +5676,13 @@ let createFormatter () =
          *    0,
          *    0
          *  );
-         *)
+        *)
 
         method formatSimplePatternBinding
-            labelOpener
-            layoutPattern
-            typeConstraint
-            appTerms =
+          labelOpener
+          layoutPattern
+          typeConstraint
+          appTerms =
           let letPattern =
             label ~break:`Never ~space:true (atom labelOpener) layoutPattern
           in
@@ -5717,8 +5699,7 @@ let createFormatter () =
             (Some (true, includingEqual))
             appTerms
 
-        (*
-         * The [bindingLabel] is either the function name (if let binding) or first
+        (* The [bindingLabel] is either the function name (if let binding) or first
          * arg (if lambda).
          *
          * For defining layout of the following form:
@@ -5735,21 +5716,20 @@ let createFormatter () =
          *         myMethod
          *         constraint = fun ...
          *
-         *)
+        *)
         method wrapCurriedFunctionBinding
-            ?attachTo
-            ~arrow
-            ?(sweet = false)
-            ?(spaceBeforeArrow = true)
-            prefixText
-            bindingLabel
-            patternList
-            returnedAppTerms =
+          ?attachTo
+          ~arrow
+          ?(sweet = false)
+          ?(spaceBeforeArrow = true)
+          prefixText
+          bindingLabel
+          patternList
+          returnedAppTerms =
           let allPatterns = bindingLabel :: patternList in
           let partitioning = curriedFunctionFinalWrapping allPatterns in
           let everythingButReturnVal =
-            (*
-             * Because align_closing is set to false, you get:
+            (* Because align_closing is set to false, you get:
              *
              * (Brackets[] inserted to show boundaries between open/close of pattern list)
              * let[firstThing
@@ -5773,7 +5753,7 @@ let createFormatter () =
              * shoving it in the last pattern, is that we can turn [align_closing = true]
              * and still have the arrow stuck to the last pattern (which is usually what we
              * want) (See modeTwo below).
-             *)
+            *)
             match partitioning with
             | None when sweet ->
               makeList
@@ -5789,8 +5769,7 @@ let createFormatter () =
                  there's no apparent way to add additional indenting for the
                  args with this setting. *)
 
-              (*
-               * Formats lambdas by treating the first pattern as the
+              (* Formats lambdas by treating the first pattern as the
                * "bindingLabel" which is kind of strange in some cases (when
                * you only have one arg that wraps)...
                *
@@ -5818,7 +5797,7 @@ let createFormatter () =
                *
                * Try any other convention for wrapping that first arg and it
                * won't look as balanced when adding multiple args.
-               *)
+              *)
               makeList
                 ~pad:(true, spaceBeforeArrow)
                 ~wrap:(prefixText, arrow)
@@ -5953,10 +5932,10 @@ let createFormatter () =
           | me -> [], me
 
         method isRenderableAsPolymorphicAbstractTypes
-            typeVars
-            polyType
-            leadingAbstractVars
-            nonVarifiedType =
+          typeVars
+          polyType
+          leadingAbstractVars
+          nonVarifiedType =
           same_ast_modulo_varification_and_extensions polyType nonVarifiedType
           && for_all2' string_loc_equal typeVars leadingAbstractVars
 
@@ -6005,14 +5984,14 @@ let createFormatter () =
          * (blah:typ)] in standard OCaml will be parsed as a Pexp_constraint. There
          * might be some lossiness (beyond parens) that occurs in the original OCaml
          * parser.
-         *)
+        *)
 
         method locallyAbstractPolymorphicFunctionBinding
-            prefixText
-            layoutPattern
-            funWithNewTypes
-            absVars
-            bodyType =
+          prefixText
+          layoutPattern
+          funWithNewTypes
+          absVars
+          bodyType =
           let appTerms = self#unparseExprApplicationItems funWithNewTypes in
           let locallyAbstractTypes = List.map (fun x -> atom x.txt) absVars in
           let typeLayout =
@@ -6035,8 +6014,7 @@ let createFormatter () =
             (Some polyType)
             appTerms
 
-        (*
-         *  Intelligently switches between:
+        (*  Intelligently switches between:
          *  Curried function binding w/ constraint on return expr:
          *     lbl patt
          *         pattAux
@@ -6051,7 +6029,7 @@ let createFormatter () =
          *         :constraint = {
          *       ...
          *     }
-         *)
+        *)
         method wrappedBinding prefixText ~arrow pattern patternAux expr =
           let expr = self#process_underscore_application expr in
           let argsList, return = self#curriedPatternsAndReturnVal expr in
@@ -6153,20 +6131,19 @@ let createFormatter () =
          *
          * /* another random comment */
          * let a = 1;
-         *)
+        *)
         method attachDocAttrsToLayout
-            ~(* all std attributes attached on the ast node backing the
+          ~(* all std attributes attached on the ast node backing the
                 layout *)
-            (stdAttrs : Parsetree.attributes)
-            ~(* all doc comments attached on the ast node backing the layout *)
-            (docAttrs : Parsetree.attributes)
-            ~(* location of the layout *)
-             loc
-            ~(* layout to attach the doc comments to *)
-             layout
-            () =
-          (*
-           * compute the correct location of layout
+          (stdAttrs : Parsetree.attributes)
+          ~(* all doc comments attached on the ast node backing the layout *)
+          (docAttrs : Parsetree.attributes)
+          ~(* location of the layout *)
+           loc
+          ~(* layout to attach the doc comments to *)
+           layout
+          () =
+          (* compute the correct location of layout
            * Example:
            * 1| /** doc-comment */
            * 2|
@@ -6177,7 +6154,7 @@ let createFormatter () =
            * representing `let a = 1`. The reality is that `[@attribute]` should be
            * included (start of line 3), to represent the correct start location
            * of the whole layout.
-           *)
+          *)
           let loc =
             match stdAttrs with
             | { attr_name = astLoc; _ } :: _ -> astLoc.loc
@@ -6205,8 +6182,8 @@ let createFormatter () =
           aux loc layout (List.rev docAttrs)
 
         method value_binding
-            prefixText
-            { pvb_pat; pvb_attributes; pvb_loc; pvb_expr } =
+          prefixText
+          { pvb_pat; pvb_attributes; pvb_loc; pvb_expr } =
           self#binding
             prefixText
             ~attrs:pvb_attributes
@@ -6232,8 +6209,7 @@ let createFormatter () =
                 (source_map ~loc:pat.ppat_loc (self#simple_pattern pat))
                 []
                 expr
-            (*
-             * Ppat_constraint is used in bindings of the form
+            (* Ppat_constraint is used in bindings of the form
              *
              *    let (inParenVar:typ) = ...
              *
@@ -6243,10 +6219,9 @@ let createFormatter () =
              * See reason_parser.mly for explanation of how we encode the two primary
              * forms of explicit polymorphic annotations in the parse tree, and how
              * we must recover them here.
-             *)
+            *)
             | [], Ppat_open (lid, { ppat_desc = Ppat_record (l, closed); _ }) ->
-              (*
-               * Special case handling for:
+              (* Special case handling for:
                *
                * let Foo.{
                *   destruct1,
@@ -6255,7 +6230,7 @@ let createFormatter () =
                *   destruct4,
                *   destruct5,
                * } = bar;
-               *)
+              *)
               let upUntilEqual =
                 let pat = self#patternRecord l closed in
                 label
@@ -6297,7 +6272,7 @@ let createFormatter () =
                *       fun (input: a) (input2: b) => ({inputIs: input}, {inputIs:input2}):
                *         a => b => (inputEchoRecord a, inputEchoRecord b)
                *     );
-               *)
+              *)
               let layoutPattern =
                 source_map ~loc:pat.ppat_loc (self#simple_pattern p)
               in
@@ -6316,8 +6291,7 @@ let createFormatter () =
                        varifiedPolyType
                        absVars
                        nonVarifiedExprType ->
-                (*
-                 * We assume was the case whenever we see this pattern in the
+                (* We assume was the case whenever we see this pattern in the
                  * AST, it was because the parser parsed the polymorphic locally
                  * abstract type sugar.
                  *
@@ -6346,7 +6320,7 @@ let createFormatter () =
                  * The second requirement that we check before assuming that the
                  * sugar form is correct, is to make sure the list of type vars
                  * corresponds to a leading prefix of the Pexp_newtype variables.
-                 *)
+                *)
                 self#locallyAbstractPolymorphicFunctionBinding
                   prefixText
                   layoutPattern
@@ -6704,11 +6678,11 @@ let createFormatter () =
             (List.rev es)
 
         method constructor_expression
-            ?(polyVariant = false)
-            ~arityIsClear
-            stdAttrs
-            ctor
-            eo =
+          ?(polyVariant = false)
+          ~arityIsClear
+          stdAttrs
+          ctor
+          eo =
           let implicit_arity, arguments =
             match eo.pexp_desc with
             | Pexp_construct ({ txt = Lident "()" }, _) ->
@@ -6801,8 +6775,7 @@ let createFormatter () =
                  ])
           else construction
 
-        (*
-         * Provides special printing for constructor arguments:
+        (* Provides special printing for constructor arguments:
          * iff there's one argument & they have some kind of wrapping,
          * they're wrapping need to 'hug' the surrounding parens.
          * Example:
@@ -6816,7 +6789,7 @@ let createFormatter () =
          *  Notice how ({ and }) hug.
          *  This applies for records, arrays, tuples & lists.
          *  Also see `isSingleArgParenPattern` to determine if this kind of wrapping applies.
-         *)
+        *)
         method singleArgParenPattern =
           function
           | [ { ppat_desc = Ppat_record (l, closed); ppat_loc = loc } ] ->
@@ -6988,7 +6961,7 @@ let createFormatter () =
                    * One question is, if it's this difficult to describe when parens are
                    * needed, should we even print them with the minimum amount?  We can
                    * instead model everything as "infix" with ranked precedences.
-                   *)
+                  *)
                   let retValUnparsed = self#unparseExprApplicationItems ret in
                   Some
                     (self#wrapCurriedFunctionBinding
@@ -7151,13 +7124,12 @@ let createFormatter () =
                 in
                 Some lbl
               | Pexp_for (s, e1, e2, df, e3) ->
-                (*
-                 *  for longIdentifier in
+                (*  for longIdentifier in
                  *      (longInit expr) to
                  *      (longEnd expr) {
                  *    print_int longIdentifier;
                  *  };
-                 *)
+                *)
                 let identifierIn =
                   makeList ~postSpace:true [ self#pattern s; atom "in" ]
                 in
@@ -7216,8 +7188,7 @@ let createFormatter () =
             formatTypeConstraint (self#unparseExpr e) (self#core_type ct)
           | _ -> self#unparseExpr x
 
-        (*
-         * Because the rule BANG simple_expr was given %prec below_DOT_AND_SHARP,
+        (* Because the rule BANG simple_expr was given %prec below_DOT_AND_SHARP,
          * !x.y.z will parse as !(x.y.z) and not (!x).y.z.
          *
          *     !x.y.z == !((x.y).z)
@@ -7254,7 +7225,7 @@ let createFormatter () =
          *
          * };
          *
-         *)
+        *)
         method simple_enough_to_be_lhs_dot_send x =
           match x.pexp_desc with
           | Pexp_apply (eFun, _) ->
@@ -7272,12 +7243,12 @@ let createFormatter () =
           | _ -> self#simplifyUnparseExpr x
 
         method unparseRecord
-            ?wrap:(lwrap, rwrap = "", "")
-            ?(withStringKeys = false)
-            ?(allowPunning = true)
-            ?(forceBreak = false)
-            l
-            eo =
+          ?wrap:(lwrap, rwrap = "", "")
+          ?(withStringKeys = false)
+          ?(allowPunning = true)
+          ?(forceBreak = false)
+          l
+          eo =
           (* forceBreak is a ref which can be set to always break the record rows.
            * Example, when we have a row which contains a nested record,
            * this ref can be set to true from inside the printing of that row,
@@ -7318,7 +7289,7 @@ let createFormatter () =
                  *   },
                  *  "age": 32
                  *  };
-                 *)
+                *)
               | Pexp_record (recordRows, optionalGadt), _, _ ->
                 forceBreak := true;
                 let keyWithColon =
@@ -7441,10 +7412,10 @@ let createFormatter () =
           | _ -> true
 
         method unparseObject
-            ?wrap:(lwrap, rwrap = "", "")
-            ?(withStringKeys = false)
-            l
-            o =
+          ?wrap:(lwrap, rwrap = "", "")
+          ?(withStringKeys = false)
+          l
+          o =
           let core_field_type { pof_desc; pof_attributes; _ } =
             match pof_desc with
             | Otag ({ txt }, ct) ->
@@ -7525,9 +7496,9 @@ let createFormatter () =
               (List.map xf l)
 
         method formatBsObjExtensionSugar
-            ?(wrap = "", "")
-            ?(forceBreak = false)
-            payload =
+          ?(wrap = "", "")
+          ?(forceBreak = false)
+          payload =
           match payload with
           | PStr [ itm ] ->
             (match itm with
@@ -7787,8 +7758,9 @@ let createFormatter () =
                *
                * (1). <div> {items->Belt.Array.map(ReasonReact.string)->ReasonReact.array} </div>;
                * (2). <Foo> (title === "" ? [1, 2, 3] : blocks)->Foo.toString </Foo>; *)
-              if Reason_heuristics.isPipeFirst e
-                 && not (Reason_heuristics.isPipeFirstWithNonSimpleJSXChild e)
+              if
+                Reason_heuristics.isPipeFirst e
+                && not (Reason_heuristics.isPipeFirstWithNonSimpleJSXChild e)
               then self#formatPipeFirst e
               else
                 self#inline_braces#simplifyUnparseExpr
@@ -8016,7 +7988,8 @@ let createFormatter () =
            in class/object expressions. TODO: TODOATTRIBUTES *)
         method method_sig_flags_for s =
           function
-          | Virtual -> [ atom "virtual"; atom s ] | Concrete -> [ atom s ]
+          | Virtual -> [ atom "virtual"; atom s ]
+          | Concrete -> [ atom s ]
 
         method value_type_flags_for s =
           function
@@ -8073,7 +8046,7 @@ let createFormatter () =
           | Pctf_extension e -> self#item_extension e
 
         (*
-         * /** doc comment */                                    (* formattedDocs *)
+           * /** doc comment */                                    (* formattedDocs *)
          * [@bs.val] [@bs.module "react-dom"]                    (* formattedAttrs *)
          * external render : reactElement => element => unit =   (* frstHalf *)
          *   "render";                                           (* sndHalf *)
@@ -8087,7 +8060,7 @@ let createFormatter () =
          *   * format the attributes with a ~postSpace:true (inline, inline) list
          *   * format everything together in a ~postSpace:true (inline, inline) list
          *     for nicer breaking
-         *)
+        *)
         method primitive_declaration ?extension vd =
           let external_label = add_extension_sugar "external" extension in
           let lblBefore =
@@ -8195,8 +8168,8 @@ let createFormatter () =
 
         method class_declaration_list l =
           let class_declaration
-              ?(class_keyword = false)
-              ({ pci_params = ls; pci_name = { txt }; pci_virt; pci_loc } as x)
+                ?(class_keyword = false)
+                ({ pci_params = ls; pci_name = { txt }; pci_virt; pci_loc } as x)
             =
             let firstToken, pattern, patternAux =
               self#class_opening class_keyword txt pci_virt ls
@@ -8223,8 +8196,8 @@ let createFormatter () =
            TODOATTRIBUTES: *)
         method class_type_declaration_list l =
           let class_type_declaration
-              kwd
-              ({ pci_params = ls; pci_name; pci_attributes } as x)
+                kwd
+                ({ pci_params = ls; pci_name; pci_attributes } as x)
             =
             let opener =
               match x.pci_virt with
@@ -8493,7 +8466,7 @@ let createFormatter () =
           source_map ~loc:x.pcf_loc layout
 
         method class_self_pattern_and_structure
-            { pcstr_self = p; pcstr_fields = l } =
+          { pcstr_self = p; pcstr_fields = l } =
           let fields = List.map self#class_field l in
           (* Recall that by default self is bound to "this" at parse time. You'd
              have to go out of your way to bind it to "_". *)
@@ -8529,7 +8502,7 @@ let createFormatter () =
                *  with trailing semicolons, *except* in the case of classes because it
                *  will likely introduce a conflict with some proposed syntaxes for
                *  objects.
-               *)
+              *)
               | Pcl_let _ | Pcl_structure _ | Pcl_open _ ->
                 let opens, rest = self#classExprOpens x in
                 let rows = self#classExprLetsAndRest rest in
@@ -8846,8 +8819,8 @@ let createFormatter () =
                 }
             | Psig_class l ->
               let class_description
-                  ?(class_keyword = false)
-                  ({ pci_params = ls; pci_name = { txt }; pci_loc } as x)
+                    ?(class_keyword = false)
+                    ({ pci_params = ls; pci_name = { txt }; pci_loc } as x)
                 =
                 let firstToken, pattern, patternAux =
                   self#class_opening class_keyword txt x.pci_virt ls
@@ -9290,8 +9263,7 @@ let createFormatter () =
                  ~sep:(SepFinal (";", ";"))
                  items)
 
-        (*
-         * How do modules become parsed?
+        (* How do modules become parsed?
          * let module (X: sig) = blah;
          *   Will not parse! (Should just make it parse to let [X:sig =]).
          * let module X: sig = blah;
@@ -9315,7 +9287,7 @@ let createFormatter () =
 
          * See the notes about how Ppat_constraint become parsed and attempt to unify
          * those as well.
-         *)
+        *)
 
         method let_module_binding prefixText bindingName moduleExpr =
           let { Reason_attributes.stdAttrs; _ } =
@@ -9385,7 +9357,7 @@ let createFormatter () =
           match pci_virt, ls with
           (* When no class params, it's a very simple formatting for the
            * opener - no breaking.
-           *)
+          *)
           | Virtual, [] -> firstToken, atom "virtual", [ atom name ]
           | Concrete, [] -> firstToken, atom name, []
           | Virtual, _ :: _ ->
@@ -9566,7 +9538,7 @@ let createFormatter () =
              * :                                  :
              * :..................................:
              *             [row]
-             *)
+            *)
             let bar xx = makeList ~postSpace:true [ atom "|"; xx ] in
             let appendWhereAndArrow p =
               match pc_guard with
@@ -9656,9 +9628,9 @@ let createFormatter () =
          *  Also see "isSingleArgParenApplication" which determines if
          *  this kind of formatting should happen. *)
         method singleArgParenApplication
-            ?(wrap = "", "")
-            ?(uncurried = false)
-            es =
+          ?(wrap = "", "")
+          ?(uncurried = false)
+          es =
           let lwrap, rwrap = wrap in
           let lparen = lwrap ^ if uncurried then "(. " else "(" in
           let rparen = ")" ^ rwrap in
@@ -9736,7 +9708,7 @@ let createFormatter () =
            *    b: 2,
            *  })
            *  when the line-length indicates breaking.
-           *)
+          *)
           | [ (Nolabel, exp) ] when isSingleArgParenApplication [ exp ] ->
             self#singleArgParenApplication ?wrap ~uncurried [ exp ]
           | params ->
@@ -9745,8 +9717,7 @@ let createFormatter () =
               ~uncurried
               (List.map self#label_x_expression_param params)
 
-        (*
-         * Prefix represents an optional layout. When passed it will be "prefixed" to
+        (* Prefix represents an optional layout. When passed it will be "prefixed" to
          * the funExpr. Example, given `bar(x, y)` with prefix `foo`, we get
          * foobar(x,y). When the arguments break, the closing `)` is nicely aligned
          * on the height of the prefix:
@@ -9761,16 +9732,16 @@ let createFormatter () =
          *   x,
          *   y,
          * )}      -> notice how the closing brace hugs: `)}`
-         *)
+        *)
         method formatFunAppl
-            ?(prefix = atom "")
-            ?(wrap = "", "")
-            ~jsxAttrs
-            ~args
-            ~funExpr
-            ~applicationExpr
-            ?(uncurried = false)
-            () =
+          ?(prefix = atom "")
+          ?(wrap = "", "")
+          ~jsxAttrs
+          ~args
+          ~funExpr
+          ~applicationExpr
+          ?(uncurried = false)
+          () =
           let leftWrap, rightWrap = wrap in
           let uncurriedApplication = uncurried in
           (* If there was a JSX attribute BUT JSX component wasn't detected,
@@ -9789,7 +9760,8 @@ let createFormatter () =
                            | _ -> false)
                         args
                    (* default to normal formatting if there's more than one
-                      callback *) ->
+                      callback *)
+              ->
               `LastArgIsCallback (callback, List.rev args)
             | _ -> `NormalFunAppl args
           in
@@ -9811,7 +9783,7 @@ let createFormatter () =
             (* This is the following case:
              * Thing.map(foo, bar, baz, (abc, z) =>
              *   MyModuleBlah.toList(argument)
-             *)
+            *)
             let argLbl, cb = callbackArg in
             let { Reason_attributes.stdAttrs; uncurried } =
               Reason_attributes.partitionAttributes cb.pexp_attributes
@@ -9863,7 +9835,7 @@ let createFormatter () =
                  *      Expect.expect(1 + 2) |> toBe(3)
                  *    )
                  *  );
-                 *)
+                *)
                 let forceBreak =
                   match funExpr.pexp_desc with
                   | Pexp_ident ident
@@ -9915,8 +9887,7 @@ let createFormatter () =
                 in
                 if not printWidthExceeded
                 then
-                  (*
-                   * Thing.map(foo, bar, baz, (abc, z) =>
+                  (* Thing.map(foo, bar, baz, (abc, z) =>
                    *   MyModuleBlah.toList(argument)
                    * )
                    *
@@ -9939,7 +9910,7 @@ let createFormatter () =
                    *   let y = z + c;
                    *   x + y
                    * });
-                   *)
+                  *)
                   let ((leftWrap, rightWrap) as wrap) =
                     "=> ", ")" ^ rightWrap
                   in
@@ -9990,7 +9961,7 @@ let createFormatter () =
                    *     x + y
                    *   }</list></right></label>
                    * )</list></right></label>
-                   *)
+                  *)
                   let args =
                     makeList
                       ~break:Always
@@ -10076,18 +10047,18 @@ let createFormatter () =
 
     (* wrap_expr_with_tuple wraps an expression
      * with tuple as a sole argument.
-     *)
+    *)
     let wrap_expr_with_tuple exp = { exp with pexp_desc = Pexp_tuple [ exp ] }
 
     (* wrap_pat_with_tuple wraps an pattern
      * with tuple as a sole argument.
-     *)
+    *)
     let wrap_pat_with_tuple pat = { pat with ppat_desc = Ppat_tuple [ pat ] }
 
     (* explicit_arity_constructors is a set of constructors that are known to have
      * multiple arguments
      *
-     *)
+    *)
 
     module StringSet = Stdlib.Set.Make (String)
 
