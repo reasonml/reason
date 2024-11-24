@@ -12,7 +12,7 @@ type attributesPartition =
 
 (** Partition attributes into kinds *)
 let rec partitionAttributes ?(partDoc = false) ?(allowUncurry = true) attrs :
-    attributesPartition
+  attributesPartition
   =
   match attrs with
   | [] ->
@@ -115,8 +115,7 @@ let maybe_remove_stylistic_attrs attrs ~should_preserve =
   else
     List.filter
       (function
-         | { attr_name = { txt = "reason.raw_literal" }; _ } -> true
-         | _ -> false)
+        | { attr_name = { txt = "reason.raw_literal" }; _ } -> true | _ -> false)
       attrs
 
 let has_open_notation_attr =
