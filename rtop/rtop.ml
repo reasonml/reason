@@ -20,7 +20,7 @@ let start_utop () =
     in
     (* NOTE(anmonteiro): in the future, we could try checking for
        `~/.ocamlinit` and `~/.config/utop/init.ml` and convert those to Reason
-       and pass `Clflags.init_file` *)
+    *)
     Clflags.init_file :=
       (match Sys.file_exists xdg_fn with
         | true -> Some xdg_fn
@@ -28,8 +28,7 @@ let start_utop () =
           (* If `~/.config/rtop/init.re` isn't found, we can't be loading a
              user's `init.ml` because it'll be full of syntax errors for
              `rtop`. Create an empty temp file instead. *)
-          let tmp_f = Filename.temp_file "rtop" ".re" in
-          Some tmp_f));
+          Some (Filename.temp_file "rtop" ".re")));
   UTop_main.main ()
 
 let main () =
