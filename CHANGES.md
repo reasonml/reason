@@ -6,6 +6,9 @@
   [#2809](https://github.com/reasonml/reason/pull/2809))
 - Fix: unify printing of extensions across structure items / expressions
   (@anmonteiro, [#2814](https://github.com/reasonml/reason/pull/2814))
+- rtop: read `~/.config/rtop/init.re` configuration file (@anmonteiro, [#2813])
+    - the `-init FILE` flag works as before
+- rtop: ignore `~/.ocamlinit.ml` or `~/.config/utop/init.ml` config files (@anmonteiro, [#2813])
 
 ## 3.13.0
 

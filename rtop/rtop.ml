@@ -18,6 +18,9 @@ let start_utop () =
     let xdg_fn =
       LTerm_resources.xdgbd_file ~loc:LTerm_resources.Config "rtop/init.re"
     in
+    (* NOTE(anmonteiro): in the future, we could try checking for
+       `~/.ocamlinit` and `~/.config/utop/init.ml` and convert those to Reason
+       and pass `Clflags.init_file` *)
     Clflags.init_file :=
       (match Sys.file_exists xdg_fn with
         | true -> Some xdg_fn
