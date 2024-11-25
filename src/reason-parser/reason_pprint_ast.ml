@@ -7928,14 +7928,11 @@ let createFormatter () =
           | None, [] -> toThis
           | Some id, _ ->
             makeList
-              ~wrap:("[", "]")
-              ~postSpace:true
-              ~indent:0
+              ~wrap:("[%" ^ id.txt, "]")
+              ~indent:1
+              ~pad:(true, false)
               ~break:Layout.IfNeed
-              ~inline:(true, true)
-              ([ atom ("%" ^ id.txt) ]
-              @ List.map self#item_attribute l
-              @ [ toThis ])
+              (List.map self#item_attribute l @ [ toThis ])
           | None, _ ->
             makeList
               ~postSpace:true
