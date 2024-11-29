@@ -11,18 +11,20 @@ let doc_comments_filter () =
 
       method! attribute attr =
         match attr with
-        | { attr_name = { Location.txt = "ocaml.doc" | "ocaml.text" }
+        | { attr_name = { Location.txt = "ocaml.doc" | "ocaml.text"; _ }
           ; attr_payload =
               PStr
                 [ { pstr_desc =
                       Pstr_eval
                         ( { pexp_desc =
                               Pexp_constant (Pconst_string (_text, _loc, None))
+                          ; _
                           }
                         , _ )
                   ; pstr_loc = loc
                   }
                 ]
+          ; _
           } as attribute ->
           (* Workaround: OCaml 4.02.3 kept an initial '*' in docstrings.
            * For other versions, we have to put the '*' back. *)
@@ -126,8 +128,9 @@ let rec skip_phrase lexbuf =
     skip_phrase lexbuf
 
 let maybe_skip_phrase lexbuf =
-  if Parsing.is_current_lookahead OCaml_parser.SEMISEMI
-     || Parsing.is_current_lookahead OCaml_parser.EOF
+  if
+    Parsing.is_current_lookahead OCaml_parser.SEMISEMI
+    || Parsing.is_current_lookahead OCaml_parser.EOF
   then ()
   else skip_phrase lexbuf
 

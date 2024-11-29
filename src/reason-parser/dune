@@ -64,8 +64,7 @@
  ;  (preprocess (pps (bisect_ppx)))
  (public_name reason)
  (wrapped false)
- (flags
-  (:standard -w -9-52-67 -safe-string))
+ (flags :standard -w -67 -safe-string)
  (modules
   ocaml_util
   reason_syntax_util

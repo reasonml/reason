@@ -387,7 +387,7 @@ let map_core_type f typ =
       Ptyp_alias (typ, f s)
     | Ptyp_variant (rfs, closed, lbls) ->
       Ptyp_variant (List.map (function
-        | { prf_desc = Rtag (lbl, b, cts) } as prf ->
+        | { prf_desc = Rtag (lbl, b, cts); _ } as prf ->
           { prf with prf_desc = Rtag ({ lbl with txt = f lbl.txt }, b, cts) }
         | t -> t) rfs, closed, lbls)
     | Ptyp_poly (vars, typ) ->
@@ -408,7 +408,7 @@ let map_core_type f typ =
 class identifier_mapper f =
 
   let map_fields fields = List.map(fun (lid,x) -> (map_lident f lid, x)) fields in
-  let map_name ({txt} as name) = {name with txt=(f txt)} in
+  let map_name ({txt;_} as name) = {name with txt=(f txt)} in
   let map_lid lid = map_lident f lid in
   let map_label label = map_arg_label f label in
 
@@ -418,39 +418,39 @@ class identifier_mapper f =
     method! expression (expr: Parsetree.expression) =
       let expr =
         match expr with
-        | { pexp_desc = Pexp_ident lid } ->
+        | { pexp_desc = Pexp_ident lid;_ } ->
           { expr with pexp_desc = Pexp_ident (map_lid lid) }
-        | { pexp_desc = Pexp_fun (label, eo, pat, e) } when !rename_labels ->
+        | { pexp_desc = Pexp_fun (label, eo, pat, e);_ } when !rename_labels ->
           { expr with pexp_desc = Pexp_fun (map_label label, eo, pat, e) }
-        | { pexp_desc = Pexp_apply (e, args) } when !rename_labels ->
+        | { pexp_desc = Pexp_apply (e, args);_ } when !rename_labels ->
           { expr with
             pexp_desc = Pexp_apply (e, List.map (fun (label, e) ->
             (map_label label), e) args) }
-        | { pexp_desc = Pexp_variant (s, e) } ->
+        | { pexp_desc = Pexp_variant (s, e);_ } ->
           { expr with
             pexp_desc = Pexp_variant (f s, e) }
-        | { pexp_desc = Pexp_record (fields, closed) } when !rename_labels ->
+        | { pexp_desc = Pexp_record (fields, closed);_ } when !rename_labels ->
           { expr with pexp_desc = Pexp_record (map_fields fields, closed) }
-        | { pexp_desc = Pexp_field (e, lid) } when !rename_labels ->
+        | { pexp_desc = Pexp_field (e, lid);_ } when !rename_labels ->
           { expr with
             pexp_desc = Pexp_field (e, map_lid lid) }
-        | { pexp_desc = Pexp_setfield (e1, lid, e2) } when !rename_labels ->
+        | { pexp_desc = Pexp_setfield (e1, lid, e2);_ } when !rename_labels ->
           { expr with
             pexp_desc = Pexp_setfield (e1, map_lid lid, e2) }
-        | { pexp_desc = Pexp_send (e, s) } ->
+        | { pexp_desc = Pexp_send (e, s);_ } ->
           { expr with
             pexp_desc = Pexp_send (e, { s with txt = f s.txt }) }
-        | { pexp_desc = Pexp_new lid } ->
+        | { pexp_desc = Pexp_new lid;_ } ->
           { expr with
             pexp_desc = Pexp_new (map_lid lid) }
-        | { pexp_desc = Pexp_setinstvar (name, e) } ->
+        | { pexp_desc = Pexp_setinstvar (name, e);_ } ->
           { expr with
             pexp_desc = Pexp_setinstvar (map_name name, e) }
-        | { pexp_desc = Pexp_override name_exp_list } ->
+        | { pexp_desc = Pexp_override name_exp_list;_ } ->
           let name_exp_list = List.map (fun (name,e) -> (map_name name, e)) name_exp_list in
           { expr with
             pexp_desc = Pexp_override name_exp_list }
-        | { pexp_desc = Pexp_newtype (s, e) } ->
+        | { pexp_desc = Pexp_newtype (s, e);_ } ->
           { expr with
             pexp_desc = Pexp_newtype ({ s with txt = f s.txt }, e) }
         | _ -> expr
@@ -460,17 +460,17 @@ class identifier_mapper f =
       method! pattern pat =
         let pat =
           match pat with
-            | { ppat_desc = Ppat_var name } ->
+            | { ppat_desc = Ppat_var name;_ } ->
               { pat with ppat_desc = Ppat_var (map_name name) }
-            | { ppat_desc = Ppat_alias (p, name) } ->
+            | { ppat_desc = Ppat_alias (p, name);_ } ->
               { pat with ppat_desc = Ppat_alias (p, map_name name) }
-            | { ppat_desc = Ppat_variant (s, po) } ->
+            | { ppat_desc = Ppat_variant (s, po);_ } ->
               { pat with
                 ppat_desc = Ppat_variant (f s, po) }
-            | { ppat_desc = Ppat_record (fields, closed) } when !rename_labels ->
+            | { ppat_desc = Ppat_record (fields, closed);_ } when !rename_labels ->
               { pat with
                 ppat_desc = Ppat_record (map_fields fields, closed) }
-            | { ppat_desc = Ppat_type lid } ->
+            | { ppat_desc = Ppat_type lid;_ } ->
               { pat with ppat_desc = Ppat_type (map_lid lid) }
             | _ -> pat
         in
@@ -554,7 +554,7 @@ let remove_stylistic_attrs_mapper_maker =
     inherit Ast_traverse.map as super
 
     method! expression expr =
-      let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
+      let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs;_} =
         Reason_attributes.partitionAttributes ~allowUncurry:false expr.pexp_attributes
       in
       let expr = if stylisticAttrs != [] then
@@ -564,7 +564,7 @@ let remove_stylistic_attrs_mapper_maker =
       super#expression expr
 
     method! pattern pat =
-      let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs} =
+      let {Reason_attributes.stylisticAttrs; arityAttrs; docAttrs; stdAttrs; jsxAttrs;_} =
         Reason_attributes.partitionAttributes ~allowUncurry:false pat.ppat_attributes
       in
       let pat = if stylisticAttrs != [] then
@@ -787,7 +787,7 @@ end
 (* attribute_equals tests an attribute is txt
  *)
 let attribute_equals to_compare = function
-  | { attr_name = {txt}; _ } -> txt = to_compare
+  | { attr_name = {txt;_}; _ } -> txt = to_compare
 
 (* attribute_exists tests if an attribute exists in a list
  *)
