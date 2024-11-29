@@ -28,14 +28,20 @@
  (libraries unix menhirSdk))
 
 (rule
- (with-stdout-to
-  reason_parser_explain_raw.ml
-  (run ./menhir_error_processor.exe reason_parser.cmly)))
+ (targets reason_parser_explain_raw.ml)
+ (deps reason_parser.cmly)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run ./menhir_error_processor.exe reason_parser.cmly))))
 
 (rule
- (with-stdout-to
-  reason_parser_recover.ml
-  (run ../menhir-recover/main.exe reason_parser.cmly)))
+ (targets reason_parser_recover.ml)
+ (deps reason_parser.cmly)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run ../menhir-recover/main.exe reason_parser.cmly))))
 
 (rule
  (targets reason_syntax_util.ml)
