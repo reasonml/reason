@@ -1,8 +1,6 @@
 (ocamllex
  (modules reason_declarative_lexer))
 
-; Use select.exe from janestreet/ppx_ast to choose ocaml_util.ml based on ocaml version
-
 (rule
  (targets ocaml_util.ml)
  (deps ocaml_util.cppo.ml)
