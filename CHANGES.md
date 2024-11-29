@@ -1,4 +1,4 @@
-## Unreleased
+## 3.14.0
 
 - Support OCaml 5.3 (@anmonteiro,
   [#2800](https://github.com/reasonml/reason/pull/2800))
