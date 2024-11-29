@@ -1,6 +1,6 @@
 module Make
     (Parser : MenhirLib.IncrementalEngine.EVERYTHING)
-    (Recovery : sig
+    (_ : sig
        val default_value : Location.t -> 'a Parser.symbol -> 'a
 
        type action =
