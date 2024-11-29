@@ -4,6 +4,8 @@
   [#2800](https://github.com/reasonml/reason/pull/2800))
 - Fix: don't print all extension strings as quoted extensions (@anmonteiro,
   [#2809](https://github.com/reasonml/reason/pull/2809))
+- Fix: unify printing of extensions across structure items / expressions
+  (@anmonteiro, [#2814](https://github.com/reasonml/reason/pull/2814))
 
 ## 3.13.0
 

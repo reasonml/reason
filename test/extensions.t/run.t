@@ -113,14 +113,16 @@ Format extensions
     [%extend1
      try%extend2() {
      | _ => ()
-     }];
+     }
+    ];
   };
   
   let x = {
     [%extend1
      switch%extend2 () {
      | _ => ()
-     }];
+     }
+    ];
   };
   
   let x = {
@@ -131,14 +133,16 @@ Format extensions
     [%extend1
      for%extend2 (i in 1 to 10) {
        ();
-     }];
+     }
+    ];
   };
   
   let x = {
     [%extend1
      while%extend2 (false) {
        ();
-     }];
+     }
+    ];
   };
   
   let x = {
@@ -149,7 +153,8 @@ Format extensions
     [%extend1
      fun%extend2
      | None => ()
-     | Some(1) => ()];
+     | Some(1) => ()
+    ];
   };
   
   /* With two extensions, first in sequence */
@@ -158,7 +163,8 @@ Format extensions
     [%extend1
      try%extend2() {
      | _ => ()
-     }];
+     }
+    ];
     ignore();
   };
   
@@ -167,7 +173,8 @@ Format extensions
     [%extend1
      switch%extend2 () {
      | _ => ()
-     }];
+     }
+    ];
     ignore();
   };
   
@@ -182,7 +189,8 @@ Format extensions
     [%extend1
      for%extend2 (i in 1 to 10) {
        ();
-     }];
+     }
+    ];
     ignore();
   };
   
@@ -191,7 +199,8 @@ Format extensions
     [%extend1
      while%extend2 (false) {
        ();
-     }];
+     }
+    ];
     ignore();
   };
   
@@ -206,7 +215,8 @@ Format extensions
     [%extend1
      fun%extend2
      | None => ()
-     | Some(1) => ()];
+     | Some(1) => ()
+    ];
   };
   
   /* With two extensions, in sequence */
@@ -216,7 +226,8 @@ Format extensions
     [%extend1
      try%extend2() {
      | _ => ()
-     }];
+     }
+    ];
     ignore();
   };
   
@@ -225,7 +236,8 @@ Format extensions
     [%extend1
      switch%extend2 () {
      | _ => ()
-     }];
+     }
+    ];
     ignore();
   };
   
@@ -240,7 +252,8 @@ Format extensions
     [%extend1
      for%extend2 (i in 1 to 10) {
        ();
-     }];
+     }
+    ];
     ignore();
   };
   
@@ -249,7 +262,8 @@ Format extensions
     [%extend1
      while%extend2 (false) {
        ();
-     }];
+     }
+    ];
     ignore();
   };
   
@@ -264,7 +278,8 @@ Format extensions
     [%extend1
      fun%extend2
      | None => ()
-     | Some(1) => ()];
+     | Some(1) => ()
+    ];
     ignore();
   };
   
@@ -275,7 +290,8 @@ Format extensions
     [%extend1
      try%extend2() {
      | _ => ()
-     }];
+     }
+    ];
   };
   
   let x = {
@@ -283,7 +299,8 @@ Format extensions
     [%extend1
      switch%extend2 () {
      | _ => ()
-     }];
+     }
+    ];
   };
   
   let x = {
@@ -296,7 +313,8 @@ Format extensions
     [%extend1
      for%extend2 (i in 1 to 10) {
        ();
-     }];
+     }
+    ];
   };
   
   let x = {
@@ -304,7 +322,8 @@ Format extensions
     [%extend1
      while%extend2 (false) {
        ();
-     }];
+     }
+    ];
   };
   
   let x = {
@@ -317,7 +336,8 @@ Format extensions
     [%extend1
      fun%extend2
      | None => ()
-     | Some(1) => ()];
+     | Some(1) => ()
+    ];
   };
   
   let _ =
@@ -333,7 +353,8 @@ Format extensions
     /* 1. comment attached to extension */
     [%defer
      /* 2. comment attached to expr in extension */
-     cleanup()];
+     cleanup()
+    ];
     /* 3. comment attached to next expr */
     something_else();
   };
@@ -345,7 +366,8 @@ Format extensions
     /* 1. comment attached to extension */
     [%defer
      /* 2. comment attached to expr in extension */
-     cleanup()];
+     cleanup()
+    ];
     /* 3. comment attached to next expr */
     something_else();
   };
