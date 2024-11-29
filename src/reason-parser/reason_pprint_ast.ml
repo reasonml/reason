@@ -148,7 +148,7 @@ let expression_extension_sugar x =
   then None
   else
     match x.pexp_desc with
-    | Pexp_extension (name, PStr [ { pstr_desc = Pstr_eval (expr, []) } ])
+    | Pexp_extension (name, PStr [ { pstr_desc = Pstr_eval (expr, []); _ } ])
       when name.txt <> "mel.obj" ->
       Some (name, expr)
     | _ -> None
@@ -220,10 +220,12 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
     match t1.ptyp_desc, t2.ptyp_desc with
     (* Importantly, cover the case where type constructors (of the form [a]) are
        converted to type vars of the form ['a]. *)
-    | Ptyp_constr ({ txt = Lident s1 }, []), Ptyp_var s2 -> string_equal s1 s2
+    | Ptyp_constr ({ txt = Lident s1; _ }, []), Ptyp_var s2 ->
+      string_equal s1 s2
     (* Now cover the case where type variables (of the form ['a]) are converted
        to type constructors of the form [a]. *)
-    | Ptyp_var s1, Ptyp_constr ({ txt = Lident s2 }, []) -> string_equal s1 s2
+    | Ptyp_var s1, Ptyp_constr ({ txt = Lident s2; _ }, []) ->
+      string_equal s1 s2
     (* Now cover the typical case *)
     | Ptyp_constr (longident1, lst1), Ptyp_constr (longident2, lst2) ->
       longident_same longident1 longident2 && for_all2' loop lst1 lst2
@@ -311,7 +313,7 @@ let rec firstAttrLoc loc = function
 let extractLocationFromValBindList expr vbs =
   let rec extract loc = function
     | x :: xs ->
-      let { pvb_expr } = x in
+      let { pvb_expr; _ } = x in
       let loc = { loc with loc_end = pvb_expr.pexp_loc.loc_end } in
       extract loc xs
     | [] -> loc
@@ -319,32 +321,32 @@ let extractLocationFromValBindList expr vbs =
   let loc =
     match vbs with
     | x :: xs ->
-      let { pvb_pat; pvb_expr } = x in
+      let { pvb_pat; pvb_expr; _ } = x in
       let loc = { pvb_pat.ppat_loc with loc_end = pvb_expr.pexp_loc.loc_end } in
       extract loc xs
     | [] -> expr.pexp_loc
   in
   { loc with loc_start = expr.pexp_loc.loc_start }
 
-let extractLocValBinding { pvb_pat; pvb_expr; pvb_attributes } =
+let extractLocValBinding { pvb_pat; pvb_expr; pvb_attributes; _ } =
   let estimatedLoc = firstAttrLoc pvb_pat.ppat_loc pvb_attributes in
   { estimatedLoc with loc_end = pvb_expr.pexp_loc.loc_end }
 
-let extractLocBindingOp { pbop_pat; pbop_exp } =
+let extractLocBindingOp { pbop_pat; pbop_exp; _ } =
   let estimatedLoc = firstAttrLoc pbop_pat.ppat_loc [] in
   { estimatedLoc with loc_end = pbop_exp.pexp_loc.loc_end }
 
-let extractLocModuleBinding { pmb_expr; pmb_attributes } =
+let extractLocModuleBinding { pmb_expr; pmb_attributes; _ } =
   let estimatedLoc = firstAttrLoc pmb_expr.pmod_loc pmb_attributes in
   { estimatedLoc with loc_end = pmb_expr.pmod_loc.loc_end }
 
-let extractLocModDecl { pmd_type; pmd_attributes } =
+let extractLocModDecl { pmd_type; pmd_attributes; _ } =
   let estimatedLoc = firstAttrLoc pmd_type.pmty_loc pmd_attributes in
   { estimatedLoc with loc_end = pmd_type.pmty_loc.loc_end }
 
 let rec sequentialIfBlocks x =
   match x with
-  | Some { pexp_desc = Pexp_ifthenelse (e1, e2, els) } ->
+  | Some { pexp_desc = Pexp_ifthenelse (e1, e2, els); _ } ->
     let nestedIfs, finalExpression = sequentialIfBlocks els in
     (e1, e2) :: nestedIfs, finalExpression
   | Some e -> [], Some e
@@ -677,7 +679,8 @@ let higherPrecedenceThan c1 c2 =
   | Some (_, p1), Some (_, p2) -> p1 < p2
 
 let printedStringAndFixityExpr = function
-  | { pexp_desc = Pexp_ident { txt = Lident l } } -> printedStringAndFixity l
+  | { pexp_desc = Pexp_ident { txt = Lident l; _ }; _ } ->
+    printedStringAndFixity l
   | _ -> Normal
 
 (* which identifiers are in fact operators needing parentheses *)
@@ -699,7 +702,7 @@ let needs_spaces txt = txt.[0] = '*' || txt.[String.length txt - 1] = '*'
 
 let rec orList = function
   (* only consider ((A|B)|C)*)
-  | { ppat_desc = Ppat_or (p1, p2) } -> orList p1 @ orList p2
+  | { ppat_desc = Ppat_or (p1, p2); _ } -> orList p1 @ orList p2
   | x -> [ x ]
 
 (* variance encoding: need to sync up with the [parser.mly] *)
@@ -721,16 +724,18 @@ type construct =
 
 let view_expr x =
   match x.pexp_desc with
-  | Pexp_construct ({ txt = Lident "()" }, _) -> `tuple
-  | Pexp_construct ({ txt = Lident "[]" }, _) -> `nil
-  | Pexp_construct ({ txt = Lident "::" }, Some _) ->
+  | Pexp_construct ({ txt = Lident "()"; _ }, _) -> `tuple
+  | Pexp_construct ({ txt = Lident "[]"; _ }, _) -> `nil
+  | Pexp_construct ({ txt = Lident "::"; _ }, Some _) ->
     let rec loop exp acc =
       match exp with
-      | { pexp_desc = Pexp_construct ({ txt = Lident "[]" }, _) } ->
+      | { pexp_desc = Pexp_construct ({ txt = Lident "[]"; _ }, _); _ } ->
         List.rev acc, true
       | { pexp_desc =
             Pexp_construct
-              ({ txt = Lident "::" }, Some { pexp_desc = Pexp_tuple [ e1; e2 ] })
+              ( { txt = Lident "::"; _ }
+              , Some { pexp_desc = Pexp_tuple [ e1; e2 ]; _ } )
+        ; _
         } ->
         loop e2 (e1 :: acc)
       | e -> List.rev (e :: acc), false
@@ -762,11 +767,13 @@ let is_single_unit_construct exprList =
 
 let detectTernary l =
   match l with
-  | [ { pc_lhs = { ppat_desc = Ppat_construct ({ txt = Lident "true" }, _) }
+  | [ { pc_lhs =
+          { ppat_desc = Ppat_construct ({ txt = Lident "true"; _ }, _); _ }
       ; pc_guard = None
       ; pc_rhs = ifTrue
       }
-    ; { pc_lhs = { ppat_desc = Ppat_construct ({ txt = Lident "false" }, _) }
+    ; { pc_lhs =
+          { ppat_desc = Ppat_construct ({ txt = Lident "false"; _ }, _); _ }
       ; pc_guard = None
       ; pc_rhs = ifFalse
       }
@@ -958,7 +965,7 @@ let createFormatter () =
       !configuredSettings.assumeExplicitArity
       || List.exists
            (function
-             | { attr_name = { txt = "explicit_arity" }; _ } -> true
+             | { attr_name = { txt = "explicit_arity"; _ }; _ } -> true
              | _ -> false)
            attrs
 
@@ -1267,8 +1274,8 @@ let createFormatter () =
           ( { config with wrap = fst config.wrap, snd config.wrap ^ sep ^ txt }
           , l )
       | Sequence (config, []) -> Sequence (config, [ atom txt ])
-      | Sequence (({ sep = NoSep } as config), l)
-      | Sequence (({ sep = Sep "" } as config), l) ->
+      | Sequence (({ sep = NoSep; _ } as config), l)
+      | Sequence (({ sep = Sep ""; _ } as config), l) ->
         let sub = appendSub txt ~space l in
         Sequence (config, sub)
       | Label (formatter, left, right) ->
@@ -2112,8 +2119,8 @@ let createFormatter () =
       | _ :: _, _ -> false
       | ( []
         , Ppat_constraint
-            ({ ppat_desc = Ppat_var { txt }; ppat_attributes = [] }, _) )
-      | [], Ppat_var { txt } ->
+            ({ ppat_desc = Ppat_var { txt; _ }; ppat_attributes = []; _ }, _) )
+      | [], Ppat_var { txt; _ } ->
         txt = lbl
       | _ -> false
 
@@ -2129,7 +2136,7 @@ let createFormatter () =
       match pld.pld_type with
       | { ptyp_desc =
             Ptyp_constr
-              ( { txt }
+              ( { txt; _ }
               , (* don't pun parameterized types, e.g. {tag: tag 'props} *)
                 [] )
         ; (* Don't pun types that have attributes attached, e.g. { foo: [@bar]
@@ -2149,7 +2156,7 @@ let createFormatter () =
 
     let is_unit_pattern x =
       match x.ppat_desc with
-      | Ppat_construct ({ txt = Lident "()" }, None) -> true
+      | Ppat_construct ({ txt = Lident "()"; _ }, None) -> true
       | _ -> false
 
     let is_ident_pattern x =
@@ -2161,18 +2168,21 @@ let createFormatter () =
       x.ppat_attributes == []
       &&
       match x.ppat_desc with
-      | Ppat_construct ({ txt = Lident "()" }, None) -> true
+      | Ppat_construct ({ txt = Lident "()"; _ }, None) -> true
       | _ -> false
 
     let isJSXComponent expr =
       match expr with
-      | { pexp_desc = Pexp_apply ({ pexp_desc = Pexp_ident _ }, args)
+      | { pexp_desc = Pexp_apply ({ pexp_desc = Pexp_ident _; _ }, args)
         ; pexp_attributes
+        ; _
         }
-      | { pexp_desc = Pexp_apply ({ pexp_desc = Pexp_letmodule (_, _, _) }, args)
+      | { pexp_desc =
+            Pexp_apply ({ pexp_desc = Pexp_letmodule (_, _, _); _ }, args)
         ; pexp_attributes
+        ; _
         } ->
-        let { Reason_attributes.jsxAttrs } =
+        let { Reason_attributes.jsxAttrs; _ } =
           Reason_attributes.partitionAttributes pexp_attributes
         in
         let hasLabelledChildrenLiteral =
@@ -2183,7 +2193,8 @@ let createFormatter () =
         let rec hasSingleNonLabelledUnitAndIsAtTheEnd l =
           match l with
           | [] -> false
-          | (Nolabel, { pexp_desc = Pexp_construct ({ txt = Lident "()" }, _) })
+          | ( Nolabel
+            , { pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, _); _ } )
             :: [] ->
             true
           | (Nolabel, _) :: _ -> false
@@ -2209,15 +2220,15 @@ let createFormatter () =
      *  This function says if a list of expressions fulfills the need to be formatted like
      *  the example above. *)
     let isSingleArgParenApplication = function
-      | [ { pexp_attributes = []; pexp_desc = Pexp_record _ } ]
-      | [ { pexp_attributes = []; pexp_desc = Pexp_tuple _ } ]
-      | [ { pexp_attributes = []; pexp_desc = Pexp_array _ } ]
-      | [ { pexp_attributes = []; pexp_desc = Pexp_object _ } ] ->
+      | [ { pexp_attributes = []; pexp_desc = Pexp_record _; _ } ]
+      | [ { pexp_attributes = []; pexp_desc = Pexp_tuple _; _ } ]
+      | [ { pexp_attributes = []; pexp_desc = Pexp_array _; _ } ]
+      | [ { pexp_attributes = []; pexp_desc = Pexp_object _; _ } ] ->
         true
-      | [ { pexp_attributes = []; pexp_desc = Pexp_extension (s, _) } ]
+      | [ { pexp_attributes = []; pexp_desc = Pexp_extension (s, _); _ } ]
         when s.txt = "mel.obj" ->
         true
-      | [ ({ pexp_attributes = [] } as exp) ] when is_simple_list_expr exp ->
+      | [ ({ pexp_attributes = []; _ } as exp) ] when is_simple_list_expr exp ->
         true
       | _ -> false
 
@@ -2237,12 +2248,13 @@ let createFormatter () =
      *  See `singleArgParenPattern` for the acutal formatting
     *)
     let isSingleArgParenPattern = function
-      | [ { ppat_attributes = []; ppat_desc = Ppat_record _ } ]
-      | [ { ppat_attributes = []; ppat_desc = Ppat_array _ } ]
-      | [ { ppat_attributes = []; ppat_desc = Ppat_tuple _ } ] ->
+      | [ { ppat_attributes = []; ppat_desc = Ppat_record _; _ } ]
+      | [ { ppat_attributes = []; ppat_desc = Ppat_array _; _ } ]
+      | [ { ppat_attributes = []; ppat_desc = Ppat_tuple _; _ } ] ->
         true
       | [ { ppat_attributes = []
-          ; ppat_desc = Ppat_construct ({ txt = Lident "::" }, _)
+          ; ppat_desc = Ppat_construct ({ txt = Lident "::"; _ }, _)
+          ; _
           }
         ] ->
         true
@@ -2566,7 +2578,7 @@ let createFormatter () =
         method non_arrowed_core_type x = self#non_arrowed_non_simple_core_type x
 
         method core_type2 x =
-          let { Reason_attributes.stdAttrs; uncurried } =
+          let { Reason_attributes.stdAttrs; uncurried; _ } =
             Reason_attributes.partitionAttributes x.ptyp_attributes
           in
           let uncurried =
@@ -2586,8 +2598,10 @@ let createFormatter () =
             match x.ptyp_desc with
             | Ptyp_arrow _ ->
               let rec allArrowSegments ?(uncurried = false) acc = function
-                | { ptyp_desc = Ptyp_arrow (l, ct1, ct2); ptyp_attributes = [] }
-                  ->
+                | { ptyp_desc = Ptyp_arrow (l, ct1, ct2)
+                  ; ptyp_attributes = []
+                  ; _
+                  } ->
                   allArrowSegments
                     ~uncurried:false
                     ((l, ct1, false || uncurried) :: acc)
@@ -2633,7 +2647,7 @@ let createFormatter () =
                     [ makeList
                         [ makeList
                             ~postSpace:true
-                            (List.map (fun { txt } -> self#tyvar txt) sl)
+                            (List.map (fun { txt; _ } -> self#tyvar txt) sl)
                         ; atom "."
                         ]
                     ; ct
@@ -2644,7 +2658,7 @@ let createFormatter () =
 
         (* Same as core_type2 but can be aliased *)
         method core_type x =
-          let { Reason_attributes.stdAttrs; uncurried } =
+          let { Reason_attributes.stdAttrs; uncurried; _ } =
             Reason_attributes.partitionAttributes x.ptyp_attributes
           in
           let () =
@@ -2692,7 +2706,7 @@ let createFormatter () =
           prepend
           name
           assignToken
-          ({ ptype_params; ptype_kind; ptype_loc } as td) =
+          ({ ptype_params; ptype_kind; ptype_loc; _ } as td) =
           let equalInitiatedSegments, constraints =
             self#type_declaration_binding_segments td
           in
@@ -2913,7 +2927,7 @@ let createFormatter () =
                 (atom eq_symbol)
                 td
             in
-            let { Reason_attributes.stdAttrs; docAttrs } =
+            let { Reason_attributes.stdAttrs; docAttrs; _ } =
               Reason_attributes.partitionAttributes
                 ~partDoc:true
                 td.ptype_attributes
@@ -2977,8 +2991,8 @@ let createFormatter () =
         (* TODOATTRIBUTES: Attributes on the entire variant leaf are likely
          * not parsed or printed correctly. *)
         method type_variant_leaf1 opt_ampersand polymorphic print_bar x =
-          let { pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes } = x in
-          let { Reason_attributes.stdAttrs; docAttrs } =
+          let { pcd_name; pcd_args; pcd_res; pcd_loc; pcd_attributes; _ } = x in
+          let { Reason_attributes.stdAttrs; docAttrs; _ } =
             Reason_attributes.partitionAttributes ~partDoc:true pcd_attributes
           in
           let ampersand_helper i arg =
@@ -3101,7 +3115,7 @@ let createFormatter () =
               match pld.pld_attributes with
               | [] -> recordRow
               | attrs ->
-                let { Reason_attributes.stdAttrs; docAttrs } =
+                let { Reason_attributes.stdAttrs; docAttrs; _ } =
                   Reason_attributes.partitionAttributes ~partDoc:true attrs
                 in
                 let stdAttrsLayout =
@@ -3292,7 +3306,7 @@ let createFormatter () =
          * "hello", None.
         *)
         method non_arrowed_non_simple_core_type x =
-          let { Reason_attributes.stdAttrs } =
+          let { Reason_attributes.stdAttrs; _ } =
             Reason_attributes.partitionAttributes x.ptyp_attributes
           in
           if stdAttrs != []
@@ -3309,12 +3323,13 @@ let createFormatter () =
 
         method type_param_list_element =
           function
-          | { ptyp_attributes = []; ptyp_desc = Ptyp_package (lid, cstrs) } ->
+          | { ptyp_attributes = []; ptyp_desc = Ptyp_package (lid, cstrs); _ }
+            ->
             self#typ_package ~mod_prefix:true lid cstrs
           | t -> self#core_type t
 
         method non_arrowed_simple_core_type x =
-          let { Reason_attributes.stdAttrs } =
+          let { Reason_attributes.stdAttrs; _ } =
             Reason_attributes.partitionAttributes x.ptyp_attributes
           in
           if stdAttrs != []
@@ -3354,12 +3369,12 @@ let createFormatter () =
                   (ensureSingleTokenSticksToLabel (self#longident_loc li))
               | Ptyp_constr (li, l) ->
                 (match l with
-                | [ { ptyp_desc = Ptyp_object ((_ :: _ as l), o) } ]
+                | [ { ptyp_desc = Ptyp_object ((_ :: _ as l), o); _ } ]
                   when isJsDotTLongIdent li.txt ->
                   (* should have one or more rows, Js.t({..}) should print as Js.t({..})
                    * {..} has a totally different meaning than Js.t({..}) *)
                   self#unparseObject ~withStringKeys:true l o
-                | [ { ptyp_desc = Ptyp_object (l, o) } ]
+                | [ { ptyp_desc = Ptyp_object (l, o); _ } ]
                   when not (isJsDotTLongIdent li.txt) ->
                   label
                     (self#longident_loc li)
@@ -3367,8 +3382,9 @@ let createFormatter () =
                 | [ { ptyp_desc =
                         Ptyp_constr
                           ( lii
-                          , [ { ptyp_desc = Ptyp_object ((_ :: _ as ll), o) } ]
-                          )
+                          , [ { ptyp_desc = Ptyp_object ((_ :: _ as ll), o); _ }
+                            ] )
+                    ; _
                     }
                   ]
                   when isJsDotTLongIdent lii.txt ->
@@ -3468,8 +3484,9 @@ let createFormatter () =
           function
           | { ppat_desc =
                 Ppat_construct
-                  ( { txt = Lident "::" }
-                  , Some ([], { ppat_desc = Ppat_tuple [ pat1; pat2 ] }) )
+                  ( { txt = Lident "::"; _ }
+                  , Some ([], { ppat_desc = Ppat_tuple [ pat1; pat2 ]; _ }) )
+            ; _
             } ->
             self#pattern_list_split_cons (pat1 :: acc) pat2
           | p -> List.rev acc, p
@@ -3516,7 +3533,7 @@ let createFormatter () =
          * Assumes visually rendered attributes have already been rendered.
         *)
         method pattern_at_least_as_simple_as_alias_or_or x =
-          let { Reason_attributes.arityAttrs = _; stdAttrs } =
+          let { Reason_attributes.arityAttrs = _; stdAttrs; _ } =
             Reason_attributes.partitionAttributes x.ppat_attributes
           in
           match stdAttrs, x.ppat_desc with
@@ -3559,7 +3576,7 @@ let createFormatter () =
         *)
         method pattern_at_least_as_simple_as_application x =
           (* TODOATTRIBUTES: Handle the stdAttrs here *)
-          let { Reason_attributes.stdAttrs; arityAttrs } =
+          let { Reason_attributes.stdAttrs; arityAttrs; _ } =
             Reason_attributes.partitionAttributes x.ppat_attributes
           in
           let formattedPattern =
@@ -3580,8 +3597,8 @@ let createFormatter () =
                      ~arityIsClear:true)
             | Ppat_lazy p ->
               label (atom "lazy") (formatPrecedence (self#simple_pattern p))
-            | Ppat_construct (({ txt } as li), po) when not (txt = Lident "::")
-              ->
+            | Ppat_construct (({ txt; _ } as li), po)
+              when not (txt = Lident "::") ->
               (* FIXME The third field always false *)
               let formattedConstruction =
                 match po with
@@ -3631,15 +3648,15 @@ let createFormatter () =
          * Assumes visually rendered attributes have already been rendered.
         *)
         method pattern x =
-          let { Reason_attributes.arityAttrs = _; stdAttrs } =
+          let { Reason_attributes.arityAttrs = _; stdAttrs; _ } =
             Reason_attributes.partitionAttributes x.ppat_attributes
           in
           match stdAttrs, x.ppat_desc with
           | [], Ppat_constraint (p, ct) ->
             let pat, typ =
               match p, ct with
-              | ( { ppat_desc = Ppat_unpack unpack }
-                , { ptyp_desc = Ptyp_package (lid, cstrs) } ) ->
+              | ( { ppat_desc = Ppat_unpack unpack; _ }
+                , { ptyp_desc = Ptyp_package (lid, cstrs); _ } ) ->
                 let unpack =
                   match unpack.txt with None -> "_" | Some unpack -> unpack
                 in
@@ -3659,7 +3676,7 @@ let createFormatter () =
           let pat_list, pat_last = self#pattern_list_split_cons [] pat in
           let pat_list = List.map self#pattern pat_list in
           match pat_last with
-          | { ppat_desc = Ppat_construct ({ txt = Lident "[]" }, _) } ->
+          | { ppat_desc = Ppat_construct ({ txt = Lident "[]"; _ }, _); _ } ->
             (* [x,y,z] *)
             let lwrap, rwrap = wrap in
             makeList
@@ -3717,7 +3734,7 @@ let createFormatter () =
           else unwrapped_layout
 
         method simple_pattern x =
-          let { Reason_attributes.arityAttrs; stdAttrs } =
+          let { Reason_attributes.arityAttrs; stdAttrs; _ } =
             Reason_attributes.partitionAttributes x.ppat_attributes
           in
           if stdAttrs != []
@@ -3735,7 +3752,7 @@ let createFormatter () =
                  * information about the contents of the pattern such as tokens etc,
                  * in order to get comments to be distributed correctly.*)
                 atom ~loc x
-              | Ppat_construct ({ txt = Lident "::" }, _) ->
+              | Ppat_construct ({ txt = Lident "::"; _ }, _) ->
                 self#patternList x (* LIST PATTERN *)
               | Ppat_construct (li, None) ->
                 source_map ~loc:x.ppat_loc (self#longident_loc li)
@@ -3855,12 +3872,12 @@ let createFormatter () =
             ]
 
         method simple_get_application x =
-          let { Reason_attributes.stdAttrs; jsxAttrs } =
+          let { Reason_attributes.stdAttrs; jsxAttrs; _ } =
             Reason_attributes.partitionAttributes x.pexp_attributes
           in
           match x.pexp_desc, stdAttrs, jsxAttrs with
           | _, _ :: _, [] -> None (* Has some printed attributes - not simple *)
-          | Pexp_apply ({ pexp_desc = Pexp_ident loc }, l), [], _jsx :: _ ->
+          | Pexp_apply ({ pexp_desc = Pexp_ident loc; _ }, l), [], _jsx :: _ ->
             (* TODO: Soon, we will allow the final argument to be an identifier
                which represents the entire list. This would be written as
                `<tag>...list</tag>`. If you imagine there being an implicit []
@@ -3875,7 +3892,9 @@ let createFormatter () =
               match l with
               | [] -> false
               | ( Nolabel
-                , { pexp_desc = Pexp_construct ({ txt = Lident "()" }, _) } )
+                , { pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, _)
+                  ; _
+                  } )
                 :: [] ->
                 true
               | (Nolabel, _) :: _ -> false
@@ -3901,8 +3920,9 @@ let createFormatter () =
                 ( { pexp_desc =
                       Pexp_letmodule
                         ( _
-                        , ({ pmod_desc = Pmod_apply _ } as app)
-                        , { pexp_desc = Pexp_ident loc } )
+                        , ({ pmod_desc = Pmod_apply _; _ } as app)
+                        , { pexp_desc = Pexp_ident loc; _ } )
+                  ; _
                   }
                 , l )
             , []
@@ -3913,11 +3933,12 @@ let createFormatter () =
                inside the tag, then it would be consistent with array spread:
                [...list] evaluates to the thing as list. *)
             let rec extract_apps args = function
-              | { pmod_desc = Pmod_apply (m1, { pmod_desc = Pmod_ident loc }) }
-                ->
+              | { pmod_desc = Pmod_apply (m1, { pmod_desc = Pmod_ident loc; _ })
+                ; _
+                } ->
                 let arg = String.concat "." (Longident.flatten_exn loc.txt) in
                 extract_apps (arg :: args) m1
-              | { pmod_desc = Pmod_ident loc } ->
+              | { pmod_desc = Pmod_ident loc; _ } ->
                 String.concat "." (Longident.flatten_exn loc.txt) :: args
               | _ ->
                 failwith
@@ -3932,7 +3953,9 @@ let createFormatter () =
               match l with
               | [] -> false
               | ( Nolabel
-                , { pexp_desc = Pexp_construct ({ txt = Lident "()" }, _) } )
+                , { pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, _)
+                  ; _
+                  } )
                 :: [] ->
                 true
               | (Nolabel, _) :: _ -> false
@@ -3967,7 +3990,9 @@ let createFormatter () =
           else
             match e.pexp_desc with
             | Pexp_apply
-                ( { pexp_desc = Pexp_ident { txt = Ldot (Lident "Array", "set") }
+                ( { pexp_desc =
+                      Pexp_ident { txt = Ldot (Lident "Array", "set"); _ }
+                  ; _
                   }
                 , [ (_, e1); (_, e2); (_, e3) ] ) ->
               let prec = Custom "prec_lbracket" in
@@ -3978,7 +4003,8 @@ let createFormatter () =
               Some (self#access "[" "]" lhs (self#unparseExpr e2), e3)
             | Pexp_apply
                 ( { pexp_desc =
-                      Pexp_ident { txt = Ldot (Lident "String", "set") }
+                      Pexp_ident { txt = Ldot (Lident "String", "set"); _ }
+                  ; _
                   }
                 , [ (_, e1); (_, e2); (_, e3) ] ) ->
               let prec = Custom "prec_lbracket" in
@@ -3990,13 +4016,16 @@ let createFormatter () =
             | Pexp_apply
                 ( { pexp_desc =
                       Pexp_ident
-                        { txt = Ldot (Ldot (Lident "Bigarray", array), "set") }
+                        { txt = Ldot (Ldot (Lident "Bigarray", array), "set")
+                        ; _
+                        }
+                  ; _
                   }
                 , label_exprs ) ->
               (match array with
               | "Genarray" ->
                 (match label_exprs with
-                | [ (_, a); (_, { pexp_desc = Pexp_array ls }); (_, c) ] ->
+                | [ (_, a); (_, { pexp_desc = Pexp_array ls; _ }); (_, c) ] ->
                   let formattedList = List.map self#unparseExpr ls in
                   let lhs =
                     makeList
@@ -4078,7 +4107,7 @@ let createFormatter () =
            minimum parens to ensure that. *)
         method ensureContainingRule ~withPrecedence ~reducesAfterRight () =
           match self#unparseExprRecurse reducesAfterRight with
-          | SpecificInfixPrecedence ({ shiftPrecedence }, rightRecurse) ->
+          | SpecificInfixPrecedence ({ shiftPrecedence; _ }, rightRecurse) ->
             if higherPrecedenceThan shiftPrecedence withPrecedence
             then rightRecurse
             else if higherPrecedenceThan withPrecedence shiftPrecedence
@@ -4114,7 +4143,7 @@ let createFormatter () =
 
         method ensureExpression ~reducesOnToken expr =
           match self#unparseExprRecurse expr with
-          | SpecificInfixPrecedence ({ reducePrecedence }, leftRecurse) ->
+          | SpecificInfixPrecedence ({ reducePrecedence; _ }, leftRecurse) ->
             if higherPrecedenceThan reducePrecedence reducesOnToken
             then leftRecurse
             else if higherPrecedenceThan reducesOnToken reducePrecedence
@@ -4164,7 +4193,7 @@ let createFormatter () =
         (* This method may not even be needed *)
         method unparseUnattributedExpr x =
           match Reason_attributes.partitionAttributes x.pexp_attributes with
-          | { docAttrs = []; stdAttrs = [] } -> self#unparseExpr x
+          | { docAttrs = []; stdAttrs = []; _ } -> self#unparseExpr x
           | _ -> makeList ~wrap:("(", ")") [ self#unparseExpr x ]
 
         (* ensureExpr ensures that the expression is wrapped in parens
@@ -4178,7 +4207,8 @@ let createFormatter () =
         method unparseProtectedExpr ?(forceParens = false) e =
           let itm =
             match e with
-            | { pexp_attributes = []; pexp_desc = Pexp_constraint (x, ct) } ->
+            | { pexp_attributes = []; pexp_desc = Pexp_constraint (x, ct); _ }
+              ->
               let x = self#unparseExpr x in
               let children =
                 [ x; label ~space:true (atom ":") (self#core_type ct) ]
@@ -4186,7 +4216,7 @@ let createFormatter () =
               if forceParens
               then makeList ~wrap:("(", ")") children
               else makeList children
-            | { pexp_attributes; pexp_desc = Pexp_constant c } ->
+            | { pexp_attributes; pexp_desc = Pexp_constant c; _ } ->
               (* When we have Some(-1) or someFunction(-1, -2), the arguments -1 and -2
                * pass through this case. In this context they don't need to be wrapped in extra parens
                * Some((-1)) should be printed as Some(-1). This is in contrast with
@@ -4203,7 +4233,7 @@ let createFormatter () =
                     (List.map self#item_attribute attrs)
                 in
                 makeSpacedBreakableInlineList [ formattedAttrs; constant ])
-            | { pexp_desc = Pexp_fun _ } -> self#formatPexpFun e
+            | { pexp_desc = Pexp_fun _; _ } -> self#formatPexpFun e
             | x -> self#unparseExpr x
           in
           source_map ~loc:e.pexp_loc itm
@@ -4360,8 +4390,11 @@ let createFormatter () =
           let rec flatten ?(uncurried = false) acc = function
             | { pexp_desc =
                   Pexp_apply
-                    ( { pexp_desc = Pexp_ident { txt = Longident.Lident "|." } }
+                    ( { pexp_desc = Pexp_ident { txt = Longident.Lident "|."; _ }
+                      ; _
+                      }
                     , [ (Nolabel, arg1); (Nolabel, arg2) ] )
+              ; _
               } ->
               flatten (PipeFirstTree.Exp arg2 :: acc) arg1
             | { pexp_attributes
@@ -4370,16 +4403,22 @@ let createFormatter () =
                     ( { pexp_desc =
                           Pexp_apply
                             ( { pexp_desc =
-                                  Pexp_ident { txt = Longident.Lident "|." }
+                                  Pexp_ident { txt = Longident.Lident "|."; _ }
+                              ; _
                               }
                             , [ (Nolabel, arg1); (Nolabel, arg2) ] )
+                      ; _
                       }
                     , args )
+              ; _
               } as e ->
               let args = PipeFirstTree.Args args in
               (match pexp_attributes with
-              | [ { attr_name = { txt = "u" | "bs" }; attr_payload = PStr [] } ]
-                ->
+              | [ { attr_name = { txt = "u" | "bs"; _ }
+                  ; attr_payload = PStr []
+                  ; _
+                  }
+                ] ->
                 flatten (PipeFirstTree.ExpU arg2 :: args :: acc) arg1
               | [] ->
                 (* the uncurried attribute might sit on the Pstr_eval
@@ -4388,7 +4427,9 @@ let createFormatter () =
                 then flatten (PipeFirstTree.ExpU arg2 :: args :: acc) arg1
                 else flatten (PipeFirstTree.Exp arg2 :: args :: acc) arg1
               | _ -> PipeFirstTree.Exp e :: acc)
-            | { pexp_desc = Pexp_ident { txt = Longident.Lident "|." } } -> acc
+            | { pexp_desc = Pexp_ident { txt = Longident.Lident "|."; _ }; _ }
+              ->
+              acc
             | arg -> PipeFirstTree.Exp arg :: acc
           in
           (* Given: foo->f(a, b)->g(c, d)
@@ -4462,7 +4503,7 @@ let createFormatter () =
              *    bb,
              *  )
             *)
-            | [ ({ exp = { pexp_desc = Pexp_ident _ } } as hd); last ] ->
+            | [ ({ exp = { pexp_desc = Pexp_ident _; _ }; _ } as hd); last ] ->
               let prefix =
                 Some
                   (makeList
@@ -4494,7 +4535,7 @@ let createFormatter () =
           let process_application expr =
             let process_arg (l, e) =
               match e.pexp_desc with
-              | Pexp_ident ({ txt = Lident "__x" } as id) ->
+              | Pexp_ident ({ txt = Lident "__x"; _ } as id) ->
                 let pexp_desc = Pexp_ident { id with txt = Lident "_" } in
                 l, { e with pexp_desc }
               | _ -> l, e
@@ -4509,8 +4550,8 @@ let createFormatter () =
           | Pexp_fun
               ( Nolabel
               , None
-              , { ppat_desc = Ppat_var { txt = "__x" } }
-              , ({ pexp_desc = Pexp_apply _ } as e) ) ->
+              , { ppat_desc = Ppat_var { txt = "__x"; _ }; _ }
+              , ({ pexp_desc = Pexp_apply _; _ } as e) ) ->
             process_application e
           | Pexp_fun (l, eo, p, e) ->
             let e_processed = self#process_underscore_application e in
@@ -4529,6 +4570,7 @@ let createFormatter () =
               ; jsxAttrs
               ; stylisticAttrs
               ; uncurried
+              ; _
               }
             =
             Reason_attributes.partitionAttributes
@@ -4568,7 +4610,8 @@ let createFormatter () =
             let attributesAsList = List.map self#attribute stdAttrs in
             let itms =
               match self#unparseExprRecurse withoutVisibleAttrs with
-              | SpecificInfixPrecedence ({ reducePrecedence }, wrappedRule) ->
+              | SpecificInfixPrecedence ({ reducePrecedence; _ }, wrappedRule)
+                ->
                 let itm = self#unparseResolvedRule wrappedRule in
                 (match reducePrecedence with
                 (* doesn't need wrapping; we know how to parse *)
@@ -4607,11 +4650,12 @@ let createFormatter () =
                     ( { reducePrecedence = prec; shiftPrecedence = prec }
                     , LayoutNode (self#formatPipeFirst x) )
                 | ( { pexp_desc =
-                        Pexp_ident { txt = Ldot (Lident "Array", "get") }
+                        Pexp_ident { txt = Ldot (Lident "Array", "get"); _ }
+                    ; _
                     }
                   , [ (_, e1); (_, e2) ] ) ->
                   (match e1.pexp_desc with
-                  | Pexp_ident { txt = Lident "_" } ->
+                  | Pexp_ident { txt = Lident "_"; _ } ->
                     let k = atom "Array.get" in
                     let v =
                       makeList
@@ -4632,7 +4676,8 @@ let createFormatter () =
                       ( { reducePrecedence = prec; shiftPrecedence = prec }
                       , LayoutNode (self#access "[" "]" lhs rhs) ))
                 | ( { pexp_desc =
-                        Pexp_ident { txt = Ldot (Lident "String", "get") }
+                        Pexp_ident { txt = Ldot (Lident "String", "get"); _ }
+                    ; _
                     }
                   , [ (_, e1); (_, e2) ] ) ->
                   if Reason_heuristics.isUnderscoreIdent e1
@@ -4660,9 +4705,12 @@ let createFormatter () =
                         Pexp_ident
                           { txt =
                               Ldot (Ldot (Lident "Bigarray", "Genarray"), "get")
+                          ; _
                           }
+                    ; _
                     }
-                  , [ (_, e1); (_, ({ pexp_desc = Pexp_array ls } as e2)) ] ) ->
+                  , [ (_, e1); (_, ({ pexp_desc = Pexp_array ls; _ } as e2)) ] )
+                  ->
                   if Reason_heuristics.isUnderscoreIdent e1
                   then
                     let k = atom "Bigarray.Genarray.get" in
@@ -4701,7 +4749,9 @@ let createFormatter () =
                                     , (("Array1" | "Array2" | "Array3") as
                                        arrayIdent) )
                                 , "get" )
+                          ; _
                           }
+                    ; _
                     }
                   , (_, e1) :: rest ) ->
                   if Reason_heuristics.isUnderscoreIdent e1
@@ -4884,8 +4934,10 @@ let createFormatter () =
                         | _ ->
                           (match rightExpr.pexp_desc with
                           | Pexp_apply
-                              ({ pexp_desc = Pexp_ident { txt = Lident s } }, _)
-                            ->
+                              ( { pexp_desc = Pexp_ident { txt = Lident s; _ }
+                                ; _
+                                }
+                              , _ ) ->
                             isSimplePrefixToken s
                           | _ -> false)
                       in
@@ -4944,7 +4996,7 @@ let createFormatter () =
                   self#unparseResolvedRule
                     (self#ensureExpression ~reducesOnToken:prec e)
                 in
-                let { Reason_attributes.stdAttrs } =
+                let { Reason_attributes.stdAttrs; _ } =
                   Reason_attributes.partitionAttributes e.pexp_attributes
                 in
                 let formattedLeftItm =
@@ -5094,10 +5146,10 @@ let createFormatter () =
           match e.pexp_attributes, e.pexp_desc with
           | [], Pexp_record _ (* syntax sugar for M.{x:1} *)
           | [], Pexp_tuple _ (* syntax sugar for M.(a, b) *)
-          | [], Pexp_object { pcstr_fields = [] } (* syntax sugar for M.{} *)
-          | [], Pexp_construct ({ txt = Lident "::" }, Some _)
-          | [], Pexp_construct ({ txt = Lident "[]" }, _)
-          | [], Pexp_extension ({ txt = "mel.obj" }, _) ->
+          | [], Pexp_object { pcstr_fields = []; _ } (* syntax sugar for M.{} *)
+          | [], Pexp_construct ({ txt = Lident "::"; _ }, Some _)
+          | [], Pexp_construct ({ txt = Lident "[]"; _ }, _)
+          | [], Pexp_extension ({ txt = "mel.obj"; _ }, _) ->
             self#simplifyUnparseExpr e (* syntax sugar for M.[x,y] *)
           (* syntax sugar for the rest, wrap with parens to avoid ambiguity.
            * E.g., avoid M.(M2.v) being printed as M.M2.v
@@ -5230,7 +5282,7 @@ let createFormatter () =
 
         method classExpressionToFormattedApplicationItems =
           function
-          | { pcl_desc = Pcl_apply (ce, l) } ->
+          | { pcl_desc = Pcl_apply (ce, l); _ } ->
             [ label
                 (self#simple_class_expr ce)
                 (self#label_x_expression_params l)
@@ -5240,7 +5292,7 @@ let createFormatter () =
         method dotdotdotChild expr =
           let self = self#inline_braces in
           match expr with
-          | { pexp_desc = Pexp_apply (funExpr, args) }
+          | { pexp_desc = Pexp_apply (funExpr, args); _ }
             when printedStringAndFixityExpr funExpr == Normal
                  && Reason_attributes.without_stylistic_attrs
                       expr.pexp_attributes
@@ -5257,7 +5309,7 @@ let createFormatter () =
              with
             | [ x ] -> x
             | xs -> makeList xs)
-          | { pexp_desc = Pexp_fun _ } ->
+          | { pexp_desc = Pexp_fun _; _ } ->
             self#formatPexpFun ~prefix:(atom "...") ~wrap:("{", "}") expr
           | _ ->
             (* Currently spreading a list must be wrapped in { }.
@@ -5266,7 +5318,9 @@ let createFormatter () =
               match expr with
               | { pexp_desc =
                     Pexp_construct
-                      ({ txt = Lident "::" }, Some { pexp_desc = Pexp_tuple _ })
+                      ( { txt = Lident "::"; _ }
+                      , Some { pexp_desc = Pexp_tuple _; _ } )
+                ; _
                 } ->
                 not (Reason_attributes.has_jsx_attributes expr.pexp_attributes)
               | _ -> false
@@ -5312,13 +5366,15 @@ let createFormatter () =
           let self = self#inline_braces in
           let rec processArguments arguments processedAttrs children =
             match arguments with
-            | (Labelled "children", { pexp_desc = Pexp_construct (_, None) })
+            | (Labelled "children", { pexp_desc = Pexp_construct (_, None); _ })
               :: tail ->
               processArguments tail processedAttrs None
             | ( Labelled "children"
               , ({ pexp_desc =
                      Pexp_construct
-                       ({ txt = Lident "::" }, Some { pexp_desc = Pexp_tuple _ })
+                       ( { txt = Lident "::"; _ }
+                       , Some { pexp_desc = Pexp_tuple _; _ } )
+                 ; _
                  } as arg) )
               :: tail ->
               (match self#formatJsxChildrenNonSpread arg [] with
@@ -5385,7 +5441,7 @@ let createFormatter () =
                            (atom ".")
                        ])
                     (self#formatNonSequencyExpression e)
-                | Pexp_apply (({ pexp_desc = Pexp_ident _ } as funExpr), args)
+                | Pexp_apply (({ pexp_desc = Pexp_ident _; _ } as funExpr), args)
                   when printedStringAndFixityExpr funExpr == Normal
                        && Reason_attributes.without_stylistic_attrs
                             expression.pexp_attributes
@@ -5510,7 +5566,7 @@ let createFormatter () =
         *)
         method formatPexpFun ?(prefix = atom "") ?(wrap = "", "") expression =
           let lwrap, rwrap = wrap in
-          let { Reason_attributes.stdAttrs; uncurried } =
+          let { Reason_attributes.stdAttrs; uncurried; _ } =
             Reason_attributes.partitionAttributes expression.pexp_attributes
           in
           if uncurried then Hashtbl.add uncurriedTable expression.pexp_loc true;
@@ -5624,8 +5680,9 @@ let createFormatter () =
           *)
           | { pmod_desc =
                 Pmod_apply
-                  ( ({ pmod_desc = Pmod_ident _ } as m1)
-                  , ({ pmod_desc = Pmod_structure _ } as m2) )
+                  ( ({ pmod_desc = Pmod_ident _; _ } as m1)
+                  , ({ pmod_desc = Pmod_structure _; _ } as m2) )
+            ; _
             } ->
             let modIdent =
               source_map ~loc:m1.pmod_loc (self#simple_module_expr m1)
@@ -5641,7 +5698,7 @@ let createFormatter () =
             label name arg
           | _ ->
             let rec extract_apps args = function
-              | { pmod_desc = Pmod_apply (me1, me2) } ->
+              | { pmod_desc = Pmod_apply (me1, me2); _ } ->
                 let arg =
                   source_map ~loc:me2.pmod_loc (self#simple_module_expr me2)
                 in
@@ -5837,7 +5894,8 @@ let createFormatter () =
 
         method curriedConstructorPatternsAndReturnVal cl =
           let rec argsAndReturn args = function
-            | { pcl_desc = Pcl_fun (label, eo, p, e); pcl_attributes = [] } ->
+            | { pcl_desc = Pcl_fun (label, eo, p, e); pcl_attributes = []; _ }
+              ->
               let arg =
                 source_map ~loc:p.ppat_loc (self#label_exp label eo p)
               in
@@ -5858,7 +5916,7 @@ let createFormatter () =
             try Hashtbl.find uncurriedTable x.pexp_loc with Not_found -> false
           in
           let rec extract_args xx =
-            let { Reason_attributes.stdAttrs } =
+            let { Reason_attributes.stdAttrs; _ } =
               Reason_attributes.partitionAttributes
                 ~allowUncurry:false
                 xx.pexp_attributes
@@ -5909,7 +5967,7 @@ let createFormatter () =
         method curriedFunctorPatternsAndReturnStruct =
           function
           (* string loc * module_type option * module_expr *)
-          | { pmod_desc = Pmod_functor (fp, me2) } ->
+          | { pmod_desc = Pmod_functor (fp, me2); _ } ->
             let firstOne =
               match fp with
               | Unit -> atom ""
@@ -6183,7 +6241,7 @@ let createFormatter () =
             ~pat:pvb_pat
             pvb_expr
 
-        method binding_op prefixText { pbop_pat; pbop_loc; pbop_exp } =
+        method binding_op prefixText { pbop_pat; pbop_loc; pbop_exp; _ } =
           self#binding
             (Reason_syntax_util.escape_stars_slashes prefixText)
             ~loc:pbop_loc
@@ -6340,7 +6398,7 @@ let createFormatter () =
                 None
                 appTerms
           in
-          let { Reason_attributes.stdAttrs; docAttrs } =
+          let { Reason_attributes.stdAttrs; docAttrs; _ } =
             Reason_attributes.partitionAttributes ~partDoc:true attrs
           in
           let body = makeList ~inline:(true, true) [ body ] in
@@ -6388,7 +6446,8 @@ let createFormatter () =
           let len = List.length l in
           let fstLoc =
             match extension with
-            | Some ({ pexp_loc = { loc_ghost = false } } as ext) -> ext.pexp_loc
+            | Some ({ pexp_loc = { loc_ghost = false; _ }; _ } as ext) ->
+              ext.pexp_loc
             | _ -> (List.nth l 0).pvb_loc
           in
           let lstLoc = (List.nth l (len - 1)).pvb_loc in
@@ -6443,7 +6502,7 @@ let createFormatter () =
               ~inline:(true, true)
               itemsLayout
 
-        method letop_bindings { let_; ands } =
+        method letop_bindings { let_; ands; _ } =
           let label =
             Reason_syntax_util.compress_letop_identifier let_.pbop_op.txt
           in
@@ -6541,6 +6600,7 @@ let createFormatter () =
                 ; arityAttrs
                 ; jsxAttrs
                 ; stylisticAttrs
+                ; _
                 }
               =
               Reason_attributes.partitionAttributes
@@ -6601,10 +6661,10 @@ let createFormatter () =
               processLetList
                 ((extensionConstructor.pext_loc, layout) :: acc)
                 expr
-            | [], Pexp_sequence (({ pexp_desc = Pexp_sequence _ } as e1), e2)
-            | [], Pexp_sequence (({ pexp_desc = Pexp_let _ } as e1), e2)
-            | [], Pexp_sequence (({ pexp_desc = Pexp_open _ } as e1), e2)
-            | [], Pexp_sequence (({ pexp_desc = Pexp_letmodule _ } as e1), e2)
+            | [], Pexp_sequence (({ pexp_desc = Pexp_sequence _; _ } as e1), e2)
+            | [], Pexp_sequence (({ pexp_desc = Pexp_let _; _ } as e1), e2)
+            | [], Pexp_sequence (({ pexp_desc = Pexp_open _; _ } as e1), e2)
+            | [], Pexp_sequence (({ pexp_desc = Pexp_letmodule _; _ } as e1), e2)
             | [], Pexp_sequence (e1, e2) ->
               let e1Layout =
                 match expression_not_immediate_extension_sugar e1 with
@@ -6622,8 +6682,8 @@ let createFormatter () =
               (match expression_not_immediate_extension_sugar expr with
               | Some
                   ( extension
-                  , { pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e) } )
-                ->
+                  , { pexp_attributes = []; pexp_desc = Pexp_let (rf, l, e); _ }
+                  ) ->
                 let bindingsLayout = self#bindings ~extension (rf, l) in
                 let bindingsLoc =
                   self#bindingsLocationRange ~extension:expr l
@@ -6636,13 +6696,16 @@ let createFormatter () =
                   ( extension
                   , { pexp_attributes = []
                     ; pexp_desc = Pexp_letmodule (s, me, e)
+                    ; _
                     } ) ->
                 let loc, layout = letModuleBinding ~extension s me in
                 processLetList ((loc, layout) :: acc) e
               | Some
                   ( extension
-                  , { pexp_attributes = attrs; pexp_desc = Pexp_open (me, e) }
-                  ) ->
+                  , { pexp_attributes = attrs
+                    ; pexp_desc = Pexp_open (me, e)
+                    ; _
+                    } ) ->
                 let loc, layout = self#pexp_open ~attrs ~extension expr me in
                 processLetList ((loc, layout) :: acc) e
               | Some (extension, e) ->
@@ -6677,7 +6740,7 @@ let createFormatter () =
           eo =
           let implicit_arity, arguments =
             match eo.pexp_desc with
-            | Pexp_construct ({ txt = Lident "()" }, _) ->
+            | Pexp_construct ({ txt = Lident "()"; _ }, _) ->
               (* `foo() is a polymorphic variant that contains a single unit construct as expression
                * This requires special formatting: `foo(()) -> `foo() *)
               false, atom "()"
@@ -6737,17 +6800,19 @@ let createFormatter () =
               false, self#singleArgParenPattern xs
             (* Optimize the case when it's a variant holding a shot variable -
                avoid trailing*)
-            | [ ({ ppat_desc = Ppat_constant (Pconst_string (s, _, None)) } as x)
+            | [ ({ ppat_desc = Ppat_constant (Pconst_string (s, _, None)); _ }
+                 as x)
               ]
-            | [ ({ ppat_desc = Ppat_construct ({ txt = Lident s }, None) } as x)
+            | [ ({ ppat_desc = Ppat_construct ({ txt = Lident s; _ }, None); _ }
+                 as x)
               ]
-            | [ ({ ppat_desc = Ppat_var { txt = s } } as x) ]
+            | [ ({ ppat_desc = Ppat_var { txt = s; _ }; _ } as x) ]
               when Reason_heuristics.singleTokenPatternOmmitTrail s ->
               let layout = makeTup ~trailComma:false [ self#pattern x ] in
               false, source_map ~loc:po.ppat_loc layout
-            | [ ({ ppat_desc = Ppat_any } as x) ]
-            | [ ({ ppat_desc = Ppat_constant (Pconst_char _) } as x) ]
-            | [ ({ ppat_desc = Ppat_constant (Pconst_integer _) } as x) ] ->
+            | [ ({ ppat_desc = Ppat_any; _ } as x) ]
+            | [ ({ ppat_desc = Ppat_constant (Pconst_char _); _ } as x) ]
+            | [ ({ ppat_desc = Ppat_constant (Pconst_integer _); _ } as x) ] ->
               let layout = makeTup ~trailComma:false [ self#pattern x ] in
               false, source_map ~loc:po.ppat_loc layout
             | xs ->
@@ -6784,14 +6849,15 @@ let createFormatter () =
         *)
         method singleArgParenPattern =
           function
-          | [ { ppat_desc = Ppat_record (l, closed); ppat_loc = loc } ] ->
+          | [ { ppat_desc = Ppat_record (l, closed); ppat_loc = loc; _ } ] ->
             source_map ~loc (self#patternRecord ~wrap:("(", ")") l closed)
-          | [ { ppat_desc = Ppat_array l; ppat_loc = loc } ] ->
+          | [ { ppat_desc = Ppat_array l; ppat_loc = loc; _ } ] ->
             source_map ~loc (self#patternArray ~wrap:("(", ")") l)
-          | [ { ppat_desc = Ppat_tuple l; ppat_loc = loc } ] ->
+          | [ { ppat_desc = Ppat_tuple l; ppat_loc = loc; _ } ] ->
             source_map ~loc (self#patternTuple ~wrap:("(", ")") l)
-          | [ ({ ppat_desc = Ppat_construct ({ txt = Lident "::" }, _)
+          | [ ({ ppat_desc = Ppat_construct ({ txt = Lident "::"; _ }, _)
                ; ppat_loc
+               ; _
                } as listPattern)
             ] ->
             source_map
@@ -6824,15 +6890,15 @@ let createFormatter () =
         method patternRecord ?(wrap = "", "") l closed =
           let longident_x_pattern (li, p) =
             match li, p.ppat_desc with
-            | { txt = ident }, Ppat_var { txt }
+            | { txt = ident; _ }, Ppat_var { txt; _ }
               when Longident.last_exn ident = txt ->
               (* record field punning when destructuring. {x: x, y: y} becomes {x, y} *)
               (* works with module prefix too: {MyModule.x: x, y: y} becomes {MyModule.x, y} *)
               self#longident_loc li
-            | ( { txt = ident }
+            | ( { txt = ident; _ }
               , Ppat_alias
-                  ( { ppat_desc = Ppat_var { txt = ident2 } }
-                  , { txt = aliasIdent } ) )
+                  ( { ppat_desc = Ppat_var { txt = ident2; _ }; _ }
+                  , { txt = aliasIdent; _ } ) )
               when Longident.last_exn ident = ident2 ->
               (* record field punning when destructuring with renaming. {state:
                  state as prevState} becomes {state as prevState *)
@@ -6887,14 +6953,15 @@ let createFormatter () =
         method parenthesized_expr ?break expr =
           let result = self#unparseExpr expr in
           match expr.pexp_attributes, expr.pexp_desc with
-          | [], (Pexp_tuple _ | Pexp_construct ({ txt = Lident "()" }, None)) ->
+          | [], (Pexp_tuple _ | Pexp_construct ({ txt = Lident "()"; _ }, None))
+            ->
             result
           | _ -> makeList ~wrap:("(", ")") ?break [ self#unparseExpr expr ]
 
         (* Expressions requiring parens, in most contexts such as separated by
            infix *)
         method expression_requiring_parens_in_infix x =
-          let { Reason_attributes.stdAttrs } =
+          let { Reason_attributes.stdAttrs; _ } =
             Reason_attributes.partitionAttributes x.pexp_attributes
           in
           assert (stdAttrs == []);
@@ -7267,7 +7334,7 @@ let createFormatter () =
               (* record value punning. Turns {foo: foo, bar: 1} into {foo, bar: 1} *)
               (* also turns {Foo.bar: bar, baz: 1} into {Foo.bar, baz: 1} *)
               (* don't turn {bar: Foo.bar, baz: 1} into {bar, baz: 1}, naturally *)
-              | Pexp_ident { txt = Lident value }, true, true
+              | Pexp_ident { txt = Lident value; _ }, true, true
                 when Longident.last_exn li.txt = value ->
                 makeList (maybeQuoteFirstElem li [])
                 (* Force breaks for nested records or mel.obj sugar
@@ -7400,7 +7467,7 @@ let createFormatter () =
             && self#isSeriesOfOpensFollowedByNonSequencyExpression e
           | [], Pexp_open _ -> false
           | [], Pexp_letexception _ -> false
-          | [], Pexp_extension ({ txt }, _) -> txt = "mel.obj"
+          | [], Pexp_extension ({ txt; _ }, _) -> txt = "mel.obj"
           | _ -> true
 
         method unparseObject
@@ -7410,7 +7477,7 @@ let createFormatter () =
           o =
           let core_field_type { pof_desc; pof_attributes; _ } =
             match pof_desc with
-            | Otag ({ txt }, ct) ->
+            | Otag ({ txt; _ }, ct) ->
               let l = Reason_attributes.extractStdAttrs pof_attributes in
               let row =
                 let rowKey =
@@ -7494,7 +7561,9 @@ let createFormatter () =
           match payload with
           | PStr [ itm ] ->
             (match itm with
-            | { pstr_desc = Pstr_eval ({ pexp_desc = Pexp_record (l, eo) }, [])
+            | { pstr_desc =
+                  Pstr_eval ({ pexp_desc = Pexp_record (l, eo); _ }, [])
+              ; _
               } ->
               self#unparseRecord
                 ~forceBreak
@@ -7505,9 +7574,12 @@ let createFormatter () =
                 eo
             | { pstr_desc =
                   Pstr_eval
-                    ( { pexp_desc = Pexp_extension ({ txt = "mel.obj" }, payload)
+                    ( { pexp_desc =
+                          Pexp_extension ({ txt = "mel.obj"; _ }, payload)
+                      ; _
                       }
                     , [] )
+              ; _
               } ->
               (* some folks write `[%mel.obj [%mel.obj {foo: bar}]]`. This looks
                  improbable but it happens often if you use the sugared version:
@@ -7522,7 +7594,7 @@ let createFormatter () =
           | _ -> assert false
 
         method should_preserve_requested_braces expr =
-          let { Reason_attributes.stylisticAttrs } =
+          let { Reason_attributes.stylisticAttrs; _ } =
             Reason_attributes.partitionAttributes expr.pexp_attributes
           in
           match expr.pexp_desc with
@@ -7539,6 +7611,7 @@ let createFormatter () =
               ; jsxAttrs
               ; stylisticAttrs
               ; arityAttrs
+              ; _
               }
             =
             Reason_attributes.partitionAttributes x.pexp_attributes
@@ -7587,10 +7660,10 @@ let createFormatter () =
                      ~wrap:("{<", ">}")
                      ~sep:(Sep ",")
                      (List.map string_x_expression l))
-              | Pexp_construct ({ txt = Lident "[]" }, _) when hasJsxAttribute
-                ->
+              | Pexp_construct ({ txt = Lident "[]"; _ }, _)
+                when hasJsxAttribute ->
                 Some (atom "<> </>")
-              | Pexp_construct ({ txt = Lident "::" }, Some _)
+              | Pexp_construct ({ txt = Lident "::"; _ }, Some _)
                 when hasJsxAttribute ->
                 (match self#formatJsxChildrenNonSpread x [] with
                 | None ->
@@ -7743,7 +7816,7 @@ let createFormatter () =
         method formatJsxChildrenNonSpread expr processedRev =
           let formatJsxChild x =
             match x with
-            | { pexp_desc = Pexp_apply _ } as e ->
+            | { pexp_desc = Pexp_apply _; _ } as e ->
               (* Pipe first behaves differently according to the expression on the
                * right. In example (1) below, it's a `SpecificInfixPrecedence`; in
                * (2), however, it's `Simple` and doesn't need to be wrapped in parens.
@@ -7760,8 +7833,8 @@ let createFormatter () =
                   ~wrap:("{", "}")
                   e
             (* No braces - very simple *)
-            | { pexp_desc = Pexp_ident li } -> self#longident_loc li
-            | { pexp_desc = Pexp_constant constant } as x ->
+            | { pexp_desc = Pexp_ident li; _ } -> self#longident_loc li
+            | { pexp_desc = Pexp_constant constant; _ } as x ->
               let raw_literal, _ =
                 Reason_attributes.extract_raw_literal x.pexp_attributes
               in
@@ -7781,14 +7854,16 @@ let createFormatter () =
                 x
           in
           match expr with
-          | { pexp_desc = Pexp_construct ({ txt = Lident "[]" }, None) } ->
+          | { pexp_desc = Pexp_construct ({ txt = Lident "[]"; _ }, None); _ }
+            ->
             (match processedRev with
             | [] -> None
             | _ :: _ -> Some (List.rev processedRev))
           | { pexp_desc =
                 Pexp_construct
-                  ( { txt = Lident "::" }
-                  , Some { pexp_desc = Pexp_tuple [ hd; tl ] } )
+                  ( { txt = Lident "::"; _ }
+                  , Some { pexp_desc = Pexp_tuple [ hd; tl ]; _ } )
+            ; _
             } ->
             self#formatJsxChildrenNonSpread
               tl
@@ -7866,13 +7941,14 @@ let createFormatter () =
         (* [@ ...] Simple attributes *)
         method attribute =
           function
-          | { attr_name = { Location.txt = "ocaml.doc" | "ocaml.text" }
+          | { attr_name = { Location.txt = "ocaml.doc" | "ocaml.text"; _ }
             ; attr_payload =
                 PStr
                   [ { pstr_desc =
                         Pstr_eval
                           ( { pexp_desc =
                                 Pexp_constant (Pconst_string (text, _, None))
+                            ; _
                             }
                           , _ )
                     ; pstr_loc
@@ -7953,7 +8029,7 @@ let createFormatter () =
             | Pext_rebind id ->
               [ atom pcd_name.txt; atom "="; self#longident_loc id ]
           in
-          let { Reason_attributes.stdAttrs; docAttrs } =
+          let { Reason_attributes.stdAttrs; docAttrs; _ } =
             Reason_attributes.partitionAttributes
               ~partDoc:true
               ed.pext_attributes
@@ -8077,7 +8153,7 @@ let createFormatter () =
           match vd.pval_attributes with
           | [] -> primDecl
           | attrs ->
-            let { Reason_attributes.stdAttrs; docAttrs } =
+            let { Reason_attributes.stdAttrs; docAttrs; _ } =
               Reason_attributes.partitionAttributes ~partDoc:true attrs
             in
             let docs = List.map self#item_attribute docAttrs in
@@ -8158,7 +8234,12 @@ let createFormatter () =
         method class_declaration_list l =
           let class_declaration
                 ?(class_keyword = false)
-                ({ pci_params = ls; pci_name = { txt }; pci_virt; pci_loc } as x)
+                ({ pci_params = ls
+                 ; pci_name = { txt; _ }
+                 ; pci_virt
+                 ; pci_loc
+                 ; _
+                 } as x)
             =
             let firstToken, pattern, patternAux =
               self#class_opening class_keyword txt pci_virt ls
@@ -8186,7 +8267,7 @@ let createFormatter () =
         method class_type_declaration_list l =
           let class_type_declaration
                 kwd
-                ({ pci_params = ls; pci_name; pci_attributes } as x)
+                ({ pci_params = ls; pci_name; pci_attributes; _ } as x)
             =
             let opener =
               match x.pci_virt with
@@ -8206,7 +8287,7 @@ let createFormatter () =
             let includingEqual =
               makeList ~postSpace:true [ upToName; atom "=" ]
             in
-            let { Reason_attributes.stdAttrs; docAttrs } =
+            let { Reason_attributes.stdAttrs; docAttrs; _ } =
               Reason_attributes.partitionAttributes ~partDoc:true pci_attributes
             in
             let layout =
@@ -8243,7 +8324,7 @@ let createFormatter () =
           match x.pcty_desc with
           | Pcty_arrow _ ->
             let rec allArrowSegments acc = function
-              | { pcty_desc = Pcty_arrow (l, ct1, ct2) } ->
+              | { pcty_desc = Pcty_arrow (l, ct1, ct2); _ } ->
                 allArrowSegments
                   (self#type_with_label (l, ct1, false) :: acc)
                   ct2
@@ -8396,8 +8477,10 @@ let createFormatter () =
                   ( { pexp_desc =
                         Pexp_constraint
                           (methodFunWithNewtypes, nonVarifiedExprType)
+                    ; _
                     }
-                  , Some { ptyp_desc = Ptyp_poly (typeVars, varifiedPolyType) }
+                  , Some
+                      { ptyp_desc = Ptyp_poly (typeVars, varifiedPolyType); _ }
                   )
                 when let leadingAbstractVars, _ =
                        self#leadingCurriedAbstractTypes methodFunWithNewtypes
@@ -8460,13 +8543,13 @@ let createFormatter () =
           (* Recall that by default self is bound to "this" at parse time. You'd
              have to go out of your way to bind it to "_". *)
           match p.ppat_attributes, p.ppat_desc with
-          | [], Ppat_var { txt = "this" } -> fields
+          | [], Ppat_var { txt = "this"; _ } -> fields
           | _ ->
             let field = label ~space:true (atom "as") (self#pattern p) in
             source_map ~loc:p.ppat_loc field :: fields
 
         method simple_class_expr x =
-          let { Reason_attributes.stdAttrs } =
+          let { Reason_attributes.stdAttrs; _ } =
             Reason_attributes.partitionAttributes x.pcl_attributes
           in
           if stdAttrs != []
@@ -8542,7 +8625,7 @@ let createFormatter () =
           gatherOpens [] x
 
         method class_expr x =
-          let { Reason_attributes.stdAttrs } =
+          let { Reason_attributes.stdAttrs; _ } =
             Reason_attributes.partitionAttributes x.pcl_attributes
           in
           (* We cannot handle the attributes here. Must handle them in each
@@ -8641,7 +8724,7 @@ let createFormatter () =
 
         method val_binding ?extension vd =
           let intro = add_extension_sugar "let" extension in
-          let { Reason_attributes.stdAttrs; docAttrs } =
+          let { Reason_attributes.stdAttrs; docAttrs; _ } =
             Reason_attributes.partitionAttributes
               ~partDoc:true
               vd.pval_attributes
@@ -8687,7 +8770,7 @@ let createFormatter () =
               in
               self#module_type letPattern pmd.pmd_type
           in
-          let { Reason_attributes.stdAttrs; docAttrs } =
+          let { Reason_attributes.stdAttrs; docAttrs; _ } =
             Reason_attributes.partitionAttributes
               ~partDoc:true
               pmd.pmd_attributes
@@ -8703,7 +8786,7 @@ let createFormatter () =
           let items =
             List.mapi
               (fun i xx ->
-                 let { Reason_attributes.stdAttrs; docAttrs } =
+                 let { Reason_attributes.stdAttrs; docAttrs; _ } =
                    Reason_attributes.partitionAttributes
                      ~partDoc:true
                      xx.pmd_attributes
@@ -8746,7 +8829,7 @@ let createFormatter () =
                items)
 
         method psig_open ?extension od =
-          let { Reason_attributes.stdAttrs; docAttrs } =
+          let { Reason_attributes.stdAttrs; docAttrs; _ } =
             Reason_attributes.partitionAttributes
               ~partDoc:true
               od.popen_attributes
@@ -8778,7 +8861,7 @@ let createFormatter () =
             | None -> makeList ~postSpace:true [ atom "module type"; name ]
             | Some mt -> self#module_type letPattern mt
           in
-          let { Reason_attributes.stdAttrs; docAttrs } =
+          let { Reason_attributes.stdAttrs; docAttrs; _ } =
             Reason_attributes.partitionAttributes
               ~partDoc:true
               x.pmtd_attributes
@@ -8809,7 +8892,7 @@ let createFormatter () =
             | Psig_class l ->
               let class_description
                     ?(class_keyword = false)
-                    ({ pci_params = ls; pci_name = { txt }; pci_loc } as x)
+                    ({ pci_params = ls; pci_name = { txt; _ }; pci_loc; _ } as x)
                 =
                 let firstToken, pattern, patternAux =
                   self#class_opening class_keyword txt x.pci_virt ls
@@ -8823,7 +8906,7 @@ let createFormatter () =
                     patternAux
                     ([ self#class_constructor_type x.pci_expr ], None)
                 in
-                let { Reason_attributes.stdAttrs; docAttrs } =
+                let { Reason_attributes.stdAttrs; docAttrs; _ } =
                   Reason_attributes.partitionAttributes
                     ~partDoc:true
                     x.pci_attributes
@@ -8848,7 +8931,7 @@ let createFormatter () =
             | Psig_module pmd -> self#psig_module pmd
             | Psig_open od -> self#psig_open od
             | Psig_include incl ->
-              let { Reason_attributes.stdAttrs; docAttrs } =
+              let { Reason_attributes.stdAttrs; docAttrs; _ } =
                 Reason_attributes.partitionAttributes
                   ~partDoc:true
                   incl.pincl_attributes
@@ -8867,8 +8950,8 @@ let createFormatter () =
             | Psig_class_type l -> self#class_type_declaration_list l
             | Psig_recmodule decls -> self#psig_recmodule decls
             | Psig_attribute a -> self#floating_attribute a
-            | Psig_extension ((({ loc }, _) as ext), attrs) ->
-              let { Reason_attributes.stdAttrs; docAttrs } =
+            | Psig_extension ((({ loc; _ }, _) as ext), attrs) ->
+              let { Reason_attributes.stdAttrs; docAttrs; _ } =
                 Reason_attributes.partitionAttributes ~partDoc:true attrs
               in
               let layout =
@@ -8887,7 +8970,7 @@ let createFormatter () =
                   ; self#longident_loc pms_manifest
                   ]
               in
-              let { Reason_attributes.stdAttrs; docAttrs } =
+              let { Reason_attributes.stdAttrs; docAttrs; _ } =
                 Reason_attributes.partitionAttributes
                   ~partDoc:true
                   pms_attributes
@@ -9081,7 +9164,7 @@ let createFormatter () =
           | Pmod_unpack e ->
             let exprLayout =
               match e.pexp_desc with
-              | Pexp_constraint (e, { ptyp_desc = Ptyp_package (lid, cstrs) })
+              | Pexp_constraint (e, { ptyp_desc = Ptyp_package (lid, cstrs); _ })
                 ->
                 formatTypeConstraint
                   (makeList ~postSpace:true [ atom "val"; self#unparseExpr e ])
@@ -9130,7 +9213,7 @@ let createFormatter () =
           let items =
             List.mapi
               (fun i xx ->
-                 let { Reason_attributes.stdAttrs; docAttrs } =
+                 let { Reason_attributes.stdAttrs; docAttrs; _ } =
                    Reason_attributes.partitionAttributes
                      ~partDoc:true
                      xx.pmb_attributes
@@ -9360,7 +9443,7 @@ let createFormatter () =
           let item =
             match term.pstr_desc with
             | Pstr_eval (e, attrs) ->
-              let { Reason_attributes.stdAttrs; jsxAttrs; uncurried } =
+              let { Reason_attributes.stdAttrs; jsxAttrs; uncurried; _ } =
                 Reason_attributes.partitionAttributes attrs
               in
               if uncurried then Hashtbl.add uncurriedTable e.pexp_loc true;
@@ -9430,7 +9513,7 @@ let createFormatter () =
                  1` *)
               | Pstr_value (rf, l) -> self#bindings ~extension (rf, l)
               | _ ->
-                let { Reason_attributes.stdAttrs; docAttrs } =
+                let { Reason_attributes.stdAttrs; docAttrs; _ } =
                   Reason_attributes.partitionAttributes ~partDoc:true attrs
                 in
                 let item = self#structure_item item in
@@ -9446,10 +9529,10 @@ let createFormatter () =
           source_map ~loc:term.pstr_loc item
 
         method type_extension ?extension te =
-          let formatOneTypeExtStandard prepend ({ ptyext_path } as te) =
+          let formatOneTypeExtStandard prepend ({ ptyext_path; _ } as te) =
             let name = self#longident_loc ptyext_path in
             let item = self#formatOneTypeExt prepend name (atom "+=") te in
-            let { Reason_attributes.stdAttrs; docAttrs } =
+            let { Reason_attributes.stdAttrs; docAttrs; _ } =
               Reason_attributes.partitionAttributes
                 ~partDoc:true
                 te.ptyext_attributes
@@ -9601,7 +9684,7 @@ let createFormatter () =
           in
           groupAndPrint
             ~xf:case_row
-            ~getLoc:(fun { pc_lhs; pc_rhs } ->
+            ~getLoc:(fun { pc_lhs; pc_rhs; _ } ->
               { pc_lhs.ppat_loc with loc_end = pc_rhs.pexp_loc.loc_end })
             ~comments:self#comments
             l
@@ -9624,19 +9707,19 @@ let createFormatter () =
           let lparen = lwrap ^ if uncurried then "(. " else "(" in
           let rparen = ")" ^ rwrap in
           match es with
-          | [ { pexp_attributes = []; pexp_desc = Pexp_record (l, eo) } ] ->
+          | [ { pexp_attributes = []; pexp_desc = Pexp_record (l, eo); _ } ] ->
             self#unparseRecord ~wrap:(lparen, rparen) l eo
-          | [ { pexp_attributes = []; pexp_desc = Pexp_tuple l } ] ->
+          | [ { pexp_attributes = []; pexp_desc = Pexp_tuple l; _ } ] ->
             self#unparseSequence ~wrap:(lparen, rparen) ~construct:`Tuple l
-          | [ { pexp_attributes = []; pexp_desc = Pexp_array l } ] ->
+          | [ { pexp_attributes = []; pexp_desc = Pexp_array l; _ } ] ->
             self#unparseSequence ~wrap:(lparen, rparen) ~construct:`Array l
-          | [ { pexp_attributes = []; pexp_desc = Pexp_object cs } ] ->
+          | [ { pexp_attributes = []; pexp_desc = Pexp_object cs; _ } ] ->
             self#classStructure ~wrap:(lparen, rparen) cs
-          | [ { pexp_attributes = []; pexp_desc = Pexp_extension (s, p) } ]
+          | [ { pexp_attributes = []; pexp_desc = Pexp_extension (s, p); _ } ]
             when s.txt = "mel.obj" ->
             self#formatBsObjExtensionSugar ~wrap:(lparen, rparen) p
-          | [ ({ pexp_attributes = [] } as exp) ] when is_simple_list_expr exp
-            ->
+          | [ ({ pexp_attributes = []; _ } as exp) ]
+            when is_simple_list_expr exp ->
             (match view_expr exp with
             | `list xs ->
               self#unparseSequence ~construct:`List ~wrap:(lparen, rparen) xs
@@ -9648,11 +9731,11 @@ let createFormatter () =
         method formatSingleArgLabelApplication labelTerm rightExpr =
           let layout_right =
             match rightExpr with
-            | { pexp_desc = Pexp_let _ } ->
+            | { pexp_desc = Pexp_let _; _ } ->
               makeLetSequence ~wrap:("({", "})") (self#letList rightExpr)
             | e when isSingleArgParenApplication [ rightExpr ] ->
               self#singleArgParenApplication [ e ]
-            | { pexp_desc = Pexp_construct ({ txt = Lident "()" }, _) } ->
+            | { pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, _); _ } ->
               (* special case unit such that we don't end up with double
                  parens *)
               self#simplifyUnparseExpr rightExpr
@@ -9682,7 +9765,8 @@ let createFormatter () =
            * e.g. print_newline(()) should be printed as print_newline() *)
           | [ ( Nolabel
               , { pexp_attributes = []
-                ; pexp_desc = Pexp_construct ({ txt = Lident "()" }, None)
+                ; pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, None)
+                ; _
                 } )
             ] ->
             makeList
@@ -9740,7 +9824,7 @@ let createFormatter () =
           let categorizeFunApplArgs args =
             let reverseArgs = List.rev args in
             match reverseArgs with
-            | ((_, { pexp_desc = Pexp_fun _ }) as callback) :: args
+            | ((_, { pexp_desc = Pexp_fun _; _ }) as callback) :: args
               when []
                    == List.filter
                         (fun (_, e) ->
@@ -9758,7 +9842,7 @@ let createFormatter () =
             match funExpr.pexp_desc with
             (* pipe first chain or sharpop chain as funExpr, no parens needed,
                we know how to parse *)
-            | Pexp_apply ({ pexp_desc = Pexp_ident { txt = Lident s } }, _)
+            | Pexp_apply ({ pexp_desc = Pexp_ident { txt = Lident s; _ }; _ }, _)
               when requireNoSpaceFor s ->
               self#unparseExpr funExpr
             | Pexp_field _ -> self#unparseExpr funExpr
@@ -9774,7 +9858,7 @@ let createFormatter () =
              *   MyModuleBlah.toList(argument)
             *)
             let argLbl, cb = callbackArg in
-            let { Reason_attributes.stdAttrs; uncurried } =
+            let { Reason_attributes.stdAttrs; uncurried; _ } =
               Reason_attributes.partitionAttributes cb.pexp_attributes
             in
             let cbAttrs = stdAttrs in
@@ -10070,6 +10154,7 @@ let createFormatter () =
             | { pexp_desc = Pexp_construct (lid, Some sp)
               ; pexp_loc
               ; pexp_attributes
+              ; _
               }
               when List.exists
                      (fun c -> StringSet.mem c explicit_arity_constructors)
@@ -10090,6 +10175,7 @@ let createFormatter () =
             | { ppat_desc = Ppat_construct (lid, Some (x, sp))
               ; ppat_loc
               ; ppat_attributes
+              ; _
               }
               when List.exists
                      (fun c -> StringSet.mem c explicit_arity_constructors)

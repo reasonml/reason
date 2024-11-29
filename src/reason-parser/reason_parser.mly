@@ -278,7 +278,7 @@ let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp_desc =
     exp_desc
 
 let is_pattern_list_single_any = function
-  | [{Ppxlib.ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] ->
+  | [{Ppxlib.ppat_desc=Ppat_any; ppat_attributes=[]; _} as onlyItem] ->
     Some onlyItem
   | _ -> None
 
@@ -521,7 +521,7 @@ let process_underscore_application args =
   let hidden_var = "__x" in
   let check_arg ((lab, exp) as arg) =
     match exp.Ppxlib.pexp_desc with
-    | Pexp_ident ({ txt = Lident "_"} as id) ->
+    | Pexp_ident ({ txt = Lident "_"; _} as id) ->
         let new_id = mkloc (Longident.Lident hidden_var) id.loc in
         let new_exp = mkexp (Pexp_ident new_id) ~loc:exp.pexp_loc in
         exp_question := Some new_exp;
@@ -530,7 +530,7 @@ let process_underscore_application args =
         arg in
   let args = List.map check_arg args in
   let wrap exp_apply = match !exp_question with
-    | Some {pexp_loc=loc} ->
+    | Some {pexp_loc=loc;_} ->
         let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
         begin match exp_apply.Ppxlib.pexp_desc with
         (* Transform pipe first with underscore application correct:
@@ -540,10 +540,10 @@ let process_underscore_application args =
          *)
         | Pexp_apply(
           {pexp_desc= Pexp_apply(
-            {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} as pipeExp,
-            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _} as arg2)]
+            {pexp_desc = Pexp_ident({txt = Longident.Lident "|."; _}); _} as pipeExp,
+            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _; _} as arg2)]
             (*         5                            doStuff                   *)
-          )},
+          ); _},
           args (* [3, __x, 7] *)
           ) ->
             (* build `doStuff(3, __x, 7)` *)
@@ -597,7 +597,7 @@ let mkexp_app_rev startp endp (body, args) =
         let attrs = e.Ppxlib.pexp_attributes in
         let hasUncurryAttr = ref false in
         let newAttrs = List.filter (function
-          | { Ppxlib.attr_name = {txt = "uncurry"}; attr_payload = PStr []; _} ->
+          | { Ppxlib.attr_name = {txt = "uncurry"; _}; attr_payload = PStr []; _} ->
               hasUncurryAttr := true;
               false
           | _ -> true) attrs
@@ -719,7 +719,7 @@ let varify_constructors var_names t =
       | Ptyp_arrow (label,core_type,core_type') ->
           Ptyp_arrow(label, loop core_type, loop core_type')
       | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
-      | Ptyp_constr( { txt = Lident s }, []) when List.mem s var_names ->
+      | Ptyp_constr( { txt = Lident s; _ }, []) when List.mem s var_names ->
           Ptyp_var s
       | Ptyp_constr(longident, lst) ->
           Ptyp_constr(longident, List.map loop lst)
@@ -773,7 +773,7 @@ let pexp_newtypes ?loc newtypes exp =
 let wrap_type_annotation newtypes core_type body =
   let exp = mkexp(Pexp_constraint(body,core_type)) in
   let exp = pexp_newtypes newtypes exp in
-  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors (List.map (fun {txt} -> txt) newtypes) core_type)) in
+  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors (List.map (fun {txt; _} -> txt) newtypes) core_type)) in
   (exp, typ)
 
 
@@ -891,11 +891,11 @@ let reason_mapper = object
     match expr with
       | {pexp_desc=Pexp_construct(lid, args);
          pexp_loc;
-         pexp_attributes}
+         pexp_attributes; _}
         when Reason_syntax_util.attributes_conflicted "implicit_arity" "explicit_arity" pexp_attributes ->
          let new_args =
            match args with
-             | Some {pexp_desc = Pexp_tuple [sp]} -> Some sp
+             | Some {pexp_desc = Pexp_tuple [sp]; _} -> Some sp
              | _ -> args in
          super#expression
          { pexp_desc=Pexp_construct(lid, new_args);
@@ -908,10 +908,10 @@ let reason_mapper = object
     match pattern with
       | {ppat_desc=Ppat_construct(lid, args);
          ppat_loc;
-         ppat_attributes} when Reason_syntax_util.attributes_conflicted "implicit_arity" "explicit_arity" ppat_attributes ->
+         ppat_attributes; _} when Reason_syntax_util.attributes_conflicted "implicit_arity" "explicit_arity" ppat_attributes ->
          let new_args =
            match args with
-             | Some (x, {ppat_desc = Ppat_tuple [sp]}) -> Some (x, sp)
+             | Some (x, {ppat_desc = Ppat_tuple [sp]; _}) -> Some (x, sp)
              | _ -> args
          in
          super#pattern
@@ -1082,8 +1082,8 @@ let package_type_of_module_type (pmty: Ppxlib.module_type) =
        []
   in
   match pmty with
-  | {pmty_desc = Pmty_ident lid} -> Some (lid, [])
-  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid}, cstrs)} ->
+  | {pmty_desc = Pmty_ident lid; _} -> Some (lid, [])
+  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid; _}, cstrs); _} ->
     Some (lid, List.flatten (List.map map_cstr cstrs))
   | _ -> None
 

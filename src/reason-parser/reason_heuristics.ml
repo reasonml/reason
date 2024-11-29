@@ -2,9 +2,9 @@ open Ppxlib
 
 let is_punned_labelled_expression e lbl =
   match e.pexp_desc with
-  | Pexp_ident { txt }
-  | Pexp_constraint ({ pexp_desc = Pexp_ident { txt } }, _)
-  | Pexp_coerce ({ pexp_desc = Pexp_ident { txt } }, _, _) ->
+  | Pexp_ident { txt; _ }
+  | Pexp_constraint ({ pexp_desc = Pexp_ident { txt; _ }; _ }, _)
+  | Pexp_coerce ({ pexp_desc = Pexp_ident { txt; _ }; _ }, _, _) ->
     Reason_syntax_util.parse_lid lbl = txt
   | _ -> false
 
@@ -14,7 +14,7 @@ let is_punned_labelled_expression e lbl =
  *
  * we check if all arguments aside from the final one are either strings or identifiers,
  * where the sum of the string contents and identifier names are less than the print width
- *)
+*)
 let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
   let funLen =
     match funExpr.pexp_desc with
@@ -38,7 +38,7 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
     | [] -> false
     | arg :: args ->
       (match arg with
-      | label, ({ pexp_desc = Pexp_ident ident } as e) ->
+      | label, ({ pexp_desc = Pexp_ident ident; _ } as e) ->
         let identLen =
           List.fold_left
             (fun acc curr -> acc + String.length curr)
@@ -51,7 +51,7 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
           aux (len - (identLen + 1)) args
         | Labelled s -> aux (len - (identLen + 2 + String.length s)) args
         | Optional s -> aux (len - (identLen + 3 + String.length s)) args)
-      | label, { pexp_desc = Pexp_constant (Pconst_string (str, _, _)) } ->
+      | label, { pexp_desc = Pexp_constant (Pconst_string (str, _, _)); _ } ->
         let strLen = String.length str in
         (match label with
         | Nolabel -> aux (len - strLen) args
@@ -64,7 +64,7 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
   aux (printWidth - funLen) args
 
 (*
- * Whether or not an identiier is small enough to justify omitting the
+   * Whether or not an identiier is small enough to justify omitting the
  * trailing comma for single identifier patterns. For single identifier
  * patterns, usually the identifier is not "far right" in the document, and
  * is one of the last things to require breaking. We can omit the trailing comma
@@ -73,7 +73,7 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
  *
  * For example, the `X` hardly ever benefits from a trailing comma.
  * | X(y) =>
- *)
+*)
 let singleTokenPatternOmmitTrail txt = String.length txt < 4
 
 (* Indicates whether an expression can be printed with the uncurried
@@ -84,7 +84,7 @@ let singleTokenPatternOmmitTrail txt = String.length txt < 4
  * [@bs] add(2, 3); -> add(. 2, 3);   (* Pexp_apply *)
  * setTimeout([@bs] () => Js.log("hola"), 1000);  (* Pexp_fun *)
  *  -> setTimeout((.) => Js.log("hola"), 1000);
- *)
+*)
 let bsExprCanBeUncurried expr =
   match Parsetree.(expr.pexp_desc) with
   | Pexp_fun _ | Pexp_apply _ -> true
@@ -92,14 +92,14 @@ let bsExprCanBeUncurried expr =
 
 let isUnderscoreIdent expr =
   match Parsetree.(expr.pexp_desc) with
-  | Pexp_ident { txt = Lident "_" } -> true
+  | Pexp_ident { txt = Lident "_"; _ } -> true
   | _ -> false
 
 let isPipeFirst e =
   match Parsetree.(e.pexp_desc) with
-  | Pexp_ident { txt = Longident.Lident "|." } -> true
-  | Pexp_apply ({ pexp_desc = Pexp_ident { txt = Longident.Lident "|." } }, _)
-    ->
+  | Pexp_ident { txt = Longident.Lident "|."; _ } -> true
+  | Pexp_apply
+      ({ pexp_desc = Pexp_ident { txt = Longident.Lident "|."; _ }; _ }, _) ->
     true
   | _ -> false
 
@@ -110,8 +110,9 @@ let isUnderscoreApplication expr =
         Pexp_fun
           ( Nolabel
           , None
-          , { ppat_desc = Ppat_var { txt = "__x" }; ppat_attributes = [] }
+          , { ppat_desc = Ppat_var { txt = "__x"; _ }; ppat_attributes = []; _ }
           , _ )
+    ; _
     } ->
     true
   | _ -> false
@@ -123,13 +124,13 @@ let isUnderscoreApplication expr =
 let isPipeFirstWithNonSimpleJSXChild e =
   match Parsetree.(e.pexp_desc) with
   | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Longident.Lident "|." } }
-      , [ (Nolabel, { pexp_desc = Pexp_apply _ }); _ ] ) ->
+      ( { pexp_desc = Pexp_ident { txt = Longident.Lident "|."; _ }; _ }
+      , [ (Nolabel, { pexp_desc = Pexp_apply _; _ }); _ ] ) ->
     true
   (* Handle <div> {url->a(b, _)} </div>;
    * underscore sugar needs protection *)
   | Pexp_apply
-      ( { pexp_desc = Pexp_ident { txt = Longident.Lident "|." } }
+      ( { pexp_desc = Pexp_ident { txt = Longident.Lident "|."; _ }; _ }
       , [ _; (Nolabel, fe) ] )
     when isUnderscoreApplication fe ->
     true

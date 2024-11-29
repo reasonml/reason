@@ -50,14 +50,14 @@ let wrap t =
      *       /***
      *        * bla */
      *  I think this case should be removed.
-     *)
+    *)
     "/**" ^ txt ^ "*/"
   | txt -> "/*" ^ txt ^ "*/"
 
 let is_doc t = String.length t.text > 0 && t.text.[0] == '*'
 let make ~location category text = { text; category; location }
 
-let isLineComment { category; text } =
+let isLineComment { category; text; _ } =
   match category with
   | SingleLine -> Reason_syntax_util.isLineComment text
   | EndOfLine | Regular -> false

@@ -188,7 +188,7 @@ let set_lexeme_length buf n = (
                      with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
 )
 
-let compute_quoted_string_idloc {Location.loc_start = orig_loc } shift id =
+let compute_quoted_string_idloc {Location.loc_start = orig_loc; _ } shift id =
   let id_start_pos = orig_loc.Lexing.pos_cnum + shift in
   let loc_start =
     Lexing.{orig_loc with pos_cnum = id_start_pos }

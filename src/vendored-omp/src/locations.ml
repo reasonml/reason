@@ -44,7 +44,7 @@ let extension_of_error ~mk_pstr ~mk_extension ~mk_string_constant (error : locat
                (List.map (fun ext -> mk_extension (extension_of_old_error ext)) sub)) in
     extension_of_old_error old_error
   | `Report report ->
-    let extension_of_report ({kind; main; sub} : location_report) =
+    let extension_of_report ({kind; main; sub;_} : location_report) =
       if kind <> Report_error then
         raise (Invalid_argument "extension_of_error: expected kind Report_error");
       (*IF_AT_LEAST 53 let str_of_pp pp_msg = Format.asprintf "%a" Format_doc.Doc.format pp_msg in *)
