@@ -1,4 +1,4 @@
-(lang dune 2.9)
+(lang dune 3.8)
 
 (name reason)
 

@@ -794,17 +794,11 @@ type funcApplicationLabelStyle =
   | WrapFinalListyItemIfFewerThan of int
 
 type formatSettings =
-  { (* Whether or not to expect that the original parser that generated the AST
-       would have annotated constructor argument tuples with explicit arity to
-       indicate that they are multiple arguments. (True if parsed in original
-       OCaml AST, false if using Reason parser). *)
-    constructorTupleImplicitArity : bool
-  ; space : int
+  { space : int
   ; (* For curried arguments in function *definitions* only: Number of [space]s
        to offset beyond the [let] keyword. Default 1. *)
     listsRecordsIndent : int
   ; indentWrappedPatternArgs : int
-  ; indentMatchCases : int
   ; (* Amount to indent in label-like constructs such as wrapped function
        applications, etc - or even record fields. This is not the same concept
        as an indented curried argument list. *)
@@ -867,11 +861,9 @@ type formatSettings =
   }
 
 let defaultSettings =
-  { constructorTupleImplicitArity = false
-  ; space = 1
+  { space = 1
   ; listsRecordsIndent = 2
   ; indentWrappedPatternArgs = 2
-  ; indentMatchCases = 2
   ; indentAfterLabels = 2
   ; trySwitchIndent = 0
   ; funcApplicationLabelStyle = WrapFinalListyItemIfFewerThan 3
