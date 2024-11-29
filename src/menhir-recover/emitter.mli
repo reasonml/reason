@@ -5,8 +5,8 @@ open Recovery_intf
 
 module Make
     (G : GRAMMAR)
-    (_ : ATTRIBUTES with module G := G)
-    (_ : SYNTHESIZER with module G := G)
-    (_ : RECOVERY with module G := G) : sig
+    (A : ATTRIBUTES with module G := G)
+    (S : SYNTHESIZER with module G := G)
+    (R : RECOVERY with module G := G) : sig
   val emit : Format.formatter -> unit
 end

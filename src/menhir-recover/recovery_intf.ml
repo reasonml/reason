@@ -26,5 +26,5 @@ end
 
 module type RECOVER = functor
     (G : GRAMMAR)
-    (_ : Synthesis.SYNTHESIZER with module G := G)
+    (S : Synthesis.SYNTHESIZER with module G := G)
     -> RECOVERY with module G := G
