@@ -1,8 +1,6 @@
 (ocamllex
  (modules reason_declarative_lexer))
 
-; Use select.exe from janestreet/ppx_ast to choose ocaml_util.ml based on ocaml version
-
 (rule
  (targets ocaml_util.ml)
  (deps ocaml_util.cppo.ml)
@@ -30,20 +28,14 @@
  (libraries unix menhirSdk))
 
 (rule
- (targets reason_parser_explain_raw.ml)
- (deps reason_parser.cmly)
- (action
-  (with-stdout-to
-   %{targets}
-   (run ./menhir_error_processor.exe reason_parser.cmly))))
+ (with-stdout-to
+  reason_parser_explain_raw.ml
+  (run ./menhir_error_processor.exe reason_parser.cmly)))
 
 (rule
- (targets reason_parser_recover.ml)
- (deps reason_parser.cmly)
- (action
-  (with-stdout-to
-   %{targets}
-   (run ../menhir-recover/main.exe reason_parser.cmly))))
+ (with-stdout-to
+  reason_parser_recover.ml
+  (run ../menhir-recover/main.exe reason_parser.cmly)))
 
 (rule
  (targets reason_syntax_util.ml)
