@@ -3,6 +3,8 @@
 - rtop: read `~/.config/rtop/init.re` configuration file (@anmonteiro, [#2813])
     - the `-init FILE` flag works as before
 - rtop: ignore `~/.ocamlinit.ml` or `~/.config/utop/init.ml` config files (@anmonteiro, [#2813])
+- Add support for raw identifier syntax (@anmonteiro,
+  [#2796](https://github.com/reasonml/reason/pull/2796))
 
 ## 3.14.0
 
