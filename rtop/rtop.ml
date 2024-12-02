@@ -1,14 +1,4 @@
-let () = UTop.require [ "reason.ocaml-migrate-parsetree"; "menhirLib" ]
-
-let () =
-  try Topdirs.dir_directory (Sys.getenv "OCAML_TOPLEVEL_PATH") with
-  | Not_found -> ()
-
-let () = UTop.require [ "reason.easy_format"; "reason" ]
-let () = Reason_toploop.main ()
-let () = Reason_utop.init_reason ()
-
-let () =
+let print_init_message () =
   print_string
     "\n\
     \                   ___  _______   ________  _  __\n\
@@ -21,4 +11,36 @@ let () =
     \        >   let myList: list(string) = [\"first\", \"second\"];\n\
     \        >   #use \"./src/myFile.re\"; /* loads the file into here */\n"
 
-let () = UTop_main.main ()
+let start_utop () =
+  (match !Clflags.init_file with
+  | Some _ -> ()
+  | None ->
+    let xdg_fn =
+      LTerm_resources.xdgbd_file ~loc:LTerm_resources.Config "rtop/init.re"
+    in
+    (* NOTE(anmonteiro): in the future, we could try checking for
+       `~/.ocamlinit` and `~/.config/utop/init.ml` and convert those to Reason
+    *)
+    Clflags.init_file :=
+      (match Sys.file_exists xdg_fn with
+        | true -> Some xdg_fn
+        | false ->
+          (* If `~/.config/rtop/init.re` isn't found, we can't be loading a
+             user's `init.ml` because it'll be full of syntax errors for
+             `rtop`. Create an empty temp file instead. *)
+          Some (Filename.temp_file "rtop" ".re")));
+  UTop_main.main ()
+
+let main () =
+  UTop.require [ "reason.ocaml-migrate-parsetree"; "menhirLib" ];
+
+  (try Topdirs.dir_directory (Sys.getenv "OCAML_TOPLEVEL_PATH") with
+  | Not_found -> ());
+
+  UTop.require [ "reason.easy_format"; "reason" ];
+  Reason_toploop.main ();
+  Reason_utop.init_reason ();
+  print_init_message ();
+  start_utop ()
+
+let () = main ()

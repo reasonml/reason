@@ -1,3 +1,9 @@
+## Unreleased
+
+- rtop: read `~/.config/rtop/init.re` configuration file (@anmonteiro, [#2813])
+    - the `-init FILE` flag works as before
+- rtop: ignore `~/.ocamlinit.ml` or `~/.config/utop/init.ml` config files (@anmonteiro, [#2813])
+
 ## 3.14.0
 
 - Support OCaml 5.3 (@anmonteiro,
@@ -15,7 +21,7 @@
   [#2773](https://github.com/reasonml/reason/pull/2773))
 - Wrap `let lazy patterns = ..` in parentheses (`let lazy(patterns) = ..`)
   (@anmonteiro, [#2774](https://github.com/reasonml/reason/pull/2774))
-- Print poly variants as normal variansts (@Sander Spies,
+- Print poly variants as normal variants (@Sander Spies,
   [#2708](https://github.com/reasonml/reason/pull/2708))
 - Improve printing of anonymous function return type (@Sander Spies,
   [#2686](https://github.com/reasonml/reason/pull/2686))
