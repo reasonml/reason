@@ -87,7 +87,7 @@ let singleTokenPatternOmmitTrail txt = String.length txt < 4
  *)
 let bsExprCanBeUncurried expr =
   match Parsetree.(expr.pexp_desc) with
-  | Pexp_fun _ | Pexp_apply _ -> true
+  | Pexp_function (_ :: _, _, _) | Pexp_apply _ -> true
   | _ -> false
 
 let isUnderscoreIdent expr =
@@ -107,11 +107,8 @@ let isUnderscoreApplication expr =
   match expr with
   | { pexp_attributes = []
     ; pexp_desc =
-        Pexp_fun
-          ( Nolabel
-          , None
-          , { ppat_desc = Ppat_var { txt = "__x" }; ppat_attributes = [] }
-          , _ )
+        Pexp_function
+          ({ pparam_desc = Pparam_val (Nolabel, None, { ppat_desc = Ppat_var { txt = "__x" }; ppat_attributes = [] }); _ } :: _, _, _)
     } ->
     true
   | _ -> false

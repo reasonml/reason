@@ -549,15 +549,22 @@ let process_underscore_application args =
             (* build `doStuff(3, __x, 7)` *)
             let innerApply = {arg2 with pexp_desc = Pexp_apply(arg2, args)} in
             (* build `__x => doStuff(3, __x, 7)` *)
+            (* TODO: Could this make use of max arity functions? *)
+            let param : Ppxlib.function_param =
+              { pparam_desc = Pparam_val (Nolabel, None, pattern); pparam_loc = loc }
+            in
             let innerFun =
-              mkexp (Pexp_fun (Nolabel, None, pattern, innerApply)) ~loc
+              mkexp (Pexp_function ([param], None, Pfunction_body innerApply)) ~loc
             in
             (* build `5 |. (__x => doStuff(3, __x, 7))` *)
             {exp_apply with pexp_desc =
               Pexp_apply(pipeExp, [Nolabel, arg1; Nolabel, innerFun])
             }
         | _ ->
-          mkexp (Pexp_fun (Nolabel, None, pattern, exp_apply)) ~loc
+          let param : Ppxlib.function_param =
+            { pparam_desc = Pparam_val (Nolabel, None, pattern); pparam_loc = loc }
+          in
+          mkexp (Pexp_function ([param], None, Pfunction_body exp_apply)) ~loc
         end
     | None ->
         exp_apply in
@@ -734,9 +741,9 @@ let varify_constructors var_names t =
                  { obj with pof_desc = pof_desc' }) lst, o)
       | Ptyp_class (longident, lst) ->
           Ptyp_class (longident, List.map loop lst)
-      | Ptyp_alias(core_type, string) ->
-          check_variable var_names t.ptyp_loc string;
-          Ptyp_alias(loop core_type, string)
+      | Ptyp_alias(core_type, lbl) ->
+          check_variable var_names t.ptyp_loc lbl.txt;
+          Ptyp_alias(loop core_type, lbl)
       | Ptyp_variant(row_field_list, flag, lbl_lst_option) ->
           Ptyp_variant(List.map loop_row_field row_field_list,
                        flag, lbl_lst_option)
@@ -747,6 +754,7 @@ let varify_constructors var_names t =
           Ptyp_package(longident,List.map (fun (n,typ) -> (n,loop typ) ) lst)
       | Ptyp_extension (s, arg) ->
           Ptyp_extension (s, arg)
+      | Ptyp_open (m, c) -> Ptyp_open (m, c)
     in
     {t with ptyp_desc = desc}
   and loop_row_field  =
@@ -2961,7 +2969,7 @@ mark_position_exp
    *)
   | FUN optional_expr_extension match_cases(expr) %prec below_BAR
     { let loc = mklocation $startpos $endpos in
-      $2 ~loc (mkexp (Pexp_function $3)) }
+    $2 ~loc (mkexp (Pexp_function ([], None, (Pfunction_cases ($3, loc, []))))) }
   | SWITCH optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr(SEMI?)) RBRACE
     { let loc = mklocation $startpos $endpos in
@@ -4515,7 +4523,7 @@ mark_position_typ
   (
     core_type2
     { $1 }
-  | core_type2 AS QUOTE ident
+  | core_type2 AS QUOTE as_loc(ident)
     { mktyp(Ptyp_alias($1, $4)) }
   ) {$1};
 

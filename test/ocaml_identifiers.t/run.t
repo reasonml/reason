@@ -113,4 +113,4 @@ Format OCaml identifiers file
       y;
     });
   
-  let newType = (type method, ()) => ();
+  let newType = (type method_, ()) => ();

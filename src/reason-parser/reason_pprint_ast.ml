@@ -159,7 +159,7 @@ let expression_immediate_extension_sugar x =
   | None -> None, x
   | Some (name, expr) ->
     (match expr.pexp_desc with
-    | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _ | Pexp_function _
+    | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _ | Pexp_function ([], _, Pfunction_cases _)
     | Pexp_newtype _ | Pexp_try _ | Pexp_match _ ->
       Some name, expr
     | _ -> None, x)
@@ -251,8 +251,8 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
       for_all2' tester lst1 lst2 && o1 = o2
     | Ptyp_class (longident1, lst1), Ptyp_class (longident2, lst2) ->
       longident_same longident1 longident2 && for_all2' loop lst1 lst2
-    | Ptyp_alias (core_type1, string1), Ptyp_alias (core_type2, string2) ->
-      loop core_type1 core_type2 && string_equal string1 string2
+    | Ptyp_alias (core_type1, lbl1), Ptyp_alias (core_type2, lbl2) ->
+      loop core_type1 core_type2 && string_equal lbl1.txt lbl2.txt
     | ( Ptyp_variant (row_field_list1, flag1, lbl_lst_option1)
       , Ptyp_variant (row_field_list2, flag2, lbl_lst_option2) ) ->
       for_all2' rowFieldEqual row_field_list1 row_field_list2
@@ -2665,7 +2665,7 @@ let createFormatter () =
                 (label
                    ~space:true
                    (self#core_type ct)
-                   (makeList ~postSpace:true [ atom "as"; atom ("'" ^ s) ]))
+                   (makeList ~postSpace:true [ atom "as"; atom ("'" ^ s.txt) ]))
             | _ -> self#core_type2 x
 
         method type_with_label (lbl, c, uncurried) =
@@ -3452,6 +3452,7 @@ let createFormatter () =
               | Ptyp_extension e -> self#extension e
               | Ptyp_arrow (_, _, _) | Ptyp_alias (_, _) | Ptyp_poly (_, _) ->
                 makeList ~wrap:("(", ")") ~break:IfNeed [ self#core_type x ]
+              | Ptyp_open _ -> failwith "Unsupported local open"
             in
             source_map ~loc:x.ptyp_loc result
         (* TODO: ensure that we have a form of desugaring that protects *)
@@ -4208,7 +4209,7 @@ let createFormatter () =
                     (List.map self#item_attribute attrs)
                 in
                 makeSpacedBreakableInlineList [ formattedAttrs; constant ])
-            | { pexp_desc = Pexp_fun _ } -> self#formatPexpFun e
+            | { pexp_desc = Pexp_function (_ :: _, _, _) } -> self#formatPexpFun e
             | x -> self#unparseExpr x
           in
           source_map ~loc:e.pexp_loc itm
@@ -4511,17 +4512,21 @@ let createFormatter () =
             | _ -> expr
           in
           match x.pexp_desc with
-          | Pexp_fun
-              ( Nolabel
-              , None
-              , { ppat_desc = Ppat_var { txt = "__x" } }
-              , ({ pexp_desc = Pexp_apply _ } as e) ) ->
+          | Pexp_function
+              ( [ { pparam_desc = Pparam_val (Nolabel, None, { ppat_desc = Ppat_var { txt = "__x" } }); _ } ]
+              , _constraint_
+              , Pfunction_body ({ pexp_desc = Pexp_apply _ } as e)
+              ) ->
             process_application e
-          | Pexp_fun (l, eo, p, e) ->
-            let e_processed = self#process_underscore_application e in
-            if e == e_processed
-            then x
-            else { x with pexp_desc = Pexp_fun (l, eo, p, e_processed) }
+          | Pexp_function (params, constraint_, e) -> (
+            match e with
+            | Pfunction_cases _ -> x
+            | Pfunction_body e ->
+              let e_processed = self#process_underscore_application e in
+              if e == e_processed
+              then x
+              else { x with pexp_desc = Pexp_function (params, constraint_, Pfunction_body e_processed) }
+          )
           | _ -> x
 
         method unparseExprRecurse x =
@@ -5264,7 +5269,7 @@ let createFormatter () =
              with
             | [ x ] -> x
             | xs -> makeList xs)
-          | { pexp_desc = Pexp_fun _ } ->
+          | { pexp_desc = Pexp_function (_ :: _, _, _) } ->
             self#formatPexpFun ~prefix:(atom "...") ~wrap:("{", "}") expr
           | _ ->
             (* Currently spreading a list must be wrapped in { }.
@@ -5428,13 +5433,13 @@ let createFormatter () =
                     (makeList [ atom lbl; atom "=" ])
                     (self#simplifyUnparseExpr ~wrap:("{", "}") expression)
                 | Pexp_record _ | Pexp_construct _ | Pexp_array _ | Pexp_tuple _
-                | Pexp_match _ | Pexp_extension _ | Pexp_function _ ->
+                | Pexp_match _ | Pexp_extension _ | Pexp_function ([], _, Pfunction_cases _) ->
                   label
                     (makeList [ atom lbl; atom "=" ])
                     (self#dont_preserve_braces#simplifyUnparseExpr
                        ~wrap:("{", "}")
                        expression)
-                | Pexp_fun _ ->
+                | Pexp_function (_ :: _, _, _) ->
                   let propName = makeList [ atom lbl; atom "=" ] in
                   self#formatPexpFun
                     ~wrap:("{", "}")
@@ -5870,6 +5875,10 @@ let createFormatter () =
           let uncurried =
             try Hashtbl.find uncurriedTable x.pexp_loc with Not_found -> false
           in
+          let extract_from_params param = match param.pparam_desc with
+            | Pparam_val (lbl, eo, pat) -> `Value (lbl, eo, pat)
+            | Pparam_newtype newtype -> `Type newtype
+          in
           let rec extract_args xx =
             let { Reason_attributes.stdAttrs } =
               Reason_attributes.partitionAttributes
@@ -5880,10 +5889,19 @@ let createFormatter () =
             then [], xx
             else
               match xx.pexp_desc with
-              (* label * expression option * pattern * expression *)
-              | Pexp_fun (l, eo, p, e) ->
-                let args, ret = extract_args e in
-                `Value (l, eo, p) :: args, ret
+              | Pexp_function (params, constraint_, body) -> (
+                let vs = List.map extract_from_params params in
+                match constraint_ with
+                | Some _ -> vs, xx
+                | None -> (
+                  match body with
+                  | Pfunction_cases _ as c ->
+                    vs, { xx with pexp_desc = Pexp_function ([], None, c) }
+                  | Pfunction_body e ->
+                    let args, ret = extract_args e in
+                    vs @ args, ret
+                )
+              )
               | Pexp_newtype (newtype, e) ->
                 let args, ret = extract_args e in
                 `Type newtype :: args, ret
@@ -6932,9 +6950,9 @@ let createFormatter () =
           (* Pexp_function, on the other hand, doesn't need wrapping in parens
              in most cases anymore, since `fun` is not ambiguous anymore (we
              print Pexp_fun as ES6 functions). *)
-          | Pexp_function l ->
+          | Pexp_function ([], _constraint_, Pfunction_cases (cases, _loc, _attrs)) ->
             let prec = Custom funToken in
-            let expr = self#patternFunction ?extension x.pexp_loc l in
+            let expr = self#patternFunction ?extension x.pexp_loc cases in
             Some
               (SpecificInfixPrecedence
                  ( { reducePrecedence = prec; shiftPrecedence = prec }
@@ -6944,7 +6962,7 @@ let createFormatter () =
                printing breaks for them. *)
             let itm =
               match x.pexp_desc with
-              | Pexp_fun _ | Pexp_newtype _ ->
+              | Pexp_function (_ :: _, _, _) | Pexp_newtype _ ->
                 (* let uncurried = *)
                 let args, ret = self#curriedPatternsAndReturnVal x in
                 (match args with
@@ -7584,13 +7602,13 @@ let createFormatter () =
               match x.pexp_desc with
               (* The only reason Pexp_fun must also be wrapped in parens is that
                  its => token will be confused with the match token. *)
-              | Pexp_fun _ when pipe || semi ->
+              | Pexp_function (_ :: _, _, _) when pipe || semi ->
                 Some (self#reset#simplifyUnparseExpr x)
-              | Pexp_function l when pipe || semi ->
+              | Pexp_function ([], _constraint_, Pfunction_cases (cases, loc, _attrs)) when pipe || semi ->
                 Some
                   (formatPrecedence
                      ~loc:x.pexp_loc
-                     (self#reset#patternFunction x.pexp_loc l))
+                     (self#reset#patternFunction loc cases))
               | Pexp_apply _ ->
                 (match self#simple_get_application x with
                 (* If it's the simple form of application. *)
@@ -9129,7 +9147,7 @@ let createFormatter () =
               (makeTup argsList)
               []
               ([ self#moduleExpressionToFormattedApplicationItems return ], None)
-          | Pmod_apply _ -> self#moduleExpressionToFormattedApplicationItems x
+          | Pmod_apply _ | Pmod_apply_unit _ -> self#moduleExpressionToFormattedApplicationItems x
           | Pmod_extension (s, e) -> self#payload "%" s e
           | Pmod_unpack _ | Pmod_ident _ | Pmod_constraint _ | Pmod_structure _
             ->
@@ -9721,12 +9739,12 @@ let createFormatter () =
           let categorizeFunApplArgs args =
             let reverseArgs = List.rev args in
             match reverseArgs with
-            | ((_, { pexp_desc = Pexp_fun _ }) as callback) :: args
+            | ((_, { pexp_desc = Pexp_function (_ :: _, _, _) }) as callback) :: args
               when []
                    == List.filter
                         (fun (_, e) ->
                            match e.pexp_desc with
-                           | Pexp_fun _ -> true
+                           | Pexp_function (_ :: _, _, _) -> true
                            | _ -> false)
                         args
                    (* default to normal formatting if there's more than one
