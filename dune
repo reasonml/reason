@@ -1,1 +1,6 @@
 (dirs :standard \ node_modules js)
+
+; (install
+; (package reason)
+; (section bin)
+; (files src/refmt/refmt.bc))

@@ -19,10 +19,7 @@
  * not a super easy path to "test it out", but this setup is hopefully not too complicated.
  *)
 
-open Reason_omp
-module Ast = Ast_414
-
-module ConvertBack = Reason_omp.Convert (Reason_omp.OCaml_current) (Reason_omp.OCaml_414)
+module ConvertBack = Reason_toolchain.From_current
 
 let main () =
   let filename = "./TestTest.ml" in
@@ -36,7 +33,12 @@ let main () =
 #else
   Compmisc.init_path false;
 #endif
+
+#if OCAML_VERSION >= (5,3,0)
+  Env.set_current_unit (Unit_info.make ~source_file:filename Impl modulename);
+#else
   Env.set_unit_name modulename;
+#endif
 
   let ast = impl lexbuf in
   let ast = Reason_toolchain.To_current.copy_structure ast in
@@ -46,9 +48,22 @@ let main () =
 #else
   let (typedtree, _) =
 #endif
-    Typemod.type_implementation modulename modulename modulename env ast in
+    Typemod.type_implementation
+#if  OCAML_VERSION >= (5,3,0)
+      (Unit_info.make ~source_file:modulename Impl modulename)
+#elif OCAML_VERSION >= (5,2,0)
+      (Unit_info.make ~source_file:modulename modulename)
+#else
+      modulename modulename modulename
+#endif
+      env ast
+  in
+#if  OCAML_VERSION >= (5,3,0)
+  let tree = Out_type.tree_of_signature typedtree.Typedtree.str_type in
+#else
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
-  let phrase = (Ast.Outcometree.Ophr_signature
+#endif
+  let phrase = (Reason_omp.Ast_414.Outcometree.Ophr_signature
     (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)
   ) in
   let fmt = Format.str_formatter in

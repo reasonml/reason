@@ -1,0 +1,26 @@
+--- ./otherlibs/configurator/src/v1.ml
++++ ./otherlibs/configurator/src/v1.ml
+@@ -696,13 +696,16 @@
+         which c "brew"
+         >>= fun brew ->
+         let new_pkg_config_path =
+-          let prefix = String.trim (Process.run_capture_exn c ~dir brew [ "--prefix" ]) in
+-          let p = sprintf "%s/opt/%s/lib/pkgconfig" (quote_if_needed prefix) package in
+-          Option.some_if
+-            (match Sys.is_directory p with
+-             | s -> s
+-             | exception Sys_error _ -> false)
+-            p
++          try
++            let prefix = String.trim (Process.run_capture_exn c ~dir brew [ "--prefix" ]) in
++            let p = sprintf "%s/opt/%s/lib/pkgconfig" (quote_if_needed prefix) package in
++            Option.some_if
++              (match Sys.is_directory p with
++               | s -> s
++               | exception Sys_error _ -> false)
++              p
++          with
++          | _ -> None
+         in
+         new_pkg_config_path
+         >>| fun new_pkg_config_path ->

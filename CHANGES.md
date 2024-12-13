@@ -1,9 +1,78 @@
 ## Unreleased
 
+- rtop: read `~/.config/rtop/init.re` configuration file (@anmonteiro, [#2813])
+    - the `-init FILE` flag works as before
+- rtop: ignore `~/.ocamlinit.ml` or `~/.config/utop/init.ml` config files (@anmonteiro, [#2813])
+- Add support for raw identifier syntax (@anmonteiro,
+  [#2796](https://github.com/reasonml/reason/pull/2796))
+
+## 3.14.0
+
+- Support OCaml 5.3 (@anmonteiro,
+  [#2800](https://github.com/reasonml/reason/pull/2800))
+- Fix: don't print all extension strings as quoted extensions (@anmonteiro,
+  [#2809](https://github.com/reasonml/reason/pull/2809))
+- Fix: unify printing of extensions across structure items / expressions
+  (@anmonteiro, [#2814](https://github.com/reasonml/reason/pull/2814))
+
+## 3.13.0
+
+- Support `module%ppx` syntax (@anmonteiro,
+  [#2771](https://github.com/reasonml/reason/pull/2771))
+- Extend open to arbitrary module expression (@anmonteiro,
+  [#2773](https://github.com/reasonml/reason/pull/2773))
+- Wrap `let lazy patterns = ..` in parentheses (`let lazy(patterns) = ..`)
+  (@anmonteiro, [#2774](https://github.com/reasonml/reason/pull/2774))
+- Print poly variants as normal variants (@Sander Spies,
+  [#2708](https://github.com/reasonml/reason/pull/2708))
+- Improve printing of anonymous function return type (@Sander Spies,
+  [#2686](https://github.com/reasonml/reason/pull/2686))
+- Improve printing of destructuring with local open (@Sander Spies,
+  [#2684](https://github.com/reasonml/reason/pull/2684)).
+- Parse and print attributes in binding `let` ops (@anmonteiro,
+  [#2777](https://github.com/reasonml/reason/pull/2777)).
+- Parse polymorphic variants starting with `[|` (@anmonteiro,
+  [#2781](https://github.com/reasonml/reason/pull/2781))
+- Always add a line break in records with 2 or more fields (@anmonteiro,
+  [#2779](https://github.com/reasonml/reason/pull/2779))
+- Always break nonempty doc comments after `*/` (@anmonteiro,
+  [#2780](https://github.com/reasonml/reason/pull/2780))
+- Improve printing of arrows with labelled arguments (@anmonteiro,
+  [#2778](https://github.com/reasonml/reason/pull/2778))
+- Parse and print extensions in `open%foo` expressions and structure items
+  (@anmonteiro, [#2784](https://github.com/reasonml/reason/pull/2784))
+- Add support for module type substitutions
+  (@anmonteiro, [#2785](https://github.com/reasonml/reason/pull/2785))
+- Support `type%foo` extension sugar syntax (@anmonteiro,
+  [#2790](https://github.com/reasonml/reason/pull/2790))
+- Support quoted extensions (@anmonteiro,
+  [#2794](https://github.com/reasonml/reason/pull/2794))
+- Parse universal type variables in signature items (@anmonteiro,
+  [#2797](https://github.com/reasonml/reason/pull/2797))
+- Fix formatting of callbacks with sequence expressions (@anmonteiro,
+  [#2799](https://github.com/reasonml/reason/pull/2799))
+- Fix printing of attributes on module expressions (@anmonteiro,
+  [#2803](https://github.com/reasonml/reason/pull/2803))
+
+## 3.12.0
+
+- Add `\u{hex-escape}` syntax (@anmonteiro,
+  [#2738](https://github.com/reasonml/reason/pull/2738))
+- Support local open and let bindings (@SanderSpies) [#2716](https://github.com/reasonml/reason/pull/2716)
+- outcome printer: change the printing of `@bs.*` to `@mel.*` (@anmonteiro, [#2755](https://github.com/reasonml/reason/pull/2755))
+- Fix outcome printing of optional arguments on OCaml 5.2 (@anmonteiro, [#2753](https://github.com/reasonml/reason/pull/2753))
+- support parsing and printing of `external%extension` (@anmonteiro, [#2750](https://github.com/reasonml/reason/pull/2750), [#2766](https://github.com/reasonml/reason/pull/2766), [#2767](https://github.com/reasonml/reason/pull/2767))
+- install `refmt` manpage (@anmonteiro, [#2760](https://github.com/reasonml/reason/pull/2760))
+- add support for parsing / printing of refutation clause in `switch` (@anmonteiro, [#2765](https://github.com/reasonml/reason/pull/2765))
+- support `let%ppx` in signatures (@anmonteiro, [#2770](https://github.com/reasonml/reason/pull/2770))
+
+## 3.11.0
+
 - Print structure items extension nodes correctly inside modules (@anmonteiro,
   [#2723](https://github.com/reasonml/reason/pull/2723))
 - Print wrapped type constraint on record patterns (@anmonteiro,
   [#2725](https://github.com/reasonml/reason/pull/2725))
+- Support OCaml 5.2 (@anmonteiro, [#2734](https://github.com/reasonml/reason/pull/2734))
 
 ## 3.10.0
 

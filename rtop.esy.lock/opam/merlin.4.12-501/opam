@@ -1,0 +1,81 @@
+opam-version: "2.0"
+maintainer:   "defree@gmail.com"
+authors:      "The Merlin team"
+homepage:     "https://github.com/ocaml/merlin"
+bug-reports:  "https://github.com/ocaml/merlin/issues"
+dev-repo:     "git+https://github.com/ocaml/merlin.git"
+license:      "MIT"
+build: [
+  ["dune" "subst"] {dev}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]
+depends: [
+  "ocaml" {>= "5.1" & < "5.2"}
+  "dune" {>= "2.9.0"}
+  "merlin-lib" {= version}
+  "dot-merlin-reader" {>= "4.9"}
+  "yojson" {>= "2.0.0"}
+  "conf-jq" {with-test}
+  "ppxlib" {with-test}
+]
+conflicts: [
+  "seq" {!= "base"}
+  "base-effects"
+]
+synopsis:
+  "Editor helper, provides completion, typing and source browsing in Vim and Emacs"
+description:
+  "Merlin is an assistant for editing OCaml code. It aims to provide the features available in modern IDEs: error reporting, auto completion, source browsing and much more."
+post-messages: [
+  "merlin installed.
+
+Quick setup for VIM
+-------------------
+Append this to your .vimrc to add merlin to vim's runtime-path:
+  let g:opamshare = substitute(system('opam var share'),'\\n$','','''')
+  execute \"set rtp+=\" . g:opamshare . \"/merlin/vim\"
+
+Also run the following line in vim to index the documentation:
+  :execute \"helptags \" . g:opamshare . \"/merlin/vim/doc\"
+
+Quick setup for EMACS
+-------------------
+Add opam emacs directory to your load-path by appending this to your .emacs:
+  (let ((opam-share (ignore-errors (car (process-lines \"opam\" \"var\" \"share\")))))
+   (when (and opam-share (file-directory-p opam-share))
+    ;; Register Merlin
+    (add-to-list 'load-path (expand-file-name \"emacs/site-lisp\" opam-share))
+    (autoload 'merlin-mode \"merlin\" nil t nil)
+    ;; Automatically start it in OCaml buffers
+    (add-hook 'tuareg-mode-hook 'merlin-mode t)
+    (add-hook 'caml-mode-hook 'merlin-mode t)
+    ;; Use opam switch to lookup ocamlmerlin binary
+    (setq merlin-command 'opam)
+    ;; To easily change opam switches within a given Emacs session, you can
+    ;; install the minor mode https://github.com/ProofGeneral/opam-switch-mode
+    ;; and use one of its \"OPSW\" menus.
+    ))
+Take a look at https://github.com/ocaml/merlin for more information
+
+Quick setup with opam-user-setup
+--------------------------------
+
+Opam-user-setup support Merlin.
+
+  $ opam user-setup install
+
+should take care of basic setup.
+See https://github.com/OCamlPro/opam-user-setup
+"
+  {success & !user-setup:installed}
+]
+url {
+  src:
+    "https://github.com/ocaml/merlin/releases/download/v4.12-501/merlin-4.12-501.tbz"
+  checksum: [
+    "sha256=cccc33235497403590f4f68a2f8a3727a265463984b3b9645ebc1abb2f9088c0"
+    "sha512=95ece87b42316824cc5c847bada2bb1f2131a2b75b00a79d561f1ff801d107146df6d2732cf340d5000a0de373a03d09714a35f75b0ec1e6ab869b2cdaf065e8"
+  ]
+}
+x-commit-hash: "fcc3157ab0b2ecccf6ac530d8add326fdbf9fb1c"

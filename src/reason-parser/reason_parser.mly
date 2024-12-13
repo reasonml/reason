@@ -141,12 +141,12 @@ module Clflags = Reason_syntax_util.Clflags
 
 let make_floating_doc attr =
   match attr with
-  | { Ppxlib.Parsetree.attr_name = {txt = "ocaml.doc"; _} as attr_name; _} ->
+  | { Ppxlib.attr_name = {txt = "ocaml.doc"; _} as attr_name; _} ->
       {attr with attr_name = {attr_name with txt = "ocaml.text"}}
   | attr -> attr
 
 let uncurry_payload ?(name="u") loc =
-  { Ppxlib.Parsetree.attr_name = {loc; txt = name};
+  { Ppxlib.attr_name = {loc; txt = name};
     attr_payload = PStr [];
     attr_loc = loc
   }
@@ -175,10 +175,10 @@ let ghloc ?(loc=dummy_loc ()) d =
 (**
   * turn an object into a real
   *)
-let make_real_exp ({ Ppxlib.Parsetree.pexp_loc; _ } as exp) =
+let make_real_exp ({ Ppxlib.pexp_loc; _ } as exp) =
   { exp with pexp_loc = make_real_loc pexp_loc }
 
-let make_real_pat ({ Ppxlib.Parsetree.ppat_loc; _ } as pat) =
+let make_real_pat ({ Ppxlib.ppat_loc; _ } as pat) =
   { pat with ppat_loc = make_real_loc ppat_loc }
 (*
  * change the location state to be a ghost location or real location
@@ -228,7 +228,7 @@ let mkctf ?(loc=dummy_loc()) ?(ghost=false) d =
 
 let may_tuple startp endp = function
   | []  -> assert false
-  | [x] -> {x with Ppxlib.Parsetree.pexp_loc = mklocation startp endp}
+  | [x] -> {x with Ppxlib.pexp_loc = mklocation startp endp}
   | xs  -> mkexp ~loc:(mklocation startp endp) (Pexp_tuple xs)
 
 (**
@@ -240,8 +240,8 @@ let may_tuple startp endp = function
 *)
 let mkct { Location.txt; loc } =
   let lident = Longident.Lident txt in
-  let ttype = Ppxlib.Parsetree.Ptyp_constr({txt = lident; loc = loc}, []) in
-  { Ppxlib.Parsetree.ptyp_desc = ttype
+  let ttype = Ppxlib.Ptyp_constr({txt = lident; loc = loc}, []) in
+  { Ppxlib.ptyp_desc = ttype
   ; ptyp_loc = loc
   ; ptyp_attributes = []
   ; ptyp_loc_stack =[]
@@ -253,7 +253,7 @@ let mkcf ?(loc=dummy_loc()) ?(ghost=false) d =
 
 let simple_ghost_text_attr ?(loc=dummy_loc ()) txt =
   let loc = set_loc_state true loc in
-  [{ Ppxlib.Parsetree.attr_name = {txt; loc};
+  [{ Ppxlib.attr_name = {txt; loc};
      attr_payload = PStr [];
      attr_loc = loc;
   }]
@@ -278,7 +278,7 @@ let mkExplicitArityTupleExp ?(loc=dummy_loc ()) exp_desc =
     exp_desc
 
 let is_pattern_list_single_any = function
-  | [{Ppxlib.Parsetree.ppat_desc=Ppat_any; ppat_attributes=[]} as onlyItem] ->
+  | [{Ppxlib.ppat_desc=Ppat_any; ppat_attributes=[]; _} as onlyItem] ->
     Some onlyItem
   | _ -> None
 
@@ -323,7 +323,7 @@ let neg_string f =
   then String.sub f 1 (String.length f - 1)
   else "-" ^ f
 
-let mkuminus name ({ Ppxlib.Parsetree.pexp_desc; _ } as arg) =
+let mkuminus name ({ Ppxlib.pexp_desc; _ } as arg) =
   match name.Location.txt, pexp_desc with
   | "-", Pexp_constant(Pconst_integer (n,m)) ->
       mkexp(Pexp_constant(Pconst_integer(neg_string n,m)))
@@ -345,7 +345,7 @@ let mk_functor_mty args body =
   in
   List.fold_right folder args body
 
-let mkuplus name ({ Ppxlib.Parsetree.pexp_desc; _ } as arg) =
+let mkuplus name ({ Ppxlib.pexp_desc; _ } as arg) =
   match name.Location.txt, pexp_desc with
   | "+", Pexp_constant(Pconst_integer _)
   | ("+" | "+."), Pexp_constant(Pconst_float _) ->
@@ -388,7 +388,7 @@ let mktailexp_extension loc seq ext_opt =
             let nil = { Location.txt = Longident.Lident "[]"; loc } in
             Ast_helper.Exp.mk ~loc (Pexp_construct (nil, None)) in
         base_case
-    | (e1: Ppxlib.Parsetree.expression) :: el ->
+    | (e1: Ppxlib.expression) :: el ->
         let exp_el = handle_seq el in
         let loc = mklocation e1.pexp_loc.loc_start exp_el.pexp_loc.loc_end in
         let arg = mkexp ~ghost:true ~loc (Pexp_tuple [e1; exp_el]) in
@@ -407,16 +407,16 @@ let mktailpat_extension loc (seq, ext_opt) =
           let nil = { Location.txt = Longident.Lident "[]"; loc } in
           mkpat ~loc (Ppat_construct (nil, None)) in
       base_case
-  | (p1: Ppxlib.Parsetree.pattern) :: pl ->
+  | (p1: Ppxlib.pattern) :: pl ->
       let pat_pl = handle_seq pl in
       let loc = mklocation p1.ppat_loc.loc_start pat_pl.ppat_loc.loc_end in
       let arg = mkpat ~ghost:true ~loc (Ppat_tuple [p1; pat_pl]) in
       ghpat_cons arg loc in
   handle_seq seq
 
-let makeFrag loc (body: Ppxlib.Parsetree.expression) =
+let makeFrag loc (body: Ppxlib.expression) =
   let attribute = {
-    Ppxlib.Parsetree.attr_name = { Location.txt = "JSX"; loc };
+    Ppxlib.attr_name = { Location.txt = "JSX"; loc };
     attr_payload = PStr [];
     attr_loc = loc
   }
@@ -426,8 +426,10 @@ let makeFrag loc (body: Ppxlib.Parsetree.expression) =
 
 (* Applies attributes to the structure item, not the expression itself. Makes
  * structure item have same location as expression. *)
-let mkstrexp e attrs =
-  { Ppxlib.Parsetree.pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
+let mkstrexp ?loc e attrs =
+  let loc = match loc with None -> e.Ppxlib.pexp_loc | Some loc -> loc in
+  let e = { e with pexp_loc = loc } in
+  { Ppxlib.pstr_desc = Pstr_eval (e, attrs); pstr_loc = e.pexp_loc }
 
 let ghexp_constraint loc e (t1, t2) =
   match t1, t2 with
@@ -481,7 +483,7 @@ let check_nonrec_absent loc nonrec_flag =
     let err = {|"nonrec", type substitutions are non recursive by default|} in
     raise Syntaxerr.(Error(Not_expecting(loc, err)))
 
-let mkexp_fun {Location.txt; loc} (body: Ppxlib.Parsetree.expression) =
+let mkexp_fun {Location.txt; loc} (body: Ppxlib.expression) =
   let loc = mklocation loc.loc_start body.pexp_loc.loc_end in
   match txt with
   | Reason_parser_def.Term (label, default_expr, pat) ->
@@ -489,7 +491,7 @@ let mkexp_fun {Location.txt; loc} (body: Ppxlib.Parsetree.expression) =
   | Type str ->
     Ast_helper.Exp.newtype ~loc (mkloc str loc) body
 
-let mkclass_fun {Location. txt ; loc} (body: Ppxlib.Parsetree.class_expr) =
+let mkclass_fun {Location. txt ; loc} (body: Ppxlib.class_expr) =
   let loc = mklocation loc.loc_start body.pcl_loc.loc_end in
   match txt with
   | Reason_parser_def.Term (label, default_expr, pat) ->
@@ -498,12 +500,12 @@ let mkclass_fun {Location. txt ; loc} (body: Ppxlib.Parsetree.class_expr) =
     let pat = syntax_error_pat loc "(type) not allowed in classes" in
     Ast_helper.Cl.fun_ ~loc Nolabel None pat body
 
-let mktyp_arrow ({Location.txt = (label, cod); loc}, uncurried) (dom: Ppxlib.Parsetree.core_type) =
+let mktyp_arrow ({Location.txt = (label, cod); loc}, uncurried) (dom: Ppxlib.core_type) =
   let loc = mklocation loc.loc_start dom.ptyp_loc.loc_end in
   let typ = mktyp ~loc (Ptyp_arrow (label, cod, dom)) in
   {typ with ptyp_attributes = (if uncurried then [uncurry_payload loc] else [])}
 
-let mkcty_arrow ({Location.txt = (label, cod); loc}, uncurried) (dom: Ppxlib.Parsetree.class_type) =
+let mkcty_arrow ({Location.txt = (label, cod); loc}, uncurried) (dom: Ppxlib.class_type) =
   let loc = mklocation loc.loc_start dom.pcty_loc.loc_end in
   let ct = mkcty ~loc (Pcty_arrow (label, cod, dom)) in
   {ct with pcty_attributes = (if uncurried then [uncurry_payload loc] else [])}
@@ -518,8 +520,8 @@ let process_underscore_application args =
   let exp_question = ref None in
   let hidden_var = "__x" in
   let check_arg ((lab, exp) as arg) =
-    match exp.Ppxlib.Parsetree.pexp_desc with
-    | Pexp_ident ({ txt = Lident "_"} as id) ->
+    match exp.Ppxlib.pexp_desc with
+    | Pexp_ident ({ txt = Lident "_"; _} as id) ->
         let new_id = mkloc (Longident.Lident hidden_var) id.loc in
         let new_exp = mkexp (Pexp_ident new_id) ~loc:exp.pexp_loc in
         exp_question := Some new_exp;
@@ -528,9 +530,9 @@ let process_underscore_application args =
         arg in
   let args = List.map check_arg args in
   let wrap exp_apply = match !exp_question with
-    | Some {pexp_loc=loc} ->
+    | Some {pexp_loc=loc;_} ->
         let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
-        begin match exp_apply.Ppxlib.Parsetree.pexp_desc with
+        begin match exp_apply.Ppxlib.pexp_desc with
         (* Transform pipe first with underscore application correct:
          * 5->doStuff(3, _, 7);
          * (5 |. doStuff)(3, _, 7)
@@ -538,10 +540,10 @@ let process_underscore_application args =
          *)
         | Pexp_apply(
           {pexp_desc= Pexp_apply(
-            {pexp_desc = Pexp_ident({txt = Longident.Lident("|.")})} as pipeExp,
-            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _} as arg2)]
+            {pexp_desc = Pexp_ident({txt = Longident.Lident "|."; _}); _} as pipeExp,
+            [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _; _} as arg2)]
             (*         5                            doStuff                   *)
-          )},
+          ); _},
           args (* [3, __x, 7] *)
           ) ->
             (* build `doStuff(3, __x, 7)` *)
@@ -582,7 +584,7 @@ let process_underscore_application args =
   *)
 let mkexp_app_rev startp endp (body, args) =
   let loc = mklocation startp endp in
-  if args = [] then {body with Ppxlib.Parsetree.pexp_loc = loc}
+  if args = [] then {body with Ppxlib.pexp_loc = loc}
   else
   (*
    * Post process the arguments and transform [@uncurry] into [@bs].
@@ -592,10 +594,10 @@ let mkexp_app_rev startp endp (body, args) =
   let rec process_args acc es =
     match es with
     | (lbl, e)::es ->
-        let attrs = e.Ppxlib.Parsetree.pexp_attributes in
+        let attrs = e.Ppxlib.pexp_attributes in
         let hasUncurryAttr = ref false in
         let newAttrs = List.filter (function
-          | { Ppxlib.Parsetree.attr_name = {txt = "uncurry"}; attr_payload = PStr []; _} ->
+          | { Ppxlib.attr_name = {txt = "uncurry"; _}; attr_payload = PStr []; _} ->
               hasUncurryAttr := true;
               false
           | _ -> true) attrs
@@ -655,7 +657,7 @@ let mkexp_app_rev startp endp (body, args) =
     let groups = group (false, []) [] processed_args in
     make_appl body groups
 
-let mkmod_app (mexp: Ppxlib.Parsetree.module_expr) (marg: Ppxlib.Parsetree.module_expr) =
+let mkmod_app (mexp: Ppxlib.module_expr) (marg: Ppxlib.module_expr) =
   mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
     (Pmod_apply (mexp, marg))
 
@@ -707,26 +709,26 @@ let check_variable vl loc v =
     raise_error (Variable_in_scope (loc,v)) loc
 
 let varify_constructors var_names t =
-  let rec loop (t: Ppxlib.Parsetree.core_type) =
+  let rec loop (t: Ppxlib.core_type) =
     let desc =
       match t.ptyp_desc with
-      | Ptyp_any -> Ppxlib.Parsetree.Ptyp_any
+      | Ptyp_any -> Ppxlib.Ptyp_any
       | Ptyp_var x ->
           check_variable var_names t.ptyp_loc x;
           Ptyp_var x
       | Ptyp_arrow (label,core_type,core_type') ->
           Ptyp_arrow(label, loop core_type, loop core_type')
       | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
-      | Ptyp_constr( { txt = Lident s }, []) when List.mem s var_names ->
+      | Ptyp_constr( { txt = Lident s; _ }, []) when List.mem s var_names ->
           Ptyp_var s
       | Ptyp_constr(longident, lst) ->
           Ptyp_constr(longident, List.map loop lst)
       | Ptyp_object (lst, o) ->
           Ptyp_object
             (List.map
-               (fun ({ Ppxlib.Parsetree.pof_desc; _ } as obj) ->
+               (fun ({ Ppxlib.pof_desc; _ } as obj) ->
                  let pof_desc' = match pof_desc with
-                   | Otag (s, t) -> Ppxlib.Parsetree.Otag (s, loop t)
+                   | Otag (s, t) -> Ppxlib.Otag (s, loop t)
                    | Oinherit t -> Oinherit (loop t)
                  in
                  { obj with pof_desc = pof_desc' }) lst, o)
@@ -751,7 +753,7 @@ let varify_constructors var_names t =
     fun ({ prf_desc; _} as rf) ->
       let prf_desc' = match prf_desc with
         | Rtag(label, flag, lst) ->
-          Ppxlib.Parsetree.Rtag(label, flag, List.map loop lst)
+          Ppxlib.Rtag(label, flag, List.map loop lst)
         | Rinherit t ->
           Rinherit (loop t)
       in
@@ -771,19 +773,46 @@ let pexp_newtypes ?loc newtypes exp =
 let wrap_type_annotation newtypes core_type body =
   let exp = mkexp(Pexp_constraint(body,core_type)) in
   let exp = pexp_newtypes newtypes exp in
-  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors (List.map (fun {txt} -> txt) newtypes) core_type)) in
+  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors (List.map (fun {txt; _} -> txt) newtypes) core_type)) in
   (exp, typ)
 
 
 let struct_item_extension (ext_attrs, ext_id) structure_items =
   mkstr ~ghost:true (Pstr_extension ((ext_id, PStr structure_items), ext_attrs))
 
+let wrap_str_ext ~loc body ext =
+  match ext with
+  | None -> body
+  | Some (ext_attrs, ext_id) ->
+    Ast_helper.Str.mk
+      ~loc:(make_ghost_loc loc)
+      (Pstr_extension ((ext_id, PStr [body]), ext_attrs))
+
+let wrap_sig_ext ~loc body ext =
+  match ext with
+  | None -> body
+  | Some (ext_attrs, ext_id) ->
+    Ppxlib.Psig_extension ((ext_id, PSig [mksig ~loc body]), ext_attrs)
+
+let mk_quotedext ~loc (id, idloc, str, delim) =
+  let exp_id = mkloc id idloc in
+  let e =
+    let attrs =
+      [ { Ppxlib.attr_name = mkloc "reason.quoted_extension" loc
+        ; attr_payload = PStr []
+        ; attr_loc = Location.none
+      } ]
+    in
+    mkexp ~loc ~ghost:true ~attrs (Pexp_constant (Pconst_string (str, loc, delim)))
+  in
+  (exp_id, Ppxlib.PStr [mkstrexp e []])
+
 let expression_extension ?loc (ext_attrs, ext_id) item_expr =
-  let extension = (ext_id, Ppxlib.Parsetree.PStr [mkstrexp item_expr []]) in
   let loc = match loc with
     | Some loc -> loc
     | None -> make_ghost_loc (dummy_loc ())
   in
+  let extension = (ext_id, Ppxlib.PStr [mkstrexp ~loc item_expr []]) in
   Ast_helper.Exp.extension ~loc ~attrs:ext_attrs extension
 
 (* There's no more need for these functions - this was for the following:
@@ -862,11 +891,11 @@ let reason_mapper = object
     match expr with
       | {pexp_desc=Pexp_construct(lid, args);
          pexp_loc;
-         pexp_attributes}
+         pexp_attributes; _}
         when Reason_syntax_util.attributes_conflicted "implicit_arity" "explicit_arity" pexp_attributes ->
          let new_args =
            match args with
-             | Some {pexp_desc = Pexp_tuple [sp]} -> Some sp
+             | Some {pexp_desc = Pexp_tuple [sp]; _} -> Some sp
              | _ -> args in
          super#expression
          { pexp_desc=Pexp_construct(lid, new_args);
@@ -879,10 +908,10 @@ let reason_mapper = object
     match pattern with
       | {ppat_desc=Ppat_construct(lid, args);
          ppat_loc;
-         ppat_attributes} when Reason_syntax_util.attributes_conflicted "implicit_arity" "explicit_arity" ppat_attributes ->
+         ppat_attributes; _} when Reason_syntax_util.attributes_conflicted "implicit_arity" "explicit_arity" ppat_attributes ->
          let new_args =
            match args with
-             | Some (x, {ppat_desc = Ppat_tuple [sp]}) -> Some (x, sp)
+             | Some (x, {ppat_desc = Ppat_tuple [sp]; _}) -> Some (x, sp)
              | _ -> args
          in
          super#pattern
@@ -933,7 +962,7 @@ let jsx_component lid attrs children loc =
   in
   let body = mkexp(Pexp_apply(element_fn, attrs @ children)) ~loc in
   let attribute = {
-    Ppxlib.Parsetree.attr_name = { Location.txt = "JSX"; loc };
+    Ppxlib.attr_name = { Location.txt = "JSX"; loc };
     attr_payload = PStr [];
     attr_loc = loc;
   }
@@ -971,24 +1000,24 @@ let doc_loc loc = {txt = "ocaml.doc"; loc = loc}
 let doc_attr text loc =
   (* Here is where we will convert from markdown to odoc - transform the "text" *)
   let exp =
-    { Ppxlib.Parsetree.pexp_desc = Pexp_constant (Pconst_string(text, loc, None));
+    { Ppxlib.pexp_desc = Pexp_constant (Pconst_string(text, loc, None));
       pexp_loc = loc;
       pexp_attributes = [];
       pexp_loc_stack = [];
     }
   in
   let item =
-    { Ppxlib.Parsetree.pstr_desc = Pstr_eval (exp, []); pstr_loc = exp.pexp_loc }
+    { Ppxlib.pstr_desc = Pstr_eval (exp, []); pstr_loc = exp.pexp_loc }
   in
   {
-    Ppxlib.Parsetree.attr_name = doc_loc loc;
+    Ppxlib.attr_name = doc_loc loc;
     attr_payload = PStr [item];
     attr_loc = loc
   }
 
 let prepend_attrs_to_labels attrs = function
   | [] -> [] (* not possible for valid inputs *)
-  | (x: Ppxlib.Parsetree.label_declaration) :: xs ->
+  | (x: Ppxlib.label_declaration) :: xs ->
       { x with pld_attributes = attrs @ x.pld_attributes } :: xs
 
 let raise_record_trailing_semi_error loc =
@@ -1028,9 +1057,9 @@ let filter_raise_spread_syntax msg nodes =
  * Rely on the parsing rules for generic module types, and then
  * extract a package type, enabling more explicit error messages
  * *)
-let package_type_of_module_type (pmty: Ppxlib.Parsetree.module_type) =
+let package_type_of_module_type (pmty: Ppxlib.module_type) =
   let map_cstr = function
-    | Ppxlib.Parsetree.Pwith_type (lid, ptyp) ->
+    | Ppxlib.Pwith_type (lid, ptyp) ->
         let loc = ptyp.ptype_loc in
         if ptyp.ptype_params <> [] then
           syntax_error loc "parametrized types are not supported";
@@ -1053,14 +1082,14 @@ let package_type_of_module_type (pmty: Ppxlib.Parsetree.module_type) =
        []
   in
   match pmty with
-  | {pmty_desc = Pmty_ident lid} -> Some (lid, [])
-  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid}, cstrs)} ->
+  | {pmty_desc = Pmty_ident lid; _} -> Some (lid, [])
+  | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid; _}, cstrs); _} ->
     Some (lid, List.flatten (List.map map_cstr cstrs))
   | _ -> None
 
-let add_brace_attr (expr: Ppxlib.Parsetree.expression) =
+let add_brace_attr (expr: Ppxlib.expression) =
   let attr = {
-    Ppxlib.Parsetree.attr_name = mknoloc "reason.preserve_braces";
+    Ppxlib.attr_name = mknoloc "reason.preserve_braces";
     attr_payload = PStr [];
     attr_loc = Location.none
   }
@@ -1205,6 +1234,10 @@ let add_brace_attr (expr: Ppxlib.Parsetree.expression) =
 %token STAR
 %token <string * string option * string option> STRING
   [@recover.expr ("", None, None)] [@recover.cost 2]
+%token
+  <string * Location.t * string * string option> QUOTED_STRING_EXPR
+%token
+  <string * Location.t * string * string option> QUOTED_STRING_ITEM
 %token STRUCT
 %token THEN
 %token TILDE
@@ -1368,19 +1401,19 @@ conflicts.
 (* Entry points *)
 
 %start implementation                   (* for implementation files *)
-%type <Ppxlib.Parsetree.structure> implementation
+%type <Ppxlib.structure> implementation
 %start interface                        (* for interface files *)
-%type <Ppxlib.Parsetree.signature> interface
+%type <Ppxlib.signature> interface
 %start toplevel_phrase                  (* for interactive use *)
-%type <Ppxlib.Parsetree.toplevel_phrase> toplevel_phrase
+%type <Ppxlib.toplevel_phrase> toplevel_phrase
 %start use_file                         (* for the #use directive *)
-%type <Ppxlib.Parsetree.toplevel_phrase list> use_file
+%type <Ppxlib.toplevel_phrase list> use_file
 %start parse_core_type
-%type <Ppxlib.Parsetree.core_type> parse_core_type
+%type <Ppxlib.core_type> parse_core_type
 %start parse_expression
-%type <Ppxlib.Parsetree.expression> parse_expression
+%type <Ppxlib.expression> parse_expression
 %start parse_pattern
-%type <Ppxlib.Parsetree.pattern> parse_pattern
+%type <Ppxlib.pattern> parse_pattern
 
 (* Instead of reporting an error directly, productions specified
  * below will be reduced first and popped up in the stack to a higher
@@ -1423,9 +1456,9 @@ interface:
 
 toplevel_phrase: embedded
   ( EOF                              { raise End_of_file }
-  | structure_item     SEMI          { Ppxlib.Parsetree.Ptop_def $1 }
+  | structure_item     SEMI          { Ppxlib.Ptop_def $1 }
   | toplevel_directive SEMI          {
-    let x: Ppxlib.Parsetree.toplevel_phrase = $1
+    let x: Ppxlib.toplevel_phrase = $1
     in
     x
   }
@@ -1434,12 +1467,12 @@ toplevel_phrase: embedded
 
 use_file_no_mapper: embedded
 ( EOF                              { [] }
-  | structure_item     SEMI use_file_no_mapper { Ppxlib.Parsetree.Ptop_def $1  :: $3 }
+  | structure_item     SEMI use_file_no_mapper { Ppxlib.Ptop_def $1  :: $3 }
   | toplevel_directive SEMI use_file_no_mapper { $1 :: $3 }
-  | structure_item     EOF           { [Ppxlib.Parsetree.Ptop_def $1 ] }
+  | structure_item     EOF           { [Ppxlib.Ptop_def $1 ] }
   | toplevel_directive EOF           { [$1] }
   ) {
-      let phrase: Ppxlib.Parsetree.toplevel_phrase list = $1 in
+      let phrase: Ppxlib.toplevel_phrase list = $1 in
       phrase
     }
 ;
@@ -1468,11 +1501,11 @@ parse_pattern:
 module_parameter:
 as_loc
   ( LPAREN RPAREN
-    { Ppxlib.Parsetree.Unit }
+    { Ppxlib.Unit }
   | as_loc(mod_ident) COLON module_type
-    { Ppxlib.Parsetree.Named ($1, $3) }
+    { Ppxlib.Named ($1, $3) }
   | as_loc(module_type)
-    { Ppxlib.Parsetree.Named ({ txt = None; loc = $1.loc}, $1.txt) }
+    { Ppxlib.Named ({ txt = None; loc = $1.loc}, $1.txt) }
 ) {$1};
 
 %inline two_or_more_module_parameters_comma_list:
@@ -1482,7 +1515,7 @@ as_loc
 functor_parameters:
   | LPAREN RPAREN
     { let loc = mklocation $startpos $endpos in
-      [mkloc Ppxlib.Parsetree.Unit loc]
+      [mkloc Ppxlib.Unit loc]
     }
   (* This single parameter case needs to be explicitly specified so that
    * menhir can automatically remove the conflict between sigature:
@@ -1650,15 +1683,16 @@ structure:
 ;
 
 opt_LET_MODULE_ident:
-  | opt_LET_MODULE as_loc(mod_ident) { $2 }
-  | opt_LET_MODULE as_loc(LIDENT)
-    { syntax_error $2.loc lowercase_module_msg; { $2 with txt = Some $2.txt } }
+  | opt_LET_MODULE item_extension_sugar as_loc(mod_ident) { Some $2, $3 }
+  | opt_LET_MODULE as_loc(mod_ident) { None, $2 }
+  | opt_LET_MODULE item_extension_sugar? as_loc(LIDENT)
+    { syntax_error $3.loc lowercase_module_msg; $2, { $3 with txt = Some $3.txt } }
 ;
 
 opt_LET_MODULE_REC_ident:
-  | opt_LET_MODULE REC as_loc(mod_ident) { $3 }
-  | opt_LET_MODULE REC as_loc(LIDENT)
-    { syntax_error $3.loc lowercase_module_msg; { $3 with txt = Some $3.txt } }
+  | opt_LET_MODULE item_extension_sugar? REC as_loc(mod_ident) { $2, $4 }
+  | opt_LET_MODULE item_extension_sugar? REC as_loc(LIDENT)
+    { syntax_error $4.loc lowercase_module_msg; $2, { $4 with txt = Some $4.txt } }
 ;
 
 structure_item:
@@ -1671,26 +1705,54 @@ structure_item:
       { let (ext_attrs, ext_id) = $2 in
         struct_item_extension ($1@ext_attrs, ext_id) $3 }
     | item_attributes
-      EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
+      EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type EQUAL primitive_declaration
       { let loc = mklocation $symbolstartpos $endpos in
-        mkstr (Pstr_primitive (Ast_helper.Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc)) }
+        wrap_str_ext
+          ~loc
+          (mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc)))
+          $3
+      }
     | item_attributes
-      EXTERNAL as_loc(val_ident) COLON core_type SEMI
+      EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type SEMI
       { let loc = mklocation $symbolstartpos $endpos in
-        mkstr (Pstr_primitive (Ast_helper.Val.mk $3 $5 ~prim:[""] ~attrs:$1 ~loc)) }
+        wrap_str_ext
+          ~loc
+          (mkstr (Pstr_primitive (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc)))
+          $3
+      }
     | type_declarations
-      { let (nonrec_flag, tyl) = $1 in mkstr(Pstr_type (nonrec_flag, tyl)) }
+      {
+        let (nonrec_flag, tyl, loc, extension) = $1 in
+        wrap_str_ext
+          ~loc
+          (mkstr(Pstr_type (nonrec_flag, tyl)))
+          extension
+      }
     | str_type_extension
-      { mkstr(Pstr_typext $1) }
+      { let typext, loc, extension = $1 in
+        wrap_str_ext
+          ~loc
+          (mkstr(Pstr_typext typext))
+          extension
+      }
     | str_exception_declaration
       { mkstr(Pstr_exception (Ast_helper.Te.mk_exception ~loc:$1.pext_loc $1)) }
     | item_attributes opt_LET_MODULE_ident module_binding_body
       { let loc = mklocation $symbolstartpos $endpos in
-        mkstr(Pstr_module (Ast_helper.Mb.mk $2 $3 ~attrs:$1 ~loc)) }
+        let ext, letmod = $2 in
+        wrap_str_ext
+          ~loc
+          (mkstr(Pstr_module (Ast_helper.Mb.mk letmod $3 ~attrs:$1 ~loc)))
+          ext
+      }
     | item_attributes opt_LET_MODULE_REC_ident module_binding_body
       and_module_bindings*
       { let loc = mklocation $symbolstartpos $endpos($2) in
-        mkstr (Pstr_recmodule ((Ast_helper.Mb.mk $2 $3 ~attrs:$1 ~loc) :: $4))
+        let ext, letmodule = $2 in
+        wrap_str_ext
+          ~loc
+          (mkstr (Pstr_recmodule ((Ast_helper.Mb.mk letmodule $3 ~attrs:$1 ~loc) :: $4)))
+          ext
       }
     | item_attributes MODULE TYPE OF? as_loc(ident)
       { let loc = mklocation $symbolstartpos $endpos in
@@ -1698,8 +1760,7 @@ structure_item:
     | item_attributes MODULE TYPE OF? as_loc(ident) module_type_body(EQUAL)
       { let loc = mklocation $symbolstartpos $endpos in
         mkstr(Pstr_modtype (Ast_helper.Mtd.mk $5 ~typ:$6 ~attrs:$1 ~loc)) }
-    | open_declaration
-      { mkstr(Pstr_open $1) }
+    | open_declaration { $1 }
     | item_attributes CLASS class_declaration_details and_class_declaration*
       { let (ident, binding, virt, params) = $3 in
         let loc = mklocation $symbolstartpos $endpos($3) in
@@ -1874,52 +1935,82 @@ signature:
   | signature_items SEMI signature { $1 @ $3 }
 ;
 
-
 signature_item:
   | item_attributes
-    LET as_loc(val_ident) COLON core_type
+    LET item_extension_sugar? as_loc(val_ident) COLON poly_type
     { let loc = mklocation $startpos($2) $endpos in
-      Psig_value (Ast_helper.Val.mk $3 $5 ~attrs:$1 ~loc)
+      wrap_sig_ext
+        ~loc
+        (Psig_value (Ast_helper.Val.mk $4 $6 ~attrs:$1 ~loc))
+        $3
     }
   | item_attributes
-    EXTERNAL as_loc(val_ident) COLON core_type EQUAL primitive_declaration
+    EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type EQUAL primitive_declaration
     { let loc = mklocation $symbolstartpos $endpos in
-      Psig_value (Ast_helper.Val.mk $3 $5 ~prim:$7 ~attrs:$1 ~loc)
+      wrap_sig_ext
+        ~loc
+        (Psig_value (Ast_helper.Val.mk $4 $6 ~prim:$8 ~attrs:$1 ~loc))
+        $3
     }
   | item_attributes
-    EXTERNAL as_loc(val_ident) COLON core_type SEMI
+    EXTERNAL item_extension_sugar? as_loc(val_ident) COLON core_type SEMI
     { let loc = mklocation $symbolstartpos $endpos in
-      Psig_value (Ast_helper.Val.mk $3 $5 ~prim:[""] ~attrs:$1 ~loc)
+      wrap_sig_ext
+        ~loc
+        (Psig_value (Ast_helper.Val.mk $4 $6 ~prim:[""] ~attrs:$1 ~loc))
+        $3
     }
   | type_declarations
-    { let (nonrec_flag, tyl) = $1 in Psig_type (nonrec_flag, tyl) }
+    { let (nonrec_flag, tyl, loc, extension) = $1 in
+      wrap_sig_ext
+        ~loc
+        (Psig_type (nonrec_flag, tyl))
+        extension
+    }
    | type_subst_declarations
     { Psig_typesubst $1 }
   | sig_type_extension
-    { Psig_typext $1 }
+    { let (typext, loc, extension) = $1 in
+      wrap_sig_ext
+        ~loc
+        (Psig_typext typext)
+        extension
+     }
   | sig_exception_declaration
     { Psig_exception $1 }
   | item_attributes opt_LET_MODULE_ident module_declaration
     { let loc = mklocation $symbolstartpos $endpos in
-      Psig_module (Ast_helper.Md.mk $2 $3 ~attrs:$1 ~loc)
+      let ext, letmod = $2 in
+      wrap_sig_ext
+        ~loc
+        (Psig_module (Ast_helper.Md.mk letmod $3 ~attrs:$1 ~loc))
+        ext
     }
   | item_attributes opt_LET_MODULE_ident EQUAL as_loc(mod_longident)
     { let loc = mklocation $symbolstartpos $endpos in
       let loc_mod = mklocation $startpos($4) $endpos($4) in
-      Psig_module (
-        Ast_helper.Md.mk
-            $2
+      let ext, letmod = $2 in
+      wrap_sig_ext
+        ~loc
+        (Psig_module
+          (Ast_helper.Md.mk
+            letmod
             (Ast_helper.Mty.alias ~loc:loc_mod $4)
             ~attrs:$1
-            ~loc
-            )
+            ~loc))
+        ext
     }
   | item_attributes opt_LET_MODULE as_loc(UIDENT) COLONEQUAL as_loc(mod_ext_longident)
     { Psig_modsubst (Ast_helper.Ms.mk $3 $5 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos))}
   | item_attributes opt_LET_MODULE_REC_ident module_type_body(COLON)
     and_module_rec_declaration*
     { let loc = mklocation $symbolstartpos $endpos($3) in
-      Psig_recmodule (Ast_helper.Md.mk $2 $3 ~attrs:$1 ~loc :: $4) }
+      let ext, letmodule = $2 in
+      wrap_sig_ext
+        ~loc
+        (Psig_recmodule (Ast_helper.Md.mk letmodule $3 ~attrs:$1 ~loc :: $4))
+        ext
+    }
   | item_attributes MODULE TYPE as_loc(ident)
     { let loc = mklocation $symbolstartpos $endpos in
       Psig_modtype (Ast_helper.Mtd.mk $4 ~attrs:$1 ~loc)
@@ -1928,18 +2019,21 @@ signature_item:
     { let loc = mklocation $symbolstartpos $endpos in
       Psig_modtype (Ast_helper.Mtd.mk $4 ~typ:$5 ~loc ~attrs:$1)
     }
-  | open_description
-    { Psig_open $1 }
+  | item_attributes MODULE TYPE as_loc(ident) COLONEQUAL module_type
+    { let loc = mklocation $symbolstartpos $endpos in
+      Psig_modtypesubst (Ast_helper.Mtd.mk $4 ~typ:$6 ~loc ~attrs:$1)
+    }
+  | open_description { $1 }
   | item_attributes INCLUDE module_type
     { let loc = mklocation $symbolstartpos $endpos in
-      Ppxlib.Parsetree.Psig_include (Ast_helper.Incl.mk $3 ~attrs:$1 ~loc)
+      Ppxlib.Psig_include (Ast_helper.Incl.mk $3 ~attrs:$1 ~loc)
     }
   | class_descriptions
     { Psig_class $1 }
   | class_type_declarations
     { Psig_class_type $1 }
   | item_attributes item_extension
-    { Ppxlib.Parsetree.Psig_extension ($2, $1) }
+    { Ppxlib.Psig_extension ($2, $1) }
 ;
 
 signature_items:
@@ -1951,13 +2045,28 @@ signature_items:
 ;
 
 open_declaration:
-  item_attributes OPEN override_flag module_expr
-  { Ast_helper.Opn.mk $4 ~override:$3 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
+  item_attributes OPEN override_flag item_extension_sugar? module_expr
+  {
+    let loc = mklocation $symbolstartpos $endpos in
+    let opn =
+      Ppxlib.Pstr_open
+        (Ast_helper.Opn.mk $5 ~override:$3 ~attrs:$1 ~loc)
+    in
+    wrap_str_ext
+     ~loc
+     (mkstr opn)
+     $4
+  }
 ;
 
 open_description:
-  item_attributes OPEN override_flag as_loc(mod_longident)
-  { Ast_helper.Opn.mk $4 ~override:$3 ~attrs:$1 ~loc:(mklocation $symbolstartpos $endpos) }
+  item_attributes OPEN override_flag item_extension_sugar? as_loc(mod_longident)
+  { let loc = mklocation $symbolstartpos $endpos in
+    let opn =
+      Ppxlib.Psig_open (Ast_helper.Opn.mk $5 ~override:$3 ~attrs:$1 ~loc)
+    in
+    wrap_sig_ext ~loc opn $4
+  }
 ;
 
 module_declaration:
@@ -2139,7 +2248,7 @@ value:
   | override_flag mutable_flag as_loc(label) type_constraint EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
       let e = ghexp_constraint loc $6 $4 in
-      ($3, $2, Ppxlib.Parsetree.Cfk_concrete ($1, e)) }
+      ($3, $2, Ppxlib.Cfk_concrete ($1, e)) }
 ;
 
 method_:
@@ -2174,9 +2283,9 @@ method_:
          Pexp_poly (Pexp_constraint (methodFunWithNewtypes, non_varified), Some (Ptyp_poly newTypes varified))
        *)
       let (exp_non_varified, poly_vars) = wrap_type_annotation $5 $7 $8 in
-      let exp = Ppxlib.Parsetree.Pexp_poly(exp_non_varified, Some poly_vars) in
+      let exp = Ppxlib.Pexp_poly(exp_non_varified, Some poly_vars) in
       let loc = mklocation $symbolstartpos $endpos in
-      ($2, Ppxlib.Parsetree.Cfk_concrete ($1, mkexp ~ghost:true ~loc exp))
+      ($2, Ppxlib.Cfk_concrete ($1, mkexp ~ghost:true ~loc exp))
     }
 ;
 
@@ -2481,7 +2590,7 @@ class_type_declaration_details:
  *)
 braced_expr:
 mark_position_exp
-  ( LBRACE seq_expr RBRACE
+  ( LBRACE seq_expr(SEMI?) RBRACE
     { add_brace_attr $2 }
   | LBRACE DOTDOTDOT expr_optional_constraint COMMA? RBRACE
     { let loc = mklocation $symbolstartpos $endpos in
@@ -2503,44 +2612,60 @@ mark_position_exp
     { mkexp (Pexp_object $2) }
 ) {$1};
 
-seq_expr_no_seq [@recover.expr default_expr ()]:
-| expr SEMI? { $1 }
-| opt_LET_MODULE_ident module_binding_body SEMI seq_expr
-  { mkexp (Pexp_letmodule($1, $2, $4)) }
-| item_attributes LET? OPEN override_flag as_loc(mod_longident) SEMI seq_expr
+seq_expr_no_seq [@recover.expr default_expr ()] (semi):
+| expr semi { $1 }
+| opt_LET_MODULE_ident module_binding_body SEMI seq_expr(SEMI?)
+ { let loc = mklocation $symbolstartpos $endpos in
+   let ext, letmod = $1 in
+   let exp = mkexp (Pexp_letmodule(letmod, $2, $4)) in
+   match ext with
+   | None -> exp
+   | Some (ext_attrs, ext_id) ->
+     mkexp ~loc (Pexp_extension (ext_id, PStr [mkstrexp exp ext_attrs]))
+  }
+| item_attributes LET? OPEN override_flag module_expr SEMI seq_expr(SEMI?)
   { let loc = (mklocation $startpos($1) $endpos($4)) in
-    let me = Ast_helper.Mod.ident ~loc $5 in
-    let od = Ast_helper.Opn.mk ~override:$4 ~loc me in
+    let od = Ast_helper.Opn.mk ~override:$4 ~loc $5 in
     let exp = mkexp (Pexp_open(od, $7)) in
     { exp with pexp_attributes = $1 }
   }
-| str_exception_declaration SEMI seq_expr {
+| item_attributes LET? OPEN item_extension_sugar module_expr SEMI seq_expr(SEMI?)
+  { let loc = (mklocation $startpos($1) $endpos($4)) in
+    let od = Ast_helper.Opn.mk ~override:Fresh ~loc $5 in
+    let exp =
+      let exp = mkexp (Pexp_open(od, $7)) in
+      { exp with pexp_attributes = $1 }
+    in
+    let (ext_attrs, ext_id)  = $4 in
+    mkexp ~loc (Pexp_extension (ext_id, PStr [mkstrexp exp ext_attrs]))
+  }
+| str_exception_declaration SEMI seq_expr(SEMI?) {
    mkexp (Pexp_letexception ($1, $3)) }
-| let_bindings SEMI seq_expr
+| let_bindings SEMI seq_expr(SEMI?)
   { let loc = mklocation $startpos($1) $endpos($3) in
     expr_of_let_bindings ~loc $1 $3
   }
-| let_bindings SEMI?
+| let_bindings semi
   { let loc = mklocation $symbolstartpos $endpos in
     expr_of_let_bindings ~loc $1 (ghunit ~loc ())
   }
-| as_loc(LETOP) letop_bindings SEMI seq_expr
-  { let (pbop_pat, pbop_exp, rev_ands) = $2 in
+| item_attributes as_loc(LETOP) letop_bindings SEMI seq_expr(SEMI?)
+  { let (pbop_pat, pbop_exp, rev_ands) = $3 in
     let ands = List.rev rev_ands in
-    let pbop_loc = mklocation $symbolstartpos $endpos($2) in
-    let let_ = {Ppxlib.Parsetree.pbop_op = $1; pbop_pat; pbop_exp; pbop_loc} in
-    mkexp ~loc:pbop_loc (Pexp_letop { let_; ands; body = $4}) }
+    let pbop_loc = mklocation $startpos($2) $endpos($3) in
+    let let_ = {Ppxlib.pbop_op = $2; pbop_pat; pbop_exp; pbop_loc} in
+    mkexp ~attrs:$1 ~loc:pbop_loc (Pexp_letop { let_; ands; body = $5}) }
 ;
 
-seq_expr:
+seq_expr(semi):
 mark_position_exp
-  ( seq_expr_no_seq
+  ( seq_expr_no_seq(semi)
     { $1 }
-  | item_extension_sugar mark_position_exp(seq_expr_no_seq)
+  | item_extension_sugar mark_position_exp(seq_expr_no_seq(SEMI?))
     { expression_extension $1 $2 }
-  | expr SEMI seq_expr
+  | expr SEMI seq_expr(SEMI?)
     { mkexp (Pexp_sequence($1, $3)) }
-  | item_extension_sugar expr SEMI seq_expr
+  | item_extension_sugar expr SEMI seq_expr(SEMI?)
     { let loc = mklocation $startpos($1) $endpos($2) in
       mkexp (Pexp_sequence(expression_extension ~loc $1 $2, $4)) }
   ) { $1 }
@@ -2768,7 +2893,7 @@ jsx:
       (* TODO: Make this tag check simply a warning *)
       let endName = Reason_syntax_util.parse_lid $4 in
       let _ = ensureTagsAreEqual start endName loc in
-      let siblings = if List.length $3 > 0 then $3 else [] in
+      let siblings = $3 in
       component [
         (Labelled "children", mktailexp_extension loc siblings None);
         (Nolabel, mkexp_constructor_unit loc loc)
@@ -2809,7 +2934,7 @@ jsx_without_leading_less:
     (* TODO: Make this tag check simply a warning *)
     let endName = Reason_syntax_util.parse_lid $4 in
     let _ = ensureTagsAreEqual start endName loc in
-    let siblings = if List.length $3 > 0 then $3 else [] in
+    let siblings = $3 in
     component [
       (Labelled "children", mktailexp_extension loc siblings None);
       (Nolabel, mkexp_constructor_unit loc loc)
@@ -2830,8 +2955,8 @@ jsx_without_leading_less:
 ;
 
 optional_expr_extension:
-  | (* empty *) { fun exp -> exp }
-  | item_extension_sugar { fun exp -> expression_extension $1 exp  }
+  | (* empty *) { fun ~loc:_ exp -> exp }
+  | item_extension_sugar { fun ~loc exp -> expression_extension ~loc $1 exp  }
 ;
 
 (*
@@ -2849,7 +2974,8 @@ mark_position_exp
   ( simple_expr
     { $1 }
   | FUN optional_expr_extension fun_def(EQUALGREATER,non_arrowed_core_type)
-    { $2 $3 }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc $3 }
   | ES6_FUN es6_parameters EQUALGREATER expr
     { let (ps, uncurried) = $2 in
       let exp = List.fold_right mkexp_fun ps $4 in
@@ -2872,21 +2998,27 @@ mark_position_exp
      such as below_BAR in order to let the entire list "build up"
    *)
   | FUN optional_expr_extension match_cases(expr) %prec below_BAR
-    { $2 (mkexp (Pexp_function $3)) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_function $3)) }
   | SWITCH optional_expr_extension simple_expr_no_constructor
-    LBRACE match_cases(seq_expr) RBRACE
-    { $2 (mkexp (Pexp_match ($3, $5))) }
+    LBRACE match_cases(seq_expr(SEMI?)) RBRACE
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_match ($3, $5))) }
   | TRY optional_expr_extension simple_expr_no_constructor
-    LBRACE match_cases(seq_expr) RBRACE
-    { $2 (mkexp (Pexp_try ($3, $5))) }
+    LBRACE match_cases(seq_expr(SEMI?)) RBRACE
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_try ($3, $5))) }
   | IF optional_expr_extension parenthesized_expr
        simple_expr ioption(preceded(ELSE,expr))
-    { $2 (mkexp (Pexp_ifthenelse($3, $4, $5))) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_ifthenelse($3, $4, $5))) }
   | WHILE optional_expr_extension parenthesized_expr simple_expr
-    { $2 (mkexp (Pexp_while($3, $4))) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_while($3, $4))) }
   | FOR optional_expr_extension LPAREN pattern IN expr direction_flag expr RPAREN
     simple_expr
-    { $2 (mkexp (Pexp_for($4, $6, $8, $7, $10))) }
+    { let loc = mklocation $startpos $endpos in
+      $2 ~loc (mkexp (Pexp_for($4, $6, $8, $7, $10))) }
   | LPAREN COLONCOLON RPAREN LPAREN expr COMMA expr RPAREN
     { let loc_colon = mklocation $startpos($2) $endpos($2) in
       let loc = mklocation $symbolstartpos $endpos in
@@ -2908,13 +3040,13 @@ mark_position_exp
     { mkexp(Pexp_setfield($1, $3, $5)) }
   | simple_expr LBRACKET expr RBRACKET EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
-      let exp = Ppxlib.Parsetree.Pexp_ident(array_function ~loc "Array" "set") in
+      let exp = Ppxlib.Pexp_ident(array_function ~loc "Array" "set") in
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp,
                        [Nolabel,$1; Nolabel,$3; Nolabel,$6]))
     }
   | simple_expr DOT LBRACKET expr RBRACKET EQUAL expr
     { let loc = mklocation $symbolstartpos $endpos in
-      let exp = Ppxlib.Parsetree.Pexp_ident(array_function ~loc "String" "set") in
+      let exp = Ppxlib.Pexp_ident(array_function ~loc "String" "set") in
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp,
                        [Nolabel,$1; Nolabel,$4; Nolabel,$7]))
     }
@@ -3007,6 +3139,10 @@ parenthesized_expr:
 %inline bigarray_access:
   DOT LBRACE lseparated_nonempty_list(COMMA, expr) COMMA? RBRACE { $3 }
 
+expr_list_or_seq_expr:
+  | expr_list { $1 }
+  | seq_expr(SEMI) { [$1] };
+
 (* The grammar of simple exprs changes slightly according to context:
  * - in most cases, calls (like f(x)) are allowed
  * - in some contexts, calls are forbidden
@@ -3033,8 +3169,15 @@ parenthesized_expr:
     { may_tuple $startpos $endpos $2 }
   | E as_loc(POSTFIXOP)
     { mkexp(Pexp_apply(mkoperator $2, [Nolabel, $1])) }
-  | od=open_dot_declaration DOT LPAREN expr_list RPAREN
-    { mkexp(Pexp_open(od, may_tuple $startpos($3) $endpos($5) $4)) }
+  | od=open_dot_declaration DOT LPAREN expr_list_or_seq_expr RPAREN
+    {
+      let loc = mklocation $symbolstartpos $endpos in
+      let openSyntaxNotationAttribute = {
+        Ppxlib.attr_name = mkloc "reason.openSyntaxNotation" loc;
+        attr_payload = PStr [];
+        attr_loc = Location.none
+      } in
+      mkexp ~attrs:[openSyntaxNotationAttribute] (Pexp_open(od, may_tuple $startpos($3) $endpos($5) $4)) }
   | E DOT as_loc(label_longident)
     { mkexp(Pexp_field($1, $3)) }
   | od=open_dot_declaration DOT LBRACE RBRACE
@@ -3044,12 +3187,12 @@ parenthesized_expr:
     }
   | E LBRACKET expr RBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
-      let exp = Ppxlib.Parsetree.Pexp_ident(array_function ~loc "Array" "get") in
+      let exp = Ppxlib.Pexp_ident(array_function ~loc "Array" "get") in
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp, [Nolabel,$1; Nolabel,$3]))
     }
   | E DOT LBRACKET expr RBRACKET
     { let loc = mklocation $symbolstartpos $endpos in
-      let exp = Ppxlib.Parsetree.Pexp_ident(array_function ~loc "String" "get") in
+      let exp = Ppxlib.Pexp_ident(array_function ~loc "String" "get") in
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc exp, [Nolabel,$1; Nolabel,$4]))
     }
   | E bigarray_access
@@ -3119,11 +3262,6 @@ parenthesized_expr:
       mkinfixop $1 (mkoperator op) $3 }
   | E as_loc(MINUSGREATER) simple_expr_no_call
     { mkinfixop $1 (mkoperator {$2 with txt = "|."}) $3 }
-  | od=open_dot_declaration DOT LPAREN MODULE module_expr COLON package_type RPAREN
-    { let loc = mklocation $symbolstartpos $endpos in
-      mkexp (Pexp_open(od,
-        mkexp ~loc (Pexp_constraint (mkexp ~ghost:true ~loc (Pexp_pack $5), $7))))
-    }
   | extension
     { mkexp (Pexp_extension $1) }
 ;
@@ -3254,7 +3392,7 @@ labeled_expr_constraint:
   | DOT? labeled_expr {
     let uncurried = match $1 with | Some _ -> true | None -> false in
     if uncurried then
-      let (lbl, (argExpr: Ppxlib.Parsetree.expression)) = $2 in
+      let (lbl, (argExpr: Ppxlib.expression)) = $2 in
       let loc = mklocation $startpos $endpos in
       let up = uncurry_payload ~name:"uncurry" loc in
       (lbl, {argExpr with pexp_attributes = up::argExpr.pexp_attributes})
@@ -3425,7 +3563,7 @@ letop_bindings:
       { let let_pat, let_exp, rev_ands = bindings in
         let pbop_pat, pbop_exp = body in
         let pbop_loc = mklocation $symbolstartpos $endpos in
-        let and_ = {Ppxlib.Parsetree.pbop_op; pbop_pat; pbop_exp; pbop_loc} in
+        let and_ = {Ppxlib.pbop_op; pbop_pat; pbop_exp; pbop_loc} in
         let_pat, let_exp, and_ :: rev_ands }
 ;
 
@@ -3443,13 +3581,28 @@ letop_bindings:
 %inline match_cases(EXPR): lnonempty_list(match_case(EXPR)) { $1 };
 
 match_case(EXPR):
-  as_loc(BAR) pattern preceded(WHEN,expr)? EQUALGREATER EXPR
+  | as_loc(BAR) pattern EQUALGREATER EXPR
   { let pat = {$2 with ppat_loc =
       { $2.ppat_loc with
         loc_start = $1.loc.loc_start
       }
     } in
-    Ast_helper.Exp.case pat ?guard:$3 $5 }
+    Ast_helper.Exp.case pat $4 }
+  | as_loc(BAR) pattern preceded(WHEN,expr) EQUALGREATER EXPR
+  { let pat = {$2 with ppat_loc =
+      { $2.ppat_loc with
+        loc_start = $1.loc.loc_start
+      }
+    } in
+    Ast_helper.Exp.case pat ~guard:$3 $5 }
+  | as_loc(BAR) pattern EQUALGREATER as_loc(DOT)
+  {
+    let pat = {
+      $2 with ppat_loc =
+      { $2.ppat_loc with loc_start = $1.loc.loc_start }
+    } in
+    Ast_helper.Exp.(case pat (unreachable ~loc:$4.loc ()))
+  }
 ;
 
 fun_def(DELIM, typ):
@@ -3603,7 +3756,7 @@ field_expr:
    *
    * After `blah`, the parser couldn't tell whether to reduce `label` or
    * `val_ident`. So inlining the terminal here to avoid the whole decision.
-   * Another approach would have been to place the `label` rule at at a precedence
+   * Another approach would have been to place the `label` rule at a precedence
    * of below_COLON or something.
    *)
  | as_loc(LIDENT) COLON expr
@@ -3926,7 +4079,14 @@ type_declarations:
     let loc = mklocation $startpos($2) endpos in
     let ty = Ast_helper.Type.mk ident ~params:params ~cstrs:constraints
              ~kind ~priv ?manifest ~attrs:$1 ~loc in
-    ($3, ty :: and_types)
+    ($3, ty :: and_types, loc, None)
+  }
+  | item_attributes TYPE item_extension_sugar nonrec_flag type_declaration_details
+  { let (ident, params, constraints, kind, priv, manifest), endpos, and_types = $5 in
+    let loc = mklocation $startpos($2) endpos in
+    let ty = Ast_helper.Type.mk ident ~params:params ~cstrs:constraints
+             ~kind ~priv ?manifest ~attrs:$1 ~loc in
+    ($4, ty :: and_types, loc, Some $3)
   }
 ;
 
@@ -3968,7 +4128,7 @@ type_subst_kind:
       ((Ptype_variant (cstrs), $2, None), constraints, endpos, and_types) }
   | COLONEQUAL core_type EQUAL private_flag type_subst_constructor_declarations
     { let (cstrs, constraints, endpos, and_types) = $5 in
-      ((Ppxlib.Parsetree.Ptype_variant cstrs, $4, Some $2), constraints, endpos, and_types) }
+      ((Ppxlib.Ptype_variant cstrs, $4, Some $2), constraints, endpos, and_types) }
   | type_subst_other_kind constraints and_type_subst_declaration
     { ($1, $2, $endpos($2), $3) }
 ;
@@ -4010,22 +4170,22 @@ type_subst_other_kind:
 
 type_other_kind:
   | (*empty*)
-    { (Ppxlib.Parsetree.Ptype_abstract, Public, None) }
+    { (Ppxlib.Ptype_abstract, Public, None) }
   | nonempty_type_other_kind(EQUAL)
     { $1 }
 ;
 
 %inline nonempty_type_other_kind(eq_symbol):
   | eq_symbol private_flag core_type
-    { (Ppxlib.Parsetree.Ptype_abstract, $2, Some $3) }
+    { (Ppxlib.Ptype_abstract, $2, Some $3) }
   | eq_symbol private_flag item_attributes record_declaration
-    { (Ppxlib.Parsetree.Ptype_record (prepend_attrs_to_labels $3 $4), $2, None) }
+    { (Ppxlib.Ptype_record (prepend_attrs_to_labels $3 $4), $2, None) }
   | eq_symbol private_flag DOTDOT
-    { (Ppxlib.Parsetree.Ptype_open, $2, None) }
+    { (Ppxlib.Ptype_open, $2, None) }
   | eq_symbol core_type EQUAL DOTDOT
-    { (Ppxlib.Parsetree.Ptype_open, Public, Some $2) }
+    { (Ppxlib.Ptype_open, Public, Some $2) }
   | eq_symbol core_type EQUAL private_flag item_attributes record_declaration
-    { (Ppxlib.Parsetree.Ptype_record (prepend_attrs_to_labels $5 $6), $4, Some $2) }
+    { (Ppxlib.Ptype_record (prepend_attrs_to_labels $5 $6), $4, Some $2) }
 ;
 
 type_variables_with_variance_comma_list:
@@ -4051,7 +4211,7 @@ type_variable_with_variance:
   | MINUS QUOTE ident { (mktyp (Ptyp_var $3) , (Contravariant, NoInjectivity)) }
   | MINUS UNDERSCORE  { (mktyp Ptyp_any      , (Contravariant, NoInjectivity)) }
   )
-  { let (first: Ppxlib.Parsetree.core_type), second = $1 in
+  { let (first: Ppxlib.core_type), second = $1 in
     let ptyp_loc =
         {first.ptyp_loc with loc_start = $symbolstartpos; loc_end = $endpos}
     in
@@ -4124,7 +4284,7 @@ str_exception_declaration:
   item_attributes EXCEPTION
     either(extension_constructor_declaration, extension_constructor_rebind)
   {
-    let expr: Ppxlib.Parsetree.extension_constructor = $3 in
+    let expr: Ppxlib.extension_constructor = $3 in
     { expr with pext_attributes = expr.pext_attributes @ $1}
   }
 ;
@@ -4133,7 +4293,7 @@ sig_exception_declaration:
   item_attributes EXCEPTION
     extension_constructor_declaration
   { let decl =
-      let ext: Ppxlib.Parsetree.extension_constructor = $3 in
+      let ext: Ppxlib.extension_constructor = $3 in
       { ext with pext_attributes = ext.pext_attributes @ $1}
     in
     Ast_helper.Te.mk_exception ~loc:decl.pext_loc decl
@@ -4142,7 +4302,7 @@ sig_exception_declaration:
 
 generalized_constructor_arguments:
   constructor_arguments? preceded(COLON,core_type)?
-  { ((match $1 with None -> Ppxlib.Parsetree.Pcstr_tuple [] | Some x -> x), $2) }
+  { ((match $1 with None -> Ppxlib.Pcstr_tuple [] | Some x -> x), $2) }
 ;
 
 constructor_arguments_comma_list:
@@ -4181,7 +4341,8 @@ record_declaration:
 
 str_type_extension:
   attrs = item_attributes
-  TYPE flag = nonrec_flag
+  TYPE
+  flag = nonrec_flag
     ident = as_loc(itype_longident)
     params = type_variables_with_variance
   PLUSEQ priv = embedded(private_flag)
@@ -4189,13 +4350,29 @@ str_type_extension:
     attributed_ext_constructors(either(extension_constructor_declaration, extension_constructor_rebind))
   { if flag <> Recursive then
       not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
-    Ast_helper.Te.mk ~params ~priv ~attrs ident constructors
+    let loc = mklocation $startpos($2) $endpos in
+    (Ast_helper.Te.mk ~loc ~params ~priv ~attrs ident constructors, loc, None)
+  }
+  | attrs = item_attributes
+  TYPE
+    extension = item_extension_sugar
+  flag = nonrec_flag
+    ident = as_loc(itype_longident)
+    params = type_variables_with_variance
+  PLUSEQ priv = embedded(private_flag)
+  constructors =
+    attributed_ext_constructors(either(extension_constructor_declaration, extension_constructor_rebind))
+  { if flag <> Recursive then
+      not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
+    let loc = mklocation $startpos($2) $endpos in
+    (Ast_helper.Te.mk ~loc ~params ~priv ~attrs ident constructors, loc, Some extension)
   }
 ;
 
 sig_type_extension:
   attrs = item_attributes
-  TYPE flag = nonrec_flag
+  TYPE
+  flag = nonrec_flag
     ident = as_loc(itype_longident)
     params = type_variables_with_variance
   PLUSEQ priv = embedded(private_flag)
@@ -4203,7 +4380,22 @@ sig_type_extension:
     attributed_ext_constructors(extension_constructor_declaration)
   { if flag <> Recursive then
       not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
-    Ast_helper.Te.mk ~params ~priv ~attrs ident constructors
+    let loc = mklocation $startpos($2) $endpos in
+    (Ast_helper.Te.mk ~params ~priv ~attrs ident constructors, loc, None)
+  }
+  | attrs = item_attributes
+  TYPE
+  extension = item_extension_sugar
+  flag = nonrec_flag
+    ident = as_loc(itype_longident)
+    params = type_variables_with_variance
+  PLUSEQ priv = embedded(private_flag)
+  constructors =
+    attributed_ext_constructors(extension_constructor_declaration)
+  { if flag <> Recursive then
+      not_expecting $startpos(flag) $endpos(flag) "nonrec flag";
+    let loc = mklocation $startpos($2) $endpos in
+    (Ast_helper.Te.mk ~params ~priv ~attrs ident constructors, loc, Some extension)
   }
 ;
 
@@ -4271,7 +4463,11 @@ with_constraint:
       { Pwith_module ($2, $4) }
   | MODULE as_loc(UIDENT) COLONEQUAL as_loc(mod_ext_longident)
       { let lident = {$2 with txt=Longident.Lident $2.txt} in
-        Ppxlib.Parsetree.Pwith_modsubst (lident, $4) }
+        Pwith_modsubst (lident, $4) }
+  | MODULE TYPE as_loc(mty_longident) EQUAL module_type
+      { Ppxlib.Pwith_modtype ($3, $5) }
+  | MODULE TYPE as_loc(mty_longident) COLONEQUAL module_type
+      { Ppxlib.Pwith_modtypesubst ($3, $5) }
 ;
 
 (* Polymorphic types *)
@@ -4558,6 +4754,7 @@ mark_position_typ
     { mktyp(Ptyp_constr($1, [])) }
   | object_record_type
     { $1 }
+  | LBRACKETBAR row_field_list RBRACKET
   | LBRACKET row_field_list RBRACKET
     { mktyp(Ptyp_variant ($2, Closed, None)) }
   | LBRACKETGREATER loption(row_field_list) RBRACKET
@@ -4665,7 +4862,7 @@ constant:
       | None -> []
       | Some raw ->
         let constant = Ast_helper.Exp.constant (Pconst_string (raw, loc, None)) in
-        [ { Ppxlib.Parsetree.attr_name = mkloc "reason.raw_literal" loc;
+        [ { Ppxlib.attr_name = mkloc "reason.raw_literal" loc;
             attr_payload = PStr [mkstrexp constant []];
             attr_loc = Location.none
           } ]
@@ -4679,7 +4876,7 @@ signed_constant:
   | MINUS INT    { let (n, m) = $2 in ([], Pconst_integer("-" ^ n, m)) }
   | MINUS FLOAT  { let (f, m) = $2 in ([], Pconst_float("-" ^ f, m)) }
   | PLUS INT     { let (n, m) = $2 in ([], Pconst_integer (n, m)) }
-  | PLUS FLOAT   { let (f, m) = $2 in ([], Ppxlib.Parsetree.Pconst_float(f, m)) }
+  | PLUS FLOAT   { let (f, m) = $2 in ([], Ppxlib.Pconst_float(f, m)) }
 ;
 
 (* Identifiers and long identifiers *)
@@ -4851,22 +5048,22 @@ class_longident:
 toplevel_directive:
   SHARP as_loc(ident) embedded
           ( (* empty *)   { None }
-          | STRING        { let (s, _, _) = $1 in Some(Ppxlib.Parsetree.Pdir_string s) }
-          | INT           { let (n, m) = $1 in Some(Ppxlib.Parsetree.Pdir_int (n, m)) }
-          | val_longident { Some(Ppxlib.Parsetree.Pdir_ident $1) }
-          | mod_longident { Some(Ppxlib.Parsetree.Pdir_ident $1) }
-          | FALSE         { Some(Ppxlib.Parsetree.Pdir_bool false) }
-          | TRUE          { Some(Ppxlib.Parsetree.Pdir_bool true) }
+          | STRING        { let (s, _, _) = $1 in Some(Ppxlib.Pdir_string s) }
+          | INT           { let (n, m) = $1 in Some(Ppxlib.Pdir_int (n, m)) }
+          | val_longident { Some(Ppxlib.Pdir_ident $1) }
+          | mod_longident { Some(Ppxlib.Pdir_ident $1) }
+          | FALSE         { Some(Ppxlib.Pdir_bool false) }
+          | TRUE          { Some(Ppxlib.Pdir_bool true) }
           )
   {
     let pdir_arg = match $3 with
     | None -> None
     | Some pdira_desc -> Some {
-      Ppxlib.Parsetree.pdira_desc;
+      Ppxlib.pdira_desc;
       pdira_loc = mklocation $startpos($3) $endpos($3);
     }
     in
-    Ppxlib.Parsetree.Ptop_dir
+    Ppxlib.Ptop_dir
       { pdir_name = $2
       ; pdir_arg
       ; pdir_loc = $2.loc
@@ -5024,10 +5221,16 @@ item_extension_sugar:
 
 extension:
   LBRACKETPERCENT attr_id payload RBRACKET { ($2, $3) }
+  | QUOTED_STRING_EXPR
+    { let loc = mklocation $symbolstartpos $endpos in
+      mk_quotedext ~loc $1 }
 ;
 
 item_extension:
   LBRACKETPERCENTPERCENT attr_id payload RBRACKET { ($2, $3) }
+  | QUOTED_STRING_ITEM
+    { let loc = mklocation $symbolstartpos $endpos in
+      mk_quotedext ~loc $1 }
 ;
 
 payload:
@@ -5057,7 +5260,7 @@ payload:
   | simple_pattern_ident EQUALGREATER expr
     { let loc = mklocation $symbolstartpos $endpos in
       let expr = Ast_helper.Exp.fun_ ~loc Nolabel None $1 $3 in
-      Ppxlib.Parsetree.PStr([mkstrexp expr []])
+      Ppxlib.PStr([mkstrexp expr []])
     }
 ;
 
@@ -5068,31 +5271,31 @@ optional:
 
 %inline mark_position_mod(X): x = X
   {
-    let x: Ppxlib.Parsetree.module_expr = x in
+    let x: Ppxlib.module_expr = x in
     {x with pmod_loc = {x.pmod_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_cty(X): x = X
   {
-    let x : Ppxlib.Parsetree.class_type = x in
+    let x : Ppxlib.class_type = x in
     {x with pcty_loc = {x.pcty_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_ctf(X): x = X
   {
-    let x: Ppxlib.Parsetree.class_type_field = x in
+    let x: Ppxlib.class_type_field = x in
     {x with pctf_loc = {x.pctf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_exp(X): x = X
   {
-    let x: Ppxlib.Parsetree.expression = x in
+    let x: Ppxlib.expression = x in
     {x with pexp_loc = {x.pexp_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_typ(X): x = X
   {
-    let x: Ppxlib.Parsetree.core_type = x in
+    let x: Ppxlib.core_type = x in
     { x
       with ptyp_loc =
         { x.ptyp_loc with loc_start = $symbolstartpos; loc_end = $endpos }
@@ -5102,7 +5305,7 @@ optional:
 
 %inline mark_position_mty(X): x = X
   {
-    let x: Ppxlib.Parsetree.module_type = x in
+    let x: Ppxlib.module_type = x in
     { x
       with pmty_loc =
       {x.pmty_loc with loc_start = $symbolstartpos; loc_end = $endpos}
@@ -5112,7 +5315,7 @@ optional:
 
 %inline mark_position_str(X): x = X
   {
-    let x: Ppxlib.Parsetree.structure_item = x in
+    let x: Ppxlib.structure_item = x in
     { x
       with pstr_loc =
         { x.pstr_loc with loc_start = $symbolstartpos; loc_end = $endpos }
@@ -5122,19 +5325,19 @@ optional:
 
 %inline mark_position_cl(X): x = X
   {
-    let x: Ppxlib.Parsetree.class_expr = x in
+    let x: Ppxlib.class_expr = x in
     {x with pcl_loc = {x.pcl_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_cf(X): x = X
    {
-      let x: Ppxlib.Parsetree.class_field = x in
+      let x: Ppxlib.class_field = x in
      {x with pcf_loc = {x.pcf_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }
 ;
 
 %inline mark_position_pat(X): x = X
    {
-     let x: Ppxlib.Parsetree.pattern = x in
+     let x: Ppxlib.pattern = x in
      { x
        with ppat_loc =
          {x.ppat_loc with loc_start = $symbolstartpos; loc_end = $endpos}} }

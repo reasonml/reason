@@ -1,14 +1,22 @@
 (executable
- (name refmt_impl)
  (public_name refmt)
  (package reason)
+ (modes exe byte)
  (libraries reason reason.cmdliner dune-build-info))
 
 (rule
- (targets git_commit.ml)
- (action
-  (with-stdout-to
-   %{targets}
-   (progn
-    (bash "echo let version = \\\"$(git rev-parse --verify HEAD)\\\"")
-    (bash "echo let short_version = \\\"$(git rev-parse --short HEAD)\\\"")))))
+ (with-stdout-to
+  git_commit.ml
+  (progn
+   (bash "echo let version = \\\"$(git rev-parse --verify HEAD)\\\"")
+   (bash "echo let short_version = \\\"$(git rev-parse --short HEAD)\\\""))))
+
+(rule
+ (with-stdout-to
+  refmt.1
+  (run %{bin:refmt} --help=groff)))
+
+(install
+ (section man)
+ (package reason)
+ (files refmt.1))

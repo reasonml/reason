@@ -1246,6 +1246,14 @@ let testCallNamedArgs = (foo: ((~a: int, ~b: int=?) => int), a, b) =>
 let Foo.{name} = bar;
 let Foo.Bar.{name} = bar;
 
+let Foo.{
+  destruct1,
+  destruct2,
+  destruct3,
+  destruct4,
+  destruct5,
+} = fooBar;
+
 let Foo.[ name ] = bar;
 let Foo.Bar.[ name ] = bar;
 
@@ -1276,3 +1284,45 @@ class y = {
   open OM;
   as self;
 };
+
+// Arbitrary precision literals
+
+let x = 1G;
+let x = 1.123g;
+
+let x = switch () { | _ => .};
+
+let%foo Foo.{
+  destruct1,
+  destruct2,
+  destruct3,
+  destruct4,
+  destruct5,
+} = fooBar;
+
+open%foo Bar;
+open! %foo Bar;
+
+let () = {
+  let open%foo Bar;
+  switch (1 + 1) {
+  | 2 => ()
+  | _ => ()
+  };
+};
+
+let () = {
+  let open%foo Bar;
+  3
+};
+
+let () = {
+  let open%foo Bar;
+  let x = 1;
+  3
+};
+
+module type x = {
+  let a: 'a. 'a => unit;
+};
+

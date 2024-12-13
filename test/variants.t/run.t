@@ -270,7 +270,14 @@ Format variants
   
   let result =
     switch (
-      AlsoHasARecord(10, 10, {x: 10, y: 20})
+      AlsoHasARecord(
+        10,
+        10,
+        {
+          x: 10,
+          y: 20,
+        },
+      )
     ) {
     | Blah => 1000
     | AlsoHasARecord(a, b, {x, y}) =>
@@ -691,6 +698,22 @@ Format variants
     | `DEFAULT /* here */
     | `HOVER
     | `ACTIVE
+  ];
+  
+  /* [| purposely without space */
+  type apiKeyError = [
+    | `Dev
+    | `Prod
+  ];
+  
+  /* other polyvar variations */
+  type apiKeyError = [
+    | `Dev
+    | `Prod
+  ];
+  type apiKeyError = [
+    | `Dev
+    | `Prod
   ];
 /* Doesn't work because we've correctly annotated parse tree nodes with   explicit_arity! */
 /* let notTupled: notTupleVariant = NotActuallyATuple intTuple; /*Doesn't work! */  */

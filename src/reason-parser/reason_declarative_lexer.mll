@@ -188,6 +188,16 @@ let set_lexeme_length buf n = (
                      with pos_cnum = buf.lex_abs_pos + buf.lex_curr_pos};
 )
 
+let compute_quoted_string_idloc {Location.loc_start = orig_loc; _ } shift id =
+  let id_start_pos = orig_loc.Lexing.pos_cnum + shift in
+  let loc_start =
+    Lexing.{orig_loc with pos_cnum = id_start_pos }
+  in
+  let loc_end =
+    Lexing.{orig_loc with pos_cnum = id_start_pos + String.length id}
+  in
+  {Location. loc_start ; loc_end ; loc_ghost = false }
+
 (* This cut comment characters of the current buffer.
  * Operators (including "/*" and "//") are lexed with the same rule, and this
  * function cuts the lexeme at the beginning of an operator. *)
@@ -231,6 +241,21 @@ let lexeme_operator lexbuf =
 
 (* To translate escape sequences *)
 
+let hex_digit_value d = (* assert (d in '0'..'9' 'a'..'f' 'A'..'F') *)
+  let d = Char.code d in
+  if d >= 97 then d - 87 else
+  if d >= 65 then d - 55 else
+  d - 48
+
+let hex_num_value lexbuf ~first ~last =
+  let rec loop acc i = match i > last with
+  | true -> acc
+  | false ->
+      let value = hex_digit_value (Lexing.lexeme_char lexbuf i) in
+      loop (16 * acc + value) (i + 1)
+  in
+  loop 0 first
+
 let char_for_backslash = function
   | 'n' -> '\010'
   | 'r' -> '\013'
@@ -250,17 +275,24 @@ let char_for_decimal_code lexbuf i =
   ) else Char.chr c
 
 let char_for_hexadecimal_code lexbuf i =
-  let d1 = Char.code (Lexing.lexeme_char lexbuf i) in
-  let val1 = if d1 >= 97 then d1 - 87
-             else if d1 >= 65 then d1 - 55
-             else d1 - 48
+  let byte = hex_num_value lexbuf ~first:i ~last:(i+1) in
+  Char.chr byte
+
+let uchar_for_uchar_escape lexbuf =
+  let err e =
+    raise_error (Location.curr lexbuf) (Illegal_escape (Lexing.lexeme lexbuf ^ e));
+    Uchar.of_char 'u'
   in
-  let d2 = Char.code (Lexing.lexeme_char lexbuf (i+1)) in
-  let val2 = if d2 >= 97 then d2 - 87
-             else if d2 >= 65 then d2 - 55
-             else d2 - 48
-  in
-  Char.chr (val1 * 16 + val2)
+  let len = Lexing.lexeme_end lexbuf - Lexing.lexeme_start lexbuf in
+  let first = 3 (* skip opening \u{ *) in
+  let last = len - 2 (* skip closing } *) in
+  let digit_count = last - first + 1 in
+  match digit_count > 6 with
+  | true -> err ", too many digits, expected 1 to 6 hexadecimal digits"
+  | false ->
+      let cp = hex_num_value lexbuf ~first ~last in
+      if Uchar.is_valid cp then Uchar.unsafe_of_int cp else
+      err (", " ^ Printf.sprintf "%X" cp ^ " is not a Unicode scalar value")
 
 (* To convert integer literals, allowing max_int + 1 (PR#4210) *)
 
@@ -324,8 +356,13 @@ let dotsymbolchar =
   ['!' '$' '%' '&' '*' '+' '-' '/' ':' '=' '>' '?' '@' '^' '|' '\\' 'a'-'z' 'A'-'Z' '_' '0'-'9']
 let kwdopchar = ['$' '&' '*' '+' '-' '/' '<' '=' '>' '@' '^' '|' '.' '!']
 
+let ident = (lowercase | uppercase) identchar*
+let extattrident = ident ('.' ident)*
+
 let decimal_literal = ['0'-'9'] ['0'-'9' '_']*
 
+let hex_digit =
+  ['0'-'9' 'A'-'F' 'a'-'f']
 let hex_literal =
   '0' ['x' 'X'] ['0'-'9' 'A'-'F' 'a'-'f']['0'-'9' 'A'-'F' 'a'-'f' '_']*
 let oct_literal =
@@ -348,6 +385,7 @@ let hex_float_literal =
   (['p' 'P'] ['+' '-']? ['0'-'9'] ['0'-'9' '_']* )?
 
 let literal_modifier = ['G'-'Z' 'g'-'z']
+let raw_ident_escape = "\\#"
 
 rule token state = parse
   | "\\" newline {
@@ -371,6 +409,8 @@ rule token state = parse
     { QUESTION }
   | "=?"
     { set_lexeme_length lexbuf 1; EQUAL }
+  | raw_ident_escape (lowercase identchar * as name)
+      { LIDENT name }
   | lowercase identchar *
     { let s = Lexing.lexeme lexbuf in
       try Hashtbl.find keyword_table s
@@ -423,6 +463,52 @@ rule token state = parse
       let txt = flush_buffer raw_buffer in
       STRING (txt, None, Some delim)
     }
+  | "{%" (extattrident as id) "|"
+    {
+      let orig_loc = Location.curr lexbuf in
+      let string_start = lexbuf.lex_start_p in
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      if not (quoted_string raw_buffer "" lexbuf) then
+        raise_error start_loc Unterminated_string;
+      lexbuf.lex_start_p <- string_start;
+      let txt = flush_buffer raw_buffer in
+      let idloc = compute_quoted_string_idloc orig_loc 2 id in
+      QUOTED_STRING_EXPR (id, idloc, txt, Some "") }
+  | "{%" (extattrident as id) blank+ (lowercase* as delim) "|"
+    { let orig_loc = Location.curr lexbuf in
+      let string_start = lexbuf.lex_start_p in
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      if not (quoted_string raw_buffer delim lexbuf) then
+        raise_error start_loc Unterminated_string;
+      lexbuf.lex_start_p <- string_start;
+      let txt = flush_buffer raw_buffer in
+      let idloc = compute_quoted_string_idloc orig_loc 2 id in
+      QUOTED_STRING_EXPR (id, idloc, txt, Some delim) }
+  | "{%%" (extattrident as id) "|"
+    {
+      let orig_loc = Location.curr lexbuf in
+      let string_start = lexbuf.lex_start_p in
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      if not (quoted_string raw_buffer "" lexbuf) then
+        raise_error start_loc Unterminated_string;
+      lexbuf.lex_start_p <- string_start;
+      let txt = flush_buffer raw_buffer in
+      let idloc = compute_quoted_string_idloc orig_loc 3 id in
+      QUOTED_STRING_ITEM (id, idloc, txt, Some "") }
+  | "{%%" (extattrident as id) blank+ (lowercase* as delim) "|"
+    { let orig_loc = Location.curr lexbuf in
+      let string_start = lexbuf.lex_start_p in
+      let start_loc = Location.curr lexbuf in
+      let raw_buffer, _ = get_scratch_buffers state in
+      if not (quoted_string raw_buffer delim lexbuf) then
+        raise_error start_loc Unterminated_string;
+      lexbuf.lex_start_p <- string_start;
+      let txt = flush_buffer raw_buffer in
+      let idloc = compute_quoted_string_idloc orig_loc 3 id in
+      QUOTED_STRING_ITEM (id, idloc, txt, Some delim) }
   | "'" newline "'"
     { (* newline can span multiple characters
          (if the newline starts with \13)
@@ -438,7 +524,7 @@ rule token state = parse
     { CHAR (char_for_decimal_code lexbuf 2) }
   | "'\\" 'x' ['0'-'9' 'a'-'f' 'A'-'F'] ['0'-'9' 'a'-'f' 'A'-'F'] "'"
     { CHAR (char_for_hexadecimal_code lexbuf 3) }
-  | "'" (("\\" _) as esc)
+  | "'" (("\\" [^ '#']) as esc)
     { raise_error (Location.curr lexbuf) (Illegal_escape esc);
       token state lexbuf
     }
@@ -741,7 +827,7 @@ and comment buffer firstloc nestedloc = parse
         false
       )
     }
-  | "{" (lowercase* as delim) "|"
+  | "{" ('%' '%'? extattrident blank*)? (lowercase* as delim) "|"
     { store_lexeme buffer lexbuf;
       let stringloc = Location.curr lexbuf in
       let terminated_string = quoted_string buffer delim lexbuf in
@@ -816,6 +902,14 @@ and string rawbuf txtbuf = parse
       begin match txtbuf with
       | None -> ()
       | Some buf -> Buffer.add_char buf (char_for_decimal_code lexbuf 1);
+      end;
+      string rawbuf txtbuf lexbuf
+    }
+  | '\\' 'u' '{' hex_digit+ '}'
+    { store_lexeme rawbuf lexbuf;
+      begin match txtbuf with
+      | None -> ()
+      | Some buf -> Buffer.add_utf_8_uchar buf (uchar_for_uchar_escape lexbuf)
       end;
       string rawbuf txtbuf lexbuf
     }

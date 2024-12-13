@@ -555,7 +555,10 @@ Format modules
       M.[foo, bar];
     };
     let z = {
-      M.{x: 10, y: 20};
+      M.{
+        x: 10,
+        y: 20,
+      };
     };
     let z = {
       M.(M2.(value));
@@ -590,7 +593,10 @@ Format modules
     };
     let z = {
       open! M;
-      {x: 10, y: 20};
+      {
+        x: 10,
+        y: 20,
+      };
     };
     let z = {
       open! M;
@@ -665,4 +671,100 @@ Format modules
   module L = Lola1();
   
   module L2 = Lola2(Cat, Dog, Foo);
+  
+  let y =
+    Promise.Ops.(
+      open Foo.Bar;
+      let a = 2;
+      Bar.(
+        let* x = Js.Promise.resolve(42);
+        let a = 1;
+        Js.Promise.resolve(x * 2);
+      )
+    );
+  
+  module WithExternalExtension: {
+    external%foo bar: string => string;
+    external%foo bar: int => int = "hello";
+  } = {
+    external%foo bar: string => string;
+    external%foo bar: int => int = "hello";
+  };
+  
+  module type TypeWithExternalExtension = {
+    external%foo bar: string => string;
+    external%foo bar: int => int = "hello";
+  };
+  
+  module%foo X = Y;
+  
+  module%foo X = {
+    let x = 1;
+  };
+  
+  let x = {
+    module%foo X = {
+      let x = 1;
+    };
+    ();
+  };
+  
+  module%foo rec X: Y = {
+    let x = 1;
+  };
+  
+  let f = () => {
+    open {
+      let x = 1;
+    };
+  
+    ();
+  };
+  
+  let f = () => {
+    open {
+      let x = 1;
+    };
+  
+    ();
+  };
+  
+  open {
+    let x = 1;
+  };
+  
+  module X: {
+    module Z := Y;
+  
+    module type Foo := y;
+  } = {};
+  
+  module type t' = t with module type x = x;
+  
+  module type t3 =
+    t with module type x = {
+                            type t;
+                          };
+  
+  module type t' = t with module type x := x;
+  
+  module type t4 =
+    t with module type x := {
+                             type t;
+                           };
+  
+  module Foo =
+    [@someattr]
+    {
+      type t = string;
+    };
+  
+  let x = {
+    module Foo =
+      [@someattr]
+      {
+        type t = string;
+      };
+    ();
+  };
 /* From http://stackoverflow.com/questions/1986374/  higher-order-type-constructors-and-functors-in-ocaml */

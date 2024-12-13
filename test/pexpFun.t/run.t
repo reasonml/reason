@@ -4,7 +4,10 @@ Format function expressipns (pexpFun)
     switch (x) {
     | Bar =>
       ReasonReact.UpdateWithSideEffects(
-        {...state, click: click + 1},
+        {
+          ...state,
+          click: click + 1,
+        },
         self => {
           let _ = 1;
           apply(bar);
@@ -89,3 +92,14 @@ Format function expressipns (pexpFun)
     "",
     lst,
   );
+  
+  let foo = () => {
+    x((): string => "foo");
+  };
+  
+  x((): string => "foo");
+  
+  let x = {
+    let y = (): string => "foo";
+    ();
+  };

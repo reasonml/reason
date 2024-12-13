@@ -26,3 +26,23 @@ let _ = {
 
   None;
 };
+
+// test that the type annotation prints with parenthesis
+let _ = {
+  let.opt (x : string) as _y = Some ("a");
+  None
+};
+
+let x = {
+  [@foo]
+  let.opt _ = Some("foo");
+  None
+};
+
+let x = {
+  /**
+   * A doc comment
+   */
+  let.opt _ = Some("foo");
+  None
+};

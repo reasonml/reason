@@ -39,3 +39,42 @@ let not : string => string;
 let other : string => not;
 
 include (module type of Bos.Cmd) with type t = Bos.Cmd.t;
+
+external%foo bar: string => string = "";
+[%%foo: external bar: int => int = "hello" ];
+
+[%%foo: let foo: bar];
+let%foo foo: bar;
+
+module%foo X: Y;
+
+module%foo X = Y;
+
+module%foo rec X: Y;
+
+let wrapReasonForJs:
+  (
+    ~component: componentSpec(
+                  'state,
+                  'initialState,
+                  'retainedProps,
+                  'initialRetainedPropssssssssssssssssss,
+                  'action
+                )
+  ) =>
+  reactClass;
+
+open%foo Bar;
+
+open! %foo Bar;
+
+type%foo t = int;
+
+type%x foo += Int;
+
+module type x = {
+  let a: 'a. 'a => unit;
+};
+
+let a: 'a. 'a => unit;
+

@@ -1,43 +1,11 @@
 (ocamllex
  (modules reason_declarative_lexer))
 
-; Use select.exe from janestreet/ppx_ast to choose ocaml_util.ml based on ocaml version
-
 (rule
  (targets ocaml_util.ml)
- (deps
-  ../generate/select.exe
-  ocaml_util.ml-5.1
-  ocaml_util.ml-5.0
-  ocaml_util.ml-5.00
-  ocaml_util.ml-4.14
-  ocaml_util.ml-4.13
-  ocaml_util.ml-4.12
-  ocaml_util.ml-4.11
-  ocaml_util.ml-4.10
-  ocaml_util.ml-4.09
-  ocaml_util.ml-4.08
-  ocaml_util.ml-4.07
-  ocaml_util.ml-4.06
-  ocaml_util.ml-default)
+ (deps ocaml_util.cppo.ml)
  (action
-  (with-stdout-to
-   %{targets}
-   (run
-    ../generate/select.exe
-    ocaml_util.ml-5.1
-    ocaml_util.ml-5.0
-    ocaml_util.ml-5.00
-    ocaml_util.ml-4.14
-    ocaml_util.ml-4.13
-    ocaml_util.ml-4.12
-    ocaml_util.ml-4.11
-    ocaml_util.ml-4.10
-    ocaml_util.ml-4.09
-    ocaml_util.ml-4.08
-    ocaml_util.ml-4.07
-    ocaml_util.ml-4.06
-    ocaml_util.ml-default))))
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
 
 (menhir
  (flags --strict --inspection --unused-tokens --table --cmly)
@@ -94,8 +62,7 @@
  ;  (preprocess (pps (bisect_ppx)))
  (public_name reason)
  (wrapped false)
- (flags
-  (:standard -w -9-52 -safe-string))
+ (flags :standard -w -67 -safe-string)
  (modules
   ocaml_util
   reason_syntax_util

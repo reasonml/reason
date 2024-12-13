@@ -12,7 +12,8 @@ Print the formatted file
   
   type myRecord = {myRecordField: int};
   
-  let operateOnLazyValue = (lazy {myRecordField}) => {
+  let operateOnLazyValue =
+      (lazy({myRecordField})) => {
     let tmp = myRecordField;
     tmp + tmp;
   };
@@ -25,9 +26,10 @@ Print the formatted file
   type box('a) =
     | Box('a);
   
-  let lazy thisIsActuallyAPatternMatch = lazy(200);
+  let lazy(thisIsActuallyAPatternMatch) =
+    lazy(200);
   let tmp: int = thisIsActuallyAPatternMatch;
-  let (lazy (Box(i)), x) = (
+  let (lazy((Box(i))), x) = (
     lazy(Box(200)),
     100,
   );

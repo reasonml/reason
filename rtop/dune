@@ -1,0 +1,33 @@
+(library
+ (name rtop)
+ (public_name rtop)
+ (modules reason_util reason_utop reason_toploop)
+ (wrapped false)
+ (modes byte)
+ (libraries
+  menhirLib
+  reason.easy_format
+  reason
+  utop
+  reason.ocaml-migrate-parsetree))
+
+(rule
+ (targets reason_toploop.ml)
+ (deps reason_toploop.cppo.ml)
+ (action
+  (run cppo -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
+
+(rule
+ (targets reason_utop.ml)
+ (deps reason_utop.cppo.ml)
+ (action
+  (run cppo -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
+
+(executable
+ (name rtop)
+ (public_name rtop)
+ (package rtop)
+ (modules rtop)
+ (link_flags -linkall)
+ (modes byte)
+ (libraries rtop))

@@ -1,4 +1,4 @@
-(lang dune 2.9)
+(lang dune 3.8)
 
 (name reason)
 
@@ -6,7 +6,7 @@
 
 (cram enable)
 
-(version 3.8.2)
+(version 3.13.0)
 
 (generate_opam_files true)
 
@@ -33,17 +33,18 @@
  (depends
   (ocaml
    (and
-    (>= "4.03")
-    (< "5.2")))
+    (>= "4.06")
+    (< "5.4")))
   (ocamlfind :build)
   (dune-build-info
    (>= 2.9.3))
   (menhir
    (>= "20180523"))
   (merlin-extend
-   (>= "0.6"))
+   (>= "0.6.2"))
   fix
   ppx_derivers
+  cppo
   (ppxlib
    (>= "0.28.0"))))
 
@@ -51,13 +52,14 @@
  (name rtop)
  (synopsis "Reason toplevel")
  (description
-  "rtop is the toplevel (or REPL) for Reason, based on utop (https://github.com/diml/utop).")
+  "rtop is the toplevel (or REPL) for Reason, based on utop (https://github.com/ocaml-community/utop).")
  (depends
   (ocaml
    (and
-    (>= "4.03")
-    (< "5.1")))
+    (>= "4.06")
+    (< "5.4")))
   (reason
    (= :version))
   (utop
-   (>= "2.0"))))
+   (>= "2.0"))
+  cppo))

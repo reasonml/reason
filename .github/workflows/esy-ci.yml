@@ -22,32 +22,26 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          - macos-13
           - windows-latest
 
         ocaml-compiler:
-          # Please keep the list in sync with the minimal version of OCaml in
-          # esy.json, reason.esy/reason.opam and rtop.esy/rtop.opam.
-          - 4.06.x # We support 4.06 because is the one that is used in BuckleScript / ReScript v9
-          - 4.10.x
-          - 4.12.x
           - 4.14.x
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
 
       - name: Install esy
-        run: npm install -g esy@0.6.12
+        run: npm install -g esy@0.7.4
 
       - name: Restore global cache (~/.esy/source)
         id: global-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: ~/.esy/source
           key: esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
@@ -58,16 +52,13 @@ jobs:
 
       - name: Load dependencies cache
         id: deps-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
             _export
           key: esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
           restore-keys: esy-build-${{ matrix.os }}-
-
-      - name: Instal OCaml ${{ matrix.ocaml-compiler }}
-        run: esy add ocaml@${{ matrix.ocaml-compiler }}
 
       - name: Install dependencies
         run: esy install
@@ -99,7 +90,7 @@ jobs:
         run: esy export-dependencies
 
       - name: Save global cache
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         if: steps.global-cache.outputs.cache-hit != 'true'
         with:
           path: ~/.esy/source
@@ -107,7 +98,7 @@ jobs:
 
       - name: Save dependencies cache
         if: steps.deps-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}

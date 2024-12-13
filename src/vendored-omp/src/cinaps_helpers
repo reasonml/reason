@@ -21,22 +21,10 @@ let supported_versions = [
   ("414", "4.14");
   ("5.0", "5.0");
   ("5.1", "5.1");
+  ("5.2", "5.2");
 ]
 
 let qualified_types = [
-  "Parsetree",
-  [ "structure"
-  ; "signature"
-  ; "toplevel_phrase"
-  ; "core_type"
-  ; "expression"
-  ; "pattern"
-  ; "case"
-  ; "type_declaration"
-  ; "type_extension"
-  ; "extension_constructor"
-  ];
-
   "Outcometree",
   [ "out_value"
   ; "out_type"
@@ -45,10 +33,6 @@ let qualified_types = [
   ; "out_sig_item"
   ; "out_type_extension"
   ; "out_phrase"
-  ];
-
-  "Ast_mapper",
-  [ "mapper"
   ];
 ]
 

@@ -118,16 +118,16 @@ Format basicStructures
   
   let x = Some(-5.0);
   
-  let lazy x = 10;
-  let lazy (x: int) = 10;
-  let lazy [] = 10;
-  let lazy true = 10;
-  let lazy #x = 10;
-  let lazy `Variant = 10;
-  let lazy `variant = 10;
-  let lazy '0' .. '9' = 10;
-  let lazy (lazy true) = 10;
-  let lazy [%extend] = 10;
+  let lazy(x) = 10;
+  let lazy((x: int)) = 10;
+  let lazy([]) = 10;
+  let lazy(true) = 10;
+  let lazy(#x) = 10;
+  let lazy(`Variant) = 10;
+  let lazy(`variant) = 10;
+  let lazy('0' .. '9') = 10;
+  let lazy((lazy(true))) = 10;
+  let lazy([%extend]) = 10;
   
   /* Test precedence on access sugar */
   let x = arr^[0];
@@ -754,12 +754,24 @@ Format basicStructures
   /* no punning available for a single field. Can't tell the difference with a scope + expression */
   let componentA = {props: props};
   /* pun for real */
-  let componentB = {props, state: ()};
+  let componentB = {
+    props,
+    state: (),
+  };
   /* pun fields with module prefix too */
   let foo = {Foo.foo: foo};
-  let bar = {Foo.foo, bar: 1};
-  let bar = {bar: 1, Foo.foo};
-  let bar = {Foo.foo, Bar.bar};
+  let bar = {
+    Foo.foo,
+    bar: 1,
+  };
+  let bar = {
+    bar: 1,
+    Foo.foo,
+  };
+  let bar = {
+    Foo.foo,
+    Bar.bar,
+  };
   
   ({M.x, y}) => 1;
   

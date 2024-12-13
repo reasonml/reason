@@ -10,7 +10,7 @@ homepage: "https://github.com/janestreet/ocaml-compiler-libs"
 bug-reports: "https://github.com/janestreet/ocaml-compiler-libs/issues"
 depends: [
   "dune" {>= "2.8"}
-  "ocaml" {>= "4.04.1"}
+  "ocaml" {>= "4.04.1" & < "5.2.0"}
   "odoc" {with-doc}
 ]
 build: [

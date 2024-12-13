@@ -6,17 +6,22 @@
  (wrapped true)
  ; (wrapped
  ; (transition "Access modules via the Migrate_parsetree toplevel module"))
- (libraries compiler-libs.common ppx_derivers)
+ (libraries ppxlib.astlib ppx_derivers)
  (modules :standard \ migrate_parsetree_driver_main)
  (preprocess
   (action
    (run %{exe:../tools/pp.exe} %{read:ast-version} %{input-file})))
- (flags :standard -w -9)
  ; (ppx.driver
  ;  (main       Migrate_parsetree.Driver.run_main)
  ;  (flags      --dump-ast)
  ;  (lint_flags --null))
  )
+
+(rule
+ (targets caml_format_doc.ml)
+ (deps caml_format_doc.cppo.ml)
+ (action
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
 
 ; Not needed for reason repo (vendored)
 ; (library

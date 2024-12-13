@@ -591,7 +591,8 @@ Format infix operators
   
       /**
        * Try with ||
-       */ x.contents
+       */
+      x.contents
       || something
       + 1
         ? hello : goodbye;
@@ -619,7 +620,8 @@ Format infix operators
   
       /**
        * Try with &&
-       */ x.contents
+       */
+      x.contents
       && something
       + 1
         ? hello : goodbye;
@@ -739,7 +741,8 @@ Format infix operators
         something
           ? str.[0] = somethingElse : goodbye;
   
-      /** And this */ y :=
+      /** And this */
+      y :=
         something ? y := somethingElse : goodbye;
       arr[0] :=
         something

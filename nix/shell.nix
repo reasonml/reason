@@ -11,16 +11,12 @@
 
 mkShell {
   inputsFrom = [ reason ];
-  buildInputs = with ocamlPackages; [
+  nativeBuildInputs = with ocamlPackages; [
     utop
     merlin
-  ]
-  ++ (if release-mode then [
-    cacert
-    curl
-    ocamlPackages.dune-release
-    git
-  ] else [ ])
-  ;
-
+    odoc
+    ocamlformat
+  ];
+  buildInputs =
+    with ocamlPackages; (if release-mode then [ cacert curl dune-release git ] else [ ]);
 }

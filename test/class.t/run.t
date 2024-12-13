@@ -1,5 +1,5 @@
 See the typed tree from ./input.re
-  $ cat ./input.re | outcome_printer
+  $ cat ./input.re | ../lib/outcometreePrinter.exe
   class aClass1 :
     ('a) =>
     {

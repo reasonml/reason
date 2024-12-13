@@ -1,31 +1,10 @@
-*.native
-*.byte
-*.cmt
-a.out
 _build
-*.install
-pkg/META
 .DS_Store
-formatTest/customMLFiles/*.ml
-formatTest/customMLFormatOutput.re
-formatTest/failed_tests
-formatTest/**/actual_output/
-formatTest/**/intf_output/
-miscTests/reactjs_jsx_ppx_tests/actual*.re
-miscTests/reactjs_jsx_ppx_tests/*.cm*
 *.log
-src/reason_parser.messages.bak
-src/reason_parser_message.ml
-*~
-node_modules
-/bspacks/build/
-/bspacks/ocaml-migrate-parsetree/
-/bspacks/closure-compiler/
 
 # gitignored, but not npmignored. Published by `npm run prepublish`
 refmt.js
 refmt.map
-.merlin
 
 # Esy
 _esy
