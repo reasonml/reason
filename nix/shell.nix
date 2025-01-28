@@ -14,7 +14,7 @@ mkShell {
   nativeBuildInputs = with ocamlPackages; [
     utop
     merlin
-    odoc
+    # odoc
     ocamlformat
   ];
   buildInputs =
