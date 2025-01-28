@@ -87,7 +87,7 @@ let singleTokenPatternOmmitTrail txt = String.length txt < 4
 *)
 let bsExprCanBeUncurried expr =
   match Parsetree.(expr.pexp_desc) with
-  | Pexp_fun _ | Pexp_apply _ -> true
+  | Pexp_function _ | Pexp_apply _ -> true
   | _ -> false
 
 let isUnderscoreIdent expr =
