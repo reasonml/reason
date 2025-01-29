@@ -384,7 +384,7 @@ let map_core_type f typ =
     | Ptyp_class (lid, typs) ->
       Ptyp_class (map_lident f lid, typs)
     | Ptyp_alias (typ, s) ->
-      Ptyp_alias (typ, f s)
+      Ptyp_alias (typ, { s with txt = f s.txt })
     | Ptyp_variant (rfs, closed, lbls) ->
       Ptyp_variant (List.map (function
         | { prf_desc = Rtag (lbl, b, cts); _ } as prf ->
@@ -420,8 +420,15 @@ class identifier_mapper f =
         match expr with
         | { pexp_desc = Pexp_ident lid;_ } ->
           { expr with pexp_desc = Pexp_ident (map_lid lid) }
-        | { pexp_desc = Pexp_fun (label, eo, pat, e);_ } when !rename_labels ->
-          { expr with pexp_desc = Pexp_fun (map_label label, eo, pat, e) }
+        | { pexp_desc = Pexp_function (params, constraint_, body); _ } when !rename_labels ->
+          let new_params = List.map (fun param ->
+            match param with
+            | { pparam_desc = Pparam_val (lbl, eo, pat); _ } ->
+              { param with pparam_desc = Pparam_val (map_label lbl, eo, pat) }
+            | { pparam_desc = Pparam_newtype s; _ } ->
+              { param with pparam_desc = Pparam_newtype { s with txt = f s.txt } }) params
+          in
+          { expr with pexp_desc = Pexp_function (new_params, constraint_, body) }
         | { pexp_desc = Pexp_apply (e, args);_ } when !rename_labels ->
           { expr with
             pexp_desc = Pexp_apply (e, List.map (fun (label, e) ->

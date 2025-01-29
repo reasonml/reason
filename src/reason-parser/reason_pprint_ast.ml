@@ -241,7 +241,7 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
     | Ptyp_class (longident1, lst1), Ptyp_class (longident2, lst2) ->
       longident_same longident1 longident2 && for_all2' loop lst1 lst2
     | Ptyp_alias (core_type1, string1), Ptyp_alias (core_type2, string2) ->
-      loop core_type1 core_type2 && string_equal string1 string2
+      loop core_type1 core_type2 && string_equal string1.txt string2.txt
     | ( Ptyp_variant (row_field_list1, flag1, lbl_lst_option1)
       , Ptyp_variant (row_field_list2, flag2, lbl_lst_option2) ) ->
       for_all2' rowFieldEqual row_field_list1 row_field_list2
@@ -1990,12 +1990,11 @@ let createFormatter () =
           source_map ?loc (label ~space:true appList wrappedListy))
 
     (* Preprocesses an expression term for the sake of label attachments
-       ([letx
-       = expr]or record [field: expr]). Function application
-       should have special treatment when placed next to a label. (The invoked
-       function term should "stick" to the label in some cases). In others, the
-       invoked function term should become a new label for the remaining items
-       to be indented under. *)
+       ([letx = expr]or record [field: expr]). Function application should have
+       special treatment when placed next to a label. (The invoked function term
+       should "stick" to the label in some cases). In others, the invoked
+       function term should become a new label for the remaining items to be
+       indented under. *)
     let applicationFinalWrapping x =
       partitionFinalWrapping isSequencey settings.funcApplicationLabelStyle x
 
@@ -2228,7 +2227,8 @@ let createFormatter () =
        & respects the print-width, we need some kind of flattened * version of
        the above tree. `computeInfixChain` transforms the tree * in a flattened
        version which allows flexible formatting. * E.g. we get *
-       [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
+       [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode
+        z]
     *)
     let rec computeInfixChain = function
       | LayoutNode layoutNode -> [ Layout layoutNode ]
@@ -2241,16 +2241,12 @@ let createFormatter () =
 
     (* Formats a flattened list of infixChain nodes into a list of layoutNodes *
        which allow smooth line-breaking * e.g.
-       [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
-       * becomes *
-       [
-     *   foo
-     * ; |> f        --> label
-     * ; |> z        --> label
-     * ]
-       * If you make a list out of this items, we get smooth line breaking * foo
-       |> f |> z * becomes * foo * |> f * |> z * when the print-width forces
-       line breaks.
+       [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode
+        z] * becomes *
+       [ *   foo * ; |> f        --> label * ; |> z        --> label * ] * If
+       you make a list out of this items, we get smooth line breaking * foo |> f
+       |> z * becomes * foo * |> f * |> z * when the print-width forces line
+       breaks.
     *)
     let formatComputedInfixChain infixChainList =
       let layout_of_group group currentToken =
@@ -2599,7 +2595,7 @@ let createFormatter () =
                 (label
                    ~space:true
                    (self#core_type ct)
-                   (makeList ~postSpace:true [ atom "as"; atom ("'" ^ s) ]))
+                   (makeList ~postSpace:true [ atom "as"; atom ("'" ^ s.txt) ]))
             | _ -> self#core_type2 x
 
         method type_with_label (lbl, c, uncurried) =
@@ -3380,6 +3376,11 @@ let createFormatter () =
               | Ptyp_extension e -> self#extension e
               | Ptyp_arrow (_, _, _) | Ptyp_alias (_, _) | Ptyp_poly (_, _) ->
                 makeList ~wrap:("(", ")") ~break:IfNeed [ self#core_type x ]
+              | Ptyp_open (m, ct) ->
+                (* TODO(anmonteiro): check this *)
+                label
+                  (label (self#longident m.txt) (atom "."))
+                  (self#core_type ct)
             in
             source_map ~loc:x.ptyp_loc result
         (* TODO: ensure that we have a form of desugaring that protects *)
@@ -4134,7 +4135,8 @@ let createFormatter () =
                     (List.map self#item_attribute attrs)
                 in
                 makeSpacedBreakableInlineList [ formattedAttrs; constant ])
-            | { pexp_desc = Pexp_fun _; _ } -> self#formatPexpFun e
+            | { pexp_desc = Pexp_function (_ :: _, _, _); _ } ->
+              self#formatPexpFun e
             | x -> self#unparseExpr x
           in
           source_map ~loc:e.pexp_loc itm
@@ -4330,7 +4332,8 @@ let createFormatter () =
              PipeFirstTree.flastNode list) into a more convenient structure *
              that allows us to express the segments: "foo" "f(a, b)" "g(c, d)".
              * PipeFirstTree.t expresses those segments. *
-             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args =
+              [c; d]}]
           *)
           let rec parse acc = function
             | PipeFirstTree.Exp e :: PipeFirstTree.Args args :: xs ->
@@ -4360,12 +4363,13 @@ let createFormatter () =
           *)
           let (flatNodes : PipeFirstTree.flatT) = flatten ~uncurried [] e in
           (* Turn * [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]] * into *
-             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args =
+              [c; d]}]
           *)
           let (pipetree : PipeFirstTree.t) = parse [] flatNodes in
           (* Turn *
-             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
-             * into * [foo; ->f(a, b); ->g(c, d)]
+             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args =
+              [c; d]}] * into * [foo; ->f(a, b); ->g(c, d)]
           *)
           let pipeSegments =
             match pipetree with
@@ -4416,17 +4420,33 @@ let createFormatter () =
             | _ -> expr
           in
           match x.pexp_desc with
-          | Pexp_fun
-              ( Nolabel
-              , None
-              , { ppat_desc = Ppat_var { txt = "__x"; _ }; _ }
-              , ({ pexp_desc = Pexp_apply _; _ } as e) ) ->
+          (* TODO(anmonteiro): I think this is wrong and `__x` can appear
+             anywhere in the multiple args *)
+          | Pexp_function
+              ( [ { pparam_desc =
+                      Pparam_val
+                        ( Nolabel
+                        , None
+                        , { ppat_desc = Ppat_var { txt = "__x"; _ }; _ } )
+                  ; _
+                  }
+                ]
+              , _
+              , Pfunction_body ({ pexp_desc = Pexp_apply _; _ } as e) ) ->
             process_application e
-          | Pexp_fun (l, eo, p, e) ->
-            let e_processed = self#process_underscore_application e in
-            if e == e_processed
-            then x
-            else { x with pexp_desc = Pexp_fun (l, eo, p, e_processed) }
+          | Pexp_function (params, constraint_, body) ->
+            (match body with
+            | Pfunction_cases _ -> x
+            | Pfunction_body body ->
+              let e_processed = self#process_underscore_application body in
+              if body == e_processed
+              then x
+              else
+                { x with
+                  pexp_desc =
+                    Pexp_function
+                      (params, constraint_, Pfunction_body e_processed)
+                })
           | _ -> x
 
         method unparseExprRecurse x =
@@ -5614,25 +5634,19 @@ let createFormatter () =
           let everythingButReturnVal =
             (* Because align_closing is set to false, you get: * * (Brackets[]
                inserted to show boundaries between open/close of pattern list) *
-               let[firstThing
-             *     secondThing
-             *     thirdThing]
-               * * It only wraps to indent four by coincidence: If the "opening"
-               token was * longer, you'd get: * *
-               letReallyLong[firstThing
-             *               secondThing
-             *               thirdThing]
-               * * For curried let bindings, we stick the arrow in the *last*
-               pattern: *
-               let[firstThing
-             *     secondThing
-             *     thirdThing =>]
-               * * But it could have just as easily been the "closing" token
-               corresponding to * "let". This works because we have
-               [align_closing = false]. The benefit of * shoving it in the last
-               pattern, is that we can turn [align_closing = true] * and still
-               have the arrow stuck to the last pattern (which is usually what
-               we * want) (See modeTwo below).
+               let[firstThing *     secondThing *     thirdThing] * * It only
+               wraps to indent four by coincidence: If the "opening" token was *
+               longer, you'd get: * *
+               letReallyLong[firstThing *               secondThing *
+                             thirdThing] * * For curried let bindings, we stick
+               the arrow in the *last* pattern: *
+               let[firstThing *     secondThing *     thirdThing =>] * * But it
+               could have just as easily been the "closing" token corresponding
+               to * "let". This works because we have [align_closing = false].
+               The benefit of * shoving it in the last pattern, is that we can
+               turn [align_closing = true] * and still have the arrow stuck to
+               the last pattern (which is usually what we * want) (See modeTwo
+               below).
             *)
             match partitioning with
             | None when sweet ->
@@ -5824,11 +5838,10 @@ let createFormatter () =
            it becomes pretty printed as * let x:t =.... In the proposal, it is
            not impossible - it is only * impossible to preserve unnecessary
            parenthesis around the let binding. * * The one downside is that
-           integrating with existing code that uses
-           [let x =
-         * (blah:typ)] in standard OCaml will be parsed as a
-           Pexp_constraint. There * might be some lossiness (beyond parens) that
-           occurs in the original OCaml * parser.
+           integrating with existing code that uses [let x = * (blah:typ)] in
+           standard OCaml will be parsed as a Pexp_constraint. There * might be
+           some lossiness (beyond parens) that occurs in the original OCaml *
+           parser.
         *)
 
         method locallyAbstractPolymorphicFunctionBinding
