@@ -127,7 +127,15 @@ Format type declarations
       "someStringKeyThatCausesLineToBreak": string,
     });
   
+  /* Inline type record non punned field */
   type b = {punned: [@with_attribute] punned};
+  
+  /* Breakline record non punned field */
+  type c = {
+    a: string,
+    b: string,
+    punned: [@with_attribute] punned,
+  };
   
   type%x foo = int;
   

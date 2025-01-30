@@ -103,6 +103,9 @@ let icon = <Icon
 /* punning for explicitly passed optional */
 <Foo bar=?bar />;
 
+/* Don't pun for explicitly props with attributes */
+<Foo bar=?{[@browser_only]bar} />;
+
 /* don't pun explicitly passed optional with module identifier */
 <Foo bar=?Baz.bar />;
 
@@ -131,6 +134,8 @@ let y = [<Button onClick=handleStaleClick />, <Button onClick=handleStaleClick /
 <Description term=([@JSX] Text.createElement(~text="Age", ()))> child </Description>;
 
 <Description term={<Text superLongPunnedProp anotherSuperLongOneCrazyLongThingHere text="Age" />}> child </Description>;
+<Description term={<Text noPunnedProp={[@attribute] noPunnedProp} superLongPunnedProp anotherSuperLongOneCrazyLongThingHere text="Age" />}> child </Description>;
+<Description term={<Text noPunned={[@attribute] noPunnedProp} />}> child </Description>;
 
 <Foo bar={<Baz superLongPunnedProp anotherSuperLongOneCrazyLongThingHere/>}/>;
 

@@ -57,7 +57,15 @@ type foo = option([@foo]string, [@bar](int => string => int));
 /* https://github.com/facebook/reason/issues/2073 */
 type a = array({. "someStringKeyThatCausesLineToBreak": string });
 
+/* Inline type record non punned field */
 type b = {
+  punned: [@with_attribute] punned
+};
+
+/* Breakline record non punned field */
+type c = {
+  a: string,
+  b: string,
   punned: [@with_attribute] punned
 };
 

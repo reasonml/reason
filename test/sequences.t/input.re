@@ -79,3 +79,20 @@ let thirdFieldPunned = {
   c
 };
 let singlePunAcceptedIfExtended = {...firstFieldPunned, a};
+
+/* non-punned */
+let firstFieldNonPun = {
+  a: [@with_attribute] a,
+  b,
+  c
+};
+let secondFieldNonPun = {
+  a,
+  b: [@with_attribute] b,
+  c
+};
+let thirdFieldNonPun = {
+  a,
+  b,
+  c: [@with_attribute] c,
+};
