@@ -17,17 +17,6 @@ let
         })
       ];
     };
-  nix-filter = import (fetchGit {
-    url = with lock.nodes.nix-filter.locked; "https://github.com/${owner}/${repo}";
-    inherit (lock.nodes.nix-filter.locked) rev;
-    # inherit (lock.nodes.nixpkgs.original) ref;
-    allRefs = true;
-  });
-
-  inherit (pkgs) callPackage;
-
 in
-callPackage ./. {
-  doCheck = true;
-  inherit nix-filter;
-}
+
+pkgs.callPackage ./. { doCheck = true; }
