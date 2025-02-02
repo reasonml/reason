@@ -518,8 +518,7 @@ rule token state = parse
       STRING (txt, None, Some delim)
     }
   | "{%" (extattrident as raw_id) "|"
-    {
-      let id = validate_ext lexbuf raw_id in
+    { let id = validate_ext lexbuf raw_id in
       let orig_loc = Location.curr lexbuf in
       let string_start = lexbuf.lex_start_p in
       let start_loc = Location.curr lexbuf in
@@ -530,7 +529,7 @@ rule token state = parse
       let txt = flush_buffer raw_buffer in
       let idloc = compute_quoted_string_idloc orig_loc 2 id in
       QUOTED_STRING_EXPR (id, idloc, txt, Some "") }
-  | "{%" (extattrident as raw_id) blank+ (ident_ext as raw_delim) "|"
+  | "{%" (extattrident as raw_id) blank+ (ident_ext* as raw_delim) "|"
     { let orig_loc = Location.curr lexbuf in
       let id = validate_ext lexbuf raw_id in
       let delim = validate_delim lexbuf raw_delim in
@@ -555,7 +554,7 @@ rule token state = parse
       let txt = flush_buffer raw_buffer in
       let idloc = compute_quoted_string_idloc orig_loc 3 id in
       QUOTED_STRING_ITEM (id, idloc, txt, Some "") }
-  | "{%%" (extattrident as raw_id) blank+ (ident_ext as raw_delim) "|"
+  | "{%%" (extattrident as raw_id) blank+ (ident_ext* as raw_delim) "|"
     { let orig_loc = Location.curr lexbuf in
       let id = validate_ext lexbuf raw_id in
       let delim = validate_delim lexbuf raw_delim in

@@ -43,7 +43,7 @@ module Élégant /* NFD encoded */ = {};
 
 
 let x = {où|x|où};
-let ko = {%Là|x|};
+let ko = {%Là |x|};
 
 let x = {%âcre.name été|x|été};
 let x = {%Âcre.sub été|x|été};
