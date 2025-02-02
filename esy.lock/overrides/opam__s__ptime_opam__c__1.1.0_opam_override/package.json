@@ -1,3 +1,0 @@
-{
-  "build": "bash -c 'ocaml pkg/pkg.ml build --dev-pkg false || (./_build/sanitize.sh; ocaml pkg/pkg.ml build --dev-pkg false)'"
-}
