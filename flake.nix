@@ -1,10 +1,9 @@
 {
   description = "Nix Flake for ReasonML";
 
-  inputs.nix-filter.url = "github:numtide/nix-filter";
   inputs.nixpkgs.url = "github:nix-ocaml/nix-overlays";
 
-  outputs = { self, nixpkgs, flake-utils, nix-filter }:
+  outputs = { self, nixpkgs, flake-utils }:
     let
       forAllSystems = f: nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed (system:
         let
@@ -16,10 +15,7 @@
     in
     {
       packages = forAllSystems (pkgs:
-        let
-          packages =
-            pkgs.callPackage ./nix { nix-filter = nix-filter.lib; };
-        in
+        let packages = pkgs.callPackage ./nix { }; in
         { inherit packages; default = packages.reason; }
       );
 
