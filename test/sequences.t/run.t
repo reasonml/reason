@@ -102,7 +102,23 @@ Print the formatted file
     ...firstFieldPunned,
     a,
   };
-
+  
+  /* non-punned */
+  let firstFieldNonPun = {
+    a: [@with_attribute] a,
+    b,
+    c,
+  };
+  let secondFieldNonPun = {
+    a,
+    b: [@with_attribute] b,
+    c,
+  };
+  let thirdFieldNonPun = {
+    a,
+    b,
+    c: [@with_attribute] c,
+  };
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
 

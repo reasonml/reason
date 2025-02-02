@@ -2113,8 +2113,10 @@ let createFormatter () =
         true
       | _ -> false
 
-    let isPunnedJsxArg lbl ident =
-      (not (isLongIdentWithDot ident.txt)) && Longident.last_exn ident.txt = lbl
+    let isPunnedJsxArg lbl ident attr =
+      (not (isLongIdentWithDot ident.txt))
+      && Longident.last_exn ident.txt = lbl
+      && attr = []
 
     let is_unit_pattern x =
       match x.ppat_desc with
@@ -5233,13 +5235,14 @@ let createFormatter () =
                 processedAttrs
                 (Some [ self#dotdotdotChild expr ])
             | (Optional lbl, expression) :: tail ->
-              let { Reason_attributes.jsxAttrs; _ } =
+              let { Reason_attributes.jsxAttrs; stdAttrs; _ } =
                 Reason_attributes.partitionAttributes expression.pexp_attributes
               in
               let value_has_jsx = jsxAttrs != [] in
               let nextAttr =
                 match expression.pexp_desc with
-                | Pexp_ident ident when isPunnedJsxArg lbl ident ->
+                | Pexp_ident ident
+                  when isPunnedJsxArg lbl ident stdAttrs ->
                   makeList ~break:Layout.Never [ atom "?"; atom lbl ]
                 | Pexp_construct _ when value_has_jsx ->
                   label
@@ -5254,13 +5257,15 @@ let createFormatter () =
               in
               processArguments tail (nextAttr :: processedAttrs) children
             | (Labelled lbl, expression) :: tail ->
-              let { Reason_attributes.jsxAttrs; _ } =
+              let { Reason_attributes.jsxAttrs; stdAttrs; _ } =
                 Reason_attributes.partitionAttributes expression.pexp_attributes
               in
               let value_has_jsx = jsxAttrs != [] in
               let nextAttr =
                 match expression.pexp_desc with
-                | Pexp_ident ident when isPunnedJsxArg lbl ident -> atom lbl
+                | Pexp_ident ident
+                  when isPunnedJsxArg lbl ident stdAttrs ->
+                  atom lbl
                 | _ when isJSXComponent expression ->
                   label
                     (atom (lbl ^ "="))
@@ -7095,13 +7100,16 @@ let createFormatter () =
               ; loc_ghost = false
               }
             in
+            let stdAttrs = Reason_attributes.extractStdAttrs e.pexp_attributes in 
             let theRow =
               match e.pexp_desc, shouldPun, allowPunning with
               (* record value punning. Turns {foo: foo, bar: 1} into {foo, bar: 1} *)
               (* also turns {Foo.bar: bar, baz: 1} into {Foo.bar, baz: 1} *)
+              (* don't turn {bar: [@foo] bar, baz: 1} into {bar, baz: 1} *)
               (* don't turn {bar: Foo.bar, baz: 1} into {bar, baz: 1}, naturally *)
               | Pexp_ident { txt = Lident value; _ }, true, true
-                when Longident.last_exn li.txt = value ->
+                when Longident.last_exn li.txt = value && stdAttrs = []
+                ->
                 makeList (maybeQuoteFirstElem li [])
                 (* Force breaks for nested records or mel.obj sugar
                  * Example:
