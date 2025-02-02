@@ -1,8 +1,6 @@
 { mkShell
 , ocamlPackages
 , reason
-, stdenv
-, lib
 , cacert
 , curl
 , git
