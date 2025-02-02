@@ -9,8 +9,8 @@ homepage: "https://github.com/ocaml-community/utop"
 doc: "https://ocaml-community.github.io/utop/"
 bug-reports: "https://github.com/ocaml-community/utop/issues"
 depends: [
-  "dune" {>= "2.0"}
-  "ocaml" {>= "4.11.0" & < "5.3"}
+  "dune" {>= "2.7"}
+  "ocaml" {>= "4.11.0"}
   "base-unix"
   "base-threads"
   "ocamlfind" {>= "1.7.2"}
@@ -23,6 +23,7 @@ depends: [
   "cppo" {>= "1.1.2"}
   "alcotest" {with-test}
   "xdg" {>= "3.9.0"}
+  "odoc" {with-doc}
 ]
 build: [
   ["dune" "subst"] {dev}
@@ -41,10 +42,9 @@ build: [
 dev-repo: "git+https://github.com/ocaml-community/utop.git"
 url {
   src:
-    "https://github.com/ocaml-community/utop/releases/download/2.14.0/utop-2.14.0.tbz"
+    "https://github.com/ocaml-community/utop/releases/download/2.15.0/utop-2.15.0-1.tar.gz"
   checksum: [
-    "sha256=0fd5a9bc5b458524a71463a1fe0cd16f9b7be13673ae303118b7216e0d273ba9"
-    "sha512=d64a5ab671424279be13ebd080deac7ee46e2c9bc3abcfc37a6dff164124cc3abc52801527c35d9160ec868f9b8f334880026aaeaad02e507112fd8392094845"
+    "sha256=a11844563c36efefc466076f6f5f114d30eff6f032aec2fbe0dcbd20255d204d"
+    "sha512=07991b7a837bb3cae4d0ca2977d011a34f1bb9a7b3b472787010f788aae3b8d7960bc3c5b7f19c3153249dc8f229934b5f48c37d16f93b50eb4d6b5da65dfe7b"
   ]
 }
-x-commit-hash: "d4f6f5f7337eeeac9507801c8f147fff518f9d69"

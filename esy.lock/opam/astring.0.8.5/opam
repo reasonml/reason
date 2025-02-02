@@ -38,3 +38,5 @@ url {
     "md5=e148907c24157d1df43bec89b58b3ec8"
   ]
 }
+
+x-maintenance-intent: ["(latest)"]
