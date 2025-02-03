@@ -409,3 +409,5 @@ let z = [%raw {j|"raw j"|j}]
 let x1 = {%raw |"just raw"|};
 let y1 = {%raw js|"raw js"|js};
 let z1 = {%raw j|"raw j"|j};
+
+{%%raw |"just raw"|};

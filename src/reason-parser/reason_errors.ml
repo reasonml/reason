@@ -7,7 +7,12 @@ type lexing_error =
   | Unterminated_string
   | Unterminated_string_in_comment of Location.t * Location.t
   | Keyword_as_label of string
+  | Capitalized_label of string
   | Invalid_literal of string
+  | Invalid_encoding of string
+  | Invalid_char_in_ident of Uchar.t
+  | Non_lowercase_delimiter of string
+  | Capitalized_raw_identifier of string
 
 type ast_error =
   | Not_expecting of Location.t * string
@@ -59,7 +64,28 @@ let format_lexing_error ppf = function
       loc
   | Keyword_as_label kwd ->
     Format.fprintf ppf "`%s' is a keyword, it cannot be used as label name" kwd
+  | Capitalized_label lbl ->
+    Format.fprintf
+      ppf
+      "`%s' cannot be used as label name, it must start with a lowercase letter"
+      lbl
   | Invalid_literal s -> Format.fprintf ppf "Invalid literal %s" s
+  | Invalid_encoding s ->
+    Format.fprintf ppf "Invalid encoding of identifier %s." s
+  | Invalid_char_in_ident u ->
+    Format.fprintf ppf "Invalid character U+%X in identifier" (Uchar.to_int u)
+  | Capitalized_raw_identifier lbl ->
+    Format.fprintf
+      ppf
+      "`%s' cannot be used as a raw identifier, it must start with a lowercase \
+       letter"
+      lbl
+  | Non_lowercase_delimiter name ->
+    Format.fprintf
+      ppf
+      "`%s' cannot be used as a quoted string delimiter,@ it must contain only \
+       lowercase letters."
+      name
 
 let format_parsing_error ppf msg = Format.fprintf ppf "%s" msg
 

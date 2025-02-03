@@ -16,7 +16,12 @@ type lexing_error =
   | Unterminated_string
   | Unterminated_string_in_comment of Location.t * Location.t
   | Keyword_as_label of string
+  | Capitalized_label of string
   | Invalid_literal of string
+  | Invalid_encoding of string
+  | Invalid_char_in_ident of Uchar.t
+  | Non_lowercase_delimiter of string
+  | Capitalized_raw_identifier of string
 
 type ast_error =
   | Not_expecting of Location.t * string
