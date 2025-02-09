@@ -113,7 +113,6 @@ module Bytes = struct
     unsafe_set_uint16_ne b i (swap16 x)
 
   let set_uint8 = set_int8
-  let set_uint16_ne = set_int16_ne
 
   (* UTF codecs and validations *)
 
