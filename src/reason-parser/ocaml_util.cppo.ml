@@ -49,8 +49,6 @@ module Bytes = struct
   external get_int64_ne : bytes -> int -> int64 = "%caml_bytes_get64"
 
   external unsafe_set_uint8 : bytes -> int -> int -> unit = "%bytes_unsafe_set"
-  external unsafe_set_uint16_ne : bytes -> int -> int -> unit
-                                = "%caml_bytes_set16u"
   external set_int8 : bytes -> int -> int -> unit = "%bytes_safe_set"
   external swap16 : int -> int = "%bswap16"
   external swap32 : int32 -> int32 = "%bswap_int32"
@@ -101,16 +99,6 @@ module Bytes = struct
   let get_int64_be b i =
     if not Sys.big_endian then swap64 (get_int64_ne b i)
     else get_int64_ne b i
-
-  let unsafe_set_uint16_le b i x =
-    if Sys.big_endian
-    then unsafe_set_uint16_ne b i (swap16 x)
-    else unsafe_set_uint16_ne b i x
-
-  let unsafe_set_uint16_be b i x =
-    if Sys.big_endian
-    then unsafe_set_uint16_ne b i x else
-    unsafe_set_uint16_ne b i (swap16 x)
 
   let set_uint8 = set_int8
 
@@ -306,24 +294,6 @@ module Bytes = struct
             let u = (((hi land 0x3FF) lsl 10) lor (lo land 0x3FF)) + 0x10000 in
             dec_ret 4 u
 
-  let set_utf_16be_uchar b i u =
-    let set = unsafe_set_uint16_be in
-    let max = length b - 1 in
-    if i < 0 || i > max then invalid_arg "index out of bounds" else
-    match Uchar.to_int u with
-    | u when u < 0 -> assert false
-    | u when u <= 0xFFFF ->
-        let last = i + 1 in
-        if last > max then 0 else (set b i u; 2)
-    | u when u <= 0x10FFFF ->
-        let last = i + 3 in
-        if last > max then 0 else
-        let u' = u - 0x10000 in
-        let hi = (0xD800 lor (u' lsr 10)) in
-        let lo = (0xDC00 lor (u' land 0x3FF)) in
-        set b i hi; set b (i + 2) lo; 4
-    | _ -> assert false
-
   let is_valid_utf_16be b =
     let rec loop max b i =
       let get = unsafe_get_uint16_be in
@@ -359,24 +329,6 @@ module Bytes = struct
         | lo ->
             let u = (((hi land 0x3FF) lsl 10) lor (lo land 0x3FF)) + 0x10000 in
             dec_ret 4 u
-
-  let set_utf_16le_uchar b i u =
-    let set = unsafe_set_uint16_le in
-    let max = length b - 1 in
-    if i < 0 || i > max then invalid_arg "index out of bounds" else
-    match Uchar.to_int u with
-    | u when u < 0 -> assert false
-    | u when u <= 0xFFFF ->
-        let last = i + 1 in
-        if last > max then 0 else (set b i u; 2)
-    | u when u <= 0x10FFFF ->
-        let last = i + 3 in
-        if last > max then 0 else
-        let u' = u - 0x10000 in
-        let hi = (0xD800 lor (u' lsr 10)) in
-        let lo = (0xDC00 lor (u' land 0x3FF)) in
-        set b i hi; set b (i + 2) lo; 4
-    | _ -> assert false
 
   let is_valid_utf_16le b =
     let rec loop max b i =
