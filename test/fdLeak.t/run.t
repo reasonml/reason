@@ -1,4 +1,4 @@
 
-  $ ulimit -n 10
+  $ ulimit -n 24
   $ ../lib/fdLeak.exe
   EOL: done
