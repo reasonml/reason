@@ -42,54 +42,13 @@ module Bytes = struct
   include Bytes
 
   external unsafe_get_uint8 : bytes -> int -> int = "%bytes_unsafe_get"
-  external unsafe_get_uint16_ne : bytes -> int -> int = "%caml_bytes_get16u"
   external get_uint8 : bytes -> int -> int = "%bytes_safe_get"
-  external get_uint16_ne : bytes -> int -> int = "%caml_bytes_get16"
-  external get_int32_ne : bytes -> int -> int32 = "%caml_bytes_get32"
 
   external unsafe_set_uint8 : bytes -> int -> int -> unit = "%bytes_unsafe_set"
   external set_int8 : bytes -> int -> int -> unit = "%bytes_safe_set"
-  external swap16 : int -> int = "%bswap16"
-  external swap32 : int32 -> int32 = "%bswap_int32"
-  external swap64 : int64 -> int64 = "%bswap_int64"
-
-  let unsafe_get_uint16_le b i =
-    if Sys.big_endian
-    then swap16 (unsafe_get_uint16_ne b i)
-    else unsafe_get_uint16_ne b i
-
-  let unsafe_get_uint16_be b i =
-    if Sys.big_endian
-    then unsafe_get_uint16_ne b i
-    else swap16 (unsafe_get_uint16_ne b i)
 
   let get_int8 b i =
     ((get_uint8 b i) lsl (Sys.int_size - 8)) asr (Sys.int_size - 8)
-
-  let get_uint16_le b i =
-    if Sys.big_endian then swap16 (get_uint16_ne b i)
-    else get_uint16_ne b i
-
-  let get_uint16_be b i =
-    if not Sys.big_endian then swap16 (get_uint16_ne b i)
-    else get_uint16_ne b i
-
-  let get_int16_ne b i =
-    ((get_uint16_ne b i) lsl (Sys.int_size - 16)) asr (Sys.int_size - 16)
-
-  let get_int16_le b i =
-    ((get_uint16_le b i) lsl (Sys.int_size - 16)) asr (Sys.int_size - 16)
-
-  let get_int16_be b i =
-    ((get_uint16_be b i) lsl (Sys.int_size - 16)) asr (Sys.int_size - 16)
-
-  let get_int32_le b i =
-    if Sys.big_endian then swap32 (get_int32_ne b i)
-    else get_int32_ne b i
-
-  let get_int32_be b i =
-    if not Sys.big_endian then swap32 (get_int32_ne b i)
-    else get_int32_ne b i
 
   let set_uint8 = set_int8
 
@@ -265,78 +224,6 @@ module Bytes = struct
       | _ -> false
     in
     loop (length b - 1) b 0
-
-  (* UTF-16BE *)
-
-  let get_utf_16be_uchar b i =
-    let get = unsafe_get_uint16_be in
-    let max = length b - 1 in
-    if i < 0 || i > max then invalid_arg "index out of bounds" else
-    if i = max then dec_invalid 1 else
-    match get b i with
-    | u when u < 0xD800 || u > 0xDFFF -> dec_ret 2 u
-    | u when u > 0xDBFF -> dec_invalid 2
-    | hi -> (* combine [hi] with a low surrogate *)
-        let last = i + 3 in
-        if last > max then dec_invalid (max - i + 1) else
-        match get b (i + 2) with
-        | u when u < 0xDC00 || u > 0xDFFF -> dec_invalid 2 (* retry here *)
-        | lo ->
-            let u = (((hi land 0x3FF) lsl 10) lor (lo land 0x3FF)) + 0x10000 in
-            dec_ret 4 u
-
-  let is_valid_utf_16be b =
-    let rec loop max b i =
-      let get = unsafe_get_uint16_be in
-      if i > max then true else
-      if i = max then false else
-      match get b i with
-      | u when u < 0xD800 || u > 0xDFFF -> loop max b (i + 2)
-      | u when u > 0xDBFF -> false
-      | _hi ->
-          let last = i + 3 in
-          if last > max then false else
-          match get b (i + 2) with
-          | u when u < 0xDC00 || u > 0xDFFF -> false
-          | _lo -> loop max b (i + 4)
-    in
-    loop (length b - 1) b 0
-
-  (* UTF-16LE *)
-
-  let get_utf_16le_uchar b i =
-    let get = unsafe_get_uint16_le in
-    let max = length b - 1 in
-    if i < 0 || i > max then invalid_arg "index out of bounds" else
-    if i = max then dec_invalid 1 else
-    match get b i with
-    | u when u < 0xD800 || u > 0xDFFF -> dec_ret 2 u
-    | u when u > 0xDBFF -> dec_invalid 2
-    | hi -> (* combine [hi] with a low surrogate *)
-        let last = i + 3 in
-        if last > max then dec_invalid (max - i + 1) else
-        match get b (i + 2) with
-        | u when u < 0xDC00 || u > 0xDFFF -> dec_invalid 2 (* retry here *)
-        | lo ->
-            let u = (((hi land 0x3FF) lsl 10) lor (lo land 0x3FF)) + 0x10000 in
-            dec_ret 4 u
-
-  let is_valid_utf_16le b =
-    let rec loop max b i =
-      let get = unsafe_get_uint16_le in
-      if i > max then true else
-      if i = max then false else
-      match get b i with
-      | u when u < 0xD800 || u > 0xDFFF -> loop max b (i + 2)
-      | u when u > 0xDBFF -> false
-      | _hi ->
-          let last = i + 3 in
-          if last > max then false else
-          match get b (i + 2) with
-          | u when u < 0xDC00 || u > 0xDFFF -> false
-          | _lo -> loop max b (i + 4)
-    in
-    loop (length b - 1) b 0
 end
 
 module String = struct
@@ -360,12 +247,6 @@ module String = struct
 
   let get_utf_8_uchar s i = B.get_utf_8_uchar (bos s) i
   let is_valid_utf_8 s = B.is_valid_utf_8 (bos s)
-
-  let get_utf_16be_uchar s i = B.get_utf_16be_uchar (bos s) i
-  let is_valid_utf_16be s = B.is_valid_utf_16be (bos s)
-
-  let get_utf_16le_uchar s i = B.get_utf_16le_uchar (bos s) i
-  let is_valid_utf_16le s = B.is_valid_utf_16le (bos s)
 
   (** {6 Binary encoding/decoding of integers} *)
 
