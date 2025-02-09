@@ -9,6 +9,8 @@
   [#2796](https://github.com/reasonml/reason/pull/2796))
 - Fix: display attributes in record field and JSX props under punning
   (@pedrobslisboa, [#2824](https://github.com/reasonml/reason/pull/2824))
+- Support modest Unicode letters in identifiers
+  ([#28282](https://github.com/reasonml/reason/pull/2828))
 
 ## 3.14.0
 
