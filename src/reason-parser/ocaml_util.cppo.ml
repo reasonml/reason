@@ -256,13 +256,6 @@ module String = struct
   external get_int64_ne : string -> int -> int64 = "%caml_string_get64"
 
   let get_int8 s i = B.get_int8 (bos s) i
-  let get_uint16_le s i = B.get_uint16_le (bos s) i
-  let get_uint16_be s i = B.get_uint16_be (bos s) i
-  let get_int16_ne s i = B.get_int16_ne (bos s) i
-  let get_int16_le s i = B.get_int16_le (bos s) i
-  let get_int16_be s i = B.get_int16_be (bos s) i
-  let get_int32_le s i = B.get_int32_le (bos s) i
-  let get_int32_be s i = B.get_int32_be (bos s) i
 end
 #endif
 
