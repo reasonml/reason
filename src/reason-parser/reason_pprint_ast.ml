@@ -5194,7 +5194,7 @@ let createFormatter () =
              with
             | [ x ] -> x
             | xs -> makeList xs)
-          | { pexp_desc = Pexp_fun _; _ } ->
+          | { pexp_desc = Pexp_function (_, _, Pfunction_body _); _ } ->
             self#formatPexpFun ~prefix:(atom "...") ~wrap:("{", "}") expr
           | _ ->
             (* Currently spreading a list must be wrapped in { }.
@@ -5261,8 +5261,7 @@ let createFormatter () =
               let value_has_jsx = jsxAttrs != [] in
               let nextAttr =
                 match expression.pexp_desc with
-                | Pexp_ident ident
-                  when isPunnedJsxArg lbl ident stdAttrs ->
+                | Pexp_ident ident when isPunnedJsxArg lbl ident stdAttrs ->
                   makeList ~break:Layout.Never [ atom "?"; atom lbl ]
                 | Pexp_construct _ when value_has_jsx ->
                   label
@@ -5283,8 +5282,7 @@ let createFormatter () =
               let value_has_jsx = jsxAttrs != [] in
               let nextAttr =
                 match expression.pexp_desc with
-                | Pexp_ident ident
-                  when isPunnedJsxArg lbl ident stdAttrs ->
+                | Pexp_ident ident when isPunnedJsxArg lbl ident stdAttrs ->
                   atom lbl
                 | _ when isJSXComponent expression ->
                   label
@@ -5343,13 +5341,14 @@ let createFormatter () =
                     (makeList [ atom lbl; atom "=" ])
                     (self#simplifyUnparseExpr ~wrap:("{", "}") expression)
                 | Pexp_record _ | Pexp_construct _ | Pexp_array _ | Pexp_tuple _
-                | Pexp_match _ | Pexp_extension _ | Pexp_function _ ->
+                | Pexp_match _ | Pexp_extension _
+                | Pexp_function (_, _, Pfunction_cases _) ->
                   label
                     (makeList [ atom lbl; atom "=" ])
                     (self#dont_preserve_braces#simplifyUnparseExpr
                        ~wrap:("{", "}")
                        expression)
-                | Pexp_fun _ ->
+                | Pexp_function (_, _, Pfunction_body _) ->
                   let propName = makeList [ atom lbl; atom "=" ] in
                   self#formatPexpFun
                     ~wrap:("{", "}")
@@ -5535,6 +5534,7 @@ let createFormatter () =
 
         (* Creates a list of simple module expressions corresponding to module
            expression or functor application. *)
+        (* TODO(anmonteiro): account for `Pmod_apply_unit` *)
         method moduleExpressionToFormattedApplicationItems ?(prefix = "") x =
           match x with
           (* are we formatting a functor application with a module structure as arg?
@@ -5745,25 +5745,38 @@ let createFormatter () =
           let uncurried =
             try Hashtbl.find uncurriedTable x.pexp_loc with Not_found -> false
           in
-          let rec extract_args xx =
-            let { Reason_attributes.stdAttrs; _ } =
-              Reason_attributes.partitionAttributes
-                ~allowUncurry:false
-                xx.pexp_attributes
+          let rec extract_args =
+            let extract_from_params param =
+              match param.pparam_desc with
+              | Pparam_val (lbl, eo, pat) -> `Value (lbl, eo, pat)
+              | Pparam_newtype newtype -> `Type newtype
             in
-            if stdAttrs != []
-            then [], xx
-            else
-              match xx.pexp_desc with
-              (* label * expression option * pattern * expression *)
-              | Pexp_fun (l, eo, p, e) ->
-                let args, ret = extract_args e in
-                `Value (l, eo, p) :: args, ret
-              | Pexp_newtype (newtype, e) ->
-                let args, ret = extract_args e in
-                `Type newtype :: args, ret
-              | Pexp_constraint _ -> [], xx
-              | _ -> [], xx
+            fun xx ->
+              let { Reason_attributes.stdAttrs; _ } =
+                Reason_attributes.partitionAttributes
+                  ~allowUncurry:false
+                  xx.pexp_attributes
+              in
+              if stdAttrs != []
+              then [], xx
+              else
+                match xx.pexp_desc with
+                | Pexp_function (params, constraint_, body) ->
+                  let vs = List.map extract_from_params params in
+                  (match constraint_ with
+                  | Some _ -> vs, xx
+                  | None ->
+                    (match body with
+                    | Pfunction_cases _ as c ->
+                      vs, { xx with pexp_desc = Pexp_function ([], None, c) }
+                    | Pfunction_body e ->
+                      let args, ret = extract_args e in
+                      vs @ args, ret))
+                | Pexp_newtype (newtype, e) ->
+                  let args, ret = extract_args e in
+                  `Type newtype :: args, ret
+                | Pexp_constraint _ -> [], xx
+                | _ -> [], xx
           in
           let prepare_arg = function
             | `Value (l, eo, p) ->
@@ -6037,7 +6050,8 @@ let createFormatter () =
 
         method value_binding
           prefixText
-          { pvb_pat; pvb_attributes; pvb_loc; pvb_expr } =
+          (* TODO(anmonteiro): check pvb_constraint / add a test *)
+            { pvb_pat; pvb_attributes; pvb_loc; pvb_expr; _ } =
           self#binding
             prefixText
             ~attrs:pvb_attributes
@@ -6767,14 +6781,14 @@ let createFormatter () =
           (* The only reason Pexp_fun must also be wrapped in parens when under
              pipe, is that its => token will be confused with the match token.
              Simple expression will also invoke `#reset`. *)
-          | Pexp_function _ when pipe || semi ->
+          | Pexp_function (_, _, Pfunction_cases _) when pipe || semi ->
             None (* Would be rendered as simplest_expression *)
           (* Pexp_function, on the other hand, doesn't need wrapping in parens
              in most cases anymore, since `fun` is not ambiguous anymore (we
              print Pexp_fun as ES6 functions). *)
-          | Pexp_function l ->
+          | Pexp_function (_, _, Pfunction_cases (cases, loc, _attrs)) ->
             let prec = Custom funToken in
-            let expr = self#patternFunction ?extension x.pexp_loc l in
+            let expr = self#patternFunction ?extension loc cases in
             Some
               (SpecificInfixPrecedence
                  ( { reducePrecedence = prec; shiftPrecedence = prec }
@@ -6784,7 +6798,7 @@ let createFormatter () =
                printing breaks for them. *)
             let itm =
               match x.pexp_desc with
-              | Pexp_fun _ | Pexp_newtype _ ->
+              | Pexp_function (_, _, Pfunction_body _) | Pexp_newtype _ ->
                 (* let uncurried = *)
                 let args, ret = self#curriedPatternsAndReturnVal x in
                 (match args with
@@ -7113,7 +7127,9 @@ let createFormatter () =
               ; loc_ghost = false
               }
             in
-            let stdAttrs = Reason_attributes.extractStdAttrs e.pexp_attributes in 
+            let stdAttrs =
+              Reason_attributes.extractStdAttrs e.pexp_attributes
+            in
             let theRow =
               match e.pexp_desc, shouldPun, allowPunning with
               (* record value punning. Turns {foo: foo, bar: 1} into {foo, bar: 1} *)
@@ -7121,8 +7137,7 @@ let createFormatter () =
               (* don't turn {bar: [@foo] bar, baz: 1} into {bar, baz: 1} *)
               (* don't turn {bar: Foo.bar, baz: 1} into {bar, baz: 1}, naturally *)
               | Pexp_ident { txt = Lident value; _ }, true, true
-                when Longident.last_exn li.txt = value && stdAttrs = []
-                ->
+                when Longident.last_exn li.txt = value && stdAttrs = [] ->
                 makeList (maybeQuoteFirstElem li [])
                 (* Force breaks for nested records or mel.obj sugar
                  * Example:
@@ -7423,13 +7438,16 @@ let createFormatter () =
               match x.pexp_desc with
               (* The only reason Pexp_fun must also be wrapped in parens is that
                  its => token will be confused with the match token. *)
-              | Pexp_fun _ when pipe || semi ->
+              (* TODO(anmonteiro): go through `Pfunction_body` matches and add
+                 `_ :: _` to args? *)
+              | Pexp_function (_, _, Pfunction_body _) when pipe || semi ->
                 Some (self#reset#simplifyUnparseExpr x)
-              | Pexp_function l when pipe || semi ->
+              | Pexp_function (_, _, Pfunction_cases (cases, loc, _attrs))
+                when pipe || semi ->
                 Some
                   (formatPrecedence
                      ~loc:x.pexp_loc
-                     (self#reset#patternFunction x.pexp_loc l))
+                     (self#reset#patternFunction loc cases))
               | Pexp_apply _ ->
                 (match self#simple_get_application x with
                 (* If it's the simple form of application. *)
@@ -8990,7 +9008,8 @@ let createFormatter () =
               (makeTup argsList)
               []
               ([ self#moduleExpressionToFormattedApplicationItems return ], None)
-          | Pmod_apply _ -> self#moduleExpressionToFormattedApplicationItems x
+          | Pmod_apply _ | Pmod_apply_unit _ ->
+            self#moduleExpressionToFormattedApplicationItems x
           | Pmod_extension (s, e) -> self#payload "%" s e
           | Pmod_unpack _ | Pmod_ident _ | Pmod_constraint _ | Pmod_structure _
             ->
@@ -9605,12 +9624,13 @@ let createFormatter () =
           let categorizeFunApplArgs args =
             let reverseArgs = List.rev args in
             match reverseArgs with
-            | ((_, { pexp_desc = Pexp_fun _; _ }) as callback) :: args
+            | ((_, { pexp_desc = Pexp_function (_ :: _, _, _); _ }) as callback)
+              :: args
               when []
                    == List.filter
                         (fun (_, e) ->
                            match e.pexp_desc with
-                           | Pexp_fun _ -> true
+                           | Pexp_function (_ :: _, _, _) -> true
                            | _ -> false)
                         args
                    (* default to normal formatting if there's more than one
