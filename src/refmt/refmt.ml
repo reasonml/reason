@@ -7,6 +7,7 @@
 
 module Cmdliner = Vendored_cmdliner
 open Cmdliner
+open Refmt_lib
 
 let read_text_lines file =
   let list = ref [] in
@@ -22,15 +23,15 @@ let read_text_lines file =
     List.rev !list
 
 let refmt
-    interface
-    is_recoverable
-    explicit_arity
-    parse_ast
-    print
-    print_width
-    heuristics_file
-    in_place
-    input_files
+      interface
+      is_recoverable
+      explicit_arity
+      parse_ast
+      print
+      print_width
+      heuristics_file
+      in_place
+      input_files
   =
   let refmt_single input_file =
     let use_stdin, input_file =

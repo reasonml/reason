@@ -6,4 +6,10 @@
 
 (executable
  (name outcometreePrinter)
- (libraries reason))
+ (libraries reason)
+ (modules outcometreePrinter))
+
+(executable
+ (name fdLeak)
+ (modules fdLeak)
+ (libraries reason.refmt-lib))

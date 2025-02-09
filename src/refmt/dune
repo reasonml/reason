@@ -2,6 +2,13 @@
  (public_name refmt)
  (package reason)
  (modes exe byte)
+ (modules refmt)
+ (libraries refmt_lib))
+
+(library
+ (public_name reason.refmt-lib)
+ (name refmt_lib)
+ (modules :standard \ refmt)
  (libraries reason reason.cmdliner dune-build-info))
 
 (rule
