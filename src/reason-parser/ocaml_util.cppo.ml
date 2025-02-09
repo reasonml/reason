@@ -46,7 +46,6 @@ module Bytes = struct
   external get_uint8 : bytes -> int -> int = "%bytes_safe_get"
   external get_uint16_ne : bytes -> int -> int = "%caml_bytes_get16"
   external get_int32_ne : bytes -> int -> int32 = "%caml_bytes_get32"
-  external get_int64_ne : bytes -> int -> int64 = "%caml_bytes_get64"
 
   external unsafe_set_uint8 : bytes -> int -> int -> unit = "%bytes_unsafe_set"
   external set_int8 : bytes -> int -> int -> unit = "%bytes_safe_set"
@@ -91,14 +90,6 @@ module Bytes = struct
   let get_int32_be b i =
     if not Sys.big_endian then swap32 (get_int32_ne b i)
     else get_int32_ne b i
-
-  let get_int64_le b i =
-    if Sys.big_endian then swap64 (get_int64_ne b i)
-    else get_int64_ne b i
-
-  let get_int64_be b i =
-    if not Sys.big_endian then swap64 (get_int64_ne b i)
-    else get_int64_ne b i
 
   let set_uint8 = set_int8
 
@@ -391,8 +382,6 @@ module String = struct
   let get_int16_be s i = B.get_int16_be (bos s) i
   let get_int32_le s i = B.get_int32_le (bos s) i
   let get_int32_be s i = B.get_int32_be (bos s) i
-  let get_int64_le s i = B.get_int64_le (bos s) i
-  let get_int64_be s i = B.get_int64_be (bos s) i
 end
 #endif
 
