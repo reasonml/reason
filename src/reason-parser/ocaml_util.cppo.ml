@@ -52,7 +52,6 @@ module Bytes = struct
   external unsafe_set_uint16_ne : bytes -> int -> int -> unit
                                 = "%caml_bytes_set16u"
   external set_int8 : bytes -> int -> int -> unit = "%bytes_safe_set"
-  external set_int16_ne : bytes -> int -> int -> unit = "%caml_bytes_set16"
   external swap16 : int -> int = "%bswap16"
   external swap32 : int32 -> int32 = "%bswap_int32"
   external swap64 : int64 -> int64 = "%bswap_int64"
@@ -113,18 +112,8 @@ module Bytes = struct
     then unsafe_set_uint16_ne b i x else
     unsafe_set_uint16_ne b i (swap16 x)
 
-  let set_int16_le b i x =
-    if Sys.big_endian then set_int16_ne b i (swap16 x)
-    else set_int16_ne b i x
-
-  let set_int16_be b i x =
-    if not Sys.big_endian then set_int16_ne b i (swap16 x)
-    else set_int16_ne b i x
-
   let set_uint8 = set_int8
   let set_uint16_ne = set_int16_ne
-  let set_uint16_be = set_int16_be
-  let set_uint16_le = set_int16_le
 
   (* UTF codecs and validations *)
 
