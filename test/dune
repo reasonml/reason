@@ -6,7 +6,11 @@
 (cram
  (applies_to * \ lib rtopIntegration)
  (package reason)
- (deps %{bin:ocamlc} %{bin:refmt} ./lib/outcometreePrinter.exe))
+ (deps
+  %{bin:ocamlc}
+  %{bin:refmt}
+  ./lib/outcometreePrinter.exe
+  ./lib/fdLeak.exe))
 
 (cram
  (applies_to rtopIntegration)
