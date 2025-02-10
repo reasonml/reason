@@ -21,7 +21,7 @@ let print_error loc f ppf x =
   Location.report_error ppf error
 #endif
 
-#if OCAML_VERSION < (4,13,0)
+#if OCAML_VERSION < (4,14,0)
 module Uchar = struct
   include Uchar
 
