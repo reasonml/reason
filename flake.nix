@@ -3,7 +3,7 @@
 
   inputs.nixpkgs.url = "github:nix-ocaml/nix-overlays";
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, nixpkgs }:
     let
       forAllSystems = f: nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed (system:
         let
