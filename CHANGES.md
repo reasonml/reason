@@ -1,4 +1,4 @@
-## Unreleased
+## 3.15.0
 
 - rtop: read `~/.config/rtop/init.re` configuration file (@anmonteiro,
   [#2813](https://github.com/reasonml/reason/pull/2813))
@@ -11,7 +11,7 @@
   (@pedrobslisboa, [#2824](https://github.com/reasonml/reason/pull/2824))
 - Support modest Unicode letters in identifiers
   (@anmonteiro, [#2828](https://github.com/reasonml/reason/pull/2828))
-- refmt: file descriptor leak
+- refmt: fix file descriptor leak
   (@anmonteiro, [#2830](https://github.com/reasonml/reason/pull/2830))
 
 ## 3.14.0
