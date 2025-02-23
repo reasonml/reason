@@ -13,8 +13,8 @@
                 src = super.fetchFromGitHub {
                   owner = "ocaml-ppx";
                   repo = "ppxlib";
-                  rev = "30ebdf9c31b14b8efb23b11575e97c6a43aa4554";
-                  hash = "sha256-NPerzuytyeKhssiNOA3uufy3thbWnRCkDLXR2yfR//k=";
+                  rev = "3374fe83926ea192ceccc9977032bff72ecaf2f7";
+                  hash = "sha256-KfuA31hmFHpPkp7lq7lH6jaQyLiqBd/UnY5+ctntmF0=";
                 };
               });
 
