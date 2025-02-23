@@ -17,7 +17,9 @@
                   hash = "sha256-KfuA31hmFHpPkp7lq7lH6jaQyLiqBd/UnY5+ctntmF0=";
                 };
               });
-
+              pp = osuper.pp.overrideAttrs (_: {
+                doCheck = false;
+              });
             });
           });
         in
