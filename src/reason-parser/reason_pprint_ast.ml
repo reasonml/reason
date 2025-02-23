@@ -3380,7 +3380,6 @@ let createFormatter () =
               | Ptyp_arrow (_, _, _) | Ptyp_alias (_, _) | Ptyp_poly (_, _) ->
                 makeList ~wrap:("(", ")") ~break:IfNeed [ self#core_type x ]
               | Ptyp_open (m, ct) ->
-                (* TODO(anmonteiro): check this *)
                 label
                   (label (self#longident m.txt) (atom "."))
                   (self#core_type ct)
@@ -9633,7 +9632,8 @@ let createFormatter () =
                            | _ -> false)
                         args
                    (* default to normal formatting if there's more than one
-                      callback *) ->
+                      callback *)
+              ->
               `LastArgIsCallback (callback, List.rev args)
             | _ -> `NormalFunAppl args
           in
