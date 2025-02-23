@@ -4137,7 +4137,7 @@ let createFormatter () =
                     (List.map self#item_attribute attrs)
                 in
                 makeSpacedBreakableInlineList [ formattedAttrs; constant ])
-            | { pexp_desc = Pexp_function (_ :: _, _, _); _ } ->
+            | { pexp_desc = Pexp_function (_ :: _, _, Pfunction_body _); _ } ->
               self#formatPexpFun e
             | x -> self#unparseExpr x
           in
@@ -5194,7 +5194,7 @@ let createFormatter () =
              with
             | [ x ] -> x
             | xs -> makeList xs)
-          | { pexp_desc = Pexp_function (_, _, Pfunction_body _); _ } ->
+          | { pexp_desc = Pexp_function (_ :: _, _, Pfunction_body _); _ } ->
             self#formatPexpFun ~prefix:(atom "...") ~wrap:("{", "}") expr
           | _ ->
             (* Currently spreading a list must be wrapped in { }.
@@ -5348,7 +5348,7 @@ let createFormatter () =
                     (self#dont_preserve_braces#simplifyUnparseExpr
                        ~wrap:("{", "}")
                        expression)
-                | Pexp_function (_, _, Pfunction_body _) ->
+                | Pexp_function (_ :: _, _, Pfunction_body _) ->
                   let propName = makeList [ atom lbl; atom "=" ] in
                   self#formatPexpFun
                     ~wrap:("{", "}")
@@ -6798,7 +6798,7 @@ let createFormatter () =
                printing breaks for them. *)
             let itm =
               match x.pexp_desc with
-              | Pexp_function (_, _, Pfunction_body _) | Pexp_newtype _ ->
+              | Pexp_function (_ :: _, _, Pfunction_body _) | Pexp_newtype _ ->
                 (* let uncurried = *)
                 let args, ret = self#curriedPatternsAndReturnVal x in
                 (match args with
@@ -7438,9 +7438,7 @@ let createFormatter () =
               match x.pexp_desc with
               (* The only reason Pexp_fun must also be wrapped in parens is that
                  its => token will be confused with the match token. *)
-              (* TODO(anmonteiro): go through `Pfunction_body` matches and add
-                 `_ :: _` to args? *)
-              | Pexp_function (_, _, Pfunction_body _) when pipe || semi ->
+              | Pexp_function (_ :: _, _, Pfunction_body _) when pipe || semi ->
                 Some (self#reset#simplifyUnparseExpr x)
               | Pexp_function (_, _, Pfunction_cases (cases, loc, _attrs))
                 when pipe || semi ->
