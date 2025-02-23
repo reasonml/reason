@@ -8,7 +8,19 @@
       forAllSystems = f: nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed (system:
         let
           pkgs = nixpkgs.legacyPackages.${system}.extend (self: super: {
-            ocamlPackages = super.ocaml-ng.ocamlPackages_5_3;
+            ocamlPackages = super.ocaml-ng.ocamlPackages_5_3.overrideScope (oself: osuper: {
+              ppxlib = osuper.ppxlib.overrideAttrs (_: {
+                src = super.fetchFromGitHub {
+                  owner = "ocaml-ppx";
+                  repo = "ppxlib";
+                  rev = "3374fe83926ea192ceccc9977032bff72ecaf2f7";
+                  hash = "sha256-KfuA31hmFHpPkp7lq7lH6jaQyLiqBd/UnY5+ctntmF0=";
+                };
+              });
+              pp = osuper.pp.overrideAttrs (_: {
+                doCheck = false;
+              });
+            });
           });
         in
         f pkgs);
