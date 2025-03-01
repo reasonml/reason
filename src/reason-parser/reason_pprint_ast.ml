@@ -1922,6 +1922,12 @@ let createFormatter () =
     let formatTypeConstraint one two =
       label ~space:true (makeList ~postSpace:false [ one; atom ":" ]) two
 
+    let formatJustCoerce optType coerced =
+      match optType with
+      | None -> makeList ~postSpace:false ~sep:(Sep " ") [ atom ":>"; coerced ]
+      | Some typ ->
+        label ~space:true (makeList ~postSpace:true [ typ; atom ":>" ]) coerced
+
     let formatCoerce expr optType coerced =
       match optType with
       | None ->
@@ -4422,8 +4428,6 @@ let createFormatter () =
             | _ -> expr
           in
           match x.pexp_desc with
-          (* TODO(anmonteiro): I think this is wrong and `__x` can appear
-             anywhere in the multiple args *)
           | Pexp_function
               ( [ { pparam_desc =
                       Pparam_val
@@ -5534,7 +5538,6 @@ let createFormatter () =
 
         (* Creates a list of simple module expressions corresponding to module
            expression or functor application. *)
-        (* TODO(anmonteiro): account for `Pmod_apply_unit` *)
         method moduleExpressionToFormattedApplicationItems ?(prefix = "") x =
           match x with
           (* are we formatting a functor application with a module structure as arg?
@@ -5565,6 +5568,9 @@ let createFormatter () =
             label name arg
           | _ ->
             let rec extract_apps args = function
+              | { pmod_desc = Pmod_apply_unit me; _ } ->
+                let head = source_map ~loc:me.pmod_loc (self#module_expr me) in
+                label head (makeTup args)
               | { pmod_desc = Pmod_apply (me1, me2); _ } ->
                 let arg =
                   source_map ~loc:me2.pmod_loc (self#simple_module_expr me2)
@@ -5906,7 +5912,7 @@ let createFormatter () =
          *       ...
          *     }
         *)
-        method wrappedBinding prefixText ~arrow pattern patternAux expr =
+        method wrappedBinding prefixText ~arrow ?vbct pattern patternAux expr =
           let expr = self#process_underscore_application expr in
           let argsList, return = self#curriedPatternsAndReturnVal expr in
           let patternList =
@@ -5921,6 +5927,7 @@ let createFormatter () =
           in
           match argsList, return.pexp_desc with
           | [], Pexp_constraint (e, ct) ->
+            assert (vbct = None);
             let typeLayout =
               source_map
                 ~loc:ct.ptyp_loc
@@ -5938,7 +5945,7 @@ let createFormatter () =
             (* simple let binding, e.g. `let number = 5` *)
             (* let f = (. a, b) => a + b; *)
             let appTerms = self#unparseExprApplicationItems expr in
-            self#formatSimplePatternBinding prefixText patternList None appTerms
+            self#formatSimplePatternBinding prefixText patternList vbct appTerms
           | _ :: _, _ ->
             let argsWithConstraint, actualReturn =
               self#normalizeFunctionArgsConstraint argsList return
@@ -5950,6 +5957,11 @@ let createFormatter () =
             (* Attaches the `=` to `f` to recreate javascript function syntax in
                * let f = (a, b) => a + b; *)
             let lbl =
+              let pattern =
+                match vbct with
+                | None -> pattern
+                | Some x -> label pattern (formatJustTheTypeConstraint x)
+              in
               makeList ~sep:(Sep " ") ~break:Layout.Never [ pattern; atom "=" ]
             in
             self#wrapCurriedFunctionBinding
@@ -6050,13 +6062,13 @@ let createFormatter () =
 
         method value_binding
           prefixText
-          (* TODO(anmonteiro): check pvb_constraint / add a test *)
-            { pvb_pat; pvb_attributes; pvb_loc; pvb_expr; _ } =
+          { pvb_pat; pvb_attributes; pvb_loc; pvb_expr; pvb_constraint } =
           self#binding
             prefixText
             ~attrs:pvb_attributes
             ~loc:pvb_loc
             ~pat:pvb_pat
+            ?pvb_constraint
             pvb_expr
 
         method binding_op prefixText { pbop_pat; pbop_loc; pbop_exp; _ } =
@@ -6066,15 +6078,43 @@ let createFormatter () =
             ~pat:pbop_pat
             pbop_exp
 
-        method binding prefixText ?(attrs = []) ~loc ~pat expr =
+        method binding prefixText ?(attrs = []) ~loc ~pat ?pvb_constraint expr =
           (* TODO: print attributes *)
           let body =
+            let vbct =
+              match pvb_constraint with
+              | Some (Pvc_constraint { locally_abstract_univars = []; typ }) ->
+                Some (self#core_type typ)
+              | Some (Pvc_constraint { locally_abstract_univars = vars; typ })
+                ->
+                Some
+                  (label
+                     ~space:true
+                     (* TODO: This isn't a correct use of sep! It ruins how * comments
+                 are interleaved. *)
+                     (makeList
+                        [ makeList
+                            ~sep:(Sep " ")
+                            (atom "type" :: List.map (fun v -> atom v.txt) vars)
+                        ; atom "."
+                        ])
+                     (self#core_type typ))
+              | Some (Pvc_coercion { ground; coercion }) ->
+                Some
+                  (formatJustCoerce
+                     (match ground with
+                     | Some ground -> Some (self#core_type ground)
+                     | None -> None)
+                     (self#core_type coercion))
+              | None -> None
+            in
             match pat.ppat_attributes, pat.ppat_desc with
             | [], Ppat_var _ ->
               self#wrappedBinding
                 prefixText
                 ~arrow:"=>"
                 (source_map ~loc:pat.ppat_loc (self#simple_pattern pat))
+                ?vbct
                 []
                 expr
             (* Ppat_constraint is used in bindings of the form * * let
@@ -6107,7 +6147,8 @@ let createFormatter () =
               in
               let appTerms = self#unparseExprApplicationItems expr in
               let includingEqual =
-                makeList ~postSpace:true [ upUntilEqual; atom "=" ]
+                let vbct = match vbct with Some x -> [ x ] | None -> [] in
+                makeList ~postSpace:true ((upUntilEqual :: vbct) @ [ atom "=" ])
               in
               formatAttachmentApplication
                 applicationFinalWrapping
@@ -6199,7 +6240,7 @@ let createFormatter () =
               self#formatSimplePatternBinding
                 prefixText
                 layoutPattern
-                None
+                vbct
                 appTerms
           in
           let { Reason_attributes.stdAttrs; docAttrs; _ } =
