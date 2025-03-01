@@ -322,15 +322,14 @@ Format variants
     /* a = int => int => int */
     | App(f, x) => eval(f, eval(x));
   
-  let rec eval: type a. term(a) => a =
-    x =>
-      switch (x) {
-      | Int(n) => n
-      /* a = int */
-      | Add => ((x, y) => x + y)
-      /* a = int => int => int */
-      | App(f, x) => eval(f, eval(x))
-      };
+  let rec eval: type a. term(a) => a = x =>
+    switch (x) {
+    | Int(n) => n
+    /* a = int */
+    | Add => ((x, y) => x + y)
+    /* a = int => int => int */
+    | App(f, x) => eval(f, eval(x))
+    };
   
   /* eval called at types (b=>a) and b for fresh b */
   let evalArg = App(App(Add, Int(1)), Int(1));
