@@ -3965,7 +3965,10 @@ simple_pattern_not_ident_:
 
 %inline record_pattern:
     LBRACE lbl_pattern_list RBRACE
-    { let (fields, closed) = $2 in mkpat (Ppat_record (fields, closed)) }
+    { let (fields, closed) = $2 in
+      let loc = mklocation $symbolstartpos $endpos in
+      mkpat ~loc (Ppat_record (fields, closed))
+    }
 ;
 
 %inline list_pattern:
