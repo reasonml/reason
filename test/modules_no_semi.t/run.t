@@ -327,8 +327,8 @@ Format modules no semi
     CurriedNoSugar(MakeAModule(), BMod);
   
   /* TODO: Functor type signatures should more resemble value signatures */
-  let curriedFunc: (int, int) => int =
-    (a, b) => a + b;
+  let curriedFunc: (int, int) => int = (a, b) =>
+    a + b;
   module type FunctorType =
     (ASig, BSig) => SigResult;
   /* Which is sugar for:*/
@@ -501,7 +501,7 @@ Format modules no semi
   let myFirstClass: module HasInt =
     (module MyModule);
   
-  let myFirstClassWillBeFormattedAs: module HasInt =
+  let myFirstClassWillBeFormattedAs: (module HasInt) =
     (module MyModule);
   
   let acceptsAndUnpacksFirstClass =

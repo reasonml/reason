@@ -663,6 +663,9 @@ let mkexp_app_rev startp endp (body, args) =
     let groups = group (false, []) [] processed_args in
     make_appl body groups
 
+let mkmod_app_unit ~loc (mexp: Ppxlib.module_expr) =
+  mkmod ~loc (Pmod_apply_unit mexp)
+
 let mkmod_app (mexp: Ppxlib.module_expr) (marg: Ppxlib.module_expr) =
   mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
     (Pmod_apply (mexp, marg))
@@ -1565,10 +1568,7 @@ module_arguments_comma_list:
 module_arguments:
   | module_expr_structure { [$1] }
   | parenthesized(module_arguments_comma_list)
-    { match $1 with
-      | [] -> [mkmod ~loc:(mklocation $startpos $endpos) (Pmod_structure [])]
-      | xs -> xs
-    }
+    { $1 }
 ;
 
 module_expr_body: preceded(EQUAL,module_expr) | module_expr_structure { $1 };
@@ -1605,7 +1605,10 @@ mark_position_mod
       mk_functor_mod $2 me
     }
   | module_expr module_arguments
-    { List.fold_left mkmod_app $1 $2 }
+    { match $2 with
+      | [] -> mkmod_app_unit ~loc:(mklocation $symbolstartpos $endpos) $1
+      | xs -> List.fold_left mkmod_app $1 xs
+    }
   | attribute module_expr %prec attribute_precedence
     { {$2 with pmod_attributes = $1 :: $2.pmod_attributes} }
   ) {$1};
@@ -3454,8 +3457,8 @@ labeled_expr:
    * attribute* on the structure item for the "and" binding.
    *)
   item_attributes AND let_binding_body
-  { let pat, expr = $3 in
-    Ast_helper.Vb.mk ~loc:(mklocation $symbolstartpos $endpos) ~attrs:$1 pat expr }
+  { let pat, expr, ct = $3 in
+    Ast_helper.Vb.mk ?value_constraint:ct ~loc:(mklocation $symbolstartpos $endpos) ~attrs:$1 pat expr }
 ;
 
 let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
@@ -3464,21 +3467,27 @@ let_binding:
   (* Form with item extension sugar *)
   item_attributes LET item_extension_sugar? rec_flag let_binding_body
   { let loc = mklocation $symbolstartpos $endpos in
-    let pat, expr = $5 in
-    mklbs $3 $4 (Ast_helper.Vb.mk ~loc ~attrs:$1 pat expr) loc }
+    let pat, expr, ct = $5 in
+    mklbs $3 $4 (Ast_helper.Vb.mk ~loc ~attrs:$1 ?value_constraint:ct pat expr) loc }
 ;
 
 let_binding_body:
   | simple_pattern_ident type_constraint EQUAL expr
-    { let loc = mklocation $symbolstartpos $endpos in
-      ($1, ghexp_constraint loc $4 $2) }
+    { let t =
+        match $2 with
+          Some t, None ->
+           Ppxlib.Pvc_constraint { locally_abstract_univars = []; typ=t }
+        | ground, Some coercion -> Pvc_coercion { ground; coercion}
+        | _ -> assert false
+      in
+      ($1, $4, Some t) }
   | simple_pattern_ident fun_def(EQUAL,core_type)
-    { ($1, $2) }
+    { ($1, $2, None) }
   | simple_pattern_ident COLON as_loc(preceded(QUOTE,ident))+ DOT core_type
       EQUAL mark_position_exp(expr)
     { let typ = mktyp ~ghost:true (Ptyp_poly($3, $5)) in
-      let loc = mklocation $symbolstartpos $endpos in
-      (mkpat ~ghost:true ~loc (Ppat_constraint($1, typ)), $7)
+      (* TODO(anmonteiro): univars *)
+      ($1, $7, Some (Ppxlib.Pvc_constraint { locally_abstract_univars = []; typ }))
     }
   | simple_pattern_ident COLON TYPE as_loc(LIDENT)+ DOT core_type
       EQUAL mark_position_exp(expr)
@@ -3529,10 +3538,7 @@ let_binding_body:
    *     And in the later case
    *
    *)
-   { let exp, poly = wrap_type_annotation $4 $6 $8 in
-     let loc = mklocation $symbolstartpos $endpos in
-     (mkpat ~ghost:true ~loc (Ppat_constraint($1, poly)), exp)
-   }
+   { ($1, $8, Some (Pvc_constraint { locally_abstract_univars = $4; typ=$6 })) }
 
   (* The combination of the following two rules encompass every type of
    * pattern *except* val_identifier. The fact that we want handle the
@@ -3545,10 +3551,12 @@ let_binding_body:
    * Unfortunately, it means we cannot do: let (myCurriedFunc: int -> int) a -> a;
    *)
   | pattern EQUAL expr
-    { ($1, $3) }
+    { ($1, $3, None) }
   | simple_pattern_not_ident COLON core_type EQUAL expr
-    { let loc = mklocation $symbolstartpos $endpos in
-      (mkpat ~loc (Ppat_constraint($1, $3)), $5)
+    { let t =
+         Ppxlib.Pvc_constraint { locally_abstract_univars = []; typ=$3 }
+      in
+      ($1, $5, Some t)
     }
 ;
 
@@ -3566,7 +3574,7 @@ letop_bindings:
     body = letop_binding_body
       { let let_pat, let_exp = body in
         let_pat, let_exp, [] }
-  | bindings = letop_bindings pbop_op = as_loc(ANDOP) body = let_binding_body
+  | bindings = letop_bindings pbop_op = as_loc(ANDOP) body = letop_binding_body
       { let let_pat, let_exp, rev_ands = bindings in
         let pbop_pat, pbop_exp = body in
         let pbop_loc = mklocation $symbolstartpos $endpos in
