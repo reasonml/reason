@@ -191,7 +191,7 @@ Format general implementation syntax
   print_int(aliasedToThisVar);
   
   let desiredFormattingForWrappedLambda
-        : (int, int, int) => nameBlahType =
+      : (int, int, int) => nameBlahType =
       /*
   
        fun is
@@ -204,8 +204,8 @@ Format general implementation syntax
   
   type longerInt = int;
   let desiredFormattingForWrappedLambdaWrappedArrow
-        : (longerInt, longerInt, longerInt) =>
-          nameBlahType =
+      : (longerInt, longerInt, longerInt) =>
+        nameBlahType =
       /*
   
        fun is

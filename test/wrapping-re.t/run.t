@@ -2091,7 +2091,7 @@ Format wrapping in .re files
   let locallyAbstractFuncNotSugared =
       (type a, input: a) => input;
   let locallyAbstractFuncAnnotated: type a. a => a =
-    (type a, input: a) => input;
+      (type a, input: a) => input;
   
   /*
     Examples of how long versions of these should be wrapped: df stands for
@@ -2130,9 +2130,11 @@ Format wrapping in .re files
    *     );
    *
    */
-  let df_locallyAbstractFuncAnnotated:
-    type a. (a, a) => inputEchoRecord(a) =
-    (input: a, input: a) => {inputIs: input};
+  let df_locallyAbstractFuncAnnotated
+      : type a. (a, a) => inputEchoRecord(a) =
+      (input: a, input: a) => {
+    inputIs: input,
+  };
   
   /**
    * The following is automatically expanded at the parser level into:
@@ -2174,14 +2176,17 @@ Format wrapping in .re files
    *     );
    *
    */
-  let df_locallyAbstractFuncAnnotated:
-    type a b.
-      (a, b) =>
-      (inputEchoRecord(a), inputEchoRecord(b)) =
-    (input: a, input2: b) => (
-      {inputIs: input},
-      {inputIs: input2},
-    );
+  let df_locallyAbstractFuncAnnotated
+      : type a b.
+          (a, b) =>
+          (
+            inputEchoRecord(a),
+            inputEchoRecord(b),
+          ) =
+      (input: a, input2: b) => (
+    {inputIs: input},
+    {inputIs: input2},
+  );
   
   /**
    * This case shows why inferring what was originally sugar type a b . blahblah
@@ -2189,25 +2194,28 @@ Format wrapping in .re files
    * constructors, then check if the result is equal to the first
    * Ppat_constraint. In this case, they're not equal!
    */
-  let df_locallyAbstractFuncAnnotated: 'figureMeOut =
-    (type a, type b) => (
-      (input: a, input2: b) => (
-        {inputIs: input},
-        {inputIs: input2},
-      ):
-        (a, b) =>
-        (inputEchoRecord(a), inputEchoRecord(b))
+  let df_locallyAbstractFuncAnnotated
+      : 'figureMeOut =
+      (type a, type b)
+      : (
+          (a, b) =>
+          (
+            inputEchoRecord(a),
+            inputEchoRecord(b),
+          )
+        ) =>
+    (input: a, input2: b) => (
+      {inputIs: input},
+      {inputIs: input2},
     );
   
-  let createTuple_thisFuncShouldWrapCorrectlyNow:
-    'a.
-    ('a, 'a, 'a) => ('a, 'a, 'a)
-   =
-    (someVar, someVar2, someVar3) => (
-      someVar,
-      someVar2,
-      someVar3,
-    );
+  let createTuple_thisFuncShouldWrapCorrectlyNow
+      : 'a. ('a, 'a, 'a) => ('a, 'a, 'a) =
+      (someVar, someVar2, someVar3) => (
+    someVar,
+    someVar2,
+    someVar3,
+  );
   
   let theTupleTypeAnnotationShouldWrap: (
     string,
@@ -2684,44 +2692,38 @@ Format wrapping in .re files
     occupation: "programmer",
   };
   
-  let myPolyFuncCommentBeforeColon /*beforeColon */:
-    'a.
-    'a => 'a
-   =
-    o => o;
-  let myPolyFuncCommentAfterColon: 'a. 'a => 'a =
-    /*afterColon */
-    o => o;
-  let myPolyFuncCommentBeforeArrow: 'a. 'a => 'a =
-    /*beforeArrow */
-    o => o;
-  let myPolyFuncCommentAfterArrow:
-    'a.
-    'a => /*afterArrow */ 'a
-   =
-    o => o;
+  let myPolyFuncCommentBeforeColon /*beforeColon */
+      : 'a. 'a => 'a =
+      o => o;
+  let myPolyFuncCommentAfterColon: 'a. 'a => 'a = /*afterColon */
+      o => o;
+  let myPolyFuncCommentBeforeArrow: 'a. 'a => 'a = /*beforeArrow */
+      o => o;
+  let myPolyFuncCommentAfterArrow
+      : 'a. 'a => /*afterArrow */ 'a =
+      o => o;
   /* THIS IS THE ONLY TEST THAT IS FAILING DUE TO BEING NON-IDEMPOTENT */
   /* let myPolyFuncCommentBeforeEqual : 'a . ('a) => 'a /*beforeEqual */  = fun(o) => o; */
-  let myPolyFuncCommentAfterEqual: 'a. 'a => 'a =
-    /*afterEqual */ o => o;
+  let myPolyFuncCommentAfterEqual: 'a. 'a => 'a = /*afterEqual */
+      o => o;
   
-  let myNonPolyFuncCommentBeforeColon /*BeforeColon */:
-    'a => 'a =
-    o => o;
-  let myNonPolyFuncCommentAfterColon:
-    /*AfterColon */ 'a => 'a =
-    o => o;
-  let myNonPolyFuncCommentBeforeArrow:
-    'a /*BeforeArrow */ => 'a =
-    o => o;
-  let myNonPolyFuncCommentAfterArrow:
-    'a => /*AfterArrow */ 'a =
-    o => o;
-  let myNonPolyFuncCommentBeforeEqual:
-    'a => 'a /*BeforeEqual */ =
-    o => o;
-  let myNonPolyFuncCommentAfterEqual: 'a => 'a =
-    /*AfterEqual */ o => o;
+  let myNonPolyFuncCommentBeforeColon /*BeforeColon */
+      : 'a => 'a =
+      o => o;
+  let myNonPolyFuncCommentAfterColon
+      : /*AfterColon */ 'a => 'a =
+      o => o;
+  let myNonPolyFuncCommentBeforeArrow
+      : 'a /*BeforeArrow */ => 'a =
+      o => o;
+  let myNonPolyFuncCommentAfterArrow
+      : 'a => /*AfterArrow */ 'a =
+      o => o;
+  let myNonPolyFuncCommentBeforeEqual
+      : 'a => 'a /*BeforeEqual */ =
+      o => o;
+  let myNonPolyFuncCommentAfterEqual: 'a => 'a = /*AfterEqual */
+      o => o;
   
   let lATCurrySugarCommentBeforeType /*BeforeType */ =
       (type a, input: a) => input;
@@ -2753,23 +2755,26 @@ Format wrapping in .re files
   let lATNotSugaredCommentAfterArrow =
       (type a, input: a) => /*AfterArrow*/ input;
   
-  let lAtFuncAnnotatedCommentBeforeColon /*BeforeColon*/:
-    type a. a => a =
-    (type a, input: a) => input;
-  let lAtFuncAnnotatedCommentAfterColon /*AfterColon*/:
-    type a. a => a =
-    (type a, input: a) => input;
-  let lAtFuncAnnotatedCommentBeforeTypeVar /*BeforeTypeVar*/:
-    type a. a => a =
-    (type a, input: a) => input;
-  let lAtFuncAnnotatedCommentAfterTypeVar /*AfterTypeVar*/:
-    type a. a => a =
-    (type a, input: a) => input;
-  let lAtFuncAnnotatedBeforeEqual:
-    type a. a => a /*BeforeEqual*/ =
-    (type a, input: a) => input;
-  let lAtFuncAnnotatedAfterEqual: type a. a => a =
-    /*AfterEqual*/ (type a, input: a) => input;
+  let lAtFuncAnnotatedCommentBeforeColon /*BeforeColon*/
+      : type a. a => a =
+      (type a, input: a) => input;
+  let lAtFuncAnnotatedCommentAfterColon
+      /*AfterColon*/
+      : type a. a => a =
+      (type a, input: a) => input;
+  let lAtFuncAnnotatedCommentBeforeTypeVar
+      /*BeforeTypeVar*/
+      : type a. a => a =
+      (type a, input: a) => input;
+  let lAtFuncAnnotatedCommentAfterTypeVar
+      /*AfterTypeVar*/
+      : type a. a => a =
+      (type a, input: a) => input;
+  let lAtFuncAnnotatedBeforeEqual
+      : type a. a => a /*BeforeEqual*/ =
+      (type a, input: a) => input;
+  let lAtFuncAnnotatedAfterEqual: type a. a => a = /*AfterEqual*/
+      (type a, input: a) => input;
   
   /* Ternary wrapping comments */
   let ternaryResult =
