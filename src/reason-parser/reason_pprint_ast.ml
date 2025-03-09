@@ -3435,12 +3435,13 @@ let createFormatter () =
             ~preSpace:true
             [ left; right ]
 
-        method pattern_with_precedence p =
+        method pattern_with_precedence ?(attrs = []) p =
           let raw_pattern = self#pattern p in
-          match p.ppat_desc with
-          | Ppat_or (p1, p2) -> formatPrecedence (self#or_pattern p1 p2)
-          | Ppat_constraint _ -> makeList ~wrap:("(", ")") [ raw_pattern ]
-          | _ -> raw_pattern
+          match p.ppat_desc, attrs with
+          | Ppat_or (p1, p2), _ -> formatPrecedence (self#or_pattern p1 p2)
+          | Ppat_constraint _, _ | _, _ :: _ ->
+            makeList ~wrap:("(", ")") [ raw_pattern ]
+          | _, [] -> raw_pattern
 
         (* Renders level 3 or simpler patterns:
          *
@@ -6251,7 +6252,8 @@ let createFormatter () =
                 source_map
                   ~loc:pat.ppat_loc
                   (match vbct with
-                  | Some _ -> self#pattern_with_precedence pat
+                  | Some _ ->
+                    self#pattern_with_precedence ~attrs:pat.ppat_attributes pat
                   | None -> self#pattern pat)
               in
               let appTerms = self#unparseExprApplicationItems expr in
