@@ -46,7 +46,9 @@
   ppx_derivers
   cppo
   (ppxlib
-   (>= "0.28.0"))))
+   (and
+    (>= "0.28.0")
+    (< "0.36.0")))))
 
 (package
  (name rtop)
