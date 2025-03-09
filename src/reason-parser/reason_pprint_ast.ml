@@ -3435,6 +3435,13 @@ let createFormatter () =
             ~preSpace:true
             [ left; right ]
 
+        method pattern_with_precedence p =
+          let raw_pattern = self#pattern p in
+          match p.ppat_desc with
+          | Ppat_or (p1, p2) -> formatPrecedence (self#or_pattern p1 p2)
+          | Ppat_constraint _ -> makeList ~wrap:("(", ")") [ raw_pattern ]
+          | _ -> raw_pattern
+
         (* Renders level 3 or simpler patterns:
          *
          * Simpler
@@ -3455,13 +3462,7 @@ let createFormatter () =
           match stdAttrs, x.ppat_desc with
           | [], Ppat_or (p1, p2) -> self#or_pattern p1 p2
           | [], Ppat_alias (p, s) ->
-            let raw_pattern = self#pattern p in
-            let pattern_with_precedence =
-              match p.ppat_desc with
-              | Ppat_or (p1, p2) -> formatPrecedence (self#or_pattern p1 p2)
-              | Ppat_constraint _ -> makeList ~wrap:("(", ")") [ raw_pattern ]
-              | _ -> raw_pattern
-            in
+            let pattern_with_precedence = self#pattern_with_precedence p in
             label
               ~space:true
               (source_map ~loc:p.ppat_loc pattern_with_precedence)
@@ -5960,7 +5961,8 @@ let createFormatter () =
               let pattern =
                 match vbct with
                 | None -> pattern
-                | Some x -> label pattern (formatJustTheTypeConstraint x)
+                | Some x ->
+                  label ~indent:0 pattern (formatJustTheTypeConstraint x)
               in
               makeList ~sep:(Sep " ") ~break:Layout.Never [ pattern; atom "=" ]
             in
@@ -6223,18 +6225,34 @@ let createFormatter () =
                   absVars
                   nonVarifiedExprType
               | _ ->
-                let typeLayout =
-                  source_map ~loc:ty.ptyp_loc (self#core_type ty)
+                let typeLayout, layoutPattern =
+                  let typeLayout =
+                    source_map ~loc:ty.ptyp_loc (self#core_type ty)
+                  in
+                  match vbct with
+                  | Some _ ->
+                    (* nested constraints *)
+                    ( vbct
+                    , makeList
+                        ~wrap:("(", ")")
+                        [ layoutPattern
+                        ; formatJustTheTypeConstraint typeLayout
+                        ] )
+                  | None -> Some typeLayout, layoutPattern
                 in
                 let appTerms = self#unparseExprApplicationItems expr in
                 self#formatSimplePatternBinding
                   prefixText
                   layoutPattern
-                  (Some typeLayout)
+                  typeLayout
                   appTerms)
             | _ ->
               let layoutPattern =
-                source_map ~loc:pat.ppat_loc (self#pattern pat)
+                source_map
+                  ~loc:pat.ppat_loc
+                  (match vbct with
+                  | Some _ -> self#pattern_with_precedence pat
+                  | None -> self#pattern pat)
               in
               let appTerms = self#unparseExprApplicationItems expr in
               self#formatSimplePatternBinding
