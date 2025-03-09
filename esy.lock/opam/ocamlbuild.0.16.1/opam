@@ -37,8 +37,8 @@ depends: [
 ]
 
 url {
-  src: "https://github.com/ocaml/ocamlbuild/archive/refs/tags/0.15.0.tar.gz"
+  src: "https://github.com/ocaml/ocamlbuild/archive/refs/tags/0.16.1.tar.gz"
   checksum: [
-    "sha512=c8311a9a78491bf759eb27153d6ba4692d27cd935759a145f96a8ba8f3c2e97cef54e7d654ed1c2c07c74f60482a4fef5224e26d0f04450e69cdcb9418c762d3"
+    "sha512=e918b9a0081f271e507c7a4f4d5d5a7cdf818ca51c52acec1bac85ddad5f6cad078cb3c568252fbcf5401c2d75323ed8f50fdd881bda1c9632840320408393ae"
   ]
 }
