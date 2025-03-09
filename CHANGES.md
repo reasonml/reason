@@ -1,3 +1,8 @@
+## Unreleased
+
+- require OCaml >= 4.08 (@anmonteiro,
+  [#2840](https://github.com/reasonml/reason/pull/2840))
+
 ## 3.15.0
 
 - rtop: read `~/.config/rtop/init.re` configuration file (@anmonteiro,
