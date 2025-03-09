@@ -9,16 +9,15 @@
         let
           pkgs = nixpkgs.legacyPackages.${system}.extend (self: super: {
             ocamlPackages = super.ocaml-ng.ocamlPackages_5_3.overrideScope (oself: osuper: {
-              ppxlib = osuper.ppxlib.overrideAttrs (_: {
-                src = super.fetchFromGitHub {
-                  owner = "ocaml-ppx";
-                  repo = "ppxlib";
-                  rev = "3374fe83926ea192ceccc9977032bff72ecaf2f7";
-                  hash = "sha256-KfuA31hmFHpPkp7lq7lH6jaQyLiqBd/UnY5+ctntmF0=";
-                };
-              });
               pp = osuper.pp.overrideAttrs (_: {
                 doCheck = false;
+              });
+
+              ppxlib = osuper.ppxlib.overrideAttrs (_: {
+                src = builtins.fetchurl {
+                  url = "https://github.com/ocaml-ppx/ppxlib/releases/download/0.36.0/ppxlib-0.36.0.tbz";
+                  sha256 = "0d54j19vi1khzmw0ffngs8xzjjq07n20q49h85hhhcf52k71pfjs";
+                };
               });
             });
           });
