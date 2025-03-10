@@ -15,11 +15,12 @@ depends: [
   "dune" {>= "2.5"}
   "lwt" {with-test}
   "mirage-kv" {with-test & >= "3.0.0"}
-  "mirage-kv-mem" {with-test & >= "3.0.0"}
+  "mirage-kv-mem" {with-test & >= "4.0.0"}
   "fmt" {with-test}
 ]
 conflicts: [
   "mirage-kv" {< "3.0.0"}
+  "mirage-kv-mem" {< "4.0.0"}
 ]
 build: [
   ["dune" "subst"] {dev}
@@ -42,12 +43,13 @@ OCaml module which serves the contents directly from memory.  This can be
 convenient for libraries that need a few embedded files (such as a web server)
 and do not want to deal with all the trouble of file configuration.
 """
+x-maintenance-intent: [ "(latest)" ]
 url {
   src:
-    "https://github.com/mirage/ocaml-crunch/releases/download/v3.3.1/crunch-3.3.1.tbz"
+    "https://github.com/mirage/ocaml-crunch/releases/download/v4.0.0/crunch-4.0.0.tbz"
   checksum: [
-    "sha256=2c5ba0d4110bcbb7731cba4eafb6c44a7487c3f88c1ad47401271b69ffa8ed6a"
-    "sha512=5aaa1b67456dd2f5e3ab450ea547e62fba2b0341a49f3b24669162dce91b6ea1158c1594d60c6df3e416e719484411c50ae61017c40b2f75ee90401aa543bd08"
+    "sha256=939b8d1129ed6c634cb0f9ccc6f6d44aa1703cd05ce6091f2ee2a0162944b89b"
+    "sha512=4753307f6d7d6e6a5abf39b437efc40ab9b2c517c8cf5e9bff05a8eab91f01545a7f6ae979303adde94ff23fa14a6466ce831dc39cfc50ad04548f3cbb7a857b"
   ]
 }
-x-commit-hash: "bd4f0195b35c602b8b83886bc8731e649b1e3f9c"
+x-commit-hash: "dfeeafba20f5c5825c2518707aaa3251a804df9f"

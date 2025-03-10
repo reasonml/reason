@@ -322,15 +322,14 @@ Format variants
     /* a = int => int => int */
     | App(f, x) => eval(f, eval(x));
   
-  let rec eval: type a. term(a) => a =
-    x =>
-      switch (x) {
-      | Int(n) => n
-      /* a = int */
-      | Add => ((x, y) => x + y)
-      /* a = int => int => int */
-      | App(f, x) => eval(f, eval(x))
-      };
+  let rec eval: type a. term(a) => a = x =>
+    switch (x) {
+    | Int(n) => n
+    /* a = int */
+    | Add => ((x, y) => x + y)
+    /* a = int => int => int */
+    | App(f, x) => eval(f, eval(x))
+    };
   
   /* eval called at types (b=>a) and b for fresh b */
   let evalArg = App(App(Add, Int(1)), Int(1));
@@ -715,6 +714,18 @@ Format variants
     | `Dev
     | `Prod
   ];
+  
+  /* Coercion without ground */
+  let x :> [>
+    | `A
+    | `B
+  ] = `A;
+  
+  /* Coercion with ground */
+  let x: foo :> [>
+    | `A
+    | `B
+  ] = `A;
 /* Doesn't work because we've correctly annotated parse tree nodes with   explicit_arity! */
 /* let notTupled: notTupleVariant = NotActuallyATuple intTuple; /*Doesn't work! */  */
 /* Doesn't work because we've correctly annotated parse tree nodes with   explicit_arity! */

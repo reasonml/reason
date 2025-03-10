@@ -61,3 +61,4 @@ url {
     "sha512=35574743df40170a8d1676254952c060090421a40d5f8ad37a6691f4f8bb0e28fca61f5efff1050edc4f8a3ffa2f06a1e23d0c084c89bfc105c1235e249bbc75"
   ]
 }
+x-maintenance-intent:[ "(latest)" ]

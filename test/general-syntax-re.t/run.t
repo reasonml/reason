@@ -190,31 +190,31 @@ Format general implementation syntax
   };
   print_int(aliasedToThisVar);
   
-  let desiredFormattingForWrappedLambda:
-    (int, int, int) => nameBlahType =
-    /*
+  let desiredFormattingForWrappedLambda
+      : (int, int, int) => nameBlahType =
+      /*
   
-     fun is
-     pre-   /firstarg\
-     fix   /-coupled--\
-      |-\ /-to-prefix--\       */
-    (curriedArg, anotherArg, lastArg) => {
-      nameBlah: 10,
-    };
+       fun is
+       pre-   /firstarg\
+       fix   /-coupled--\
+        |-\ /-to-prefix--\       */
+      (curriedArg, anotherArg, lastArg) => {
+    nameBlah: 10,
+  };
   
   type longerInt = int;
-  let desiredFormattingForWrappedLambdaWrappedArrow:
-    (longerInt, longerInt, longerInt) =>
-    nameBlahType =
-    /*
+  let desiredFormattingForWrappedLambdaWrappedArrow
+      : (longerInt, longerInt, longerInt) =>
+        nameBlahType =
+      /*
   
-     fun is
-     pre-   /firstarg\
-     fix   /-coupled--\
-      |-\ /-to-prefix--\       */
-    (curriedArg, anotherArg, lastArg) => {
-      nameBlah: 10,
-    };
+       fun is
+       pre-   /firstarg\
+       fix   /-coupled--\
+        |-\ /-to-prefix--\       */
+      (curriedArg, anotherArg, lastArg) => {
+    nameBlah: 10,
+  };
   
   let desiredFormattingForWrappedLambdaReturnOnNewLine =
       /*

@@ -7,3 +7,4 @@ depends: [
   "ocamlfind" {>= "1.5.3"}
 ]
 synopsis: "Bytes library distributed with the OCaml compiler"
+x-maintained: true

@@ -146,7 +146,8 @@ let expression_immediate_extension_sugar x =
   | None -> None, x
   | Some (name, expr) ->
     (match expr.pexp_desc with
-    | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _ | Pexp_function _
+    | Pexp_for _ | Pexp_while _ | Pexp_ifthenelse _
+    | Pexp_function (_, _, Pfunction_cases _)
     | Pexp_newtype _ | Pexp_try _ | Pexp_match _ ->
       Some name, expr
     | _ -> None, x)
@@ -241,7 +242,7 @@ let same_ast_modulo_varification_and_extensions t1 t2 =
     | Ptyp_class (longident1, lst1), Ptyp_class (longident2, lst2) ->
       longident_same longident1 longident2 && for_all2' loop lst1 lst2
     | Ptyp_alias (core_type1, string1), Ptyp_alias (core_type2, string2) ->
-      loop core_type1 core_type2 && string_equal string1 string2
+      loop core_type1 core_type2 && string_equal string1.txt string2.txt
     | ( Ptyp_variant (row_field_list1, flag1, lbl_lst_option1)
       , Ptyp_variant (row_field_list2, flag2, lbl_lst_option2) ) ->
       for_all2' rowFieldEqual row_field_list1 row_field_list2
@@ -1921,6 +1922,12 @@ let createFormatter () =
     let formatTypeConstraint one two =
       label ~space:true (makeList ~postSpace:false [ one; atom ":" ]) two
 
+    let formatJustCoerce optType coerced =
+      match optType with
+      | None -> makeList ~postSpace:false ~sep:(Sep " ") [ atom ":>"; coerced ]
+      | Some typ ->
+        label ~space:true (makeList ~postSpace:true [ typ; atom ":>" ]) coerced
+
     let formatCoerce expr optType coerced =
       match optType with
       | None ->
@@ -1990,12 +1997,11 @@ let createFormatter () =
           source_map ?loc (label ~space:true appList wrappedListy))
 
     (* Preprocesses an expression term for the sake of label attachments
-       ([letx
-       = expr]or record [field: expr]). Function application
-       should have special treatment when placed next to a label. (The invoked
-       function term should "stick" to the label in some cases). In others, the
-       invoked function term should become a new label for the remaining items
-       to be indented under. *)
+       ([letx = expr]or record [field: expr]). Function application should have
+       special treatment when placed next to a label. (The invoked function term
+       should "stick" to the label in some cases). In others, the invoked
+       function term should become a new label for the remaining items to be
+       indented under. *)
     let applicationFinalWrapping x =
       partitionFinalWrapping isSequencey settings.funcApplicationLabelStyle x
 
@@ -2230,7 +2236,8 @@ let createFormatter () =
        & respects the print-width, we need some kind of flattened * version of
        the above tree. `computeInfixChain` transforms the tree * in a flattened
        version which allows flexible formatting. * E.g. we get *
-       [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
+       [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode
+        z]
     *)
     let rec computeInfixChain = function
       | LayoutNode layoutNode -> [ Layout layoutNode ]
@@ -2243,16 +2250,12 @@ let createFormatter () =
 
     (* Formats a flattened list of infixChain nodes into a list of layoutNodes *
        which allow smooth line-breaking * e.g.
-       [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode z]
-       * becomes *
-       [
-     *   foo
-     * ; |> f        --> label
-     * ; |> z        --> label
-     * ]
-       * If you make a list out of this items, we get smooth line breaking * foo
-       |> f |> z * becomes * foo * |> f * |> z * when the print-width forces
-       line breaks.
+       [LayoutNode foo; InfixToken |>; LayoutNode f; InfixToken |>; LayoutNode
+        z] * becomes *
+       [ *   foo * ; |> f        --> label * ; |> z        --> label * ] * If
+       you make a list out of this items, we get smooth line breaking * foo |> f
+       |> z * becomes * foo * |> f * |> z * when the print-width forces line
+       breaks.
     *)
     let formatComputedInfixChain infixChainList =
       let layout_of_group group currentToken =
@@ -2601,7 +2604,7 @@ let createFormatter () =
                 (label
                    ~space:true
                    (self#core_type ct)
-                   (makeList ~postSpace:true [ atom "as"; atom ("'" ^ s) ]))
+                   (makeList ~postSpace:true [ atom "as"; atom ("'" ^ s.txt) ]))
             | _ -> self#core_type2 x
 
         method type_with_label (lbl, c, uncurried) =
@@ -3382,6 +3385,10 @@ let createFormatter () =
               | Ptyp_extension e -> self#extension e
               | Ptyp_arrow (_, _, _) | Ptyp_alias (_, _) | Ptyp_poly (_, _) ->
                 makeList ~wrap:("(", ")") ~break:IfNeed [ self#core_type x ]
+              | Ptyp_open (m, ct) ->
+                label
+                  (label (self#longident m.txt) (atom "."))
+                  (self#core_type ct)
             in
             source_map ~loc:x.ptyp_loc result
         (* TODO: ensure that we have a form of desugaring that protects *)
@@ -3428,6 +3435,14 @@ let createFormatter () =
             ~preSpace:true
             [ left; right ]
 
+        method pattern_with_precedence ?(attrs = []) p =
+          let raw_pattern = self#pattern p in
+          match p.ppat_desc, attrs with
+          | Ppat_or (p1, p2), _ -> formatPrecedence (self#or_pattern p1 p2)
+          | Ppat_constraint _, _ | _, _ :: _ ->
+            makeList ~wrap:("(", ")") [ raw_pattern ]
+          | _, [] -> raw_pattern
+
         (* Renders level 3 or simpler patterns:
          *
          * Simpler
@@ -3448,13 +3463,7 @@ let createFormatter () =
           match stdAttrs, x.ppat_desc with
           | [], Ppat_or (p1, p2) -> self#or_pattern p1 p2
           | [], Ppat_alias (p, s) ->
-            let raw_pattern = self#pattern p in
-            let pattern_with_precedence =
-              match p.ppat_desc with
-              | Ppat_or (p1, p2) -> formatPrecedence (self#or_pattern p1 p2)
-              | Ppat_constraint _ -> makeList ~wrap:("(", ")") [ raw_pattern ]
-              | _ -> raw_pattern
-            in
+            let pattern_with_precedence = self#pattern_with_precedence p in
             label
               ~space:true
               (source_map ~loc:p.ppat_loc pattern_with_precedence)
@@ -4136,7 +4145,8 @@ let createFormatter () =
                     (List.map self#item_attribute attrs)
                 in
                 makeSpacedBreakableInlineList [ formattedAttrs; constant ])
-            | { pexp_desc = Pexp_fun _; _ } -> self#formatPexpFun e
+            | { pexp_desc = Pexp_function (_ :: _, _, Pfunction_body _); _ } ->
+              self#formatPexpFun e
             | x -> self#unparseExpr x
           in
           source_map ~loc:e.pexp_loc itm
@@ -4332,7 +4342,8 @@ let createFormatter () =
              PipeFirstTree.flastNode list) into a more convenient structure *
              that allows us to express the segments: "foo" "f(a, b)" "g(c, d)".
              * PipeFirstTree.t expresses those segments. *
-             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args =
+              [c; d]}]
           *)
           let rec parse acc = function
             | PipeFirstTree.Exp e :: PipeFirstTree.Args args :: xs ->
@@ -4362,12 +4373,13 @@ let createFormatter () =
           *)
           let (flatNodes : PipeFirstTree.flatT) = flatten ~uncurried [] e in
           (* Turn * [Exp foo; Exp f; Args [a; b]; Exp g; Args [c; d]] * into *
-             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
+             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args =
+              [c; d]}]
           *)
           let (pipetree : PipeFirstTree.t) = parse [] flatNodes in
           (* Turn *
-             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args = [c; d]}]
-             * into * [foo; ->f(a, b); ->g(c, d)]
+             [{exp = foo; args = []}; {exp = f; args = [a; b]}; {exp = g; args =
+              [c; d]}] * into * [foo; ->f(a, b); ->g(c, d)]
           *)
           let pipeSegments =
             match pipetree with
@@ -4418,17 +4430,31 @@ let createFormatter () =
             | _ -> expr
           in
           match x.pexp_desc with
-          | Pexp_fun
-              ( Nolabel
-              , None
-              , { ppat_desc = Ppat_var { txt = "__x"; _ }; _ }
-              , ({ pexp_desc = Pexp_apply _; _ } as e) ) ->
+          | Pexp_function
+              ( [ { pparam_desc =
+                      Pparam_val
+                        ( Nolabel
+                        , None
+                        , { ppat_desc = Ppat_var { txt = "__x"; _ }; _ } )
+                  ; _
+                  }
+                ]
+              , _
+              , Pfunction_body ({ pexp_desc = Pexp_apply _; _ } as e) ) ->
             process_application e
-          | Pexp_fun (l, eo, p, e) ->
-            let e_processed = self#process_underscore_application e in
-            if e == e_processed
-            then x
-            else { x with pexp_desc = Pexp_fun (l, eo, p, e_processed) }
+          | Pexp_function (params, constraint_, body) ->
+            (match body with
+            | Pfunction_cases _ -> x
+            | Pfunction_body body ->
+              let e_processed = self#process_underscore_application body in
+              if body == e_processed
+              then x
+              else
+                { x with
+                  pexp_desc =
+                    Pexp_function
+                      (params, constraint_, Pfunction_body e_processed)
+                })
           | _ -> x
 
         method unparseExprRecurse x =
@@ -5174,7 +5200,7 @@ let createFormatter () =
              with
             | [ x ] -> x
             | xs -> makeList xs)
-          | { pexp_desc = Pexp_fun _; _ } ->
+          | { pexp_desc = Pexp_function (_ :: _, _, Pfunction_body _); _ } ->
             self#formatPexpFun ~prefix:(atom "...") ~wrap:("{", "}") expr
           | _ ->
             (* Currently spreading a list must be wrapped in { }.
@@ -5241,8 +5267,7 @@ let createFormatter () =
               let value_has_jsx = jsxAttrs != [] in
               let nextAttr =
                 match expression.pexp_desc with
-                | Pexp_ident ident
-                  when isPunnedJsxArg lbl ident stdAttrs ->
+                | Pexp_ident ident when isPunnedJsxArg lbl ident stdAttrs ->
                   makeList ~break:Layout.Never [ atom "?"; atom lbl ]
                 | Pexp_construct _ when value_has_jsx ->
                   label
@@ -5263,8 +5288,7 @@ let createFormatter () =
               let value_has_jsx = jsxAttrs != [] in
               let nextAttr =
                 match expression.pexp_desc with
-                | Pexp_ident ident
-                  when isPunnedJsxArg lbl ident stdAttrs ->
+                | Pexp_ident ident when isPunnedJsxArg lbl ident stdAttrs ->
                   atom lbl
                 | _ when isJSXComponent expression ->
                   label
@@ -5323,13 +5347,14 @@ let createFormatter () =
                     (makeList [ atom lbl; atom "=" ])
                     (self#simplifyUnparseExpr ~wrap:("{", "}") expression)
                 | Pexp_record _ | Pexp_construct _ | Pexp_array _ | Pexp_tuple _
-                | Pexp_match _ | Pexp_extension _ | Pexp_function _ ->
+                | Pexp_match _ | Pexp_extension _
+                | Pexp_function (_, _, Pfunction_cases _) ->
                   label
                     (makeList [ atom lbl; atom "=" ])
                     (self#dont_preserve_braces#simplifyUnparseExpr
                        ~wrap:("{", "}")
                        expression)
-                | Pexp_fun _ ->
+                | Pexp_function (_ :: _, _, Pfunction_body _) ->
                   let propName = makeList [ atom lbl; atom "=" ] in
                   self#formatPexpFun
                     ~wrap:("{", "}")
@@ -5545,6 +5570,9 @@ let createFormatter () =
             label name arg
           | _ ->
             let rec extract_apps args = function
+              | { pmod_desc = Pmod_apply_unit me; _ } ->
+                let head = source_map ~loc:me.pmod_loc (self#module_expr me) in
+                label head (makeTup args)
               | { pmod_desc = Pmod_apply (me1, me2); _ } ->
                 let arg =
                   source_map ~loc:me2.pmod_loc (self#simple_module_expr me2)
@@ -5577,7 +5605,8 @@ let createFormatter () =
           let upUntilEqual =
             match typeConstraint with
             | None -> letPattern
-            | Some tc -> formatTypeConstraint letPattern tc
+            | Some (tc, `Constraint) -> formatTypeConstraint letPattern tc
+            | Some (tc, `Coercion ground) -> formatCoerce letPattern ground tc
           in
           let includingEqual =
             makeList ~postSpace:true [ upUntilEqual; atom "=" ]
@@ -5619,25 +5648,19 @@ let createFormatter () =
           let everythingButReturnVal =
             (* Because align_closing is set to false, you get: * * (Brackets[]
                inserted to show boundaries between open/close of pattern list) *
-               let[firstThing
-             *     secondThing
-             *     thirdThing]
-               * * It only wraps to indent four by coincidence: If the "opening"
-               token was * longer, you'd get: * *
-               letReallyLong[firstThing
-             *               secondThing
-             *               thirdThing]
-               * * For curried let bindings, we stick the arrow in the *last*
-               pattern: *
-               let[firstThing
-             *     secondThing
-             *     thirdThing =>]
-               * * But it could have just as easily been the "closing" token
-               corresponding to * "let". This works because we have
-               [align_closing = false]. The benefit of * shoving it in the last
-               pattern, is that we can turn [align_closing = true] * and still
-               have the arrow stuck to the last pattern (which is usually what
-               we * want) (See modeTwo below).
+               let[firstThing *     secondThing *     thirdThing] * * It only
+               wraps to indent four by coincidence: If the "opening" token was *
+               longer, you'd get: * *
+               letReallyLong[firstThing *               secondThing *
+                             thirdThing] * * For curried let bindings, we stick
+               the arrow in the *last* pattern: *
+               let[firstThing *     secondThing *     thirdThing =>] * * But it
+               could have just as easily been the "closing" token corresponding
+               to * "let". This works because we have [align_closing = false].
+               The benefit of * shoving it in the last pattern, is that we can
+               turn [align_closing = true] * and still have the arrow stuck to
+               the last pattern (which is usually what we * want) (See modeTwo
+               below).
             *)
             match partitioning with
             | None when sweet ->
@@ -5731,25 +5754,38 @@ let createFormatter () =
           let uncurried =
             try Hashtbl.find uncurriedTable x.pexp_loc with Not_found -> false
           in
-          let rec extract_args xx =
-            let { Reason_attributes.stdAttrs; _ } =
-              Reason_attributes.partitionAttributes
-                ~allowUncurry:false
-                xx.pexp_attributes
+          let rec extract_args =
+            let extract_from_params param =
+              match param.pparam_desc with
+              | Pparam_val (lbl, eo, pat) -> `Value (lbl, eo, pat)
+              | Pparam_newtype newtype -> `Type newtype
             in
-            if stdAttrs != []
-            then [], xx
-            else
-              match xx.pexp_desc with
-              (* label * expression option * pattern * expression *)
-              | Pexp_fun (l, eo, p, e) ->
-                let args, ret = extract_args e in
-                `Value (l, eo, p) :: args, ret
-              | Pexp_newtype (newtype, e) ->
-                let args, ret = extract_args e in
-                `Type newtype :: args, ret
-              | Pexp_constraint _ -> [], xx
-              | _ -> [], xx
+            fun xx ->
+              let { Reason_attributes.stdAttrs; _ } =
+                Reason_attributes.partitionAttributes
+                  ~allowUncurry:false
+                  xx.pexp_attributes
+              in
+              if stdAttrs != []
+              then [], xx
+              else
+                match xx.pexp_desc with
+                | Pexp_function (params, constraint_, body) ->
+                  let vs = List.map extract_from_params params in
+                  (match constraint_ with
+                  | Some _ -> vs, xx
+                  | None ->
+                    (match body with
+                    | Pfunction_cases _ as c ->
+                      vs, { xx with pexp_desc = Pexp_function ([], None, c) }
+                    | Pfunction_body e ->
+                      let args, ret = extract_args e in
+                      vs @ args, ret))
+                | Pexp_newtype (newtype, e) ->
+                  let args, ret = extract_args e in
+                  `Type newtype :: args, ret
+                | Pexp_constraint _ -> [], xx
+                | _ -> [], xx
           in
           let prepare_arg = function
             | `Value (l, eo, p) ->
@@ -5829,11 +5865,10 @@ let createFormatter () =
            it becomes pretty printed as * let x:t =.... In the proposal, it is
            not impossible - it is only * impossible to preserve unnecessary
            parenthesis around the let binding. * * The one downside is that
-           integrating with existing code that uses
-           [let x =
-         * (blah:typ)] in standard OCaml will be parsed as a
-           Pexp_constraint. There * might be some lossiness (beyond parens) that
-           occurs in the original OCaml * parser.
+           integrating with existing code that uses [let x = * (blah:typ)] in
+           standard OCaml will be parsed as a Pexp_constraint. There * might be
+           some lossiness (beyond parens) that occurs in the original OCaml *
+           parser.
         *)
 
         method locallyAbstractPolymorphicFunctionBinding
@@ -5861,7 +5896,7 @@ let createFormatter () =
           self#formatSimplePatternBinding
             prefixText
             layoutPattern
-            (Some polyType)
+            (Some (polyType, `Constraint))
             appTerms
 
         (*  Intelligently switches between:
@@ -5880,7 +5915,7 @@ let createFormatter () =
          *       ...
          *     }
         *)
-        method wrappedBinding prefixText ~arrow pattern patternAux expr =
+        method wrappedBinding prefixText ~arrow ?vbct pattern patternAux expr =
           let expr = self#process_underscore_application expr in
           let argsList, return = self#curriedPatternsAndReturnVal expr in
           let patternList =
@@ -5895,6 +5930,7 @@ let createFormatter () =
           in
           match argsList, return.pexp_desc with
           | [], Pexp_constraint (e, ct) ->
+            assert (vbct = None);
             let typeLayout =
               source_map
                 ~loc:ct.ptyp_loc
@@ -5906,13 +5942,13 @@ let createFormatter () =
             self#formatSimplePatternBinding
               prefixText
               patternList
-              (Some typeLayout)
+              (Some (typeLayout, `Constraint))
               appTerms
           | [], _ ->
             (* simple let binding, e.g. `let number = 5` *)
             (* let f = (. a, b) => a + b; *)
             let appTerms = self#unparseExprApplicationItems expr in
-            self#formatSimplePatternBinding prefixText patternList None appTerms
+            self#formatSimplePatternBinding prefixText patternList vbct appTerms
           | _ :: _, _ ->
             let argsWithConstraint, actualReturn =
               self#normalizeFunctionArgsConstraint argsList return
@@ -5924,6 +5960,14 @@ let createFormatter () =
             (* Attaches the `=` to `f` to recreate javascript function syntax in
                * let f = (a, b) => a + b; *)
             let lbl =
+              let pattern =
+                match vbct with
+                | None -> pattern
+                | Some (x, `Constraint) ->
+                  label ~indent:0 pattern (formatJustTheTypeConstraint x)
+                | Some (x, `Coercion ground) ->
+                  label ~indent:0 pattern (formatJustCoerce ground x)
+              in
               makeList ~sep:(Sep " ") ~break:Layout.Never [ pattern; atom "=" ]
             in
             self#wrapCurriedFunctionBinding
@@ -5954,7 +5998,7 @@ let createFormatter () =
             self#formatSimplePatternBinding
               prefixText
               patternList
-              (Some typeLayout)
+              (Some (typeLayout, `Constraint))
               (self#classExpressionToFormattedApplicationItems e, None)
           | None, _ ->
             self#formatSimplePatternBinding
@@ -6024,12 +6068,13 @@ let createFormatter () =
 
         method value_binding
           prefixText
-          { pvb_pat; pvb_attributes; pvb_loc; pvb_expr } =
+          { pvb_pat; pvb_attributes; pvb_loc; pvb_expr; pvb_constraint } =
           self#binding
             prefixText
             ~attrs:pvb_attributes
             ~loc:pvb_loc
             ~pat:pvb_pat
+            ?pvb_constraint
             pvb_expr
 
         method binding_op prefixText { pbop_pat; pbop_loc; pbop_exp; _ } =
@@ -6039,15 +6084,44 @@ let createFormatter () =
             ~pat:pbop_pat
             pbop_exp
 
-        method binding prefixText ?(attrs = []) ~loc ~pat expr =
+        method binding prefixText ?(attrs = []) ~loc ~pat ?pvb_constraint expr =
           (* TODO: print attributes *)
           let body =
+            let vbct =
+              match pvb_constraint with
+              | Some (Pvc_constraint { locally_abstract_univars = []; typ }) ->
+                Some (self#core_type typ, `Constraint)
+              | Some (Pvc_constraint { locally_abstract_univars = vars; typ })
+                ->
+                Some
+                  ( label
+                      ~space:true
+                      (* TODO: This isn't a correct use of sep! It ruins how * comments
+                 are interleaved. *)
+                      (makeList
+                         [ makeList
+                             ~sep:(Sep " ")
+                             (atom "type" :: List.map (fun v -> atom v.txt) vars)
+                         ; atom "."
+                         ])
+                      (self#core_type typ)
+                  , `Constraint )
+              | Some (Pvc_coercion { ground; coercion }) ->
+                Some
+                  ( self#core_type coercion
+                  , `Coercion
+                      (match ground with
+                      | Some ground -> Some (self#core_type ground)
+                      | None -> None) )
+              | None -> None
+            in
             match pat.ppat_attributes, pat.ppat_desc with
             | [], Ppat_var _ ->
               self#wrappedBinding
                 prefixText
                 ~arrow:"=>"
                 (source_map ~loc:pat.ppat_loc (self#simple_pattern pat))
+                ?vbct
                 []
                 expr
             (* Ppat_constraint is used in bindings of the form * * let
@@ -6080,7 +6154,13 @@ let createFormatter () =
               in
               let appTerms = self#unparseExprApplicationItems expr in
               let includingEqual =
-                makeList ~postSpace:true [ upUntilEqual; atom "=" ]
+                let vbct =
+                  match vbct with
+                  | Some (x, `Constraint) -> [ formatJustTheTypeConstraint x ]
+                  | Some (x, `Coercion ground) -> [ formatJustCoerce ground x ]
+                  | None -> []
+                in
+                makeList ~postSpace:true ((upUntilEqual :: vbct) @ [ atom "=" ])
               in
               formatAttachmentApplication
                 applicationFinalWrapping
@@ -6155,24 +6235,41 @@ let createFormatter () =
                   absVars
                   nonVarifiedExprType
               | _ ->
-                let typeLayout =
-                  source_map ~loc:ty.ptyp_loc (self#core_type ty)
+                let typeLayout, layoutPattern =
+                  let typeLayout =
+                    source_map ~loc:ty.ptyp_loc (self#core_type ty)
+                  in
+                  match vbct with
+                  | Some _ ->
+                    (* nested constraints *)
+                    ( vbct
+                    , makeList
+                        ~wrap:("(", ")")
+                        [ layoutPattern
+                        ; formatJustTheTypeConstraint typeLayout
+                        ] )
+                  | None -> Some (typeLayout, `Constraint), layoutPattern
                 in
                 let appTerms = self#unparseExprApplicationItems expr in
                 self#formatSimplePatternBinding
                   prefixText
                   layoutPattern
-                  (Some typeLayout)
+                  typeLayout
                   appTerms)
             | _ ->
               let layoutPattern =
-                source_map ~loc:pat.ppat_loc (self#pattern pat)
+                source_map
+                  ~loc:pat.ppat_loc
+                  (match vbct with
+                  | Some _ ->
+                    self#pattern_with_precedence ~attrs:pat.ppat_attributes pat
+                  | None -> self#pattern pat)
               in
               let appTerms = self#unparseExprApplicationItems expr in
               self#formatSimplePatternBinding
                 prefixText
                 layoutPattern
-                None
+                vbct
                 appTerms
           in
           let { Reason_attributes.stdAttrs; docAttrs; _ } =
@@ -6754,14 +6851,14 @@ let createFormatter () =
           (* The only reason Pexp_fun must also be wrapped in parens when under
              pipe, is that its => token will be confused with the match token.
              Simple expression will also invoke `#reset`. *)
-          | Pexp_function _ when pipe || semi ->
+          | Pexp_function (_, _, Pfunction_cases _) when pipe || semi ->
             None (* Would be rendered as simplest_expression *)
           (* Pexp_function, on the other hand, doesn't need wrapping in parens
              in most cases anymore, since `fun` is not ambiguous anymore (we
              print Pexp_fun as ES6 functions). *)
-          | Pexp_function l ->
+          | Pexp_function (_, _, Pfunction_cases (cases, loc, _attrs)) ->
             let prec = Custom funToken in
-            let expr = self#patternFunction ?extension x.pexp_loc l in
+            let expr = self#patternFunction ?extension loc cases in
             Some
               (SpecificInfixPrecedence
                  ( { reducePrecedence = prec; shiftPrecedence = prec }
@@ -6771,7 +6868,7 @@ let createFormatter () =
                printing breaks for them. *)
             let itm =
               match x.pexp_desc with
-              | Pexp_fun _ | Pexp_newtype _ ->
+              | Pexp_function (_ :: _, _, Pfunction_body _) | Pexp_newtype _ ->
                 (* let uncurried = *)
                 let args, ret = self#curriedPatternsAndReturnVal x in
                 (match args with
@@ -7100,7 +7197,9 @@ let createFormatter () =
               ; loc_ghost = false
               }
             in
-            let stdAttrs = Reason_attributes.extractStdAttrs e.pexp_attributes in 
+            let stdAttrs =
+              Reason_attributes.extractStdAttrs e.pexp_attributes
+            in
             let theRow =
               match e.pexp_desc, shouldPun, allowPunning with
               (* record value punning. Turns {foo: foo, bar: 1} into {foo, bar: 1} *)
@@ -7108,8 +7207,7 @@ let createFormatter () =
               (* don't turn {bar: [@foo] bar, baz: 1} into {bar, baz: 1} *)
               (* don't turn {bar: Foo.bar, baz: 1} into {bar, baz: 1}, naturally *)
               | Pexp_ident { txt = Lident value; _ }, true, true
-                when Longident.last_exn li.txt = value && stdAttrs = []
-                ->
+                when Longident.last_exn li.txt = value && stdAttrs = [] ->
                 makeList (maybeQuoteFirstElem li [])
                 (* Force breaks for nested records or mel.obj sugar
                  * Example:
@@ -7410,13 +7508,14 @@ let createFormatter () =
               match x.pexp_desc with
               (* The only reason Pexp_fun must also be wrapped in parens is that
                  its => token will be confused with the match token. *)
-              | Pexp_fun _ when pipe || semi ->
+              | Pexp_function (_ :: _, _, Pfunction_body _) when pipe || semi ->
                 Some (self#reset#simplifyUnparseExpr x)
-              | Pexp_function l when pipe || semi ->
+              | Pexp_function (_, _, Pfunction_cases (cases, loc, _attrs))
+                when pipe || semi ->
                 Some
                   (formatPrecedence
                      ~loc:x.pexp_loc
-                     (self#reset#patternFunction x.pexp_loc l))
+                     (self#reset#patternFunction loc cases))
               | Pexp_apply _ ->
                 (match self#simple_get_application x with
                 (* If it's the simple form of application. *)
@@ -8279,7 +8378,9 @@ let createFormatter () =
                 self#formatSimplePatternBinding
                   methodText
                   (atom s.txt)
-                  (Some (source_map ~loc:ct.ptyp_loc (self#core_type ct)))
+                  (Some
+                     ( source_map ~loc:ct.ptyp_loc (self#core_type ct)
+                     , `Constraint ))
                   (self#unparseExprApplicationItems e)
               (* This form means that there is no type constraint - it's a
                  strange node name.*)
@@ -8977,7 +9078,8 @@ let createFormatter () =
               (makeTup argsList)
               []
               ([ self#moduleExpressionToFormattedApplicationItems return ], None)
-          | Pmod_apply _ -> self#moduleExpressionToFormattedApplicationItems x
+          | Pmod_apply _ | Pmod_apply_unit _ ->
+            self#moduleExpressionToFormattedApplicationItems x
           | Pmod_extension (s, e) -> self#payload "%" s e
           | Pmod_unpack _ | Pmod_ident _ | Pmod_constraint _ | Pmod_structure _
             ->
@@ -9592,16 +9694,18 @@ let createFormatter () =
           let categorizeFunApplArgs args =
             let reverseArgs = List.rev args in
             match reverseArgs with
-            | ((_, { pexp_desc = Pexp_fun _; _ }) as callback) :: args
+            | ((_, { pexp_desc = Pexp_function (_ :: _, _, _); _ }) as callback)
+              :: args
               when []
                    == List.filter
                         (fun (_, e) ->
                            match e.pexp_desc with
-                           | Pexp_fun _ -> true
+                           | Pexp_function (_ :: _, _, _) -> true
                            | _ -> false)
                         args
                    (* default to normal formatting if there's more than one
-                      callback *) ->
+                      callback *)
+              ->
               `LastArgIsCallback (callback, List.rev args)
             | _ -> `NormalFunAppl args
           in
