@@ -3486,7 +3486,6 @@ let_binding_body:
   | simple_pattern_ident COLON as_loc(preceded(QUOTE,ident))+ DOT core_type
       EQUAL mark_position_exp(expr)
     { let typ = mktyp ~ghost:true (Ptyp_poly($3, $5)) in
-      (* TODO(anmonteiro): univars *)
       ($1, $7, Some (Ppxlib.Pvc_constraint { locally_abstract_univars = []; typ }))
     }
   | simple_pattern_ident COLON TYPE as_loc(LIDENT)+ DOT core_type
