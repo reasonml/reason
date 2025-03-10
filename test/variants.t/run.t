@@ -714,6 +714,18 @@ Format variants
     | `Dev
     | `Prod
   ];
+  
+  /* Coercion without ground */
+  let x :> [>
+    | `A
+    | `B
+  ] = `A;
+  
+  /* Coercion with ground */
+  let x: foo :> [>
+    | `A
+    | `B
+  ] = `A;
 /* Doesn't work because we've correctly annotated parse tree nodes with   explicit_arity! */
 /* let notTupled: notTupleVariant = NotActuallyATuple intTuple; /*Doesn't work! */  */
 /* Doesn't work because we've correctly annotated parse tree nodes with   explicit_arity! */

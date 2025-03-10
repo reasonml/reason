@@ -5605,7 +5605,8 @@ let createFormatter () =
           let upUntilEqual =
             match typeConstraint with
             | None -> letPattern
-            | Some tc -> formatTypeConstraint letPattern tc
+            | Some (tc, `Constraint) -> formatTypeConstraint letPattern tc
+            | Some (tc, `Coercion ground) -> formatCoerce letPattern ground tc
           in
           let includingEqual =
             makeList ~postSpace:true [ upUntilEqual; atom "=" ]
@@ -5895,7 +5896,7 @@ let createFormatter () =
           self#formatSimplePatternBinding
             prefixText
             layoutPattern
-            (Some polyType)
+            (Some (polyType, `Constraint))
             appTerms
 
         (*  Intelligently switches between:
@@ -5941,7 +5942,7 @@ let createFormatter () =
             self#formatSimplePatternBinding
               prefixText
               patternList
-              (Some typeLayout)
+              (Some (typeLayout, `Constraint))
               appTerms
           | [], _ ->
             (* simple let binding, e.g. `let number = 5` *)
@@ -5962,8 +5963,10 @@ let createFormatter () =
               let pattern =
                 match vbct with
                 | None -> pattern
-                | Some x ->
+                | Some (x, `Constraint) ->
                   label ~indent:0 pattern (formatJustTheTypeConstraint x)
+                | Some (x, `Coercion ground) ->
+                  label ~indent:0 pattern (formatJustCoerce ground x)
               in
               makeList ~sep:(Sep " ") ~break:Layout.Never [ pattern; atom "=" ]
             in
@@ -5995,7 +5998,7 @@ let createFormatter () =
             self#formatSimplePatternBinding
               prefixText
               patternList
-              (Some typeLayout)
+              (Some (typeLayout, `Constraint))
               (self#classExpressionToFormattedApplicationItems e, None)
           | None, _ ->
             self#formatSimplePatternBinding
@@ -6087,28 +6090,29 @@ let createFormatter () =
             let vbct =
               match pvb_constraint with
               | Some (Pvc_constraint { locally_abstract_univars = []; typ }) ->
-                Some (self#core_type typ)
+                Some (self#core_type typ, `Constraint)
               | Some (Pvc_constraint { locally_abstract_univars = vars; typ })
                 ->
                 Some
-                  (label
-                     ~space:true
-                     (* TODO: This isn't a correct use of sep! It ruins how * comments
+                  ( label
+                      ~space:true
+                      (* TODO: This isn't a correct use of sep! It ruins how * comments
                  are interleaved. *)
-                     (makeList
-                        [ makeList
-                            ~sep:(Sep " ")
-                            (atom "type" :: List.map (fun v -> atom v.txt) vars)
-                        ; atom "."
-                        ])
-                     (self#core_type typ))
+                      (makeList
+                         [ makeList
+                             ~sep:(Sep " ")
+                             (atom "type" :: List.map (fun v -> atom v.txt) vars)
+                         ; atom "."
+                         ])
+                      (self#core_type typ)
+                  , `Constraint )
               | Some (Pvc_coercion { ground; coercion }) ->
                 Some
-                  (formatJustCoerce
-                     (match ground with
-                     | Some ground -> Some (self#core_type ground)
-                     | None -> None)
-                     (self#core_type coercion))
+                  ( self#core_type coercion
+                  , `Coercion
+                      (match ground with
+                      | Some ground -> Some (self#core_type ground)
+                      | None -> None) )
               | None -> None
             in
             match pat.ppat_attributes, pat.ppat_desc with
@@ -6150,7 +6154,12 @@ let createFormatter () =
               in
               let appTerms = self#unparseExprApplicationItems expr in
               let includingEqual =
-                let vbct = match vbct with Some x -> [ x ] | None -> [] in
+                let vbct =
+                  match vbct with
+                  | Some (x, `Constraint) -> [ formatJustTheTypeConstraint x ]
+                  | Some (x, `Coercion ground) -> [ formatJustCoerce ground x ]
+                  | None -> []
+                in
                 makeList ~postSpace:true ((upUntilEqual :: vbct) @ [ atom "=" ])
               in
               formatAttachmentApplication
@@ -6239,7 +6248,7 @@ let createFormatter () =
                         [ layoutPattern
                         ; formatJustTheTypeConstraint typeLayout
                         ] )
-                  | None -> Some typeLayout, layoutPattern
+                  | None -> Some (typeLayout, `Constraint), layoutPattern
                 in
                 let appTerms = self#unparseExprApplicationItems expr in
                 self#formatSimplePatternBinding
@@ -8369,7 +8378,9 @@ let createFormatter () =
                 self#formatSimplePatternBinding
                   methodText
                   (atom s.txt)
-                  (Some (source_map ~loc:ct.ptyp_loc (self#core_type ct)))
+                  (Some
+                     ( source_map ~loc:ct.ptyp_loc (self#core_type ct)
+                     , `Constraint ))
                   (self#unparseExprApplicationItems e)
               (* This form means that there is no type constraint - it's a
                  strange node name.*)
