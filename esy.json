@@ -12,7 +12,7 @@
     "@opam/ocamlfind": "*",
     "@opam/ppx_derivers": "*",
     "@opam/ppxlib": "> 0.28.x",
-    "@opam/utop": " >= 1.17.0",
+    "@opam/utop": " >= 2.0",
     "ocaml": " >= 4.3.0 < 4.15.0"
   },
   "devDependencies": {
@@ -28,26 +28,69 @@
     "5. Copy ./scripts/esy-prepublish.js in to your repo and change packages= to your set of packages."
   ],
   "esy": {
-    "build": [ [ "dune", "build", "-p", "reason,rtop", "--disable-promotion" ] ],
+    "build": [
+      [
+        "dune",
+        "build",
+        "-p",
+        "reason,rtop",
+        "--disable-promotion"
+      ]
+    ],
     "install": [
-      [ "esy-installer", "reason.install" ],
-      [ "esy-installer", "rtop.install" ]
+      [
+        "esy-installer",
+        "reason.install"
+      ],
+      [
+        "esy-installer",
+        "rtop.install"
+      ]
     ],
     "exportedEnv": {
-      "INPUT_ARGUMENTS": { "scope": "global", "val": "a" },
-      "BUILD_REQUESTEDFOREMAIL": { "scope": "global", "val": "b" },
-      "VSTS_SECRET_VARIABLES": { "scope": "global", "val": "c" },
-      "SYSTEM_PULLREQUEST_MERGEDAT": { "scope": "global", "val": "d" }
+      "INPUT_ARGUMENTS": {
+        "scope": "global",
+        "val": "a"
+      },
+      "BUILD_REQUESTEDFOREMAIL": {
+        "scope": "global",
+        "val": "b"
+      },
+      "VSTS_SECRET_VARIABLES": {
+        "scope": "global",
+        "val": "c"
+      },
+      "SYSTEM_PULLREQUEST_MERGEDAT": {
+        "scope": "global",
+        "val": "d"
+      }
     },
     "release": {
-      "bin": [ "rtop", "refmt" ],
+      "bin": [
+        "rtop",
+        "refmt"
+      ],
       "includePackages": [
-        "root", "@opam/base-bytes", "@opam/base-threads", "@opam/base-unix",
-        "@opam/camomile", "@opam/lambda-term", "@opam/lwt", "@opam/lwt_log",
-        "@opam/lwt_react", "@opam/menhir", "@opam/mmap",
-        "@opam/ocplib-endian", "@opam/ocamlfind", "@opam/ppx_derivers",
-        "@opam/react", "@opam/seq", "@opam/charInfo_width",
-        "@opam/utop", "@opam/zed", "ocaml"
+        "root",
+        "@opam/base-bytes",
+        "@opam/base-threads",
+        "@opam/base-unix",
+        "@opam/camomile",
+        "@opam/lambda-term",
+        "@opam/lwt",
+        "@opam/lwt_log",
+        "@opam/lwt_react",
+        "@opam/menhir",
+        "@opam/mmap",
+        "@opam/ocplib-endian",
+        "@opam/ocamlfind",
+        "@opam/ppx_derivers",
+        "@opam/react",
+        "@opam/seq",
+        "@opam/charInfo_width",
+        "@opam/utop",
+        "@opam/zed",
+        "ocaml"
       ],
       "rewritePrefix": true
     }

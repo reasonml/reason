@@ -140,6 +140,9 @@ Format JSX
   /* punning for explicitly passed optional */
   <Foo ?bar />;
   
+  /* Don't pun for explicitly props with attributes */
+  <Foo bar=?{[@browser_only] bar} />;
+  
   /* don't pun explicitly passed optional with module identifier */
   <Foo bar=?Baz.bar />;
   
@@ -197,6 +200,23 @@ Format JSX
         anotherSuperLongOneCrazyLongThingHere
         text="Age"
       />
+    }>
+    child
+  </Description>;
+  <Description
+    term={
+      <Text
+        noPunnedProp={[@attribute] noPunnedProp}
+        superLongPunnedProp
+        anotherSuperLongOneCrazyLongThingHere
+        text="Age"
+      />
+    }>
+    child
+  </Description>;
+  <Description
+    term={
+      <Text noPunned={[@attribute] noPunnedProp} />
     }>
     child
   </Description>;

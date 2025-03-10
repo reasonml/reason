@@ -10,7 +10,7 @@ doc: "https://ocaml-community.github.io/utop/"
 bug-reports: "https://github.com/ocaml-community/utop/issues"
 depends: [
   "dune" {>= "2.0"}
-  "ocaml" {>= "4.11.0"}
+  "ocaml" {>= "4.11.0" & < "5.3"}
   "base-unix"
   "base-threads"
   "ocamlfind" {>= "1.7.2"}

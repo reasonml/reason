@@ -27,23 +27,14 @@ module Doc = struct
     | B
 
   type stag =
-#if OCAML_VERSION >= (4,08,0)
     Format.stag
-#else
-    Format.tag
-#endif
 
   type element =
     | Text of string
     | With_size of int
     | Open_box of { kind: box_type ; indent:int }
     | Close_box
-    | Open_tag of
-#if OCAML_VERSION >= (4,08,0)
-    Format.stag
-#else
-    Format.tag
-#endif
+    | Open_tag of Format.stag
     | Close_tag
     | Open_tbox
     | Tab_break of { width : int; offset : int }
@@ -78,31 +69,14 @@ module Doc = struct
     | Text x -> Format.pp_print_string ppf x
     | Open_box { kind; indent } -> format_open_box_gen ppf kind indent
     | Close_box -> Format.pp_close_box ppf ()
-    | Open_tag tag ->
-#if OCAML_VERSION >= (4,08,0)
-        Format.pp_open_stag ppf tag
-#else
-        Format.pp_open_tag ppf tag
-#endif
-    | Close_tag ->
-#if OCAML_VERSION >= (4,08,0)
-        Format.pp_close_stag ppf ()
-#else
-        Format.pp_close_tag ppf ()
-#endif
+    | Open_tag tag -> Format.pp_open_stag ppf tag
+    | Close_tag -> Format.pp_close_stag ppf ()
     | Open_tbox -> Format.pp_open_tbox ppf ()
     | Tab_break {width;offset} -> Format.pp_print_tbreak ppf width offset
     | Set_tab -> Format.pp_set_tab ppf ()
     | Close_tbox -> Format.pp_close_tbox ppf ()
     | Simple_break {spaces;indent} -> Format.pp_print_break ppf spaces indent
-    | Break {fits;breaks} ->
-#if OCAML_VERSION >= (4,08,0)
-        Format.pp_print_custom_break ppf ~fits ~breaks
-#else
-        let (_, width, _) = fits in
-        let (_, offset, _) = breaks in
-        Format.pp_print_break ppf width offset
-#endif
+    | Break {fits;breaks} -> Format.pp_print_custom_break ppf ~fits ~breaks
     | Flush {newline=true} -> Format.pp_print_newline ppf ()
     | Flush {newline=false} -> Format.pp_print_flush ppf ()
     | Newline -> Format.pp_force_newline ppf ()
@@ -133,11 +107,7 @@ module Doc = struct
   let int n doc = add doc (Text (string_of_int n))
   let float f doc = add doc (Text (string_of_float f))
   let char c doc = add doc (Text (String.make 1 c))
-#if OCAML_VERSION >= (4,08,0)
   let bool c doc = add doc (Text (Bool.to_string c))
-#else
-  let bool c doc = add doc (Text (string_of_bool c))
-#endif
 
   let break ~spaces ~indent doc = add doc (Simple_break {spaces; indent})
   let space doc = break ~spaces:1 ~indent:0 doc
@@ -161,11 +131,6 @@ module Doc = struct
   let close_tag doc = add doc Close_tag
 
 
-#if OCAML_VERSION < (4,08,0)
-module Fun = struct
-  external id : 'a -> 'a = "%identity"
-end
-#endif
   let iter ?(sep=Fun.id) ~iter:iterator elt l doc =
     let first = ref true in
     let rdoc = ref doc in
@@ -183,9 +148,7 @@ end
         doc |> elt a |> sep |> list ~sep elt q
 
   let array ?sep elt a doc = iter ?sep ~iter:Array.iter elt a doc
-#if OCAML_VERSION >= (4,07,0)
   let seq ?sep elt s doc = iter ?sep ~iter:Seq.iter elt s doc
-#endif
 
   let option ?(none=Fun.id) elt o doc = match o with
     | None -> none doc
@@ -267,12 +230,7 @@ end
     | Acc_formatting_gen (p, Acc_open_tag acc') ->
         let tag = to_string (compose_acc acc' empty) in
         let doc = compose_acc p doc in
-        doc |>
-#if OCAML_VERSION >= (4,08,0)
-        open_tag (Format.String_tag tag)
-#else
-        open_tag tag
-#endif
+        doc |> open_tag (Format.String_tag tag)
     | Acc_formatting_gen (p, Acc_open_box acc') ->
         let doc = compose_acc p doc in
         let box = to_string (compose_acc acc' empty) in
@@ -288,7 +246,6 @@ end
     | Acc_invalid_arg (_p, msg) ->  invalid_arg msg;
     | End_of_acc               -> doc
 
-#if OCAML_VERSION >= (4,08,0)
   let kprintf k (CamlinternalFormatBasics.Format (fmt, _))  =
     CamlinternalFormat.make_printf
       (fun acc doc -> doc |> compose_acc acc |> k)
@@ -301,7 +258,6 @@ end
       End_of_acc fmt
 
   let msg fmt = kmsg Fun.id fmt
-#endif
 end
 
 (** Compatibility interface *)
@@ -423,11 +379,7 @@ module Driver = struct
         output_formatting_lit ppf f;
     | Acc_formatting_gen (p, Acc_open_tag acc') ->
         output_acc ppf p;
-#if OCAML_VERSION >= (4,08,0)
         pp_open_stag ppf (Format.String_tag (compute_tag output_acc acc'))
-#else
-        pp_open_stag ppf (compute_tag output_acc acc')
-#endif
     | Acc_formatting_gen (p, Acc_open_box acc') ->
         output_acc ppf p;
         let (indent, bty) =
@@ -445,7 +397,6 @@ module Driver = struct
     | End_of_acc               -> ()
 end
 
-#if OCAML_VERSION >= (4,08,0)
 let kfprintf k ppf (CamlinternalFormatBasics.Format (fmt, _))  =
   CamlinternalFormat.make_printf
     (fun acc -> Driver.output_acc ppf acc; k ppf)
@@ -472,7 +423,6 @@ let kdoc_printf k fmt =
       k doc
     )
     ppf fmt
-#endif
 
 let doc_printer f x doc =
   let r = ref doc in
@@ -488,24 +438,20 @@ let compat = format_printer
 let compat1 f p1 = compat (f p1)
 let compat2 f p1 p2 = compat (f p1 p2)
 
-#if OCAML_VERSION >= (4,08,0)
 let kasprintf k fmt =
   kdoc_printf (fun doc -> k (Format.asprintf "%a" Doc.format doc)) fmt
 let asprintf fmt = kasprintf Fun.id fmt
-#endif
 
 let pp_print_iter ?(pp_sep=pp_print_cut) iter elt ppf c =
-      let sep = doc_printer pp_sep () in
-      ppf:= Doc.iter ~sep ~iter (doc_printer elt) c !ppf
+  let sep = doc_printer pp_sep () in
+  ppf := Doc.iter ~sep ~iter (doc_printer elt) c !ppf
 
 let pp_print_list ?(pp_sep=pp_print_cut) elt ppf l =
   ppf := Doc.list ~sep:(doc_printer pp_sep ()) (doc_printer elt) l !ppf
 
 let pp_print_array ?pp_sep elt ppf a =
   pp_print_iter ?pp_sep Array.iter elt ppf a
-#if OCAML_VERSION >= (4,07,0)
 let pp_print_seq ?pp_sep elt ppf s = pp_print_iter ?pp_sep Seq.iter elt ppf s
-#endif
 
 let pp_print_option  ?(none=fun _ () -> ()) elt ppf o =
   ppf := Doc.option ~none:(doc_printer none ()) (doc_printer elt) o !ppf
@@ -518,7 +464,6 @@ let pp_print_either  ~left ~right ppf e =
   ppf := Doc.either ~left:(doc_printer left) ~right:(doc_printer right) e !ppf
 #endif
 
-#if OCAML_VERSION >= (4,08,0)
 let comma ppf () = fprintf ppf ",@ "
 
 let pp_two_columns ?(sep = "|") ?max_lines ppf (lines: (string * string) list) =
@@ -541,7 +486,6 @@ let pp_two_columns ?(sep = "|") ?max_lines ppf (lines: (string * string) list) =
       else fprintf ppf "%*s %s %s@," left_column_size line_l sep line_r
     ) lines;
   fprintf ppf "@]"
-#endif
 
 let deprecated_printer pr ppf = ppf := Doc.add !ppf (Doc.Deprecated pr)
 #endif

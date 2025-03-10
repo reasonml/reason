@@ -6,7 +6,7 @@
 
 (cram enable)
 
-(version 3.13.0)
+(version 3.15.0)
 
 (generate_opam_files true)
 
@@ -33,7 +33,7 @@
  (depends
   (ocaml
    (and
-    (>= "4.06")
+    (>= "4.08")
     (< "5.4")))
   (ocamlfind :build)
   (dune-build-info
@@ -46,7 +46,9 @@
   ppx_derivers
   cppo
   (ppxlib
-   (>= "0.28.0"))))
+   (and
+    (>= "0.28.0")
+    (< "0.36.0")))))
 
 (package
  (name rtop)
@@ -56,7 +58,7 @@
  (depends
   (ocaml
    (and
-    (>= "4.06")
+    (>= "4.08")
     (< "5.4")))
   (reason
    (= :version))

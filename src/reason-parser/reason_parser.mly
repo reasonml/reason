@@ -443,7 +443,7 @@ let mk_record_expr ?loc (exten, fields) =
   | _ -> mkexp ?loc (Pexp_record (fields, exten))
 
 let array_function ?(loc=dummy_loc()) str name =
-  ghloc ~loc (Longident.Ldot(Lident str, (if !Clflags.fast then "unsafe_" ^ name else name)))
+  ghloc ~loc (Longident.Ldot(Lident str, (if !Clflags.unsafe then "unsafe_" ^ name else name)))
 
 let syntax_error loc s =
   raise_error (Other_syntax_error s) loc
@@ -665,7 +665,7 @@ let bigarray_function ?(loc=dummy_loc()) str name =
   ghloc ~loc (Longident.Ldot(Ldot(Lident "Bigarray", str), name))
 
 let bigarray_get ?(loc=dummy_loc()) arr arg =
-  let get = if !Clflags.fast then "unsafe_get" else "get" in
+  let get = if !Clflags.unsafe then "unsafe_get" else "get" in
   match arg with
     [c1] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array1" get)),
@@ -681,7 +681,7 @@ let bigarray_get ?(loc=dummy_loc()) arr arg =
                        [Nolabel, arr; Nolabel, mkexp ~ghost:true ~loc (Pexp_array coords)]))
 
 let bigarray_set ?(loc=dummy_loc()) arr arg newval =
-  let set = if !Clflags.fast then "unsafe_set" else "set" in
+  let set = if !Clflags.unsafe then "unsafe_set" else "set" in
   match arg with
     [c1] ->
       mkexp(Pexp_apply(mkexp ~ghost:true ~loc (Pexp_ident(bigarray_function ~loc "Array1" set)),
@@ -3965,7 +3965,10 @@ simple_pattern_not_ident_:
 
 %inline record_pattern:
     LBRACE lbl_pattern_list RBRACE
-    { let (fields, closed) = $2 in mkpat (Ppat_record (fields, closed)) }
+    { let (fields, closed) = $2 in
+      let loc = mklocation $symbolstartpos $endpos in
+      mkpat ~loc (Ppat_record (fields, closed))
+    }
 ;
 
 %inline list_pattern:

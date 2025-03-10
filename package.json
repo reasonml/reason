@@ -14,5 +14,8 @@
     "javascript"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/reasonml/reason"
+  "homepage": "https://github.com/reasonml/reason",
+  "dependencies": {
+    "esy": "^0.9.0-beta.1"
+  }
 }

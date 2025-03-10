@@ -38,10 +38,7 @@ module Reason_reader = struct
     Reason_toolchain_conf.insert_completion_ident := Some pos;
     Misc.try_finally
       (fun () -> ({complete_labels = true}, parse t))
-#if OCAML_VERSION >= (4, 8, 0)
-      ~always:
-#endif
-      (fun () -> Reason_toolchain_conf.insert_completion_ident := pos')
+      ~always:(fun () -> Reason_toolchain_conf.insert_completion_ident := pos')
 
   let parse_line _ _ line =
     let buf = Lexing.from_string line in

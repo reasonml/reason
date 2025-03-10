@@ -34,3 +34,4 @@ Fmt is distributed under the ISC license.
 [cmdliner]: http://erratique.ch/software/cmdliner
 
 Home page: http://erratique.ch/software/fmt"""
+x-maintenance-intent: ["(latest)"]

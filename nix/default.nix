@@ -1,21 +1,23 @@
-{ ocamlPackages, nix-filter, doCheck ? false }:
+{ lib, ocamlPackages, doCheck ? false }:
 
 rec {
   reason = ocamlPackages.buildDunePackage {
     pname = "reason";
     version = "0.0.1-dev";
 
-    src = nix-filter.filter {
-      root = ./..;
-      include = [
-        "dune"
-        "dune-project"
-        "reason.opam"
-        "scripts"
-        "src"
-        "test"
-      ];
-    };
+    src =
+      let fs = lib.fileset; in
+      fs.toSource {
+        root = ./..;
+        fileset = fs.unions [
+          ../dune-project
+          ../dune
+          ../reason.opam
+          ../scripts
+          ../src
+          ../test
+        ];
+      };
 
     inherit doCheck;
 
@@ -36,16 +38,19 @@ rec {
     pname = "rtop";
     version = "0.0.1-dev";
 
-    src = nix-filter.filter {
-      root = ./..;
-      include = [
-        "dune"
-        "dune-project"
-        "rtop.opam"
-        "rtop"
-        "test"
-      ];
-    };
+    src =
+      let fs = lib.fileset; in
+      fs.toSource {
+        root = ./..;
+        fileset = fs.unions [
+          ../dune-project
+          ../dune
+          ../rtop.opam
+          ../scripts
+          ../rtop
+          ../test
+        ];
+      };
 
     inherit doCheck;
 

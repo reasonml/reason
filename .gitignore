@@ -12,3 +12,6 @@ _esybuild
 _esyinstall
 _release
 _export/
+
+# opam
+_opam/

@@ -34,3 +34,4 @@ Uutf has no dependency and is distributed under the ISC license.
 
 Home page: http://erratique.ch/software/uutf  
 Contact: Daniel Bünzli `<daniel.buenzl i@erratique.ch>`"""
+x-maintenance-intent: ["(latest)"]
