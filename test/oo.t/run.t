@@ -351,13 +351,13 @@ Print the formatted file
   
   let x: #tupleClass(int, int) = x;
   
-  let incrementMyClassInstance:
-    (int, #tupleClass(int, int)) =>
-    #tupleClass(int, int) =
-    (i, inst) => {
-      let (x, y) = inst#pr;
-      {pub pr = (x + i, y + i)};
-    };
+  let incrementMyClassInstance
+      : (int, #tupleClass(int, int)) =>
+        #tupleClass(int, int) =
+      (i, inst) => {
+    let (x, y) = inst#pr;
+    {pub pr = (x + i, y + i)};
+  };
   
   class myClassWithNoTypeParams = {};
   /**

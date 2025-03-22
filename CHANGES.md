@@ -2,6 +2,8 @@
 
 - require OCaml >= 4.08 (@anmonteiro,
   [#2840](https://github.com/reasonml/reason/pull/2840))
+- support ppxlib with OCaml 5.2 AST (and require ppxlib >= 0.36) (@anmonteiro,
+  [#2835](https://github.com/reasonml/reason/pull/2835))
 
 ## 3.15.0
 

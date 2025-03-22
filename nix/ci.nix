@@ -13,7 +13,19 @@ let
     import src {
       extraOverlays = [
         (self: super: {
-          ocamlPackages = super.ocaml-ng."ocamlPackages_${ocamlVersion}";
+          ocamlPackages = super.ocaml-ng."ocamlPackages_${ocamlVersion}".overrideScope (oself: osuper: {
+            ppxlib = osuper.ppxlib.overrideAttrs (_: {
+              src = super.fetchFromGitHub {
+                owner = "ocaml-ppx";
+                repo = "ppxlib";
+                rev = "3374fe83926ea192ceccc9977032bff72ecaf2f7";
+                hash = "sha256-KfuA31hmFHpPkp7lq7lH6jaQyLiqBd/UnY5+ctntmF0=";
+              };
+            });
+            pp = osuper.pp.overrideAttrs (_: {
+              doCheck = false;
+            });
+          });
         })
       ];
     };
