@@ -1,4 +1,4 @@
-## Unreleased
+## 3.16.0
 
 - require OCaml >= 4.08 (@anmonteiro,
   [#2840](https://github.com/reasonml/reason/pull/2840))
