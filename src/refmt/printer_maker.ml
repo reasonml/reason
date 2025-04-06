@@ -1,3 +1,5 @@
+open Reason
+
 type parse_itype =
   [ `ML
   | `Reason
