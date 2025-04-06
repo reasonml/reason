@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
+open Reason
+
 module ToploopBackup = struct
   let print_out_value = !Toploop.print_out_value
   let print_out_type = !Toploop.print_out_type

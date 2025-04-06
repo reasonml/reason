@@ -1,3 +1,4 @@
+open Reason
 open Extend_protocol.Reader
 
 let () =

@@ -38,8 +38,8 @@ let main () =
   | Not_found -> ());
 
   UTop.require [ "reason.easy_format"; "reason" ];
-  Reason_toploop.main ();
-  Reason_utop.init_reason ();
+  Rtoplib.Reason_toploop.main ();
+  Rtoplib.Reason_utop.init_reason ();
   print_init_message ();
   start_utop ()
 

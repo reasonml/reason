@@ -5,6 +5,7 @@
 *)
 
 module Cmdliner = Vendored_cmdliner
+open Reason
 open Cmdliner
 open Refmt_lib
 

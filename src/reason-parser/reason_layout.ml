@@ -1,4 +1,4 @@
-module Easy_format = Vendored_easy_format
+module Easy_format = Reason_easy_format
 
 type break_criterion =
   | Never

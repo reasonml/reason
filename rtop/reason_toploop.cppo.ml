@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
+open Reason
+
 let default_parse_toplevel_phrase = !Toploop.parse_toplevel_phrase
 let reason_parse_toplevel_phrase =
   Reason_util.correctly_catch_parse_errors
