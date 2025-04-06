@@ -19,6 +19,7 @@
  * not a super easy path to "test it out", but this setup is hopefully not too complicated.
  *)
 
+open Reason
 module ConvertBack = Reason_toolchain.From_current
 
 let main () =
