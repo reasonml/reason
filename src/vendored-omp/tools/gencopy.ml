@@ -44,7 +44,7 @@ module Main : sig end = struct
   let may_tuple ?loc tup = function
     | [] -> None
     | [ x ] -> Some x
-    | l -> Some (tup ?loc ?attrs:None l)
+    | l -> Some (tup ?loc ?attrs:None (List.map (fun x -> None, x) l))
 
   let lid ?(loc = !default_loc) s = mkloc (Longident.parse s) loc
 
@@ -56,7 +56,7 @@ module Main : sig end = struct
   let tuple ?loc ?attrs = function
     | [] -> unit ?loc ?attrs ()
     | [ x ] -> x
-    | xs -> Exp.tuple ?loc ?attrs xs
+    | xs -> Exp.tuple ?loc ?attrs (List.map (fun x -> None, x) xs)
 
   let app ?loc ?attrs f l =
     if l = [] then f
@@ -80,8 +80,16 @@ module Main : sig end = struct
 
   let pvar ?(loc = !default_loc) ?attrs s = Pat.var ~loc ?attrs (mkloc s loc)
 
+  let may_ptuple ?loc tup = function
+    | [] -> None
+    | [ x ] -> Some x
+    | l -> Some (tup ?loc ?attrs:None (List.map (fun x -> None, x) l) Closed)
+
   let pconstr ?loc ?attrs s args =
-    Pat.construct ?loc ?attrs (lid ?loc s) (Option.map (fun x -> ([], x)) (may_tuple ?loc Pat.tuple args))
+    Pat.construct
+      ?loc ?attrs
+      (lid ?loc s)
+      (Option.map (fun x -> ([], x)) (may_ptuple ?loc Pat.tuple args))
 
   let selfcall m args = app (evar m) args
 
@@ -120,7 +128,7 @@ module Main : sig end = struct
       let prefix, local =
         let open Longident in
         match tylid with
-        | Ldot (m, s) -> (String.concat "." (Longident.flatten m) ^ ".", s)
+        | Ldot (m, s) -> (String.concat "." (Longident.flatten m.txt) ^ ".", s.txt)
         | Lident s -> ("", s)
         | Lapply _ -> assert false
       in
@@ -216,6 +224,13 @@ module Main : sig end = struct
     in
     List.split (List.mapi arg tl)
 
+  and genttuple env tl =
+    let arg i (lbl, t) =
+      let x = Printf.sprintf "x%i" i in
+      ((lbl, pvar x), tyexpr env t (evar x))
+    in
+    List.split (List.mapi arg tl)
+
   and tyexpr env ty x =
     match Types.get_desc ty with
     | Tvar _ -> (
@@ -223,12 +238,14 @@ module Main : sig end = struct
       | f -> app f [ x ]
       | exception Not_found -> failwith "Existentials not supported" )
     | Ttuple tl ->
-        let p, e = gentuple env tl in
-        let_in [ Vb.mk (Pat.tuple p) x ] (tuple e)
+        let p, e = genttuple env (tl : (_ * _ ) list) in
+        let_in [ Vb.mk (Pat.tuple p Closed) x ] (tuple e)
     | Tconstr (path, [ t ], _) when Path.same path Predef.path_list ->
         app (evar "List.map") [ tyexpr_fun env t; x ]
     | Tconstr (path, [ t ], _) when Path.same path Predef.path_array ->
         app (evar "Array.map") [ tyexpr_fun env t; x ]
+    | Tconstr (path, [ ], _) when Path.same path Predef.path_floatarray ->
+        app (evar "Array.Floatarray.map") [ tyexpr_ffun "float"; x ]
     | Tconstr (path, [ t ], _) when Path.same path Predef.path_option ->
         app (evar "Option.map") [ tyexpr_fun env t; x ]
     | Tconstr (path, [], _)
@@ -253,6 +270,7 @@ module Main : sig end = struct
         Format.eprintf "** Cannot deal with type %a@." Printtyp.type_expr ty;
         x
 
+  and tyexpr_ffun _ty = lam (pvar "x") (evar "x")
   and tyexpr_fun env ty = lam (pvar "x") (tyexpr env ty (evar "x"))
 
   let simplify =
@@ -330,5 +348,5 @@ end
 (* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_402:Ast_403  Ast_402.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_402_403_migrate.ml *)
 
 
-(* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_500:Ast_414 Ast_500.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_500_414_migrate.ml *)
+(* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_54:Ast_53 Ast_54.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_54_53_migrate.ml *)
 (* ../../_build/default/src/vendored-omp/tools/gencopy.exe -I . -I src/ -I +compiler-libs -map Ast_414:Ast_500  Ast_414.Outcometree.{out_phrase,out_type_extension} > src/migrate_parsetree_414_500_migrate.ml *)
