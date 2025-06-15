@@ -45,7 +45,7 @@
   fix
   cppo
   (ppxlib
-   (>= "0.36.0"))))
+   (>= "0.37.0"))))
 
 (package
  (name rtop)
@@ -58,7 +58,7 @@
     (>= "4.08")
     (< "5.5")))
   (reason
-   (= :dev))
+   (= :version))
   (utop
    (>= "2.0"))
   cppo))
