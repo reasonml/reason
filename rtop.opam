@@ -35,3 +35,6 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/reasonml/reason.git"
+pin-depends: [
+  [ "utop.dev" "git+https://github.com/ocaml-community/utop.git#anmonteiro/5.4-support"]
+]
