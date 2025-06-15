@@ -23,7 +23,7 @@ depends: [
   "merlin-extend" {>= "0.6.2"}
   "fix"
   "cppo"
-  "ppxlib" {>= "0.37.0"}
+  "ppxlib" {dev}
   "odoc" {with-doc}
 ]
 build: [
@@ -41,3 +41,6 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/reasonml/reason.git"
+pin-depends: [
+  [ "ppxlib.dev" "git+https://github.com/ocaml-ppx/ppxlib.git#757f6c284b1fe748d5027eef3bbef924b6bbd7ce" ]
+]

@@ -1,0 +1,4 @@
+pin-depends: [
+  [ "ppxlib.dev" "git+https://github.com/ocaml-ppx/ppxlib.git#757f6c284b1fe748d5027eef3bbef924b6bbd7ce" ]
+]
+
