@@ -40,7 +40,7 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.setup.ocaml-compiler }}
-          opam-pin: false
+          opam-pin: true
 
       - name: Load opam cache when not Windows
         if: runner.os != 'Windows'
