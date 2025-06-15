@@ -58,7 +58,7 @@
     (>= "4.08")
     (< "5.5")))
   (reason
-   (= :version))
-  (utop
    (= :dev))
+  (utop
+   (>= "2.0"))
   cppo))

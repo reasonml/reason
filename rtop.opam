@@ -15,8 +15,8 @@ bug-reports: "https://github.com/reasonml/reason/issues"
 depends: [
   "dune" {>= "3.8"}
   "ocaml" {>= "4.08" & < "5.5"}
-  "reason" {= version}
-  "utop" {= dev}
+  "reason" {= dev}
+  "utop" {>= "2.0"}
   "cppo"
   "odoc" {with-doc}
 ]

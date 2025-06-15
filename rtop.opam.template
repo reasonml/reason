@@ -1,3 +1,0 @@
-pin-depends: [
-  [ "utop.dev" "git+https://github.com/anmonteiro/utop.git#anmonteiro/5.4-support"]
-]
