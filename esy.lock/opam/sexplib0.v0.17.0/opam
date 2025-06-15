@@ -13,7 +13,7 @@ depends: [
   "ocaml" {>= "4.14.0"}
   "dune" {>= "3.11.0"}
 ]
-available: arch != "arm32" & arch != "x86_32"
+available: arch != "x86_32"
 synopsis: "Library containing the definition of S-expressions and some base converters"
 description: "
 Part of Jane Street's Core library

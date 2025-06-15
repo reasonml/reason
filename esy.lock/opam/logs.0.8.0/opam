@@ -1,0 +1,70 @@
+opam-version: "2.0"
+synopsis: "Logging infrastructure for OCaml"
+description: """\
+Logs provides a logging infrastructure for OCaml. Logging is performed
+on sources whose reporting level can be set independently. Log message
+report is decoupled from logging and is handled by a reporter.
+
+A few optional log reporters are distributed with the base library and
+the API easily allows to implement your own.
+
+`Logs` has no dependencies. The optional `Logs_fmt` reporter on OCaml
+formatters depends on [Fmt][fmt].  The optional `Logs_browser`
+reporter that reports to the web browser console depends on
+[js_of_ocaml][jsoo]. The optional `Logs_cli` library that provides
+command line support for controlling Logs depends on
+[`Cmdliner`][cmdliner]. The optional `Logs_lwt` library that provides
+Lwt logging functions depends on [`Lwt`][lwt]
+
+Logs and its reporters are distributed under the ISC license.
+
+[fmt]: http://erratique.ch/software/fmt
+[jsoo]: http://ocsigen.org/js_of_ocaml/
+[cmdliner]: http://erratique.ch/software/cmdliner
+[lwt]: http://ocsigen.org/lwt/
+
+Home page: http://erratique.ch/software/logs"""
+maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
+authors: "The logs programmers"
+license: "ISC"
+tags: ["log" "system" "org:erratique"]
+homepage: "https://erratique.ch/software/logs"
+doc: "https://erratique.ch/software/logs/doc"
+bug-reports: "https://github.com/dbuenzli/logs/issues"
+depends: [
+  "ocaml" {>= "4.08.0"}
+  "ocamlfind" {build}
+  "ocamlbuild" {build}
+  "topkg" {build & >= "1.0.3"}
+  "mtime" {with-test}
+]
+depopts: ["cmdliner" "js_of_ocaml-compiler" "fmt" "lwt" "base-threads"]
+conflicts: [
+  "cmdliner" {< "1.3.0"}
+  "js_of_ocaml-compiler" {< "5.5.0"}
+  "fmt" {< "0.9.0"}
+]
+build: [
+  "ocaml"
+  "pkg/pkg.ml"
+  "build"
+  "--dev-pkg"
+  "%{dev}%"
+  "--with-js_of_ocaml-compiler"
+  "%{js_of_ocaml-compiler:installed}%"
+  "--with-fmt"
+  "%{fmt:installed}%"
+  "--with-cmdliner"
+  "%{cmdliner:installed}%"
+  "--with-lwt"
+  "%{lwt:installed}%"
+  "--with-base-threads"
+  "%{base-threads:installed}%"
+]
+dev-repo: "git+https://erratique.ch/repos/logs.git"
+url {
+  src: "https://erratique.ch/software/logs/releases/logs-0.8.0.tbz"
+  checksum:
+    "sha512=c34c67b00d6a989a2660204ea70db8521736d6105f15d1ee0ec6287a662798fe5c4d47075c6e7c84f5d5372adb5af5c4c404f79db70d69140af5e0ebbea3b6a5"
+}
+x-maintenance-intent: ["(latest)"]

@@ -3,7 +3,6 @@ homepage: "https://github.com/ocaml/odoc"
 doc: "https://ocaml.github.io/odoc/"
 bug-reports: "https://github.com/ocaml/odoc/issues"
 license: "ISC"
-flags: [ avoid-version ]
 
 maintainer: [
   "Daniel Bünzli <daniel.buenzli@erratique.ch>"
@@ -40,7 +39,7 @@ odoc is part of the [OCaml Platform](https://ocaml.org/docs/platform), the recom
 depends: [
   "odoc-parser" {= version}
   "astring"
-  "cmdliner" {>= "1.0.0"}
+  "cmdliner" {>= "1.0.0" & < "2.0.0"}
   "cppo" {build & >= "1.1.0"}
   "dune" {>= "3.7.0"}
   "fpath"
@@ -56,7 +55,7 @@ depends: [
 
   "ppx_expect" {with-test}
   "bos" {with-test}
-  "crunch" {> "2.0.0"}
+  "crunch" {>= "1.4.1"}
 
   ("ocaml" {< "4.07.0" & with-test} | "bisect_ppx" {with-test & > "2.5.0"})
 ]
@@ -85,12 +84,11 @@ build: [
 ]
 x-maintenance-intent: ["(latest)"]
 url {
-  src:
-    "https://github.com/ocaml/odoc/releases/download/3.0.0_beta1/odoc-3.0.0.beta1.tbz"
+  src: "https://github.com/ocaml/odoc/releases/download/3.0.0/odoc-3.0.0.tbz"
   checksum: [
-    "sha256=237473ccb54db660c0d476529268df4095a437906612f2ab5f01979852ca01ef"
-    "sha512=c758448306f867e90203634b5e4e63b83b4c14ab293f5e0623fb2d3a852b4e944998b174a4b0ea758b098eef588aab92882095e28a59ed6b430677c0497fd70b"
+    "sha256=ce84fa7e0cc5f3e8a54e6adeb10826152798b602057b9e46c5ae7e5d5206812b"
+    "sha512=9febd413450ca2e3824c9ef7e1c9ae8d8094aa72ed71327a69d8d6b42f6f197b3f3f40d674de0d11fa1242ee0df95c693b5d74467d530704e1339f3a523452f6"
   ]
 }
-x-commit-hash: "12ad5b5ff2a37d24070553180167d9cdbe631b80"
+x-commit-hash: "90e679061f68c5e5ee5915e280f63d842f41f300"
 
