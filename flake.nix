@@ -8,7 +8,19 @@
       forAllSystems = f: nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed (system:
         let
           pkgs = nixpkgs.legacyPackages.${system}.extend (self: super: {
-            ocamlPackages = super.ocaml-ng.ocamlPackages_5_3.overrideScope (oself: osuper: {
+            ocamlPackages = super.ocaml-ng.ocamlPackages_5_4.overrideScope (oself: osuper: {
+              utop = osuper.utop.overrideAttrs (_: {
+                src =
+                  if super.lib.versionOlder "5.4" osuper.ocaml.version then
+                    super.fetchFromGitHub
+                      {
+                        owner = "anmonteiro";
+                        repo = "utop";
+                        rev = "137e2a05c6718815dc666de5637defb05328c184";
+                        hash = "sha256-cgHf/rWdmcod/ikwT7/X6HoT36Ulfv+zJAv1gvBmyXU=";
+                      } else osuper.utop.src;
+              });
+
               pp = osuper.pp.overrideAttrs (_: {
                 doCheck = false;
               });
