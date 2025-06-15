@@ -34,7 +34,8 @@ let
                     {
                       owner = "anmonteiro";
                       repo = "utop";
-                      rev = "757f6c284b1fe748d5027eef3bbef924b6bbd7ce";
+                      rev = "137e2a05c6718815dc666de5637defb05328c184";
+                      hash = "sha256-cgHf/rWdmcod/ikwT7/X6HoT36Ulfv+zJAv1gvBmyXU=";
                     } else osuper.utop.src;
             });
           });
