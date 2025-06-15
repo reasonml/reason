@@ -27,17 +27,6 @@ let
                     sha256 = "0d54j19vi1khzmw0ffngs8xzjjq07n20q49h85hhhcf52k71pfjs";
                   };
             });
-            utop = osuper.utop.overrideAttrs (_: {
-              src =
-                if super.lib.versionOlder "5.4" osuper.ocaml.version then
-                  super.fetchFromGitHub
-                    {
-                      owner = "anmonteiro";
-                      repo = "utop";
-                      rev = "137e2a05c6718815dc666de5637defb05328c184";
-                      hash = "sha256-cgHf/rWdmcod/ikwT7/X6HoT36Ulfv+zJAv1gvBmyXU=";
-                    } else osuper.utop.src;
-            });
           });
         })
       ];
