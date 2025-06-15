@@ -1,6 +1,8 @@
 opam-version: "2.0"
 synopsis: "The transitory OCaml software packager"
 description: """\
+**Warning** Topkg is in maintenance mode and should not longer be used.
+
 Topkg is a packager for distributing OCaml software. It provides an
 API to describe the files a package installs in a given build
 configuration and to specify information about the package's
@@ -25,7 +27,7 @@ Topkg-care is distributed under the ISC license it depends on
 [cmdliner]: http://erratique.ch/software/cmdliner
 [webbrowser]: http://erratique.ch/software/webbrowser
 
-Home page: http://erratique.ch/software/topkg"""
+Home page: <http://erratique.ch/software/topkg>"""
 maintainer: "Daniel Bünzli <daniel.buenzl i@erratique.ch>"
 authors: "The topkg programmers"
 license: "ISC"
@@ -34,15 +36,15 @@ homepage: "https://erratique.ch/software/topkg"
 doc: "https://erratique.ch/software/topkg/doc"
 bug-reports: "https://github.com/dbuenzli/topkg/issues"
 depends: [
-  "ocaml" {>= "4.05.0"}
+  "ocaml" {>= "4.08.0"}
   "ocamlfind" {build & >= "1.6.1"}
   "ocamlbuild"
 ]
 build: ["ocaml" "pkg/pkg.ml" "build" "--pkg-name" name "--dev-pkg" "%{dev}%"]
 dev-repo: "git+https://erratique.ch/repos/topkg.git"
 url {
-  src: "https://erratique.ch/software/topkg/releases/topkg-1.0.7.tbz"
+  src: "https://erratique.ch/software/topkg/releases/topkg-1.0.8.tbz"
   checksum:
-    "sha512=09e59f1759bf4db8471f02d0aefd8db602b44932a291c05c312b1423796e7a15d1598d3c62a0cec7f083eff8e410fac09363533dc4bd2120914bb9664efea535"
+    "sha512=4b632b60137852bb72ff9c8cdc2e16ac5ece6473569e50963fef9c1e800a0933a516bea1107b04011645afa4a1e78893c82dbce0aa8de2970d4d6c6d0dd2fe02"
 }
 x-maintenance-intent: ["(latest)"]

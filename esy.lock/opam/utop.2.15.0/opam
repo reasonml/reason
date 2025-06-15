@@ -42,9 +42,9 @@ build: [
 dev-repo: "git+https://github.com/ocaml-community/utop.git"
 url {
   src:
-    "https://github.com/ocaml-community/utop/releases/download/2.15.0/utop-2.15.0-1.tar.gz"
+    "https://github.com/ocaml-community/utop/releases/download/2.15.0/utop-2.15.0.tar.gz"
   checksum: [
-    "sha256=a11844563c36efefc466076f6f5f114d30eff6f032aec2fbe0dcbd20255d204d"
-    "sha512=07991b7a837bb3cae4d0ca2977d011a34f1bb9a7b3b472787010f788aae3b8d7960bc3c5b7f19c3153249dc8f229934b5f48c37d16f93b50eb4d6b5da65dfe7b"
+    "sha256=7659dea0a7f7a5b16e30024ee681445179f8c0f87630e5cdae554280dacd6fac"
+    "sha512=f05aa85fbec3a4ecda6068b1ed350f61a0b3626969641c37508fde0fdeeffa80abd50b406c36884a81bc965d91d97d797490da1fe4edea0daa3936d47bbb1c70"
   ]
 }

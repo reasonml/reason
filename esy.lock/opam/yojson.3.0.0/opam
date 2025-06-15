@@ -16,9 +16,8 @@ doc: "https://ocaml.org/p/yojson/latest"
 bug-reports: "https://github.com/ocaml-community/yojson/issues"
 depends: [
   "dune" {>= "2.7"}
-  "ocaml" {>= "4.02.3"}
+  "ocaml" {>= "4.08"}
   "alcotest" {with-test & >= "0.8.5"}
-  "seq" {>= "0.2.2"}
   "odoc" {with-doc}
 ]
 build: [
@@ -38,10 +37,10 @@ build: [
 dev-repo: "git+https://github.com/ocaml-community/yojson.git"
 url {
   src:
-    "https://github.com/ocaml-community/yojson/releases/download/2.2.2/yojson-2.2.2.tbz"
+    "https://github.com/ocaml-community/yojson/releases/download/3.0.0/yojson-3.0.0.tbz"
   checksum: [
-    "sha256=9abfad8c9a79d4723ad2f6448e669c1e68dbfc87cc54a1b7c064b0c90912c595"
-    "sha512=ac52eae3ca1d3129a7885ca638e6ae5bcfc387598a82cc30d3e4988fd154f1756719c399f96e950d898c79a6dbd4ccc44b6f468bcafbd620e6945a0415b41e0c"
+    "sha256=99414da7609b92a02474ef4b49ecda15edc8cbba5229341b124e7e4695c39610"
+    "sha512=896d0ea829a36ccadba6628800369c1a3ab9e7c64dbda8b76331889c9db481cd64e137f467481ae80a8dd5fca45d748bfa71f58641806cc1bb1a007f8291789f"
   ]
 }
-x-commit-hash: "3f82b79d1865eec82c6f498ee1835a90c74c31b4"
+x-commit-hash: "b2193e8e0c88c6501710d08b836b3219673383f3"

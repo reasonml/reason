@@ -43,7 +43,6 @@
   (merlin-extend
    (>= "0.6.2"))
   fix
-  ppx_derivers
   cppo
   (ppxlib
    (>= "0.36.0"))))

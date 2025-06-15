@@ -20,7 +20,7 @@ doc: "https://ocaml-ppx.github.io/ppxlib/"
 bug-reports: "https://github.com/ocaml-ppx/ppxlib/issues"
 depends: [
   "dune" {>= "3.8"}
-  "ocaml" {>= "4.08.0" & < "5.4.0"}
+  "ocaml" {>= "4.08.0" & < "5.5.0"}
   "ocaml-compiler-libs" {>= "v0.11.0"}
   "ppx_derivers" {>= "1.0"}
   "sexplib0" {>= "v0.12"}
@@ -53,12 +53,12 @@ build: [
 ]
 dev-repo: "git+https://github.com/ocaml-ppx/ppxlib.git"
 x-maintenance-intent: ["(latest)"]
+flags: avoid-version
+available: opam-version >= "2.1.0"
 url {
-  src:
-    "https://github.com/ocaml-ppx/ppxlib/releases/download/0.36.0/ppxlib-0.36.0.tbz"
+  src: "https://github.com/ocaml-ppx/ppxlib/archive/757f6c284b1fe748d5027eef3bbef924b6bbd7ce.tar.gz"
   checksum: [
-    "sha256=5aba1bce14c53108614130110c843d004bf93bd2cf3a0778fd7086b85390a434"
-    "sha512=1e3e8fee42fe74bffc178dbcbb2db8ec38dd23e71f6fed3c4c92618cf93892f5847787e6e9abb322f5c85d29a76afde28ce840b42e10fedc14cd82ba578ad06a"
+    "sha256=89a98c95ddd0bfbac17b5a936f6811af7097be3258c482d5859b73e9de9b4552"
+    "sha512=b19306473d867252d382e58e9b697531c5edccdc9283b5eaf72f524803c2fca2a58a5e8f25bee198b00de82cf8ef805b43f7488791c3ac5beb0ffba938ded826"
   ]
 }
-x-commit-hash: "f1667f502e197275b873175406f181c86954795e"
