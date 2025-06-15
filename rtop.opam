@@ -16,7 +16,7 @@ depends: [
   "dune" {>= "3.8"}
   "ocaml" {>= "4.08" & < "5.4"}
   "reason" {= version}
-  "utop" {>= "2.0"}
+  "utop" {= dev}
   "cppo"
   "odoc" {with-doc}
 ]
