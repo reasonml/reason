@@ -1,3 +1,9 @@
+## Unreleased
+
+- Support OCaml 5.4 (@anmonteiro,
+  [#2844](https://github.com/reasonml/reason/pull/2844))
+
+
 ## 3.16.0
 
 - require OCaml >= 4.08 (@anmonteiro,
