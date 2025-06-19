@@ -16,14 +16,14 @@ homepage: "https://reasonml.github.io/"
 bug-reports: "https://github.com/reasonml/reason/issues"
 depends: [
   "dune" {>= "3.8"}
-  "ocaml" {>= "4.08" & < "5.4"}
+  "ocaml" {>= "4.08" & < "5.5"}
   "ocamlfind" {build}
   "dune-build-info" {>= "2.9.3"}
   "menhir" {>= "20180523"}
   "merlin-extend" {>= "0.6.2"}
   "fix"
   "cppo"
-  "ppxlib" {>= "0.36.0"}
+  "ppxlib" {dev}
   "odoc" {with-doc}
 ]
 build: [
@@ -41,3 +41,6 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/reasonml/reason.git"
+pin-depends: [
+  [ "ppxlib.dev" "git+https://github.com/ocaml-ppx/ppxlib.git#757f6c284b1fe748d5027eef3bbef924b6bbd7ce" ]
+]

@@ -34,7 +34,7 @@
   (ocaml
    (and
     (>= "4.08")
-    (< "5.4")))
+    (< "5.5")))
   (ocamlfind :build)
   (dune-build-info
    (>= 2.9.3))
@@ -44,8 +44,7 @@
    (>= "0.6.2"))
   fix
   cppo
-  (ppxlib
-   (>= "0.36.0"))))
+  (ppxlib :dev)))
 
 (package
  (name rtop)
@@ -56,7 +55,7 @@
   (ocaml
    (and
     (>= "4.08")
-    (< "5.4")))
+    (< "5.5")))
   (reason
    (= :version))
   (utop

@@ -14,7 +14,7 @@ homepage: "https://reasonml.github.io/"
 bug-reports: "https://github.com/reasonml/reason/issues"
 depends: [
   "dune" {>= "3.8"}
-  "ocaml" {>= "4.08" & < "5.4"}
+  "ocaml" {>= "4.08" & < "5.5"}
   "reason" {= version}
   "utop" {>= "2.0"}
   "cppo"
@@ -35,3 +35,7 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/reasonml/reason.git"
+pin-depends: [
+  [ "ppxlib.dev" "git+https://github.com/ocaml-ppx/ppxlib.git#757f6c284b1fe748d5027eef3bbef924b6bbd7ce" ]
+]
+

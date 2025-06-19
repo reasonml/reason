@@ -27,6 +27,7 @@ let () =
      | (5, 1) -> "51"
      | (5, 2) -> "52"
      | (5, 3) -> "53"
+     | (5, 4) -> "54"
      | _ ->
        Printf.eprintf "Unknown OCaml version %s\n" ocaml_version_str;
        exit 1);

@@ -20,6 +20,17 @@ module ToploopBackup = struct
     Hashtbl.find Toploop.directive_table "show"
 end
 
+#if OCAML_VERSION >= (5,4,0)
+let rec lident_operator_map mapper li =
+  let open Longident in
+  match li with
+  | Lident s -> Lident (mapper s)
+  | Ldot (x, s) -> Ldot (x, { loc = s.loc; txt = mapper s.txt})
+  | Lapply (x, y) ->
+    Lapply
+      ( { loc = x.loc; txt = lident_operator_map mapper x.txt }
+      , { loc = y.loc; txt =  lident_operator_map mapper y.txt })
+#else
 let rec lident_operator_map mapper li =
   let open Longident in
   match li with
@@ -27,6 +38,7 @@ let rec lident_operator_map mapper li =
   | Ldot (x, s) -> Ldot (x, mapper s)
   | Lapply (x, y) ->
     Lapply (lident_operator_map mapper x, lident_operator_map mapper y)
+#endif
 
 type top_kind =
   | RTop

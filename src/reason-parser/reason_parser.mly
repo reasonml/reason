@@ -50,7 +50,6 @@
 %{
 module Ast_helper = Ppxlib.Ast_helper
 module Location = Ppxlib.Location
-module Longident = Ppxlib.Longident
 
 open Ppxlib.Asttypes
 
@@ -239,7 +238,7 @@ let may_tuple startp endp = function
   type component = {props, state};
 *)
 let mkct { Location.txt; loc } =
-  let lident = Longident.Lident txt in
+  let lident = Ppxlib.Longident.Lident txt in
   let ttype = Ppxlib.Ptyp_constr({txt = lident; loc = loc}, []) in
   { Ppxlib.ptyp_desc = ttype
   ; ptyp_loc = loc
@@ -283,7 +282,7 @@ let is_pattern_list_single_any = function
   | _ -> None
 
 let mkoperator { Location.txt; loc } =
-  Ast_helper.Exp.mk ~loc (Pexp_ident(mkloc (Longident.Lident txt) loc))
+  Ast_helper.Exp.mk ~loc (Pexp_ident(mkloc (Ppxlib.Longident.Lident txt) loc))
 
 (*
   Ghost expressions and patterns:
@@ -310,7 +309,7 @@ let mkoperator { Location.txt; loc } =
 
 
 let ghunit ?(loc=dummy_loc ()) () =
-  mkexp ~ghost:true ~loc (Pexp_construct (mknoloc (Longident.Lident "()"), None))
+  mkexp ~ghost:true ~loc (Pexp_construct (mknoloc (Ppxlib.Longident.Lident "()"), None))
 
 let mkinfixop arg1 op arg2 =
   mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
@@ -355,23 +354,23 @@ let mkuplus name ({ Ppxlib.pexp_desc; _ } as arg) =
       mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
-  mkexp ~loc (Pexp_construct(mkloc (Longident.Lident "::") consloc, Some args))
+  mkexp ~loc (Pexp_construct(mkloc (Ppxlib.Longident.Lident "::") consloc, Some args))
 
 let mkexp_constructor_unit ?(uncurried=false) consloc loc =
   let attrs = if uncurried then [uncurry_payload ~name:"uncurry" loc] else [] in
-  mkexp ~attrs ~loc (Pexp_construct(mkloc (Longident.Lident "()") consloc, None))
+  mkexp ~attrs ~loc (Pexp_construct(mkloc (Ppxlib.Longident.Lident "()") consloc, None))
 
 let ghexp_cons args loc =
-  mkexp ~ghost:true ~loc (Pexp_construct(mkloc (Longident.Lident "::") loc, Some args))
+  mkexp ~ghost:true ~loc (Pexp_construct(mkloc (Ppxlib.Longident.Lident "::") loc, Some args))
 
 let mkpat_cons args loc =
-  mkpat ~loc (Ppat_construct(mkloc (Longident.Lident "::") loc, Some ([], args)))
+  mkpat ~loc (Ppat_construct(mkloc (Ppxlib.Longident.Lident "::") loc, Some ([], args)))
 
 let ghpat_cons args loc =
-  mkpat ~ghost:true ~loc (Ppat_construct(mkloc (Longident.Lident "::") loc, Some ([], args)))
+  mkpat ~ghost:true ~loc (Ppat_construct(mkloc (Ppxlib.Longident.Lident "::") loc, Some ([], args)))
 
 let mkpat_constructor_unit consloc loc =
-  mkpat ~loc (Ppat_construct(mkloc (Longident.Lident "()") consloc, None))
+  mkpat ~loc (Ppat_construct(mkloc (Ppxlib.Longident.Lident "()") consloc, None))
 
 let simple_pattern_list_to_tuple ?(loc=dummy_loc ()) = function
   | [] -> assert false
@@ -385,7 +384,7 @@ let mktailexp_extension loc seq ext_opt =
             ext
           | None ->
             let loc = make_ghost_loc loc in
-            let nil = { Location.txt = Longident.Lident "[]"; loc } in
+            let nil = { Location.txt = Ppxlib.Longident.Lident "[]"; loc } in
             Ast_helper.Exp.mk ~loc (Pexp_construct (nil, None)) in
         base_case
     | (e1: Ppxlib.expression) :: el ->
@@ -404,7 +403,7 @@ let mktailpat_extension loc (seq, ext_opt) =
           ext
         | None ->
           let loc = make_ghost_loc loc in
-          let nil = { Location.txt = Longident.Lident "[]"; loc } in
+          let nil = { Location.txt = Ppxlib.Longident.Lident "[]"; loc } in
           mkpat ~loc (Ppat_construct (nil, None)) in
       base_case
   | (p1: Ppxlib.pattern) :: pl ->
@@ -443,7 +442,7 @@ let mk_record_expr ?loc (exten, fields) =
   | _ -> mkexp ?loc (Pexp_record (fields, exten))
 
 let array_function ?(loc=dummy_loc()) str name =
-  ghloc ~loc (Longident.Ldot(Lident str, (if !Clflags.unsafe then "unsafe_" ^ name else name)))
+  ghloc ~loc (Ppxlib.Longident.Ldot(Lident str, (if !Clflags.unsafe then "unsafe_" ^ name else name)))
 
 let syntax_error loc s =
   raise_error (Other_syntax_error s) loc
@@ -522,7 +521,7 @@ let process_underscore_application args =
   let check_arg ((lab, exp) as arg) =
     match exp.Ppxlib.pexp_desc with
     | Pexp_ident ({ txt = Lident "_"; _} as id) ->
-        let new_id = mkloc (Longident.Lident hidden_var) id.loc in
+        let new_id = mkloc (Ppxlib.Longident.Lident hidden_var) id.loc in
         let new_exp = mkexp (Pexp_ident new_id) ~loc:exp.pexp_loc in
         exp_question := Some new_exp;
         (lab, new_exp)
@@ -540,7 +539,7 @@ let process_underscore_application args =
          *)
         | Pexp_apply(
           {pexp_desc= Pexp_apply(
-            {pexp_desc = Pexp_ident({txt = Longident.Lident "|."; _}); _} as pipeExp,
+            {pexp_desc = Pexp_ident({txt = Ppxlib.Longident.Lident "|."; _}); _} as pipeExp,
             [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _; _} as arg2)]
             (*         5                            doStuff                   *)
           ); _},
@@ -671,7 +670,7 @@ let mkmod_app (mexp: Ppxlib.module_expr) (marg: Ppxlib.module_expr) =
     (Pmod_apply (mexp, marg))
 
 let bigarray_function ?(loc=dummy_loc()) str name =
-  ghloc ~loc (Longident.Ldot(Ldot(Lident "Bigarray", str), name))
+  ghloc ~loc (Ppxlib.Longident.Ldot(Ldot(Lident "Bigarray", str), name))
 
 let bigarray_get ?(loc=dummy_loc()) arr arg =
   let get = if !Clflags.unsafe then "unsafe_get" else "get" in
@@ -708,10 +707,10 @@ let bigarray_set ?(loc=dummy_loc()) arr arg newval =
                         Nolabel, newval]))
 
 let exp_of_label label =
-  mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Longident.last_exn label.txt)})
+  mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Ppxlib.Longident.last_exn label.txt)})
 
 let pat_of_label label =
-  mkpat ~loc:label.loc (Ppat_var {label with txt=(Longident.last_exn label.txt)})
+  mkpat ~loc:label.loc (Ppat_var {label with txt=(Ppxlib.Longident.last_exn label.txt)})
 
 let check_variable vl loc v =
   if List.mem v vl then
@@ -938,15 +937,15 @@ let reason_mapper f a =
 
 let rewriteFunctorApp module_name elt loc =
   let rec applies = function
-    | Longident.Lident _ -> false
+    | Ppxlib.Longident.Lident _ -> false
     | Ldot (m, _) -> applies m
     | Lapply (_, _) -> true in
   let rec flattenModName = function
-    | Longident.Lident id -> id
+    | Ppxlib.Longident.Lident id -> id
     | Ldot (m, id) -> flattenModName m ^ "." ^ id
     | Lapply (m1, m2) -> flattenModName m1 ^ "(" ^ flattenModName m2 ^ ")" in
   let rec mkModExp = function
-    | Longident.Lident id -> mkmod ~loc (Pmod_ident {txt=Lident id; loc})
+    | Ppxlib.Longident.Lident id -> mkmod ~loc (Pmod_ident {txt=Lident id; loc})
     | Ldot (m, id) -> mkmod ~loc (Pmod_ident {txt=Ldot (m, id); loc})
     | Lapply (m1, m2) -> mkmod ~loc (Pmod_apply (mkModExp m1, mkModExp m2)) in
   if applies module_name then
@@ -959,7 +958,7 @@ let rewriteFunctorApp module_name elt loc =
 
 let jsx_component lid attrs children loc =
   let is_module_name = function
-    | Longident.Lident s
+    | Ppxlib.Longident.Lident s
     | Ldot (_, s) ->
       (* s will be non-empty so the 0th access is fine. Modules can't start with underscore *)
        String.get s 0 != '_' && s = String.capitalize_ascii s
@@ -980,14 +979,14 @@ let jsx_component lid attrs children loc =
   { body with pexp_attributes = attribute :: body.pexp_attributes }
 
 let rec ignoreLapply = function
-  | Longident.Lident id -> Longident.Lident id
+  | Ppxlib.Longident.Lident id -> Ppxlib.Longident.Lident id
   | Ldot (lid, id) -> Ldot (ignoreLapply lid, id)
   | Lapply (m1, _) -> ignoreLapply m1
 
-(* Like Longident.flatten, but ignores `Lapply`s. Useful because 1) we don't want to require `Lapply` in
-   closing tags, and 2) Longident.flatten doesn't support `Lapply`. *)
+(* Like Ppxlib.Longident.flatten, but ignores `Lapply`s. Useful because 1) we don't want to require `Lapply` in
+   closing tags, and 2) Ppxlib.Longident.flatten doesn't support `Lapply`. *)
 let rec flattenWithoutLapply = function
-  | Longident.Lident id -> [id]
+  | Ppxlib.Longident.Lident id -> [id]
   | Ldot (lid, id) -> flattenWithoutLapply lid @ [id]
   | Lapply (m1, _) -> flattenWithoutLapply m1
 
@@ -1002,7 +1001,7 @@ let ensureTagsAreEqual startTag endTag loc =
 (* `{. "foo": bar}` -> `Js.t {. foo: bar}` and {.. "foo": bar} -> `Js.t {.. foo: bar} *)
 let mkBsObjTypeSugar ~loc ~closed rows =
   let obj = mktyp ~loc (Ptyp_object (rows, closed)) in
-  let jsDotTCtor = { txt = Longident.Ldot (Longident.Lident "Js", "t"); loc } in
+  let jsDotTCtor = { txt = Ppxlib.Longident.Ldot (Ppxlib.Longident.Lident "Js", "t"); loc } in
   mktyp(Ptyp_constr(jsDotTCtor, [obj]))
 
 let doc_loc loc = {txt = "ocaml.doc"; loc = loc}
@@ -2867,7 +2866,7 @@ jsx_start_tag_and_args_without_leading_less:
     as_loc(mod_ext_longident) jsx_arguments
     { (jsx_component $1 $2, $1.txt) }
   | as_loc(LIDENT) jsx_arguments
-    { let lident = Longident.Lident $1.txt in
+    { let lident = Ppxlib.Longident.Lident $1.txt in
       (jsx_component {$1 with txt = lident } $2, lident)
     }
 ;
@@ -3425,12 +3424,12 @@ labeled_expr:
       | Some typ ->
           ghexp_constraint $2.loc exp typ
       in
-      (Labelled (Longident.last_exn lident_loc.txt), labeled_exp)
+      (Labelled (Ppxlib.Longident.last_exn lident_loc.txt), labeled_exp)
     }
   | TILDE as_loc(val_longident) QUESTION
     { (* foo(~a?)  -> parses ~a? *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
-      (Optional (Longident.last_exn $2.txt), exp)
+      (Optional (Ppxlib.Longident.last_exn $2.txt), exp)
     }
   | TILDE as_loc(LIDENT) EQUAL optional labeled_expr_constraint
     { (* foo(~bar=?Some(1)) or add(~x=1, ~y=2) -> parses ~bar=?Some(1) & ~x=1 & ~y=1 *)
@@ -3439,13 +3438,13 @@ labeled_expr:
   | TILDE as_loc(LIDENT) EQUAL optional as_loc(UNDERSCORE)
     { (* foo(~l =_) *)
       let loc = $5.loc in
-      let exp = mkexp (Pexp_ident (mkloc (Longident.Lident "_") loc)) ~loc in
+      let exp = mkexp (Pexp_ident (mkloc (Ppxlib.Longident.Lident "_") loc)) ~loc in
       ($4 $2.txt, exp)
     }
   | as_loc(UNDERSCORE)
     { (* foo(_) *)
       let loc = $1.loc in
-      let exp = mkexp (Pexp_ident (mkloc (Longident.Lident "_") loc)) ~loc in
+      let exp = mkexp (Pexp_ident (mkloc (Ppxlib.Longident.Lident "_") loc)) ~loc in
       (Nolabel, exp)
     }
 ;
@@ -3720,7 +3719,7 @@ record_expr_with_string_keys:
   | STRING COLON expr COMMA?
     { let loc = mklocation $symbolstartpos $endpos in
       let (s, _, _) = $1 in
-      let lident_lident_loc = mkloc (Longident.Lident s) loc in
+      let lident_lident_loc = mkloc (Ppxlib.Longident.Lident s) loc in
       (None, [(lident_lident_loc, $3)])
     }
   | string_literal_expr_maybe_punned_with_comma string_literal_exprs_maybe_punned {
@@ -3736,14 +3735,14 @@ string_literal_expr_maybe_punned_with_comma:
   | STRING COMMA
   { let loc = mklocation $startpos $endpos in
     let (s, _, _) = $1 in
-    let lident_lident_loc = mkloc (Longident.Lident s) loc in
+    let lident_lident_loc = mkloc (Ppxlib.Longident.Lident s) loc in
     let exp = mkexp ~loc (Pexp_ident lident_lident_loc) in
     (lident_lident_loc, exp)
   }
   | STRING COLON expr COMMA
   { let loc = mklocation $startpos $endpos in
     let (s, _, _) = $1 in
-    let lident_lident_loc = mkloc (Longident.Lident s) loc in
+    let lident_lident_loc = mkloc (Ppxlib.Longident.Lident s) loc in
     let exp = $3 in
     (lident_lident_loc, exp)
   }
@@ -3752,7 +3751,7 @@ string_literal_expr_maybe_punned:
   STRING preceded(COLON, expr)?
   { let loc = mklocation $startpos $endpos in
     let (s, _, _) = $1 in
-    let lident_lident_loc = mkloc (Longident.Lident s) loc in
+    let lident_lident_loc = mkloc (Ppxlib.Longident.Lident s) loc in
     let exp = match $2 with
       | Some x -> x
       | None -> mkexp ~loc (Pexp_ident lident_lident_loc)
@@ -3778,7 +3777,7 @@ field_expr:
  | LIDENT
    { let loc = mklocation $symbolstartpos $endpos in
      let lident_loc = mkloc $1 loc in
-     let lident_lident_loc = mkloc (Longident.Lident $1) loc in
+     let lident_lident_loc = mkloc (Ppxlib.Longident.Lident $1) loc in
      (lident_loc, mkexp (Pexp_ident lident_lident_loc))
    }
 ;
@@ -3965,10 +3964,10 @@ simple_pattern_not_ident_:
   | as_loc(mod_longident) DOT LPAREN pattern RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
       mkpat ~loc (Ppat_open ($1, $4)) }
-  | as_loc(mod_longident) DOT as_loc(LBRACKET RBRACKET {Longident.Lident "[]"})
+  | as_loc(mod_longident) DOT as_loc(LBRACKET RBRACKET {Ppxlib.Longident.Lident "[]"})
     { let loc = mklocation $symbolstartpos $endpos in
       mkpat ~loc (Ppat_open($1, mkpat ~loc:$3.loc (Ppat_construct($3, None)))) }
-  | as_loc(mod_longident) DOT as_loc(LPAREN RPAREN {Longident.Lident "()"})
+  | as_loc(mod_longident) DOT as_loc(LPAREN RPAREN {Ppxlib.Longident.Lident "()"})
     { let loc = mklocation $symbolstartpos $endpos in
       mkpat ~loc (Ppat_open($1, mkpat ~loc:$3.loc (Ppat_construct($3, None)))) }
 
@@ -4454,7 +4453,7 @@ with_constraint:
   | TYPE as_loc(label_longident) type_variables_with_variance
       EQUAL embedded(private_flag) core_type constraints
     { let loc = mklocation $symbolstartpos $endpos in
-      let typ = Ast_helper.Type.mk {$2 with txt=Longident.last_exn $2.txt}
+      let typ = Ast_helper.Type.mk {$2 with txt=Ppxlib.Longident.last_exn $2.txt}
                   ~params:$3 ~cstrs:$7 ~manifest:$6 ~priv:$5 ~loc in
       Pwith_type ($2, typ)
     }
@@ -4463,11 +4462,11 @@ with_constraint:
   | TYPE as_loc(label_longident) type_variables_with_variance
       COLONEQUAL core_type
     { let last = match $2.txt with
-        | Longident.Lident s -> s
+        | Ppxlib.Longident.Lident s -> s
         | other ->
           not_expecting $startpos($2) $endpos($2) "Long type identifier";
           let rec fallback = function
-            | Longident.Lident s -> s
+            | Ppxlib.Longident.Lident s -> s
             | Ldot (_, s) -> s
             | Lapply (l, _) -> fallback l
           in
@@ -4479,7 +4478,7 @@ with_constraint:
   | MODULE as_loc(mod_longident) EQUAL as_loc(mod_ext_longident)
       { Pwith_module ($2, $4) }
   | MODULE as_loc(UIDENT) COLONEQUAL as_loc(mod_ext_longident)
-      { let lident = {$2 with txt=Longident.Lident $2.txt} in
+      { let lident = {$2 with txt=Ppxlib.Longident.Lident $2.txt} in
         Pwith_modsubst (lident, $4) }
   | MODULE TYPE as_loc(mty_longident) EQUAL module_type
       { Ppxlib.Pwith_modtype ($3, $5) }
@@ -4710,7 +4709,7 @@ non_arrowed_core_type:
 ;
 
 %inline first_less_than_type_ident:
-  LESSIDENT { Longident.Lident $1 }
+  LESSIDENT { Ppxlib.Longident.Lident $1 }
 
 (* Since the <xyz token is parsed as a single token we need to catch that case here *)
 %inline first_less_than_type_param:
@@ -4961,32 +4960,32 @@ operator:
 
 val_longident:
   | val_ident                     { Lident $1 }
-  | mod_longident DOT val_ident   { Longident.Ldot($1, $3) }
+  | mod_longident DOT val_ident   { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 constr_longident:
   | mod_longident %prec below_DOT { $1 }
-  | LBRACKET RBRACKET             { Longident.Lident "[]" }
-  | LPAREN RPAREN                 { Longident.Lident "()" }
-  | FALSE                         { Longident.Lident "false" }
-  | TRUE                          { Longident.Lident "true" }
+  | LBRACKET RBRACKET             { Ppxlib.Longident.Lident "[]" }
+  | LPAREN RPAREN                 { Ppxlib.Longident.Lident "()" }
+  | FALSE                         { Ppxlib.Longident.Lident "false" }
+  | TRUE                          { Ppxlib.Longident.Lident "true" }
 ;
 
 label_longident:
-  | LIDENT                        { Longident.Lident $1 }
-  | mod_longident DOT LIDENT      { Longident.Ldot($1, $3) }
+  | LIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_longident DOT LIDENT      { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 type_longident: as_loc(itype_longident) { $1 };
 
 %inline itype_longident:
-  | LIDENT                        { Longident.Lident $1 }
-  | mod_ext_longident DOT LIDENT  { Longident.Ldot($1, $3) }
+  | LIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_ext_longident DOT LIDENT  { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 mod_longident:
-  | UIDENT                        { Longident.Lident $1 }
-  | mod_longident DOT UIDENT      { Longident.Ldot($1, $3) }
+  | UIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_longident DOT UIDENT      { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 /*
@@ -4995,16 +4994,16 @@ mod_less_uident_ext_longident:
 ;
 
 %inline imod_less_uident_ext_longident:
-  | LESSUIDENT                    { Longident.Lident $1 }
-  | mod_ext_longident DOT UIDENT  { Longident.Ldot($1, $3) }
+  | LESSUIDENT                    { Ppxlib.Longident.Lident $1 }
+  | mod_ext_longident DOT UIDENT  { Ppxlib.Longident.Ldot($1, $3) }
 ;
 */
 
 mod_ext_longident: imod_ext_longident { $1 }
 
 %inline imod_ext_longident:
-  | UIDENT                        { Longident.Lident $1 }
-  | mod_ext_longident DOT UIDENT  { Longident.Ldot($1, $3) }
+  | UIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_ext_longident DOT UIDENT  { Ppxlib.Longident.Ldot($1, $3) }
   | mod_ext_apply                 { $1 }
 ;
 
@@ -5015,15 +5014,15 @@ mod_ext_apply:
       let loc = mklocation $startpos $endpos in
       raise_error (Applicative_path loc) loc
     );
-    List.fold_left (fun p1 p2 -> Longident.Lapply (p1, p2)) $1 $2
+    List.fold_left (fun p1 p2 -> Ppxlib.Longident.Lapply (p1, p2)) $1 $2
   }
 ;
 
 mod_ext_lesslongident: imod_ext_lesslongident { $1 }
 
 %inline imod_ext_lesslongident:
-  | LESSUIDENT                        { Longident.Lident $1 }
-  | mod_ext_lesslongident DOT UIDENT  { Longident.Ldot($1, $3) }
+  | LESSUIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_ext_lesslongident DOT UIDENT  { Ppxlib.Longident.Ldot($1, $3) }
   | mod_ext_less_apply                 { $1 }
 ;
 
@@ -5034,7 +5033,7 @@ mod_ext_less_apply:
       let loc = mklocation $startpos $endpos in
       raise_error (Applicative_path loc) loc
     );
-    List.fold_left (fun p1 p2 -> Longident.Lapply (p1, p2)) $1 $2
+    List.fold_left (fun p1 p2 -> Ppxlib.Longident.Lapply (p1, p2)) $1 $2
   }
 ;
 
@@ -5047,17 +5046,17 @@ mod_ext_less_apply:
 
 mty_longident:
   | ident                        { Lident $1 }
-  | mod_ext_longident DOT ident  { Longident.Ldot($1, $3) }
+  | mod_ext_longident DOT ident  { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 clty_longident:
   | LIDENT                       { Lident $1 }
-  | mod_ext_longident DOT LIDENT { Longident.Ldot($1, $3) }
+  | mod_ext_longident DOT LIDENT { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 class_longident:
   | LIDENT                       { Lident $1 }
-  | mod_longident DOT LIDENT     { Longident.Ldot($1, $3) }
+  | mod_longident DOT LIDENT     { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 (* Toplevel directives *)
