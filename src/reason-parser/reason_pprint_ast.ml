@@ -2079,8 +2079,8 @@ let createFormatter () =
 
     let isLongIdentWithDot = function Ldot _ -> true | _ -> false
 
-    (* Js.t -> useful for bucklescript sugar `Js.t({. foo: bar})` -> `{. "foo":
-       bar}` *)
+    (* Js.t -> useful for Melange syntax sugar: `Js.t({. foo: bar})` -> `{.
+       "foo": bar}` *)
     let isJsDotTLongIdent ident =
       match ident with Ldot (Lident "Js", "t") -> true | _ -> false
 
@@ -7180,7 +7180,9 @@ let createFormatter () =
                 let keyWithColon =
                   makeList (maybeQuoteFirstElem li [ atom ":" ])
                 in
-                let value = self#formatBsObjExtensionSugar ~forceBreak:true p in
+                let value =
+                  self#formatMelObjExtensionSugar ~forceBreak:true p
+                in
                 label ~space:true keyWithColon value
               | Pexp_object classStructure, _, _ ->
                 forceBreak := true;
@@ -7371,7 +7373,7 @@ let createFormatter () =
               ~postSpace:true
               (List.map xf l)
 
-        method formatBsObjExtensionSugar
+        method formatMelObjExtensionSugar
           ?(wrap = "", "")
           ?(forceBreak = false)
           payload =
@@ -7402,8 +7404,8 @@ let createFormatter () =
                  improbable but it happens often if you use the sugared version:
                  `[%mel.obj {"foo": bar}]`. We're gonna be lenient here and
                  treat it as if they wanted to just write `{"foo": bar}`.
-                 BuckleScript does the same relaxation when parsing mel.obj *)
-              self#formatBsObjExtensionSugar ~wrap ~forceBreak payload
+                 Melange does the same relaxation when parsing mel.obj *)
+              self#formatMelObjExtensionSugar ~wrap ~forceBreak payload
             | _ ->
               raise
                 (Invalid_argument
@@ -7753,9 +7755,9 @@ let createFormatter () =
         method extension (s, p) =
           match s.txt with
           (* We special case "mel.obj" for now to allow for a nicer interop with
-             * BuckleScript. We might be able to generalize to any kind of
-             record * looking thing with struct keys. *)
-          | "mel.obj" -> self#formatBsObjExtensionSugar p
+           * Melange. We might be able to generalize to any kind of
+           * record looking thing with struct keys. *)
+          | "mel.obj" -> self#formatMelObjExtensionSugar p
           | _ -> self#payload "%" s p
 
         method item_extension (s, e) = self#payload "%%" s e
@@ -9532,7 +9534,7 @@ let createFormatter () =
             self#classStructure ~wrap:(lparen, rparen) cs
           | [ { pexp_attributes = []; pexp_desc = Pexp_extension (s, p); _ } ]
             when s.txt = "mel.obj" ->
-            self#formatBsObjExtensionSugar ~wrap:(lparen, rparen) p
+            self#formatMelObjExtensionSugar ~wrap:(lparen, rparen) p
           | [ ({ pexp_attributes = []; _ } as exp) ]
             when is_simple_list_expr exp ->
             (match view_expr exp with

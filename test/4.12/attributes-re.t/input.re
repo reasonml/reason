@@ -270,7 +270,7 @@ let myFun = fun (X ([@onHello] hello ) | Y ([@onHello]hello )) => hello;
 let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
 */
 
-/* Bucklescript FFI item attributes */
+/* Melange FFI item attributes */
 
 [@bs.val]
 external imul : (int, int) => int = "Math.imul";
