@@ -2184,8 +2184,8 @@ Format wrapping in .re files
             inputEchoRecord(b),
           ) =
       (input: a, input2: b) => (
-    {inputIs: input},
-    {inputIs: input2},
+    { inputIs: input },
+    { inputIs: input2 },
   );
   
   /**
@@ -2205,8 +2205,8 @@ Format wrapping in .re files
           )
         ) =>
     (input: a, input2: b) => (
-      {inputIs: input},
-      {inputIs: input2},
+      { inputIs: input },
+      { inputIs: input2 },
     );
   
   let createTuple_thisFuncShouldWrapCorrectlyNow
@@ -2288,12 +2288,12 @@ Format wrapping in .re files
   
   /* With two args */
   let funcOnSomeRecord =
-      ({firstFieldInRecord, secondField}) =>
+      ({ firstFieldInRecord, secondField }) =>
     firstFieldInRecord + secondField;
   
   let funcOnSomeRecord =
       (
-        {firstFieldInRecord, secondField},
+        { firstFieldInRecord, secondField },
         secondArg,
       ) =>
     firstFieldInRecord + secondField;
@@ -2309,7 +2309,7 @@ Format wrapping in .re files
     x + y;
   
   let funcOnSomeRecord =
-      ({firstFieldInRecord, secondField}) =>
+      ({ firstFieldInRecord, secondField }) =>
     firstFieldInRecord + secondField;
   
   /* With two args */
@@ -2319,7 +2319,7 @@ Format wrapping in .re files
   
   let funcOnSomeRecord =
       (
-        {firstFieldInRecord, secondField},
+        { firstFieldInRecord, secondField },
         secondArg,
       ) =>
     firstFieldInRecord + secondField;
@@ -2913,4 +2913,4 @@ Format wrapping in .re files
     ...x,
   ]);
   
-  let {foo: (_: int)} = 2;
+  let { foo: (_: int) } = 2;

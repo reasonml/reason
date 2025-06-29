@@ -487,7 +487,7 @@ Format modules no semi
     type thing = blahblahblah;
     type state = unit;
     let getInitialState = _ => ();
-    let myValue = {recordField: "hello"};
+    let myValue = { recordField: "hello" };
   });
   
   module type HasInt = {
@@ -546,7 +546,7 @@ Format modules no semi
     let z = M.{};
     let z = M.{};
     let z = {
-      M.{x: 10};
+      M.{ x: 10 };
     };
     let z = {
       M.[foo, bar];
@@ -581,7 +581,7 @@ Format modules no semi
     };
     let z = {
       open! M;
-      {x: 10};
+      { x: 10 };
     };
     let z = {
       open! M;

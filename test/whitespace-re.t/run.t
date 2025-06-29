@@ -421,7 +421,8 @@ Format whitespace in .re files
       | FetchCats => ReasonReact.NoUpdate
       },
   
-    render: ({state: {posts, activeRoute}}) =>
+    render:
+      ({ state: { posts, activeRoute } }) =>
       <div>
         <h1>
           <a href="/">

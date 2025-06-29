@@ -10,9 +10,9 @@ Format objects
     v: int,
   };
   
-  type t = {.. u: int};
+  type t = {.. u: int };
   
-  type t = {.. u: int};
+  type t = {.. u: int };
   
   type t = {..};
   
@@ -79,7 +79,7 @@ Format objects
     ...y,
   };
   
-  type m1 = {. ...M.t};
+  type m1 = {. ...M.t };
   type m2('a) = {
     .
     n: string,

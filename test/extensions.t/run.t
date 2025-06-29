@@ -386,9 +386,9 @@ Format extensions
   
   [%%randomExtension "with string payload"];
   
-  [%%randomExtension {with_obj: 33}];
+  [%%randomExtension { with_obj: 33 }];
   
-  [%randomExtension {with_obj: 33}];
+  [%randomExtension { with_obj: 33 }];
   
   /** with a comment on top */
   [%%raw "console.log(42)"];

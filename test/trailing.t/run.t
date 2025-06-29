@@ -1,6 +1,6 @@
 Format trailing
   $ refmt ./input.re
-  let x = {"obj": obj};
+  let x = { "obj": obj };
   
   let x = {
     "key": key,
@@ -18,15 +18,15 @@ Format trailing
     "keyTwo": keyTwo,
   };
   
-  type t = {. "x": int};
+  type t = {. "x": int };
   
-  type t('a) = {.. "x": int} as 'a;
+  type t('a) = {.. "x": int } as 'a;
   
-  type t = {. "x": (int, int)};
+  type t = {. "x": (int, int) };
   
-  type t('a) = {.. "x": (int, int)} as 'a;
+  type t('a) = {.. "x": (int, int) } as 'a;
   
-  let x = {"obj": 0};
+  let x = { "obj": 0 };
   
   let x = {
     "key": 0,
@@ -44,10 +44,10 @@ Format trailing
     "keyTwo": 1,
   };
   
-  type t = {. "x": int};
+  type t = {. "x": int };
   
-  type t('a) = {.. "x": int} as 'a;
+  type t('a) = {.. "x": int } as 'a;
   
-  type t = {. "x": (int, int)};
+  type t = {. "x": (int, int) };
   
-  type t('a) = {.. "x": (int, int)} as 'a;
+  type t('a) = {.. "x": (int, int) } as 'a;

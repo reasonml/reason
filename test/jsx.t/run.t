@@ -628,12 +628,13 @@ Format JSX
     {"Submit" |> ste}
   </button>;
   
-  <button ?id className={Cn.make({a: b})} onClick>
+  <button
+    ?id className={Cn.make({ a: b })} onClick>
     {"Submit" |> ste}
   </button>;
   
   <button
-    ?id className={Cn.make({"a": b})} onClick>
+    ?id className={Cn.make({ "a": b })} onClick>
     {"Submit" |> ste}
   </button>;
   
