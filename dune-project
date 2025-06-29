@@ -35,8 +35,7 @@
     (>= "4.08")
     (< "5.5")))
   (ocamlfind :build)
-  (cmdliner
-   (= 1.1.0))
+  cmdliner
   (dune-build-info
    (>= 2.9.3))
   (menhir
