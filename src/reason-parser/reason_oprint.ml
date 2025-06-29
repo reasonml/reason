@@ -900,8 +900,8 @@ and print_out_type_decl kwd ppf td =
     print_constraints
 
 and print_out_constr
-    ppf
-    { ocstr_name = name; ocstr_args = tyl; ocstr_return_type = ret_type_opt }
+      ppf
+      { ocstr_name = name; ocstr_args = tyl; ocstr_return_type = ret_type_opt }
   =
   match ret_type_opt with
   | None ->

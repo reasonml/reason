@@ -63,7 +63,7 @@ and config =
   ; (* Break setting that becomes activated if a comment becomes interleaved into
      * this list. Typically, if not specified, the behavior from [break] will be
      * used.
-    *)
+     *)
     wrap : string * string
   ; inline : bool * bool
   ; sep : separator

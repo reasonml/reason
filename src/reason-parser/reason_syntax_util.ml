@@ -1,18 +1,17 @@
 (* Hello! Welcome to the Reason syntax util logic.
 
-  This file's shared between the Reason repo and the BuckleScript repo. In
-  Reason, it's in src/reason-parser. In BuckleScript, it's in
-  jscomp/outcome_printer. We periodically copy this file from Reason (the source
-  of truth) to BuckleScript, then uncomment the #if #else #end cppo macros you
-  see in the file. That's because BuckleScript's on OCaml 4.02 while Reason's on
-  4.04; so the #if macros surround the pieces of code that are different between
-  the two compilers.
+   This file's shared between the Reason repo and the BuckleScript repo. In
+   Reason, it's in src/reason-parser. In BuckleScript, it's in
+   jscomp/outcome_printer. We periodically copy this file from Reason (the
+   source of truth) to BuckleScript, then uncomment the #if #else #end cppo
+   macros you see in the file. That's because BuckleScript's on OCaml 4.02 while
+   Reason's on 4.04; so the #if macros surround the pieces of code that are
+   different between the two compilers.
 
-  When you modify this file, please make sure you're not dragging in too many
-  things. You don't necessarily have to test the file on both Reason and
-  BuckleScript; ping @chenglou and a few others and we'll keep them synced up by
-  patching the right parts, through the power of types(tm)
-*)
+   When you modify this file, please make sure you're not dragging in too many
+   things. You don't necessarily have to test the file on both Reason and
+   BuckleScript; ping @chenglou and a few others and we'll keep them synced up
+   by patching the right parts, through the power of types(tm) *)
 
 open Ppxlib
 
@@ -91,7 +90,7 @@ let reason_to_ml_swap = function
   | "==" -> "="
   (* ===\/ and !==\/ are not representable in OCaml but
    * representable in Reason
-  *)
+   *)
   | "\\!==" -> "!=="
   | "\\===" -> "==="
   | "!=" -> "<>"
@@ -117,7 +116,7 @@ let ml_to_reason_swap = function
   | "=" -> "=="
   (* ===\/ and !==\/ are not representable in OCaml but
    * representable in Reason
-  *)
+   *)
   | "!==" -> "\\!=="
   | "===" -> "\\==="
   | "<>" -> "!="
@@ -151,7 +150,7 @@ let escape_string str =
   Buffer.contents buf
 
 (* the stuff below contains side-effects and are not used by BuckleScript's
-  vendored version of reason_syntax_util.ml. So we can neglect it *)
+   vendored version of reason_syntax_util.ml. So we can neglect it *)
 
 (*
     UTF-8 characters are encoded like this (most editors are UTF-8)
@@ -247,8 +246,9 @@ let replace_string old_str new_str str =
     loop 0 occurrence;
     Buffer.contents buffer
 
-(* This is lifted from https://github.com/bloomberg/bucklescript/blob/14d94bb9c7536b4c5f1208c8e8cc715ca002853d/jscomp/ext/ext_string.ml#L32
-  Thanks @bobzhang and @hhugo! *)
+(* This is lifted from
+   https://github.com/bloomberg/bucklescript/blob/14d94bb9c7536b4c5f1208c8e8cc715ca002853d/jscomp/ext/ext_string.ml#L32
+   Thanks @bobzhang and @hhugo! *)
 let split_by ?(keep_empty = false) is_delim str =
   let len = String.length str in
   let rec loop acc last_pos pos =
@@ -256,9 +256,7 @@ let split_by ?(keep_empty = false) is_delim str =
     then
       if last_pos = 0 && not keep_empty
       then
-        (*
-           {[ split " test_unsafe_obj_ffi_ppx.cmi" ~keep_empty:false ' ']}
-        *)
+        (* {[ split " test_unsafe_obj_ffi_ppx.cmi" ~keep_empty:false ' ']} *)
         acc
       else String.sub str 0 last_pos :: acc
     else if is_delim str.[pos]
@@ -305,10 +303,10 @@ let processLine line =
         (fun c -> c = TrailingCommaMarker.char)
         rightTrimmed
     in
-    (* Now we concat the portions back together without any trailing comma markers
-      - except we detect if there was a final trailing comma marker which we know
-      must be before a newline so we insert a regular comma. This achieves
-      "intelligent" trailing commas. *)
+    (* Now we concat the portions back together without any trailing comma
+       markers - except we detect if there was a final trailing comma marker
+       which we know must be before a newline so we insert a regular comma. This
+       achieves "intelligent" trailing commas. *)
     let hadTrailingCommaMarkerBeforeNewline =
       String.get rightTrimmed (trimmedLen - 1) = TrailingCommaMarker.char
     in
@@ -667,39 +665,36 @@ class escape_stars_slashes_mapper =
     inherit identifier_mapper escape_stars_slashes
   end
 
-(* To be used in parser, transform a token into an ast node with different identifier
-*)
+(* To be used in parser, transform a token into an ast node with different
+   identifier *)
 class reason_to_ml_swap_operator_mapper =
   object
     inherit identifier_mapper reason_to_ml_swap
   end
 
-(* To be used in printer, transform an ast node into a token with different identifier
-*)
+(* To be used in printer, transform an ast node into a token with different
+   identifier *)
 class ml_to_reason_swap_operator_mapper =
   object
     inherit identifier_mapper ml_to_reason_swap
   end
 
-(* attribute_equals tests an attribute is txt
-*)
+(* attribute_equals tests an attribute is txt *)
 let attribute_equals to_compare = function
   | { attr_name = { txt; _ }; _ } -> txt = to_compare
 
-(* attribute_exists tests if an attribute exists in a list
-*)
+(* attribute_exists tests if an attribute exists in a list *)
 let attribute_exists txt attributes =
   List.exists (attribute_equals txt) attributes
 
 (* conflicted_attributes tests if both attribute1 and attribute2
  * exist
-*)
+ *)
 let attributes_conflicted attribute1 attribute2 attributes =
   attribute_exists attribute1 attributes
   && attribute_exists attribute2 attributes
 
-(* normalized_attributes removes attribute from a list of attributes
-*)
+(* normalized_attributes removes attribute from a list of attributes *)
 let normalized_attributes attribute attributes =
   List.filter (fun x -> not (attribute_equals attribute x)) attributes
 
