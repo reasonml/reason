@@ -1,9 +1,3 @@
-(rule
- (targets ocamlmerlin_reason.ml)
- (deps ocamlmerlin_reason.cppo.ml)
- (action
-  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
-
 (executable
  (name ocamlmerlin_reason)
  (public_name ocamlmerlin-reason)

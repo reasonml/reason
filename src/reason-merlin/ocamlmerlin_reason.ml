@@ -1,8 +1,7 @@
 open Reason
 open Extend_protocol.Reader
 
-let () =
-  Reason_config.recoverable := true
+let () = Reason_config.recoverable := true
 
 module Reason_reader = struct
   type t = buffer
@@ -12,7 +11,8 @@ module Reason_reader = struct
   let structure str =
     let str =
       str
-      |> Reason_syntax_util.(apply_mapper_to_structure remove_stylistic_attrs_mapper)
+      |> Reason_syntax_util.(
+           apply_mapper_to_structure remove_stylistic_attrs_mapper)
       |> Reason_syntax_util.(apply_mapper_to_structure backport_letopt_mapper)
     in
     Structure (Reason_toolchain.To_current.copy_structure str)
@@ -20,25 +20,25 @@ module Reason_reader = struct
   let signature sg =
     let sg =
       sg
-      |> Reason_syntax_util.(apply_mapper_to_signature remove_stylistic_attrs_mapper)
+      |> Reason_syntax_util.(
+           apply_mapper_to_signature remove_stylistic_attrs_mapper)
       |> Reason_syntax_util.(apply_mapper_to_signature backport_letopt_mapper)
     in
     Signature (Reason_toolchain.To_current.copy_signature sg)
 
-  let parse {text; path; _} =
+  let parse { text; path; _ } =
     let l = String.length path in
     let buf = Lexing.from_string text in
     Location.init buf (Filename.basename path);
-    if l > 0 && path.[l - 1] = 'i' then
-      signature (Reason_toolchain.RE.interface buf)
-    else
-      structure (Reason_toolchain.RE.implementation buf)
+    if l > 0 && path.[l - 1] = 'i'
+    then signature (Reason_toolchain.RE.interface buf)
+    else structure (Reason_toolchain.RE.implementation buf)
 
   let for_completion t pos =
     let pos' = !Reason_toolchain_conf.insert_completion_ident in
     Reason_toolchain_conf.insert_completion_ident := Some pos;
     Misc.try_finally
-      (fun () -> ({complete_labels = true}, parse t))
+      (fun () -> { complete_labels = true }, parse t)
       ~always:(fun () -> Reason_toolchain_conf.insert_completion_ident := pos')
 
   let parse_line _ _ line =
@@ -48,8 +48,8 @@ module Reason_reader = struct
   let ident_at _ _ = []
 
   let formatter =
-     let fmt = lazy (Reason_pprint_ast.createFormatter ()) in
-     fun () -> Lazy.force fmt
+    let fmt = lazy (Reason_pprint_ast.createFormatter ()) in
+    fun () -> Lazy.force fmt
 
   let pretty_print ppf =
     let open Reason_toolchain in
@@ -73,10 +73,8 @@ module Reason_reader = struct
     let open Reason_toolchain in
     let open Reason_oprint in
     function
-    | Out_value x ->
-      print_out_value ppf (From_current.copy_out_value x)
-    | Out_type x ->
-      print_out_type ppf (From_current.copy_out_type x)
+    | Out_value x -> print_out_value ppf (From_current.copy_out_value x)
+    | Out_type x -> print_out_type ppf (From_current.copy_out_type x)
     | Out_class_type x ->
       print_out_class_type ppf (From_current.copy_out_class_type x)
     | Out_module_type x ->
@@ -87,19 +85,17 @@ module Reason_reader = struct
       print_out_signature ppf (List.map From_current.copy_out_sig_item x)
     | Out_type_extension x ->
       print_out_type_extension ppf (From_current.copy_out_type_extension x)
-    | Out_phrase x ->
-      print_out_phrase ppf (From_current.copy_out_phrase x)
+    | Out_phrase x -> print_out_phrase ppf (From_current.copy_out_phrase x)
 end
-
-
 
 let () =
   let open Extend_main in
-  let _ = match Sys.win32 with
-  | true ->
-    set_binary_mode_in stdin true;
-    set_binary_mode_out stdout true;
-  | _ -> ()
+  let _ =
+    match Sys.win32 with
+    | true ->
+      set_binary_mode_in stdin true;
+      set_binary_mode_out stdout true
+    | _ -> ()
   in
   extension_main
     ~reader:(Reader.make_v0 (module Reason_reader : V0))
