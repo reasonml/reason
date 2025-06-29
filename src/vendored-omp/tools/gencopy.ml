@@ -9,6 +9,9 @@
    version of migration code between two versions of the same type,
    to be then patched manually to perform actual migration. *)
 
+let parse_longident =
+  Longident.parse [@@ocaml.warning "-3"]
+
 let drop_prefix ~prefix s =
   let plen = String.length prefix in
   if plen > String.length s then None
@@ -46,7 +49,7 @@ module Main : sig end = struct
     | [ x ] -> Some x
     | l -> Some (tup ?loc ?attrs:None (List.map (fun x -> None, x) l))
 
-  let lid ?(loc = !default_loc) s = mkloc (Longident.parse s) loc
+  let lid ?(loc = !default_loc) s = mkloc (parse_longident s) loc
 
   let constr ?loc ?attrs s args =
     Exp.construct ?loc ?attrs (lid ?loc s) (may_tuple ?loc Exp.tuple args)
@@ -107,7 +110,7 @@ module Main : sig end = struct
     | _ :: xs -> clean xs
 
   let print_fun s =
-    let lid = Longident.parse s in
+    let lid = parse_longident s in
     let s = Longident.flatten lid |> clean in
     String.concat "_" ("copy" :: s)
 
@@ -118,7 +121,7 @@ module Main : sig end = struct
   let rec gen ty =
     if Hashtbl.mem printed ty then ()
     else
-      let tylid = Longident.parse ty in
+      let tylid = parse_longident ty in
       let td =
         try snd (Env.lookup_type tylid env ~loc:Location.none)
         with Not_found ->
@@ -327,10 +330,10 @@ module Main : sig end = struct
       [ Str.module_
           (Mb.mk
              (mkloc (Some "From") Location.none)
-             (Mod.ident (mkloc (Longident.parse from_) Location.none)));
+             (Mod.ident (mkloc (parse_longident from_) Location.none)));
         Str.module_
           (Mb.mk (mkloc (Some "To") Location.none)
-             (Mod.ident (mkloc (Longident.parse to_) Location.none)));
+             (Mod.ident (mkloc (parse_longident to_) Location.none)));
         Str.value Recursive !meths
       ]
     in
