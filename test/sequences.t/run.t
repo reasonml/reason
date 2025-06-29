@@ -57,7 +57,7 @@ Print the formatted file
   };
   
   type myRecord = {number: int};
-  let x = {number: 20};
+  let x = { number: 20 };
   let number = 20;
   /*
    * The (mild) consequence of not requiring a final semi in a sequence,

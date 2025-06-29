@@ -14,7 +14,7 @@ Format OCaml identifiers file
   module R = {
     type r = {mutable method_: int};
   
-    let foo = {method_: 4};
+    let foo = { method_: 4 };
   
     let x = foo.method_;
   
@@ -22,12 +22,12 @@ Format OCaml identifiers file
   
     let y =
       switch (foo) {
-      | {method_: method} => method
+      | { method_: method } => method
       };
   
     let z =
       switch (foo) {
-      | {method_: 12} => 21
+      | { method_: 12 } => 21
       };
   };
   
@@ -100,7 +100,7 @@ Format OCaml identifiers file
   
   let x = f(~method_="GET");
   
-  type marshalFields = {. "switch": string};
+  type marshalFields = {. "switch": string };
   
   let testMarshalFields: marshalFields = {
     "switch": "switch",
