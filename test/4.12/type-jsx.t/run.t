@@ -129,8 +129,8 @@ Print the formatted file
     let createElement =
         (~default=Some("foo"), ~children, ()) => {
       switch (default) {
-      | Some(a) => {displayName: a}
-      | None => {displayName: "nope"}
+      | Some(a) => { displayName: a }
+      | None => { displayName: "nope" }
       };
     };
   };
