@@ -196,94 +196,102 @@ end = struct
 
   module C = Codesharing (G) (S) (R)
 
-  let emit_recoveries ppf =
-    let all_cases =
-      Lr1.fold
-        (fun st acc ->
-           try
-             let { R.cases; _ } = R.recover st in
-             let cases =
-               List.map
-                 (fun (st', items) ->
-                    ( Utils.list_last items
-                    , match st' with None -> -1 | Some st' -> Lr1.to_int st' ))
-                 cases
-             in
-             let cases =
-               match Utils.group_assoc cases with
-               | [] -> `Nothing
-               | [ (instr, _) ] -> `One instr
-               | xs -> `Select xs
-             in
-             (cases, Lr1.to_int st) :: acc
-           with
-           | _ -> acc)
-        []
+  let emit_recoveries =
+    let rec list_last = function
+      | [ x ] -> x
+      | _ :: xs -> list_last xs
+      | [] -> invalid_arg "list_last"
     in
-    let all_cases = Utils.group_assoc all_cases in
-    let all_items =
-      let items_in_case (case, _states) =
-        match case with
-        | `Nothing -> []
-        | `One item -> [ item ]
-        | `Select items -> List.map fst items
-      in
-      List.flatten (List.map items_in_case all_cases)
-    in
-    let globals, get_instr = C.compile all_items in
-    let open Format in
-    fprintf ppf "let recover =\n";
-    let emit_instr ppf = function
-      | C.IAbort -> fprintf ppf "Abort"
-      | C.IReduce prod -> fprintf ppf "R %d" (Production.to_int prod)
-      | C.IShift (T t) -> fprintf ppf "S (T T_%s)" (Terminal.name t)
-      | C.IShift (N n) -> fprintf ppf "S (N N_%s)" (Nonterminal.mangled_name n)
-      | C.IRef r -> fprintf ppf "r%d" r
-    in
-    let emit_instrs ppf = Utils.pp_list emit_instr ppf in
-    let emit_shared index instrs =
-      fprintf ppf "  let r%d = Sub %a in\n" index emit_instrs instrs
-    in
-    List.iteri emit_shared globals;
-    let emit_item ppf item = emit_instrs ppf (get_instr item) in
-    fprintf ppf "  function\n";
-    List.iter
-      (fun (cases, states) ->
-         fprintf ppf "  ";
-         List.iter (fprintf ppf "| %d ") states;
-         fprintf ppf "-> ";
-         match cases with
-         | `Nothing -> fprintf ppf "Nothing\n"
-         | `One item -> fprintf ppf "One %a\n" emit_item item
-         | `Select xs ->
-           fprintf ppf "Select (function\n";
-           if safe
-           then (
-             List.iter
-               (fun (item, cases) ->
-                  fprintf ppf "    ";
-                  List.iter (fprintf ppf "| %d ") cases;
-                  fprintf ppf "-> %a\n" emit_item item)
-               xs;
-             fprintf ppf "    | _ -> raise Not_found)\n")
-           else (
-             match
-               List.sort
-                 (fun (_, a) (_, b) -> compare (List.length b) (List.length a))
-                 xs
+    fun ppf ->
+      let all_cases =
+        Lr1.fold
+          (fun st acc ->
+             try
+               let { R.cases; _ } = R.recover st in
+               let cases =
+                 List.map
+                   (fun (st', items) ->
+                      ( list_last items
+                      , match st' with None -> -1 | Some st' -> Lr1.to_int st' ))
+                   cases
+               in
+               let cases =
+                 match Synthesis.group_assoc cases with
+                 | [] -> `Nothing
+                 | [ (instr, _) ] -> `One instr
+                 | xs -> `Select xs
+               in
+               (cases, Lr1.to_int st) :: acc
              with
-             | (item, _) :: xs ->
+             | _ -> acc)
+          []
+      in
+      let all_cases = Synthesis.group_assoc all_cases in
+      let all_items =
+        let items_in_case (case, _states) =
+          match case with
+          | `Nothing -> []
+          | `One item -> [ item ]
+          | `Select items -> List.map fst items
+        in
+        List.flatten (List.map items_in_case all_cases)
+      in
+      let globals, get_instr = C.compile all_items in
+      let open Format in
+      fprintf ppf "let recover =\n";
+      let emit_instr ppf = function
+        | C.IAbort -> fprintf ppf "Abort"
+        | C.IReduce prod -> fprintf ppf "R %d" (Production.to_int prod)
+        | C.IShift (T t) -> fprintf ppf "S (T T_%s)" (Terminal.name t)
+        | C.IShift (N n) ->
+          fprintf ppf "S (N N_%s)" (Nonterminal.mangled_name n)
+        | C.IRef r -> fprintf ppf "r%d" r
+      in
+      let emit_instrs ppf = Synthesis.pp_list emit_instr ppf in
+      let emit_shared index instrs =
+        fprintf ppf "  let r%d = Sub %a in\n" index emit_instrs instrs
+      in
+      List.iteri emit_shared globals;
+      let emit_item ppf item = emit_instrs ppf (get_instr item) in
+      fprintf ppf "  function\n";
+      List.iter
+        (fun (cases, states) ->
+           fprintf ppf "  ";
+           List.iter (fprintf ppf "| %d ") states;
+           fprintf ppf "-> ";
+           match cases with
+           | `Nothing -> fprintf ppf "Nothing\n"
+           | `One item -> fprintf ppf "One %a\n" emit_item item
+           | `Select xs ->
+             fprintf ppf "Select (function\n";
+             if safe
+             then (
                List.iter
                  (fun (item, cases) ->
                     fprintf ppf "    ";
                     List.iter (fprintf ppf "| %d ") cases;
                     fprintf ppf "-> %a\n" emit_item item)
                  xs;
-               fprintf ppf "    | _ -> %a)\n" emit_item item
-             | [] -> assert false))
-      all_cases;
+               fprintf ppf "    | _ -> raise Not_found)\n")
+             else (
+               match
+                 List.sort
+                   (fun (_, a) (_, b) ->
+                      compare (List.length b) (List.length a))
+                   xs
+               with
+               | (item, _) :: xs ->
+                 List.iter
+                   (fun (item, cases) ->
+                      fprintf ppf "    ";
+                      List.iter (fprintf ppf "| %d ") cases;
+                      fprintf ppf "-> %a\n" emit_item item)
+                   xs;
+                 fprintf ppf "    | _ -> %a)\n" emit_item item
+               | [] -> assert false))
+        all_cases;
 
-    fprintf ppf "  | _ -> raise Not_found\n"
+      fprintf ppf "  | _ -> raise Not_found\n"
 
   let emit_token_of_terminal ppf =
     let case t =

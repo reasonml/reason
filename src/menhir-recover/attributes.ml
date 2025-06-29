@@ -1,5 +1,3 @@
-module Cost = Utils.Cost
-
 (* Attributes guide the recovery .
 
    Some information can be passed to Menhir-recover via attributes. These are
