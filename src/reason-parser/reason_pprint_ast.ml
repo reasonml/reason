@@ -33,7 +33,7 @@
 
 (* TODO more fine-grained precedence pretty-printing *)
 
-module Easy_format = Vendored_easy_format
+module Easy_format = Reason_easy_format
 open Ppxlib
 open Easy_format
 module Comment = Reason_comment

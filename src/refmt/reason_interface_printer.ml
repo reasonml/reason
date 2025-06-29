@@ -1,3 +1,4 @@
+open Reason
 open Ppxlib
 
 type t = Parsetree.signature

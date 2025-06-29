@@ -49,7 +49,6 @@
  ; requires you to have run $ opam install bisect_ppx
  ;  (preprocess (pps (bisect_ppx)))
  (public_name reason)
- (wrapped false)
  (flags :standard -w -67 -safe-string)
  (modules
   ocaml_util

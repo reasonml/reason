@@ -2,7 +2,8 @@
 
 - Support OCaml 5.4 (@anmonteiro,
   [#2844](https://github.com/reasonml/reason/pull/2844))
-
+- build: use `(wrapped true)` for internal libraries (@anmonteiro,
+  [#2842](https://github.com/reasonml/reason/pull/2842))
 
 ## 3.16.0
 
