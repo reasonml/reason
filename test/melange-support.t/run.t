@@ -1,4 +1,4 @@
-Format bucklescript
+Format Melange-specific support
   $ refmt ./input.re
   bla #= 10;
   

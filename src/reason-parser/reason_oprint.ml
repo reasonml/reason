@@ -68,19 +68,6 @@
    The rest of this file's logic is just pattern-matching on these tree node
    variants & using Format to pretty-print them nicely. *)
 
-(* This file's shared between the Reason repo and the BuckleScript repo. In
-   Reason, it's in src/reason-parser/. In BuckleScript, it's in
-   jscomp/outcome_printer/. We periodically copy this file from Reason (the
-   source of truth) to BuckleScript, then uncomment the #if #else #end cppo
-   macros you see in the file. That's because BuckleScript's on OCaml 4.02 while
-   Reason's on 4.04; so the #if macros surround the pieces of code that are
-   different between the two compilers.
-
-   When you modify this file, please make sure you're not dragging in too many
-   things. You don't necessarily have to test the file on both Reason and
-   BuckleScript; ping @chenglou and a few others and we'll keep them synced up
-   by patching the right parts, through the power of types(tm) *)
-
 open Format
 module Reason_ast = Reason_omp.Ast_414
 module Outcometree = Reason_ast.Outcometree
@@ -321,7 +308,7 @@ and print_simple_out_type ppf = function
       id
       print_typargs
       tyl
-  (* BuckleScript-specific external. See the manual for the usage of [@bs]. This
+  (* Melange-specific external. See the manual for the usage of [@bs]. This
      [@bs] is processed into a type that looks like `Js.Internal.fn ...`. This
      leaks during error reporting, where the type is printed. Here, we print it
      back from `Js.Internal.fn([ `Arity_2 ('c, 'd) ], 'e)` into `('a => 'b =>
@@ -365,7 +352,7 @@ and print_simple_out_type ppf = function
           (print_out_type_1 ~uncurried:false)
           res
       | _ -> assert false))
-  (* also BuckleScript-specific. See the comment in the previous pattern *)
+  (* also Melange-specific. See the comment in the previous pattern *)
   | Otyp_constr
       ( (Oide_dot
            ( ( Oide_dot (Oide_ident { printed_name = "Js" }, "Internal")
@@ -394,7 +381,7 @@ and print_simple_out_type ppf = function
         "@[<0>(%a)@ [@mel.this]@]"
         (print_out_type_1 ~uncurried:false)
         res)
-  (* also BuckleScript-specific. Turns Js.t({. foo: bar}) into {. "foo": bar} *)
+  (* also Melange-specific. Turns Js.t({. foo: bar}) into {. "foo": bar} *)
   | Otyp_constr
       ( Oide_dot (Oide_ident { printed_name = "Js" }, "t")
       , [ Otyp_object (fields, rest) ] ) ->
@@ -784,18 +771,18 @@ and print_out_sig_item ppf = function
       List.iter (fun a -> fprintf ppf "[@@%s]" a.oattr_name)
     in
     let keyword = if oval_prims = [] then "let" else "external" in
-    let hackyBucklescriptExternalAnnotation, rhsValues =
+    let hackyMelangeExternalAnnotation, rhsValues =
       List.partition
         (fun item ->
-           (* "BS:" is considered as a bucklescript external annotation,
+           (* "MEL:" is considered as a Melange external annotation,
               `[@mel.module]` and the sort.
 
               "What's going on here? Isn't [@mel.foo] supposed to be an
               attribute in oval_attributes?" Usually yes. But here, we're
-              intercepting things a little too late. BuckleScript already
-              finished its pre/post-processing work before we get to print
-              anything. The original attribute is already gone, replaced by a
-              "BS:asdfasdfasd" thing here. *)
+              intercepting things a little too late. Melange already finished
+              its pre/post-processing work before we get to print anything. The
+              original attribute is already gone, replaced by a "BS:asdfasdfasd"
+              thing here. *)
            String.length item >= 4
            && item.[0] = 'M'
            && item.[1] = 'E'
@@ -813,7 +800,7 @@ and print_out_sig_item ppf = function
       ppf
       "@[<2>%a%a%s %a:@ %a%a@]"
       (fun ppf -> List.iter (fun _ -> fprintf ppf "[@@mel...]@ "))
-      hackyBucklescriptExternalAnnotation
+      hackyMelangeExternalAnnotation
       printAttributes
       oval_attributes
       keyword
