@@ -110,8 +110,6 @@ The Reason lexer & parser use [Menhir](http://gallium.inria.fr/~fpottier/menhir/
 
 - `src/reason-parser/reason_config.ml`: global configuration that says whether the parser should run in "recoverable" mode. Merlin has a neat feature which lets it continue diagnosing e.g. type errors even when the file is syntactically invalid (at the expense of the accuracy of those type error reports' quality). Searching `reason_config` in the codebase will show you how this is used.
 
-- `src/refmttype/reason_format_type.ml`, `reason_type_of_ocaml_type.ml`: again, see `pkg/build.ml`. These produce the `refmttype` binary, used by [BetterErrors](refmttype) to output compiler errors in Reason syntax rather than the OCaml one.
-
 - `src/reason-parser/reason_parser.messages`: auto-generated from parser changes. Menhir generates parsing code that assigns each syntax error to a code, and lets us customize these errors. Syntax errors can be very precisely pinpointed and explained this way.
 
 - `src/reason-parser/reason_toolchain.ml`, `src/reason-parser/refmt_impl.ml`: the entry point that calls the parsing logic.

@@ -4,6 +4,8 @@
   [#2844](https://github.com/reasonml/reason/pull/2844))
 - build: use `(wrapped true)` for internal libraries (@anmonteiro,
   [#2842](https://github.com/reasonml/reason/pull/2842))
+- BREAKING: remove `refmttype` binary (@anmonteiro,
+  [#2855](https://github.com/reasonml/reason/pull/2855))
 
 ## 3.16.0
 
