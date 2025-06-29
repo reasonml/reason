@@ -6749,7 +6749,13 @@ let createFormatter () =
           in
           let left, right = wrap in
           let wrap = left ^ "{", "}" ^ right in
-          makeList ~wrap ~break:IfNeed ~sep:commaTrail ~postSpace:true rows
+          makeList
+            ~wrap
+            ~break:IfNeed
+            ~sep:commaTrail
+            ~pad:(true, true)
+            ~postSpace:true
+            rows
 
         method patternFunction ?extension loc l =
           let estimatedFunLocation =
@@ -7266,6 +7272,7 @@ let createFormatter () =
             ~wrap:(lwrap ^ "{", "}" ^ rwrap)
             ~break
             ~sep:commaTrail
+            ~pad:(true, true)
             ~postSpace:true
             (groupAndPrint ~xf:fst ~getLoc:snd ~comments:self#comments allRows)
 
@@ -7326,15 +7333,17 @@ let createFormatter () =
           in
           (* if an object has more than 2 rows, always break for readability *)
           let rows_layout =
-            let break =
+            let break, pad_right =
               match rows with
-              | [] | [ _ ] -> Layout.IfNeed
-              | _ -> Layout.Always_rec
+              | [] -> Layout.IfNeed, false
+              | [ _ ] -> Layout.IfNeed, true
+              | _ -> Layout.Always_rec, true
             in
             makeList
               ~break
               ~inline:(true, true)
               ~postSpace:true
+              ~pad:(false, pad_right)
               ~sep:commaTrail
               rows
           in
