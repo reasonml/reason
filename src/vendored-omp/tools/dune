@@ -2,15 +2,13 @@
  (name add_special_comments)
  (modules add_special_comments)
  (libraries compiler-libs.common compiler-libs.bytecomp)
- (flags :standard -w -3)
  (enabled_if
   (>= %{ocaml_version} 4.13)))
 
 (executables
  (names pp)
  (modules pp pp_rewrite)
- (libraries compiler-libs.common compiler-libs.bytecomp)
- (flags :standard -w -3))
+ (libraries compiler-libs.common compiler-libs.bytecomp))
 
 (ocamllex pp_rewrite)
 
@@ -19,5 +17,4 @@
  (enabled_if
   (>= %{ocaml_version} 5.4))
  (modules gencopy)
- (libraries compiler-libs.common compiler-libs.bytecomp)
- (flags :standard -w -3))
+ (libraries compiler-libs.common compiler-libs.bytecomp))
