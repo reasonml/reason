@@ -60,7 +60,7 @@ jobs:
 
       - name: Pin utop for OCaml 5.4
         if: ${{ matrix.setup.ocaml-compiler == 'ocaml-base-compiler.5.4.0~alpha1' }}
-        run: opam pin add utop git+https://github.com/anmonteiro/utop.git#anmonteiro/5.4-support
+        run: opam pin add utop --dev-repo
       - name: Install dependencies
         run: opam install . --deps-only
 
