@@ -8497,13 +8497,16 @@ let createFormatter () =
 
         method classStructure ?(forceBreak = false) ?(wrap = "", "") cs =
           let left, right = wrap in
+          let fields_layout = self#class_self_pattern_and_structure cs in
+          let pad = match fields_layout with [] -> false | _ :: _ -> true in
           makeList
             ~sep:(Layout.Sep ";")
             ~wrap:(left ^ "{", "}" ^ right)
             ~break:(if forceBreak then Layout.Always else Layout.IfNeed)
             ~postSpace:true
+            ~pad:(pad, pad)
             ~inline:(true, false)
-            (self#class_self_pattern_and_structure cs)
+            fields_layout
 
         method signature signatureItems =
           match signatureItems with

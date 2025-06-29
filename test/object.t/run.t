@@ -50,7 +50,7 @@ Format objects
     b: int,
   };
   
-  let obj = {as _; [@foo] val a = 1};
+  let obj = { as _; [@foo] val a = 1 };
   
   /* Oinherit (https://github.com/ocaml/ocaml/pull/1118) */
   type t1 = {
