@@ -15,8 +15,7 @@
 
 (authors "Jordan Walke <jordojw@gmail.com>")
 
-(maintainers
- "Jordan Walke <jordojw@gmail.com>"
+(maintainers "Jordan Walke <jordojw@gmail.com>"
  "Antonio Nuno Monteiro <anmonteiro@gmail.com>")
 
 (homepage "https://reasonml.github.io/")
@@ -36,6 +35,8 @@
     (>= "4.08")
     (< "5.5")))
   (ocamlfind :build)
+  (cmdliner
+   (= 1.1.0))
   (dune-build-info
    (>= 2.9.3))
   (menhir

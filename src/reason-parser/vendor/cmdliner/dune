@@ -1,4 +1,0 @@
-(library
- (name vendored_cmdliner)
- (public_name reason.cmdliner)
- (flags :standard -w -27-32-35-50))
