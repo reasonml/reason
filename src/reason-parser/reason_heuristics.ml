@@ -13,8 +13,7 @@ let is_punned_labelled_expression e lbl =
    have a hook to change printing when a list breaks * * we check if all
    arguments aside from the final one are either strings or identifiers, * where
    the sum of the string contents and identifier names are less than the print
-   width
-*)
+   width *)
 let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
   let funLen =
     match funExpr.pexp_desc with
@@ -63,16 +62,14 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
   in
   aux (printWidth - funLen) args
 
-(*
-   * Whether or not an identiier is small enough to justify omitting the *
+(* * Whether or not an identiier is small enough to justify omitting the *
    trailing comma for single identifier patterns. For single identifier *
    patterns, usually the identifier is not "far right" in the document, and * is
    one of the last things to require breaking. We can omit the trailing comma *
    in these cases because it likely will never render anyways and therefore the
    * space taken up by the trailing comma doesn't disrupt wrapping length
    calculations. * * For example, the `X` hardly ever benefits from a trailing
-   comma. * | X(y) =>
-*)
+   comma. * | X(y) => *)
 let singleTokenPatternOmmitTrail txt = String.length txt < 4
 
 (* Indicates whether an expression can be printed with the uncurried * dot
@@ -80,8 +77,7 @@ let singleTokenPatternOmmitTrail txt = String.length txt < 4
    makes sense in the context of a Pexp_apply or Pexp_fun * * Examples: * [@bs]
    add(2, 3); -> add(. 2, 3); (* Pexp_apply *) * setTimeout([@bs] () =>
    Js.log("hola"), 1000); (* Pexp_fun *) * -> setTimeout((.) => Js.log("hola"),
-   1000);
-*)
+   1000); *)
 let bsExprCanBeUncurried expr =
   match Parsetree.(expr.pexp_desc) with
   | Pexp_function _ | Pexp_apply _ -> true

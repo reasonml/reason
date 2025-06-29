@@ -171,9 +171,10 @@ let token state =
   let token_start = start_p.Lexing.pos_cnum in
   let token_stop = curr_p.Lexing.pos_cnum in
   state.last_cnum <- token_stop;
-  if state.completion_ident_offset > min_int
-     && space_start <= state.completion_ident_offset
-     && token_stop >= state.completion_ident_offset
+  if
+    state.completion_ident_offset > min_int
+    && space_start <= state.completion_ident_offset
+    && token_stop >= state.completion_ident_offset
   then (
     match token' with
     | (LIDENT _ | UIDENT _) when token_start <= state.completion_ident_offset ->

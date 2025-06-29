@@ -244,8 +244,9 @@ module Recover_attributes (G : GRAMMAR) : ATTRIBUTES with module G = G = struct
 
   let cost_of_symbol =
     let measure ~has_default prj attrs =
-      if List.exists (Attribute.has_label "recover.expr") (prj attrs)
-         || has_default
+      if
+        List.exists (Attribute.has_label "recover.expr") (prj attrs)
+        || has_default
       then cost_of_attributes prj attrs
       else Cost.infinite
     in

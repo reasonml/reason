@@ -50,7 +50,7 @@ let wrap t =
      *       /***
      *        * bla */
      *  I think this case should be removed.
-    *)
+     *)
     "/**" ^ txt ^ "*/"
   | txt -> "/*" ^ txt ^ "*/"
 
