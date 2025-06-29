@@ -49,7 +49,6 @@
  ; requires you to have run $ opam install bisect_ppx
  ;  (preprocess (pps (bisect_ppx)))
  (public_name reason)
- (flags :standard -w -67 -safe-string)
  (modules
   ocaml_util
   reason_syntax_util
@@ -70,6 +69,7 @@
   reason_single_parser
   reason_multi_parser
   merlin_recovery
+  merlin_recovery_intf
   reason_recover_parser
   reason_declarative_lexer
   reason_lexer
