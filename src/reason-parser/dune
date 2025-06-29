@@ -77,7 +77,6 @@
   reason_parser_explain_raw
   reason_parser_explain
   reason_parser_recover)
- (modules_without_implementation reason_parser_def)
  (libraries
   reason.ocaml-migrate-parsetree
   menhirLib

@@ -5,8 +5,8 @@
  (enabled_if
   (>= %{ocaml_version} 4.13)))
 
-(executables
- (names pp)
+(executable
+ (name pp)
  (modules pp pp_rewrite)
  (libraries compiler-libs.common compiler-libs.bytecomp))
 
