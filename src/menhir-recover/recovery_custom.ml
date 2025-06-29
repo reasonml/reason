@@ -28,7 +28,6 @@ module Recover
     (S : Synthesis.SYNTHESIZER with module G := G) :
   RECOVERY with module G := G = struct
   open G
-  open Utils
 
   type item = lr1 * production * int
 

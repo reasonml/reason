@@ -1,6 +1,22 @@
 open MenhirSdk.Cmly_api
 open Attributes
-open Utils
+
+let group_assoc l =
+  let cons k v acc = (k, List.rev v) :: acc in
+  let rec aux k v vs acc = function
+    | [] -> List.rev (cons k (v :: vs) acc)
+    | (k', v') :: xs when compare k k' = 0 ->
+      if compare v v' = 0 then aux k v vs acc xs else aux k v' (v :: vs) acc xs
+    | (k', v') :: xs -> aux k' v' [] (cons k (v :: vs) acc) xs
+  in
+  match List.sort compare l with [] -> [] | (k, v) :: xs -> aux k v [] [] xs
+
+let pp_list f ppf = function
+  | [] -> Format.fprintf ppf "[]"
+  | x :: xs ->
+    Format.fprintf ppf "[%a" f x;
+    List.iter (Format.fprintf ppf "; %a" f) xs;
+    Format.fprintf ppf "]"
 
 (** Specification of synthesized tactics *)
 
@@ -134,6 +150,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
       productions that can reduce to `nt` and starts from state `st`. The
       constant is the same for all branches, $\kappa_\{i,j\} = \kappa_i$, *)
 
+  let const c _ = c
   let cost_of_prod p = Cost.add (Cost.of_int 1) (A.cost_of_prod p)
   let cost_of_symbol s = Cost.add (Cost.of_int 1) (A.cost_of_symbol s)
   let penalty_of_item i = A.penalty_of_item i
@@ -264,7 +281,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
       | Shift (T t) -> fprintf ppf "Shift (T %s)" (Terminal.name t)
       | Shift (N n) -> fprintf ppf "Shift (N %s)" (Nonterminal.mangled_name n)
       | Seq actions -> fprintf ppf "Seq %a" print_actions actions
-    and print_actions ppf = Utils.pp_list print_action ppf in
+    and print_actions ppf = pp_list print_action ppf in
     List.iter
       (fun (item, states) ->
          fprintf
@@ -277,9 +294,10 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
            (fun ((cost, actions), states) ->
               fprintf
                 ppf
-                "at cost %d from states %a:\n%a\n\n"
-                (cost : Cost.t :> int)
-                (Utils.pp_list (fun ppf st -> fprintf ppf "#%d" (Lr1.to_int st)))
+                "at cost %a from states %a:\n%a\n\n"
+                Cost.pp
+                cost
+                (pp_list (fun ppf st -> fprintf ppf "#%d" (Lr1.to_int st)))
                 states
                 print_actions
                 actions)
