@@ -1,7 +1,5 @@
-open MenhirSdk.Cmly_api
-
 module type RECOVERY = sig
-  module G : GRAMMAR
+  module G : MenhirSdk.Cmly_api.GRAMMAR
 
   type item = G.lr1 * G.production * int
 
@@ -23,8 +21,3 @@ module type RECOVERY = sig
 
   val recover : G.lr1 -> recovery
 end
-
-module type RECOVER = functor
-    (G : GRAMMAR)
-    (S : Synthesis.SYNTHESIZER with module G := G)
-    -> RECOVERY with module G := G

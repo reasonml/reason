@@ -1,8 +1,5 @@
-open MenhirSdk.Cmly_api
-open Synthesis
-
 module type RECOVERY = sig
-  module G : GRAMMAR
+  module G : MenhirSdk.Cmly_api.GRAMMAR
 
   type item = G.lr1 * G.production * int
 
@@ -26,7 +23,9 @@ module type RECOVERY = sig
   val report : Format.formatter -> unit
 end
 
-module Recover (G : GRAMMAR) (S : SYNTHESIZER with module G := G) :
+module Recover
+    (G : MenhirSdk.Cmly_api.GRAMMAR)
+    (S : Synthesis.SYNTHESIZER with module G := G) :
   RECOVERY with module G := G = struct
   open G
   open Utils
