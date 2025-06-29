@@ -9,7 +9,7 @@
  (public_name reason.refmt-lib)
  (name refmt_lib)
  (modules :standard \ refmt)
- (libraries reason reason.cmdliner dune-build-info))
+ (libraries reason cmdliner dune-build-info))
 
 (rule
  (with-stdout-to

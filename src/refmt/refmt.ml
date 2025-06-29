@@ -4,7 +4,6 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-module Cmdliner = Vendored_cmdliner
 open Reason
 open Cmdliner
 open Refmt_lib
