@@ -1,5 +1,4 @@
-open MenhirSdk.Cmly_api
-open Utils
+module Cost = Utils.Cost
 
 (* Attributes guide the recovery .
 
@@ -14,7 +13,8 @@ open Utils
 
 (** Specification of attributes that are meaningful for recovery *)
 module type ATTRIBUTES = sig
-  module G : GRAMMAR
+  module G : MenhirSdk.Cmly_api.GRAMMAR
+
   (** The Menhir grammar to which these apply *)
 
   (** Recovery cost
@@ -143,9 +143,9 @@ module type ATTRIBUTES = sig
   val default_prelude : Format.formatter -> unit
   (** Output the grammar prelude in this formatter *)
 end
-(* module type ATTRIBUTES *)
 
-module Recover_attributes (G : GRAMMAR) : ATTRIBUTES with module G = G = struct
+module Recover_attributes (G : MenhirSdk.Cmly_api.GRAMMAR) :
+  ATTRIBUTES with module G = G = struct
   module G = G
   open G
 

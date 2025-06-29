@@ -1,7 +1,3 @@
-open MenhirSdk.Cmly_api
-open Utils
-open Attributes
-open Synthesis
 open Recovery_intf
 
 let menhir = "MenhirInterpreter"
@@ -12,8 +8,8 @@ let safe = false
 type var = int
 
 module Codesharing
-    (G : GRAMMAR)
-    (S : SYNTHESIZER with module G := G)
+    (G : MenhirSdk.Cmly_api.GRAMMAR)
+    (S : Synthesis.SYNTHESIZER with module G := G)
     (R : RECOVERY with module G := G) : sig
   type instr =
     | IRef of var
@@ -39,8 +35,8 @@ end = struct
 
   (* Find sharing opportunities. If the same sequence of actions occurs multiple
      times, the function will associate a unique identifier to the sequence.
-     [share actions] returns a pair [(bindings, lookup) : action list array *
-     (action list -> int option)]
+     [share actions] returns a pair
+     [(bindings, lookup) : action list array * (action list -> int option)]
 
      The [bindings] array contains all action lists that are worth sharing. The
      [lookup] function returns the index of an action list if is is in the
@@ -121,9 +117,9 @@ end = struct
 end
 
 module Make
-    (G : GRAMMAR)
-    (A : ATTRIBUTES with module G := G)
-    (S : SYNTHESIZER with module G := G)
+    (G : MenhirSdk.Cmly_api.GRAMMAR)
+    (A : Attributes.ATTRIBUTES with module G := G)
+    (S : Synthesis.SYNTHESIZER with module G := G)
     (R : RECOVERY with module G := G) : sig
   val emit : Format.formatter -> unit
 end = struct
@@ -209,12 +205,12 @@ end = struct
              let cases =
                List.map
                  (fun (st', items) ->
-                    ( list_last items
+                    ( Utils.list_last items
                     , match st' with None -> -1 | Some st' -> Lr1.to_int st' ))
                  cases
              in
              let cases =
-               match group_assoc cases with
+               match Utils.group_assoc cases with
                | [] -> `Nothing
                | [ (instr, _) ] -> `One instr
                | xs -> `Select xs
@@ -224,7 +220,7 @@ end = struct
            | _ -> acc)
         []
     in
-    let all_cases = group_assoc all_cases in
+    let all_cases = Utils.group_assoc all_cases in
     let all_items =
       let items_in_case (case, _states) =
         match case with

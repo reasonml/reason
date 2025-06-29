@@ -12,12 +12,12 @@ module type SYNTHESIZER = sig
      There are two situations we want to synthesize solution for:
 
      - `Head` is when the dot is just in front of some non-terminal, and we
-     would like to find a way to move the dot to the right of this symbol (by
-     executing a sequence of actions that results in this non-terminal being
-     pushed on the stack)
+       would like to find a way to move the dot to the right of this symbol (by
+       executing a sequence of actions that results in this non-terminal being
+       pushed on the stack)
 
      - `Tail` is when the dot is in some production that we would like to
-     reduce. *)
+       reduce. *)
 
   type variable =
     | Head of G.lr1 * G.nonterminal
