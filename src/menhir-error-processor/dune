@@ -1,0 +1,3 @@
+(executable
+ (name menhir_error_processor)
+ (libraries unix menhirSdk))
