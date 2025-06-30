@@ -39,8 +39,8 @@ let refmt
     in
     let eol =
       match use_stdin, input_file with
-      | true, _ -> Eol_detect.default_eol
-      | false, name -> Eol_detect.get_eol_for_file name
+      | true, _ -> End_of_line.Detect.default
+      | false, name -> End_of_line.Detect.get_eol_for_file name
     in
     let parse_ast =
       match parse_ast, use_stdin with
@@ -84,7 +84,7 @@ let refmt
     (* If you run into trouble with this (or need to use std_formatter by itself
        at the same time for some reason), try breaking this out so that it's not
        possible to call Format.formatter_of_out_channel on stdout. *)
-    let output_formatter = Eol_convert.get_formatter output_chan eol in
+    let output_formatter = End_of_line.Convert.get_formatter output_chan eol in
     Printer.print print input_file parsedAsML output_chan output_formatter ast;
     (* Also closes all open boxes. *)
     Format.pp_print_flush output_formatter ();

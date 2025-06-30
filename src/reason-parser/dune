@@ -45,7 +45,8 @@
  ; requires you to have run $ opam install bisect_ppx
  ;  (preprocess (pps (bisect_ppx)))
  (public_name reason)
- (flags :standard -w -67 -safe-string)
- (modules_without_implementation reason_parser_def)
- (libraries reason.ocaml-migrate-parsetree menhirLib reason.easy_format
+ (libraries
+  reason.ocaml-migrate-parsetree
+  menhirLib
+  reason.easy_format
   ppxlib))
