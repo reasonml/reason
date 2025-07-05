@@ -44,7 +44,7 @@ Print the formatted file
         100000,
         100000,
       )
-    | AlsoHasARecord(firstItem, two, {x, y}) =>
+    | AlsoHasARecord(firstItem, two, { x, y }) =>
       computeTuple(
         firstItem,
         firstItem,
@@ -82,7 +82,7 @@ Print the formatted file
        */
       let ret = (100000, 100000, 100000, 100000);
       ret;
-    | AlsoHasARecord(firstItem, two, {x, y}) =>
+    | AlsoHasARecord(firstItem, two, { x, y }) =>
       computeTuple(
         firstItem,
         firstItem,
@@ -123,7 +123,7 @@ Print the formatted file
         | Some(x) => x + 1
         | None => 0,
       )
-    | AlsoHasARecord(firstItem, two, {x, y}) =>
+    | AlsoHasARecord(firstItem, two, { x, y }) =>
       id(
         fun
         | Some(x) => x + 1
@@ -237,15 +237,15 @@ Print the formatted file
   
   /* parens around direct record pattern in constructor pattern */
   switch (None) {
-  | Some({x}) when true => ()
-  | Some({x, y}) => ()
+  | Some({ x }) when true => ()
+  | Some({ x, y }) => ()
   | _ => ()
   };
   
   /* no parens around direct record pattern in constructor pattern (sugar) */
   switch (None) {
-  | Some({x}) when true => ()
-  | Some({x, y}) => ()
+  | Some({ x }) when true => ()
+  | Some({ x, y }) => ()
   | _ => ()
   };
   
@@ -311,10 +311,10 @@ Print the formatted file
   
   let optIntRangeOfIntRange =
     fun
-    | ({from: None, to_: None}: intRange) => (
+    | ({ from: None, to_: None }: intRange) => (
         None: optIntRange
       )
-    | {from, to_} =>
+    | { from, to_ } =>
       Some({
         from,
         to_,

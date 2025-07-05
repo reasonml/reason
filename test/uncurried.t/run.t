@@ -75,7 +75,7 @@ Format uncurried
   
   type z = (. unit) => unit;
   
-  type tesla = {. drive: (. int, int) => int};
+  type tesla = {. drive: (. int, int) => int };
   
   class type _rect =
     [@bs]

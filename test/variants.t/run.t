@@ -280,7 +280,7 @@ Format variants
       )
     ) {
     | Blah => 1000
-    | AlsoHasARecord(a, b, {x, y}) =>
+    | AlsoHasARecord(a, b, { x, y }) =>
       a + b + x + y
     };
   
