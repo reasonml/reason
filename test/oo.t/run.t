@@ -160,7 +160,7 @@ Print the formatted file
     }
   };
   
-  let onlyHasX = {pub x = 0};
+  let onlyHasX = { pub x = 0 };
   let xs: list({. x: int }) = [
     onlyHasX,
     (anonClosedObject :> {. x: int }),
@@ -356,7 +356,7 @@ Print the formatted file
         #tupleClass(int, int) =
       (i, inst) => {
     let (x, y) = inst#pr;
-    {pub pr = (x + i, y + i)};
+    { pub pr = (x + i, y + i) };
   };
   
   class myClassWithNoTypeParams = {};
@@ -425,7 +425,7 @@ Print the formatted file
     and cl2: {};
   };
   
-  let privacy = {pri x = c => 5 + c};
+  let privacy = { pri x = c => 5 + c };
   
   module Js = {
     type t('a);

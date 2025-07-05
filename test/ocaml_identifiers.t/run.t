@@ -66,7 +66,7 @@ Format OCaml identifiers file
   
   /* Object methods */
   module O = {
-    let o = {as _; pub method = ()};
+    let o = { as _; pub method = () };
   };
   
   /* Function parameter labels */

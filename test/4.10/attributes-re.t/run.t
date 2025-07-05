@@ -158,7 +158,9 @@ Print the formatted file
   [@appliesToEntireFunctionApplication]
   add(2, 4);
   
-  let myObj = {pub p = () => {pub z = () => 10}};
+  let myObj = {
+    pub p = () => { pub z = () => 10 }
+  };
   
   let result =
     [@onSecondSend]
@@ -648,7 +650,7 @@ Print the formatted file
   Fmt.([@foo] { x: 1 });
   Fmt.([@foo] [1, 2, 3]);
   Fmt.([@foo] (1, 2, 3));
-  Fmt.([@foo] {val x = 10});
+  Fmt.([@foo] { val x = 10 });
   
   /**
    * Attributes are associate with the identifier, function call, constructor
@@ -833,8 +835,8 @@ Print the formatted file
 
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
-  File "formatted.re", line 505, characters 4-10:
-  505 |     concat;
+  File "formatted.re", line 507, characters 4-10:
+  507 |     concat;
             ^^^^^^
   Warning 10: this expression should have type unit.
 
