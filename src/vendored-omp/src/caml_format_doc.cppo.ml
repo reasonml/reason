@@ -26,8 +26,7 @@ module Doc = struct
     | HoV
     | B
 
-  type stag =
-    Format.stag
+  type stag = Format.stag
 
   type element =
     | Text of string
@@ -129,7 +128,6 @@ module Doc = struct
 
   let open_tag stag doc = add doc (Open_tag stag)
   let close_tag doc = add doc Close_tag
-
 
   let iter ?(sep=Fun.id) ~iter:iterator elt l doc =
     let first = ref true in
@@ -488,4 +486,8 @@ let pp_two_columns ?(sep = "|") ?max_lines ppf (lines: (string * string) list) =
   fprintf ppf "@]"
 
 let deprecated_printer pr ppf = ppf := Doc.add !ppf (Doc.Deprecated pr)
+let deprecated pr ppf x =
+  ppf := Doc.add !ppf (Doc.Deprecated (fun ppf -> pr ppf x))
+let deprecated1 pr p1 ppf x =
+  ppf := Doc.add !ppf (Doc.Deprecated (fun ppf -> pr p1 ppf x))
 #endif

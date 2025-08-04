@@ -83,10 +83,7 @@ let init_reason () =
     in
 #if OCAML_VERSION >= (5,3,0)
     let wrap_doc f g fmt x =
-      let doc_f =
-        Format_doc.deprecated_printer (fun fmt -> Format.fprintf fmt "%a" g (f x))
-      in
-      doc_f fmt
+      wrap f (Format_doc.deprecated g) fmt x
 #else
     let wrap_doc = wrap
 #endif
