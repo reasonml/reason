@@ -27,9 +27,9 @@ module Convert = struct
       match String.index sz '\n' with
       | exception Not_found -> sz
       | idx ->
-        let l = String.sub sz 0 idx ^ "\r\n" in
+        let l = String.sub sz ~pos:0 ~len:idx ^ "\r\n" in
         let length = String.length sz in
-        l ^ loop (String.sub sz (idx + 1) (length - idx - 1))
+        l ^ loop (String.sub sz ~pos:(idx + 1) ~len:(length - idx - 1))
     in
     fun s -> loop s
 
