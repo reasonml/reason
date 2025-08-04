@@ -87,7 +87,7 @@ let rec print_ident ppf = function
     fprintf ppf "%a(%a)" print_ident id1 print_ident id2
 
 let parenthesized_ident name =
-  List.mem name [ "or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr" ]
+  List.mem name ~set:[ "or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr" ]
   ||
   match name.[0] with
   | 'a' .. 'z' | 'A' .. 'Z' | '\223' .. '\246' | '\248' .. '\255' | '_' -> false
@@ -233,7 +233,7 @@ let get_label lbl =
   if lbl = ""
   then Reason_ast.Asttypes.Nolabel
   else if String.get lbl 0 = '?'
-  then Optional (String.sub lbl 1 @@ (String.length lbl - 1))
+  then Optional (String.sub lbl ~pos:1 ~len:(String.length lbl - 1))
   else Labelled lbl
 
 let get_arg_suffix ppf lab =
@@ -332,7 +332,11 @@ and print_simple_out_type ppf = function
         | [ (Otyp_tuple tys as single) ] ->
           if variant = "Arity_1"
           then Otyp_arrow ("", single, result)
-          else List.fold_right (fun x acc -> Otyp_arrow ("", x, acc)) tys result
+          else
+            List.fold_right
+              ~f:(fun x acc -> Otyp_arrow ("", x, acc))
+              tys
+              ~init:result
         | [ single ] -> Otyp_arrow ("", single, result)
         | _ -> raise_notrace Not_found
     in
@@ -365,7 +369,11 @@ and print_simple_out_type ppf = function
       | [ (Otyp_tuple tys as single) ] ->
         if variant = "Arity_1"
         then Otyp_arrow ("", single, result)
-        else List.fold_right (fun x acc -> Otyp_arrow ("", x, acc)) tys result
+        else
+          List.fold_right
+            ~f:(fun x acc -> Otyp_arrow ("", x, acc))
+            tys
+            ~init:result
       | [ single ] -> Otyp_arrow ("", single, result)
       | _ -> raise_notrace Not_found
     in
@@ -454,15 +462,15 @@ and print_simple_out_type ppf = function
     fprintf ppf "@[<1>(module %a" print_ident p;
     let first = ref true in
     List.iter
-      (fun (s, t) ->
-         let sep =
-           if !first
-           then (
-             first := false;
-             "with")
-           else "and"
-         in
-         fprintf ppf " %s type %s = %a" sep s print_out_type t)
+      ~f:(fun (s, t) ->
+        let sep =
+          if !first
+          then (
+            first := false;
+            "with")
+          else "and"
+        in
+        fprintf ppf " %s type %s = %a" sep s print_out_type t)
       ntyls;
     fprintf ppf ")@]"
   | Otyp_attribute (t, attr) ->
@@ -768,38 +776,38 @@ and print_out_sig_item ppf = function
   | Osig_ellipsis -> fprintf ppf "..."
   | Osig_value { oval_name; oval_type; oval_prims; oval_attributes } ->
     let printAttributes ppf =
-      List.iter (fun a -> fprintf ppf "[@@%s]" a.oattr_name)
+      List.iter ~f:(fun a -> fprintf ppf "[@@%s]" a.oattr_name)
     in
     let keyword = if oval_prims = [] then "let" else "external" in
     let hackyMelangeExternalAnnotation, rhsValues =
       List.partition
-        (fun item ->
-           (* "MEL:" is considered as a Melange external annotation,
-              `[@mel.module]` and the sort.
+        ~f:(fun item ->
+          (* "MEL:" is considered as a Melange external annotation,
+             `[@mel.module]` and the sort.
 
-              "What's going on here? Isn't [@mel.foo] supposed to be an
-              attribute in oval_attributes?" Usually yes. But here, we're
-              intercepting things a little too late. Melange already finished
-              its pre/post-processing work before we get to print anything. The
-              original attribute is already gone, replaced by a "BS:asdfasdfasd"
-              thing here. *)
-           String.length item >= 4
-           && item.[0] = 'M'
-           && item.[1] = 'E'
-           && item.[1] = 'L'
-           && item.[3] = ':')
+             "What's going on here? Isn't [@mel.foo] supposed to be an attribute
+             in oval_attributes?" Usually yes. But here, we're intercepting
+             things a little too late. Melange already finished its
+             pre/post-processing work before we get to print anything. The
+             original attribute is already gone, replaced by a "BS:asdfasdfasd"
+             thing here. *)
+          String.length item >= 4
+          && item.[0] = 'M'
+          && item.[1] = 'E'
+          && item.[1] = 'L'
+          && item.[3] = ':')
         oval_prims
     in
     let print_right_hand_side ppf = function
       | [] -> ()
       | s :: sl ->
         fprintf ppf "@ = \"%s\"" s;
-        List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
+        List.iter ~f:(fun s -> fprintf ppf "@ \"%s\"" s) sl
     in
     fprintf
       ppf
       "@[<2>%a%a%s %a:@ %a%a@]"
-      (fun ppf -> List.iter (fun _ -> fprintf ppf "[@@mel...]@ "))
+      (fun ppf -> List.iter ~f:(fun _ -> fprintf ppf "[@@mel...]@ "))
       hackyMelangeExternalAnnotation
       printAttributes
       oval_attributes
@@ -814,14 +822,14 @@ and print_out_sig_item ppf = function
 and print_out_type_decl kwd ppf td =
   let print_constraints ppf =
     List.iter
-      (fun (ty1, ty2) ->
-         fprintf
-           ppf
-           "@ @[<2>constraint %a =@ %a@]"
-           print_out_type
-           ty1
-           print_out_type
-           ty2)
+      ~f:(fun (ty1, ty2) ->
+        fprintf
+          ppf
+          "@ @[<2>constraint %a =@ %a@]"
+          print_out_type
+          ty1
+          print_out_type
+          ty2)
       td.otype_cstrs
   in
   let type_defined ppf =

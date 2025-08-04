@@ -100,26 +100,26 @@ let without_stylistic_attrs attrs =
 (* TODO: Make this fast and not filter *)
 let has_jsx_attributes =
   let is_jsx_attribute { attr_name = { txt; _ }; _ } = txt = "JSX" in
-  fun attrs -> List.exists is_jsx_attribute attrs
+  fun attrs -> List.exists ~f:is_jsx_attribute attrs
 
 let has_preserve_braces_attrs =
   let is_preserve_braces_attr { attr_name = { txt; _ }; _ } =
     txt = "reason.preserve_braces"
   in
-  fun stylisticAttrs -> List.exists is_preserve_braces_attr stylisticAttrs
+  fun stylisticAttrs -> List.exists ~f:is_preserve_braces_attr stylisticAttrs
 
 let has_quoted_extension_attrs =
   let is_quoted_extension_attr { attr_name = { txt; _ }; _ } =
     txt = "reason.quoted_extension"
   in
-  fun stylisticAttrs -> List.exists is_quoted_extension_attr stylisticAttrs
+  fun stylisticAttrs -> List.exists ~f:is_quoted_extension_attr stylisticAttrs
 
 let maybe_remove_stylistic_attrs attrs ~should_preserve =
   if should_preserve
   then attrs
   else
     List.filter
-      (function
+      ~f:(function
         | { attr_name = { txt = "reason.raw_literal"; _ }; _ } -> true
         | _ -> false)
       attrs
@@ -128,4 +128,4 @@ let has_open_notation_attr =
   let is_open_notation_attr { attr_name = { txt; _ }; _ } =
     txt = "reason.openSyntaxNotation"
   in
-  fun stylisticAttrs -> List.exists is_open_notation_attr stylisticAttrs
+  fun stylisticAttrs -> List.exists ~f:is_open_notation_attr stylisticAttrs

@@ -21,10 +21,8 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
       let identList = Longident.flatten_exn ident.txt in
       let lengthOfDots = List.length identList - 1 in
       let len =
-        List.fold_left
-          (fun acc curr -> acc + String.length curr)
-          lengthOfDots
-          identList
+        List.fold_left identList ~init:lengthOfDots ~f:(fun acc curr ->
+          acc + String.length curr)
       in
       len
     | _ -> -1
@@ -40,9 +38,9 @@ let funAppCallbackExceedsWidth ~printWidth ~args ~funExpr () =
       | label, ({ pexp_desc = Pexp_ident ident; _ } as e) ->
         let identLen =
           List.fold_left
-            (fun acc curr -> acc + String.length curr)
-            len
             (Longident.flatten_exn ident.txt)
+            ~init:len
+            ~f:(fun acc curr -> acc + String.length curr)
         in
         (match label with
         | Nolabel -> aux (len - identLen) args

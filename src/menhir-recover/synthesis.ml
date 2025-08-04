@@ -9,13 +9,15 @@ let group_assoc l =
       if compare v v' = 0 then aux k v vs acc xs else aux k v' (v :: vs) acc xs
     | (k', v') :: xs -> aux k' v' [] (cons k (v :: vs) acc) xs
   in
-  match List.sort compare l with [] -> [] | (k, v) :: xs -> aux k v [] [] xs
+  match List.sort ~cmp:compare l with
+  | [] -> []
+  | (k, v) :: xs -> aux k v [] [] xs
 
 let pp_list f ppf = function
   | [] -> Format.fprintf ppf "[]"
   | x :: xs ->
     Format.fprintf ppf "[%a" f x;
-    List.iter (Format.fprintf ppf "; %a" f) xs;
+    List.iter ~f:(Format.fprintf ppf "; %a" f) xs;
     Format.fprintf ppf "]"
 
 (** Specification of synthesized tactics *)
@@ -28,12 +30,12 @@ module type SYNTHESIZER = sig
      There are two situations we want to synthesize solution for:
 
      - `Head` is when the dot is just in front of some non-terminal, and we
-       would like to find a way to move the dot to the right of this symbol (by
-       executing a sequence of actions that results in this non-terminal being
-       pushed on the stack)
+     would like to find a way to move the dot to the right of this symbol (by
+     executing a sequence of actions that results in this non-terminal being
+     pushed on the stack)
 
      - `Tail` is when the dot is in some production that we would like to
-       reduce. *)
+     reduce. *)
 
   type variable =
     | Head of G.lr1 * G.nonterminal
@@ -118,7 +120,9 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
     | Reduce prod -> "Reduce p" ^ string_of_int (Production.to_int prod)
     | Shift sym -> "Shift " ^ symbol_name sym
     | Seq actions ->
-      "Seq [" ^ String.concat "; " (List.map action_to_string actions) ^ "]"
+      "Seq ["
+      ^ String.concat ~sep:"; " (List.map ~f:action_to_string actions)
+      ^ "]"
 
   (** The synthesizer specify the cost as a system of equations of the form $$
       x_i = \min_\{j\} (\{\kappa_\{i,j\} + \sum_\{k\}x_\{i,j,k\}\}) $$ which can
@@ -181,7 +185,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
           let ((cost', _) as solution') = v (Tail (st, prod, 0)) in
           if cost <= cost' then solution else solution'
         in
-        List.fold_left minimize_over_prod bottom (productions nt)
+        List.fold_left (productions nt) ~init:bottom ~f:minimize_over_prod
     | Tail (st, prod, pos) ->
       let prod_len = Array.length (Production.rhs prod) in
       assert (pos <= prod_len);
@@ -192,7 +196,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
       then
         let can_reduce =
           List.exists
-            (fun (_, prods) -> List.mem prod prods)
+            ~f:(fun (_, prods) -> List.mem prod ~set:prods)
             (Lr1.reductions st [@alert "-deprecated"])
         in
         const
@@ -258,15 +262,13 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
         (fun st acc ->
            match
              List.fold_left
-               (fun (item, ((cost, _) as solution)) (prod, pos) ->
-                  let ((cost', _) as solution') =
-                    solve (Tail (st, prod, pos))
-                  in
-                  if cost' < cost
-                  then Some (prod, pos), solution'
-                  else item, solution)
-               (None, bottom)
                (Lr0.items (Lr1.lr0 st))
+               ~init:(None, bottom)
+               ~f:(fun (item, ((cost, _) as solution)) (prod, pos) ->
+                 let ((cost', _) as solution') = solve (Tail (st, prod, pos)) in
+                 if cost' < cost
+                 then Some (prod, pos), solution'
+                 else item, solution)
            with
            | None, _ ->
              fprintf ppf "no synthesis from %d\n" (Lr1.to_int st);
@@ -283,24 +285,20 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
       | Seq actions -> fprintf ppf "Seq %a" print_actions actions
     and print_actions ppf = pp_list print_action ppf in
     List.iter
-      (fun (item, states) ->
-         fprintf
-           ppf
-           "# Item (%d,%d)\n"
-           (Production.to_int (fst item))
-           (snd item);
-         Print.item ppf item;
-         List.iter
-           (fun ((cost, actions), states) ->
-              fprintf
-                ppf
-                "at cost %a from states %a:\n%a\n\n"
-                Cost.pp
-                cost
-                (pp_list (fun ppf st -> fprintf ppf "#%d" (Lr1.to_int st)))
-                states
-                print_actions
-                actions)
-           (group_assoc states))
+      ~f:(fun (item, states) ->
+        fprintf ppf "# Item (%d,%d)\n" (Production.to_int (fst item)) (snd item);
+        Print.item ppf item;
+        List.iter
+          ~f:(fun ((cost, actions), states) ->
+            fprintf
+              ppf
+              "at cost %a from states %a:\n%a\n\n"
+              Cost.pp
+              cost
+              (pp_list (fun ppf st -> fprintf ppf "#%d" (Lr1.to_int st)))
+              states
+              print_actions
+              actions)
+          (group_assoc states))
       (group_assoc solutions)
 end

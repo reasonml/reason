@@ -89,7 +89,7 @@ let check_unclosed env =
   let check (message, opening_symbols, closing_symbol, check_function) =
     match
       unclosed_parenthesis
-        (fun x -> List.mem x opening_symbols)
+        (List.mem ~set:opening_symbols)
         closing_symbol
         check_function
         env

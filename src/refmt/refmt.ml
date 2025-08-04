@@ -93,7 +93,7 @@ let refmt
   try
     match input_files with
     | [] -> `Ok (refmt_single None)
-    | _ -> `Ok (List.iter (fun file -> refmt_single (Some file)) input_files)
+    | _ -> `Ok (List.iter ~f:(fun file -> refmt_single (Some file)) input_files)
   with
   | Printer_maker.Invalid_config msg -> `Error (true, msg)
   | Reason_errors.Reason_error (error, loc) ->
@@ -113,7 +113,7 @@ let () =
           let acc =
             if j = i || (j = i + 1 && last_is_cr)
             then acc
-            else String.sub s i (j - i) :: acc
+            else String.sub s ~pos:i ~len:(j - i) :: acc
           in
           List.rev acc
         else
@@ -122,7 +122,7 @@ let () =
           | '\n' ->
             let line =
               let len = if last_is_cr then j - i - 1 else j - i in
-              String.sub s i len
+              String.sub s ~pos:i ~len
             in
             loop ~acc:(line :: acc) (j + 1) (j + 1) ~last_is_cr:false
           | _ -> loop ~acc i (j + 1) ~last_is_cr:false
@@ -153,7 +153,7 @@ let () =
         in
         `Blocks (prose :: code_lines)
       in
-      let example_blocks = examples |> List.mapi block_of_example in
+      let example_blocks = List.mapi examples ~f:block_of_example in
       `Blocks (`S "EXAMPLES" :: example_blocks)
   in
   let refmt_t =

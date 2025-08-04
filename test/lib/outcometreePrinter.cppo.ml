@@ -65,7 +65,7 @@ let main () =
   let tree = Printtyp.tree_of_signature typedtree.Typedtree.str_type in
 #endif
   let phrase = (Reason_omp.Ast_414.Outcometree.Ophr_signature
-    (List.map (fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)
+    (List.map ~f:(fun item -> (ConvertBack.copy_out_sig_item item, None)) tree)
   ) in
   let fmt = Format.str_formatter in
   Reason_oprint.print_out_phrase fmt phrase;

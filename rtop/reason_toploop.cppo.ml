@@ -29,8 +29,8 @@ let reason_parse_toplevel_phrase =
 
 (* this file's triggered by utop/rtop *)
 let main () =
-  if List.exists ((=) "camlp4o") !Topfind.predicates ||
-     List.exists ((=) "camlp4r") !Topfind.predicates then
+  if List.exists ~f:((=) "camlp4o") !Topfind.predicates ||
+     List.exists ~f:((=) "camlp4r") !Topfind.predicates then
     print_endline "Reason is incompatible with camlp4!"
   else begin
 #if OCAML_VERSION >= (5,3,0)
@@ -42,7 +42,7 @@ let main () =
       else
         reason_parse_toplevel_phrase t);
     Toploop.parse_use_file := Reason_util.correctly_catch_parse_errors
-        (fun x -> List.map Reason_toolchain.To_current.copy_toplevel_phrase
+        (fun x -> List.map ~f:Reason_toolchain.To_current.copy_toplevel_phrase
             (Reason_toolchain.RE.use_file x));
      (* Toploop.print_out_sig_item := M17n_util.utf8_print_out_sig_item !Toploop.print_out_sig_item; *)
     (* Toploop.install_printer Predef.path_string Predef.type_string *)

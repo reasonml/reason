@@ -31,9 +31,9 @@ let states_transitioning_on pred =
     (* There are two kind of transitions (leading to SHIFT or REDUCE), detect
        those who accept identifiers *)
     List.exists
-      (fun (term, _) -> pred (T term))
+      ~f:(fun (term, _) -> pred (T term))
       (Lr1.reductions lr1 [@alert "-deprecated"])
-    || List.exists (fun (sym, _) -> pred sym) (Lr1.transitions lr1)
+    || List.exists ~f:(fun (sym, _) -> pred sym) (Lr1.transitions lr1)
   in
   (* Now we filter the list of all states and keep the interesting ones *)
   G.Lr1.fold (fun lr1 acc -> if keep_state lr1 then lr1 :: acc else acc) []
@@ -46,7 +46,7 @@ let print_transitions_on name pred =
   (match states_transitioning_on pred with
   | [] -> prerr_endline ("no states matches " ^ name ^ " predicate")
   | states ->
-    List.iter (fun lr1 -> print "  | %d" (Lr1.to_int lr1)) states;
+    List.iter ~f:(fun lr1 -> print "  | %d" (Lr1.to_int lr1)) states;
     print "      -> true");
   print "  | _ -> false\n"
 
@@ -61,8 +61,8 @@ let terminal_find name =
 
 let () =
   List.iter
-    (fun term ->
-       let symbol = T (terminal_find term) in
-       let name = (String.lowercase_ascii term [@ocaml.warning "-3"]) in
-       print_transitions_on name (( = ) symbol))
+    ~f:(fun term ->
+      let symbol = T (terminal_find term) in
+      let name = (String.lowercase_ascii term [@ocaml.warning "-3"]) in
+      print_transitions_on name (( = ) symbol))
     [ "LIDENT"; "UIDENT"; "SEMI"; "RBRACKET"; "RPAREN"; "RBRACE" ]

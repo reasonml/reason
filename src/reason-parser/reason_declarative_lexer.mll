@@ -76,7 +76,7 @@ let keyword_table, reverse_keyword_table =
   let create_hashtable n l =
     let t = Hashtbl.create n in
     let rev_t = Hashtbl.create n in
-    List.iter (fun (k, v) ->
+    List.iter ~f:(fun (k, v) ->
       Hashtbl.add t k v;
       Hashtbl.add rev_t v k;
     ) l;
@@ -217,7 +217,7 @@ let lexeme_without_comment buf = (
   | -1 -> lexeme
   | n ->
       set_lexeme_length buf n;
-      String.sub lexeme 0 n
+      String.sub lexeme ~pos:0 ~len:n
 )
 
 (* Operators that could conflict with comments (those containing /*, */ and //)
@@ -344,12 +344,11 @@ let check_label_name ?(raw_escape=false) lexbuf name =
 let cvt_int_literal s =
   - int_of_string ("-" ^ s)
 let cvt_int32_literal s =
-  Int32.neg (Int32.of_string ("-" ^ String.sub s 0 (String.length s - 1)))
+  Int32.neg (Int32.of_string ("-" ^ String.sub s ~pos:0 ~len:(String.length s - 1)))
 let cvt_int64_literal s =
-  Int64.neg (Int64.of_string ("-" ^ String.sub s 0 (String.length s - 1)))
+  Int64.neg (Int64.of_string ("-" ^ String.sub s ~pos:0 ~len:(String.length s - 1)))
 let cvt_nativeint_literal s =
-  Nativeint.neg (Nativeint.of_string ("-" ^ String.sub s 0
-                                                       (String.length s - 1)))
+  Nativeint.neg (Nativeint.of_string ("-" ^ String.sub s ~pos:0 ~len:(String.length s - 1)))
 
 (* Remove underscores from float literals *)
 
@@ -358,7 +357,7 @@ let remove_underscores s =
   let b = Bytes.create l in
   let rec remove src dst =
     if src >= l then
-      if dst >= l then s else Bytes.sub_string b 0 dst
+      if dst >= l then s else Bytes.sub_string b ~pos:0 ~len:dst
     else
       match s.[src] with
         '_' -> remove (src + 1) dst

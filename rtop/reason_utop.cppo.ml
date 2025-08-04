@@ -49,13 +49,13 @@ type top_kind =
 let current_top = ref RTop
 
 let init_reason () =
-  if List.exists (( = ) "camlp4o") !Topfind.predicates
-     || List.exists (( = ) "camlp4r") !Topfind.predicates
+  if List.exists ~f:(( = ) "camlp4o") !Topfind.predicates
+     || List.exists ~f:(( = ) "camlp4r") !Topfind.predicates
   then print_endline "Reason is incompatible with camlp4!"
   else
     let use_file x =
       List.map
-        Reason_toolchain.To_current.copy_toplevel_phrase
+        ~f:Reason_toolchain.To_current.copy_toplevel_phrase
         (Reason_toolchain.RE.use_file x)
     in
     current_top := RTop;
@@ -102,7 +102,7 @@ let init_reason () =
     Toploop.print_out_sig_item :=
       wrap_doc copy_out_sig_item Reason_oprint.print_out_sig_item;
     Toploop.print_out_signature :=
-      wrap_doc (List.map copy_out_sig_item) Reason_oprint.print_out_signature;
+      wrap_doc (List.map ~f:copy_out_sig_item) Reason_oprint.print_out_signature;
     Toploop.print_out_phrase :=
       wrap copy_out_phrase Reason_oprint.print_out_phrase;
     let current_show_fn =

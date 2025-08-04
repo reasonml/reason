@@ -47,7 +47,7 @@ module Lexer_impl = struct
   let filtered_comments = ref []
 
   let filter_comments filter =
-    filtered_comments := List.filter filter (Lexer.comments ())
+    filtered_comments := List.filter ~f:filter (Lexer.comments ())
 
   let get_comments _lexbuf _docstrings = !filtered_comments
 end
@@ -105,10 +105,10 @@ let toplevel_phrase lexbuf =
 
 let use_file lexbuf =
   parse_and_filter_doc_comments
-    (fun it result -> List.map (filter_toplevel_phrase it) result)
+    (fun it result -> List.map ~f:(filter_toplevel_phrase it) result)
     (fun lexbuf ->
        List.map
-         Reason_toolchain_conf.From_current.copy_toplevel_phrase
+         ~f:Reason_toolchain_conf.From_current.copy_toplevel_phrase
          (OCaml_parser.use_file Lexer.token lexbuf))
     lexbuf
 

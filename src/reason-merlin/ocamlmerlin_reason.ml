@@ -59,7 +59,7 @@ module Reason_reader = struct
       match ppt with
       | Pretty_core_type x -> fmt#core_type ppf (From_current.copy_core_type x)
       | Pretty_case_list x ->
-        fmt#case_list ppf (List.map From_current.copy_case x)
+        fmt#case_list ppf (List.map ~f:From_current.copy_case x)
       | Pretty_expression x ->
         fmt#expression ppf (From_current.copy_expression x)
       | Pretty_pattern x -> fmt#pattern ppf (From_current.copy_pattern x)
@@ -91,7 +91,7 @@ module Reason_reader = struct
       | Out_signature x ->
         Reason_oprint.print_out_signature
           ppf
-          (List.map From_current.copy_out_sig_item x)
+          (List.map ~f:From_current.copy_out_sig_item x)
       | Out_type_extension x ->
         Reason_oprint.print_out_type_extension
           ppf

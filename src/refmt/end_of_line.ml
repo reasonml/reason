@@ -39,7 +39,7 @@ module Convert = struct
       match eol with
       | LF -> out_functions.out_string s p n
       | CRLF ->
-        let str = String.sub s p n in
+        let str = String.sub s ~pos:p ~len:n in
         let str = lf_to_crlf str in
         out_functions.out_string str 0 (String.length str)
     in
