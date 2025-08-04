@@ -7,9 +7,11 @@
 (executable
  (name outcometreePrinter)
  (libraries reason)
+ (flags :standard -open StdLabels)
  (modules outcometreePrinter))
 
 (executable
  (name fdLeak)
  (modules fdLeak)
+ (flags :standard -open StdLabels)
  (libraries reason.refmt-lib))

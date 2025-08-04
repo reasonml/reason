@@ -34,21 +34,21 @@ let () =
       Print.itemset ppf (Lr0.items (Lr1.lr0 st));
       fprintf ppf "Transitions:\n";
       List.iter
-        (fun (sym, (st' : lr1)) ->
-           fprintf ppf " - on %a, goto #%d\n" Print.symbol sym (st' :> int))
+        ~f:(fun (sym, (st' : lr1)) ->
+          fprintf ppf " - on %a, goto #%d\n" Print.symbol sym (st' :> int))
         (Lr1.transitions st);
       fprintf ppf "Reductions:\n";
       List.iter
-        (fun (t, ps) ->
-           let p : production = List.hd ps in
-           fprintf
-             ppf
-             " - on %a, reduce %d:\n  %a\n"
-             Print.terminal
-             t
-             (p :> int)
-             Print.production
-             p)
+        ~f:(fun (t, ps) ->
+          let p : production = List.hd ps in
+          fprintf
+            ppf
+            " - on %a, reduce %d:\n  %a\n"
+            Print.terminal
+            t
+            (p :> int)
+            Print.production
+            p)
         (Lr1.reductions st [@alert "-deprecated"]));
     Production.iter (fun (p : production) ->
       fprintf ppf "\n# Production p%d\n%a" (p :> int) Print.production p))

@@ -35,8 +35,8 @@ end = struct
 
   (* Find sharing opportunities. If the same sequence of actions occurs multiple
      times, the function will associate a unique identifier to the sequence.
-     [share actions] returns a pair
-     [(bindings, lookup) : action list array * (action list -> int option)]
+     [share actions] returns a pair [(bindings, lookup) : action list array *
+     (action list -> int option)]
 
      The [bindings] array contains all action lists that are worth sharing. The
      [lookup] function returns the index of an action list if is is in the
@@ -61,18 +61,18 @@ end = struct
        | Abort | Reduce _ | Shift _ -> ()
        | Seq xs -> iter_list xs
      in
-     List.iter iter_list actions);
+     List.iter ~f:iter_list actions);
     let bindings =
       let register actions (occurrences, index) to_share =
         if !occurrences > 1 then (!index, actions) :: to_share else to_share
       in
       let to_share = Hashtbl.fold register occurrence_table [] in
       let order_actions (o1, _) (o2, _) = compare o1 (o2 : int) in
-      List.map snd (List.sort order_actions to_share)
+      List.map ~f:snd (List.sort ~cmp:order_actions to_share)
     in
     let binding_table = Hashtbl.create 113 in
     List.iteri
-      (fun idx actions -> Hashtbl.add binding_table actions idx)
+      ~f:(fun idx actions -> Hashtbl.add binding_table actions idx)
       bindings;
     let lookup actions =
       match Hashtbl.find binding_table actions with
@@ -109,9 +109,9 @@ end = struct
       x' @ xs'
 
   let compile items =
-    let actions = List.map item_to_actions items in
+    let actions = List.map ~f:item_to_actions items in
     let bindings, sharing = share actions in
-    let bindings = List.map (compile_seq ~sharing) bindings in
+    let bindings = List.map ~f:(compile_seq ~sharing) bindings in
     let compile_item item = share_seq ~sharing (item_to_actions item) in
     bindings, compile_item
 end
@@ -182,8 +182,8 @@ end = struct
     fprintf ppf "let depth =\n  [|";
     Lr1.iter (fun st ->
       let items = G.Lr0.items (G.Lr1.lr0 st) in
-      let positions = List.map snd items in
-      let depth = List.fold_left max 0 positions in
+      let positions = List.map ~f:snd items in
+      let depth = List.fold_left positions ~init:0 ~f:max in
       fprintf ppf "%d;" depth);
     fprintf ppf "|]\n\n"
 
@@ -210,9 +210,9 @@ end = struct
                let { R.cases; _ } = R.recover st in
                let cases =
                  List.map
-                   (fun (st', items) ->
-                      ( list_last items
-                      , match st' with None -> -1 | Some st' -> Lr1.to_int st' ))
+                   ~f:(fun (st', items) ->
+                     ( list_last items
+                     , match st' with None -> -1 | Some st' -> Lr1.to_int st' ))
                    cases
                in
                let cases =
@@ -232,9 +232,9 @@ end = struct
           match case with
           | `Nothing -> []
           | `One item -> [ item ]
-          | `Select items -> List.map fst items
+          | `Select items -> List.map ~f:fst items
         in
-        List.flatten (List.map items_in_case all_cases)
+        List.flatten (List.map ~f:items_in_case all_cases)
       in
       let globals, get_instr = C.compile all_items in
       let open Format in
@@ -251,44 +251,44 @@ end = struct
       let emit_shared index instrs =
         fprintf ppf "  let r%d = Sub %a in\n" index emit_instrs instrs
       in
-      List.iteri emit_shared globals;
+      List.iteri ~f:emit_shared globals;
       let emit_item ppf item = emit_instrs ppf (get_instr item) in
       fprintf ppf "  function\n";
       List.iter
-        (fun (cases, states) ->
-           fprintf ppf "  ";
-           List.iter (fprintf ppf "| %d ") states;
-           fprintf ppf "-> ";
-           match cases with
-           | `Nothing -> fprintf ppf "Nothing\n"
-           | `One item -> fprintf ppf "One %a\n" emit_item item
-           | `Select xs ->
-             fprintf ppf "Select (function\n";
-             if safe
-             then (
-               List.iter
-                 (fun (item, cases) ->
+        ~f:(fun (cases, states) ->
+          fprintf ppf "  ";
+          List.iter ~f:(fprintf ppf "| %d ") states;
+          fprintf ppf "-> ";
+          match cases with
+          | `Nothing -> fprintf ppf "Nothing\n"
+          | `One item -> fprintf ppf "One %a\n" emit_item item
+          | `Select xs ->
+            fprintf ppf "Select (function\n";
+            if safe
+            then (
+              List.iter
+                ~f:(fun (item, cases) ->
+                  fprintf ppf "    ";
+                  List.iter ~f:(fprintf ppf "| %d ") cases;
+                  fprintf ppf "-> %a\n" emit_item item)
+                xs;
+              fprintf ppf "    | _ -> raise Not_found)\n")
+            else (
+              match
+                List.sort
+                  ~cmp:(fun (_, a) (_, b) ->
+                    compare (List.length b) (List.length a))
+                  xs
+              with
+              | (item, _) :: xs ->
+                List.iter
+                  ~f:(fun (item, cases) ->
                     fprintf ppf "    ";
-                    List.iter (fprintf ppf "| %d ") cases;
+                    List.iter ~f:(fprintf ppf "| %d ") cases;
                     fprintf ppf "-> %a\n" emit_item item)
-                 xs;
-               fprintf ppf "    | _ -> raise Not_found)\n")
-             else (
-               match
-                 List.sort
-                   (fun (_, a) (_, b) ->
-                      compare (List.length b) (List.length a))
-                   xs
-               with
-               | (item, _) :: xs ->
-                 List.iter
-                   (fun (item, cases) ->
-                      fprintf ppf "    ";
-                      List.iter (fprintf ppf "| %d ") cases;
-                      fprintf ppf "-> %a\n" emit_item item)
-                   xs;
-                 fprintf ppf "    | _ -> %a)\n" emit_item item
-               | [] -> assert false))
+                  xs;
+                fprintf ppf "    | _ -> %a)\n" emit_item item
+              | [] -> assert false))
         all_cases;
 
       fprintf ppf "  | _ -> raise Not_found\n"

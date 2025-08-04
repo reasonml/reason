@@ -1,3 +1,4 @@
 (executable
  (name menhir_error_processor)
+ (flags :standard -open StdLabels)
  (libraries unix menhirSdk))

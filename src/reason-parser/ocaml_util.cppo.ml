@@ -226,7 +226,7 @@ module String = struct
 
   module B = struct
     include Bytes
-    let for_all p s =
+    let for_all ~f:p s =
       let n = length s in
       let rec loop i =
         if i = n then true
@@ -237,8 +237,8 @@ module String = struct
 
   let bos = B.unsafe_of_string
 
-  let for_all f s =
-    B.for_all f (bos s)
+  let for_all ~f s =
+    B.for_all ~f (bos s)
 
   let get_utf_8_uchar s i = B.get_utf_8_uchar (bos s) i
   let is_valid_utf_8 s = B.is_valid_utf_8 (bos s)
@@ -270,7 +270,7 @@ module Utf8_lexeme = struct
 
   let _ =
     List.iter
-      (fun (upper, lower) ->
+      ~f:(fun (upper, lower) ->
         let upper = Uchar.of_int upper and lower = Uchar.of_int lower in
         Hashtbl.add known_chars upper (Upper lower);
         Hashtbl.add known_chars lower (Lower upper))
@@ -301,7 +301,7 @@ module Utf8_lexeme = struct
 
   let _ =
     List.iter
-      (fun (c1, n2, n) ->
+      ~f:(fun (c1, n2, n) ->
         Hashtbl.add known_pairs
           (Uchar.of_char c1, Uchar.of_int n2) (Uchar.of_int n))
   [
@@ -355,7 +355,7 @@ module Utf8_lexeme = struct
       end in
     let ascii_limit = 128 in
     if s = ""
-    || keep_ascii && String.for_all (fun x -> Char.code x < ascii_limit) s
+    || keep_ascii && String.for_all ~f:(fun x -> Char.code x < ascii_limit) s
     then Ok s
     else
       let buf = Buffer.create (String.length s) in

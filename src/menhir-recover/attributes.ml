@@ -164,7 +164,7 @@ module Recover_attributes (G : MenhirSdk.Cmly_api.GRAMMAR) :
 
   let validate_attribute accepted kind attr =
     let label = Attribute.label attr in
-    if string_starts_with ~prefix label && not (List.mem label accepted)
+    if string_starts_with ~prefix label && not (List.mem label ~set:accepted)
     then
       let split_pos pos =
         ( pos.Lexing.pos_fname
@@ -184,7 +184,7 @@ module Recover_attributes (G : MenhirSdk.Cmly_api.GRAMMAR) :
         else s "%s:%d.%d" sf sl sc
       in
       let f fmt = Printf.ksprintf prerr_endline fmt in
-      if List.mem label all_attributes
+      if List.mem label ~set:all_attributes
       then
         f
           "%a: attribute %S cannot be put in %s"
@@ -201,7 +201,7 @@ module Recover_attributes (G : MenhirSdk.Cmly_api.GRAMMAR) :
           kind
 
   let validate_attributes accepted kind attrs =
-    List.iter (validate_attribute accepted kind) attrs
+    List.iter ~f:(validate_attribute accepted kind) attrs
 
   let () =
     validate_attributes
@@ -226,24 +226,21 @@ module Recover_attributes (G : MenhirSdk.Cmly_api.GRAMMAR) :
         "production attributes"
         (Production.attributes p);
       Array.iter
-        (fun (_, _, attrs) ->
-           validate_attributes [ "recover.cost" ] "item attributes" attrs)
+        ~f:(fun (_, _, attrs) ->
+          validate_attributes [ "recover.cost" ] "item attributes" attrs)
         (Production.rhs p))
 
   let cost_of_attributes prj attrs =
     Cost.of_int
-      (List.fold_left
-         (fun total attr ->
-            if Attribute.has_label "recover.cost" attr
-            then total + int_of_string (Attribute.payload attr)
-            else total)
-         0
-         (prj attrs))
+      (List.fold_left (prj attrs) ~init:0 ~f:(fun total attr ->
+         if Attribute.has_label "recover.cost" attr
+         then total + int_of_string (Attribute.payload attr)
+         else total))
 
   let cost_of_symbol =
     let measure ~has_default prj attrs =
       if
-        List.exists (Attribute.has_label "recover.expr") (prj attrs)
+        List.exists ~f:(Attribute.has_label "recover.expr") (prj attrs)
         || has_default
       then cost_of_attributes prj attrs
       else Cost.infinite
@@ -265,7 +262,7 @@ module Recover_attributes (G : MenhirSdk.Cmly_api.GRAMMAR) :
   let penalty_of_item =
     let f =
       Production.tabulate @@ fun p ->
-      Array.map (cost_of_attributes (fun (_, _, a) -> a)) (Production.rhs p)
+      Array.map ~f:(cost_of_attributes (fun (_, _, a) -> a)) (Production.rhs p)
     in
     fun (p, i) ->
       let costs = f p in
@@ -273,13 +270,13 @@ module Recover_attributes (G : MenhirSdk.Cmly_api.GRAMMAR) :
 
   let default_prelude ppf =
     List.iter
-      (fun a ->
-         if Attribute.has_label "recover.prelude" a
-         then Format.fprintf ppf "%s\n" (Attribute.payload a))
+      ~f:(fun a ->
+        if Attribute.has_label "recover.prelude" a
+        then Format.fprintf ppf "%s\n" (Attribute.payload a))
       Grammar.attributes
 
   let default_expr ?(fallback = "raise Not_found") attrs =
-    match List.find (Attribute.has_label "recover.expr") attrs with
+    match List.find ~f:(Attribute.has_label "recover.expr") attrs with
     | exception Not_found -> fallback
     | attr -> Attribute.payload attr
 

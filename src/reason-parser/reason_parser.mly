@@ -319,7 +319,7 @@ let mkinfix arg1 name arg2 =
 
 let neg_string f =
   if String.length f > 0 && f.[0] = '-'
-  then String.sub f 1 (String.length f - 1)
+  then String.sub f ~pos:1 ~len:(String.length f - 1)
   else "-" ^ f
 
 let mkuminus name ({ Ppxlib.pexp_desc; _ } as arg) =
@@ -336,13 +336,13 @@ let mk_functor_mod args body =
   let folder { Location.txt; loc } acc =
     mkmod ~loc (Pmod_functor(txt, acc))
   in
-  List.fold_right folder args body
+  List.fold_right args ~init:body ~f:folder 
 
 let mk_functor_mty args body =
   let folder { Location.txt; loc } acc =
     mkmty ~loc (Pmty_functor(txt, acc))
   in
-  List.fold_right folder args body
+  List.fold_right args ~init:body ~f:folder 
 
 let mkuplus name ({ Ppxlib.pexp_desc; _ } as arg) =
   match name.Location.txt, pexp_desc with
@@ -527,7 +527,7 @@ let process_underscore_application args =
         (lab, new_exp)
     | _ ->
         arg in
-  let args = List.map check_arg args in
+  let args = List.map ~f:check_arg args in
   let wrap exp_apply = match !exp_question with
     | Some {pexp_loc=loc;_} ->
         let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
@@ -601,7 +601,7 @@ let mkexp_app_rev startp endp (body, args) =
     | (lbl, e)::es ->
         let attrs = e.Ppxlib.pexp_attributes in
         let hasUncurryAttr = ref false in
-        let newAttrs = List.filter (function
+        let newAttrs = List.filter ~f:(function
           | { Ppxlib.attr_name = {txt = "uncurry"; _}; attr_payload = PStr []; _} ->
               hasUncurryAttr := true;
               false
@@ -713,7 +713,7 @@ let pat_of_label label =
   mkpat ~loc:label.loc (Ppat_var {label with txt=(Ppxlib.Longident.last_exn label.txt)})
 
 let check_variable vl loc v =
-  if List.mem v vl then
+  if List.mem v ~set:vl then
     raise_error (Variable_in_scope (loc,v)) loc
 
 let varify_constructors var_names t =
@@ -726,33 +726,33 @@ let varify_constructors var_names t =
           Ptyp_var x
       | Ptyp_arrow (label,core_type,core_type') ->
           Ptyp_arrow(label, loop core_type, loop core_type')
-      | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
-      | Ptyp_constr( { txt = Lident s; _ }, []) when List.mem s var_names ->
+      | Ptyp_tuple lst -> Ptyp_tuple (List.map ~f:loop lst)
+      | Ptyp_constr( { txt = Lident s; _ }, []) when List.mem s ~set:var_names ->
           Ptyp_var s
       | Ptyp_constr(longident, lst) ->
-          Ptyp_constr(longident, List.map loop lst)
+          Ptyp_constr(longident, List.map ~f:loop lst)
       | Ptyp_object (lst, o) ->
           Ptyp_object
             (List.map
-               (fun ({ Ppxlib.pof_desc; _ } as obj) ->
+               ~f:(fun ({ Ppxlib.pof_desc; _ } as obj) ->
                  let pof_desc' = match pof_desc with
                    | Otag (s, t) -> Ppxlib.Otag (s, loop t)
                    | Oinherit t -> Oinherit (loop t)
                  in
                  { obj with pof_desc = pof_desc' }) lst, o)
       | Ptyp_class (longident, lst) ->
-          Ptyp_class (longident, List.map loop lst)
+          Ptyp_class (longident, List.map ~f:loop lst)
       | Ptyp_alias(core_type, label) ->
           check_variable var_names t.ptyp_loc label.txt;
           Ptyp_alias(loop core_type, label)
       | Ptyp_variant(row_field_list, flag, lbl_lst_option) ->
-          Ptyp_variant(List.map loop_row_field row_field_list,
+          Ptyp_variant(List.map ~f:loop_row_field row_field_list,
                        flag, lbl_lst_option)
       | Ptyp_poly(string_lst, core_type) ->
-          List.iter (fun x -> check_variable var_names t.ptyp_loc x.txt) string_lst;
+          List.iter ~f:(fun x -> check_variable var_names t.ptyp_loc x.txt) string_lst;
           Ptyp_poly(string_lst, loop core_type)
       | Ptyp_package(longident,lst) ->
-          Ptyp_package(longident,List.map (fun (n,typ) -> (n,loop typ) ) lst)
+          Ptyp_package(longident, List.map ~f:(fun (n,typ) -> (n,loop typ) ) lst)
       | Ptyp_open (m, c) -> Ptyp_open (m, c)
       | Ptyp_extension (s, arg) ->
           Ptyp_extension (s, arg)
@@ -762,7 +762,7 @@ let varify_constructors var_names t =
     fun ({ prf_desc; _} as rf) ->
       let prf_desc' = match prf_desc with
         | Rtag(label, flag, lst) ->
-          Ppxlib.Rtag(label, flag, List.map loop lst)
+          Ppxlib.Rtag(label, flag, List.map ~f:loop lst)
         | Rinherit t ->
           Rinherit (loop t)
       in
@@ -771,8 +771,8 @@ let varify_constructors var_names t =
   loop t
 
 let pexp_newtypes ?loc newtypes exp =
-  List.fold_right (fun newtype exp -> mkexp ?loc (Pexp_newtype (newtype, exp)))
-    newtypes exp
+  List.fold_right ~f:(fun newtype exp -> mkexp ?loc (Pexp_newtype (newtype, exp)))
+    newtypes ~init:exp
 
 (**
   I believe that wrap_type_annotation will automatically generate the type
@@ -782,7 +782,7 @@ let pexp_newtypes ?loc newtypes exp =
 let wrap_type_annotation newtypes core_type body =
   let exp = mkexp(Pexp_constraint(body,core_type)) in
   let exp = pexp_newtypes newtypes exp in
-  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors (List.map (fun {txt; _} -> txt) newtypes) core_type)) in
+  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors (List.map ~f:(fun {txt; _} -> txt) newtypes) core_type)) in
   (exp, typ)
 
 
@@ -992,8 +992,8 @@ let rec flattenWithoutLapply = function
 
 let ensureTagsAreEqual startTag endTag loc =
   if ignoreLapply startTag <> endTag then
-    let startTag = String.concat "" (flattenWithoutLapply startTag) in
-    let endTag = String.concat "" (flattenWithoutLapply endTag) in
+    let startTag = String.concat ~sep:"" (flattenWithoutLapply startTag) in
+    let endTag = String.concat ~sep:"" (flattenWithoutLapply endTag) in
     if endTag <> "" then
     Printf.ksprintf (syntax_error loc)
       "Start tag <%s> does not match end tag </%s>" startTag endTag
@@ -1053,7 +1053,7 @@ let lowercase_module_msg =
  * The grammar allows a spread operator at every position, when
  * generating the parsetree we raise a helpful error message. *)
 let filter_raise_spread_syntax msg nodes =
-  List.map (fun (dotdotdot, node) ->
+  List.map ~f:(fun (dotdotdot, node) ->
       begin match dotdotdot with
         | Some dotdotdotLoc -> syntax_error dotdotdotLoc msg
         | None -> ()
@@ -1093,7 +1093,7 @@ let package_type_of_module_type (pmty: Ppxlib.module_type) =
   match pmty with
   | {pmty_desc = Pmty_ident lid; _} -> Some (lid, [])
   | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid; _}, cstrs); _} ->
-    Some (lid, List.flatten (List.map map_cstr cstrs))
+    Some (lid, List.flatten (List.map ~f:map_cstr cstrs))
   | _ -> None
 
 let add_brace_attr (expr: Ppxlib.expression) =
@@ -1606,7 +1606,7 @@ mark_position_mod
   | module_expr module_arguments
     { match $2 with
       | [] -> mkmod_app_unit ~loc:(mklocation $symbolstartpos $endpos) $1
-      | xs -> List.fold_left mkmod_app $1 xs
+      | xs -> List.fold_left ~f:mkmod_app ~init:$1 xs
     }
   | attribute module_expr %prec attribute_precedence
     { {$2 with pmod_attributes = $1 :: $2.pmod_attributes} }
@@ -1793,7 +1793,7 @@ structure_item:
    | located_attributes
      {
        List.map
-        (fun x -> mkstr ~loc:x.loc (Pstr_attribute (make_floating_doc x.txt)))
+        ~f:(fun x -> mkstr ~loc:x.loc (Pstr_attribute (make_floating_doc x.txt)))
         $1
      }
 ;
@@ -2049,7 +2049,7 @@ signature_items:
   | as_loc(signature_item) { [mksig ~loc:$1.loc $1.txt] }
   | located_attributes
     { List.map
-      (fun x -> mksig ~loc:x.loc (Psig_attribute (make_floating_doc x.txt)))
+      ~f:(fun x -> mksig ~loc:x.loc (Psig_attribute (make_floating_doc x.txt)))
       $1 }
 ;
 
@@ -2111,7 +2111,7 @@ class_declaration_details:
     | None -> []
     | Some (lpl, _uncurried) -> lpl
     in
-    let body = List.fold_right mkclass_fun tree $5 in
+    let body = List.fold_right ~f:mkclass_fun tree ~init:$5 in
     let params = match $3 with None -> [] | Some x -> x in
     ($2, body, $1, params)
   }
@@ -2144,12 +2144,12 @@ object_body_class_fields:
 object_body:
   | loption(located_attributes)
     mark_position_pat(class_self_expr)
-    { let attrs = List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
+    { let attrs = List.map ~f:(fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
       Ast_helper.Cstr.mk $2 attrs }
   | loption(located_attributes)
     mark_position_pat(class_self_expr) SEMI
     object_body_class_fields
-    { let attrs = List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
+    { let attrs = List.map ~f:(fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
       Ast_helper.Cstr.mk $2 (attrs @ $4) }
   | object_body_class_fields
     { let loc = mklocation $symbolstartpos $symbolstartpos in
@@ -2165,7 +2165,7 @@ mark_position_cl
     { $1 }
   | either(ES6_FUN,FUN) labeled_pattern_list EQUALGREATER class_expr
     { let (lp, _) = $2 in
-      List.fold_right mkclass_fun lp $4 }
+      List.fold_right ~f:mkclass_fun lp ~init:$4 }
   | class_simple_expr labeled_arguments
       (**
        * This is an interesting way to "partially apply" class construction:
@@ -2226,7 +2226,7 @@ class_field:
     ) { [$1] }
   | located_attributes
     { List.map
-      (fun x -> mkcf ~loc:x.loc (Pcf_attribute (make_floating_doc x.txt)))
+      ~f:(fun x -> mkcf ~loc:x.loc (Pcf_attribute (make_floating_doc x.txt)))
       $1 }
 ;
 
@@ -2418,7 +2418,7 @@ method_:
 class_constructor_type:
   | class_instance_type { $1 }
   | arrow_type_parameters EQUALGREATER class_constructor_type
-    { List.fold_right mkcty_arrow $1 $3 }
+    { List.fold_right ~f:mkcty_arrow $1 ~init:$3 }
 ;
 
 class_type_arguments_comma_list:
@@ -2492,7 +2492,7 @@ class_sig_field:
     ) { [$1] }
   | located_attributes
     { List.map
-      (fun x -> mkctf ~loc:x.loc (Pctf_attribute (make_floating_doc x.txt)))
+      ~f:(fun x -> mkctf ~loc:x.loc (Pctf_attribute (make_floating_doc x.txt)))
       $1 }
 ;
 
@@ -2987,7 +2987,7 @@ mark_position_exp
       $2 ~loc $3 }
   | ES6_FUN es6_parameters EQUALGREATER expr
     { let (ps, uncurried) = $2 in
-      let exp = List.fold_right mkexp_fun ps $4 in
+      let exp = List.fold_right ~f:mkexp_fun ps ~init:$4 in
       if uncurried then
         let loc = mklocation $startpos $endpos in
         {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
@@ -2995,8 +2995,8 @@ mark_position_exp
     }
   | ES6_FUN es6_parameters COLON non_arrowed_core_type EQUALGREATER expr
     { let (ps, uncurried) = $2 in
-    let exp = List.fold_right mkexp_fun ps
-        (ghexp_constraint (mklocation $startpos($4) $endpos) $6 (Some $4, None))  in
+    let exp = List.fold_right ~f:mkexp_fun ps
+        ~init:(ghexp_constraint (mklocation $startpos($4) $endpos) $6 (Some $4, None))  in
     if uncurried then
       let loc = mklocation $startpos $endpos in
       {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
@@ -3624,8 +3624,8 @@ fun_def(DELIM, typ):
   either(preceded(DELIM, expr), braced_expr)
   { let loc = mklocation $startpos $endpos in
     let (pl, uncurried) = $1 in
-    let exp = List.fold_right mkexp_fun pl
-        (match $2 with
+    let exp = List.fold_right ~f:mkexp_fun pl
+        ~init:(match $2 with
         | None -> $3
         | Some ct -> Ast_helper.Exp.constraint_ ~loc $3 ct)
     in
@@ -4642,7 +4642,7 @@ unattributed_core_type:
  * simple: it doesn't need to be wrapped in parens *)
 arrowed_simple_core_type:
   | ES6_FUN arrow_type_parameters EQUALGREATER core_type2
-    { List.fold_right mktyp_arrow $2 $4 }
+    { List.fold_right ~f:mktyp_arrow $2 ~init:$4 }
   | as_loc(labelled_arrow_type_parameter_optional) EQUALGREATER core_type2
     { mktyp_arrow ($1, false) $3 }
   | basic_core_type EQUALGREATER core_type2
@@ -5014,7 +5014,7 @@ mod_ext_apply:
       let loc = mklocation $startpos $endpos in
       raise_error (Applicative_path loc) loc
     );
-    List.fold_left (fun p1 p2 -> Ppxlib.Longident.Lapply (p1, p2)) $1 $2
+    List.fold_left ~f:(fun p1 p2 -> Ppxlib.Longident.Lapply (p1, p2)) ~init:$1 $2
   }
 ;
 
@@ -5033,7 +5033,7 @@ mod_ext_less_apply:
       let loc = mklocation $startpos $endpos in
       raise_error (Applicative_path loc) loc
     );
-    List.fold_left (fun p1 p2 -> Ppxlib.Longident.Lapply (p1, p2)) $1 $2
+    List.fold_left ~f:(fun p1 p2 -> Ppxlib.Longident.Lapply (p1, p2)) ~init:$1 $2
   }
 ;
 
@@ -5228,7 +5228,7 @@ attribute:
 (* Inlined to avoid having to deal with buggy $symbolstartpos *)
 %inline item_attributes:
   | { [] }
-  | located_attributes { List.map (fun x -> x.txt) $1 }
+  | located_attributes { List.map ~f:(fun x -> x.txt) $1 }
 ;
 
 item_extension_sugar:

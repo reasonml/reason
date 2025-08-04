@@ -45,6 +45,7 @@
  ; requires you to have run $ opam install bisect_ppx
  ;  (preprocess (pps (bisect_ppx)))
  (public_name reason)
+ (flags :standard -open StdLabels)
  (libraries
   reason.ocaml-migrate-parsetree
   menhirLib

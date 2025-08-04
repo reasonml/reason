@@ -158,7 +158,7 @@ module Create_parse_entrypoint
       then Reason_errors.error_extension_node_from_recovery loc msg
       else Reason_errors.error_extension_node loc msg
     in
-    List.map error_extension errors
+    List.map ~f:error_extension errors
 
   let wrap_with_comments parsing_fun attach_fun lexbuf =
     let input_copy = Buffer.create 0 in
@@ -193,7 +193,7 @@ module Create_parse_entrypoint
         let make_regular (text, location) =
           Reason_comment.make ~location Reason_comment.Regular text
         in
-        ast, List.map make_regular unmodified_comments
+        ast, List.map ~f:make_regular unmodified_comments
       else
         let rec classifyAndNormalizeComments unmodified_comments =
           match unmodified_comments with
@@ -253,8 +253,8 @@ module Create_parse_entrypoint
               let original_comment_contents =
                 String.sub
                   contents
-                  (physical_loc.loc_start.pos_cnum + 2)
-                  comment_length
+                  ~pos:(physical_loc.loc_start.pos_cnum + 2)
+                  ~len:comment_length
               in
               let location =
                 { physical_loc with
@@ -324,7 +324,7 @@ module Create_parse_entrypoint
    *)
   let implementation_with_comments lexbuf =
     let attach impl extensions =
-      impl @ List.map Ast_helper.Str.extension extensions
+      impl @ List.map ~f:Ast_helper.Str.extension extensions
     in
     try wrap_with_comments Toolchain_impl.implementation attach lexbuf with
     | err ->
@@ -341,7 +341,7 @@ module Create_parse_entrypoint
 
   let interface_with_comments lexbuf =
     let attach impl extensions =
-      impl @ List.map Ast_helper.Sig.extension extensions
+      impl @ List.map ~f:Ast_helper.Sig.extension extensions
     in
     try wrap_with_comments Toolchain_impl.interface attach lexbuf with
     | err ->

@@ -1,3 +1,4 @@
 (executable
  (name main)
+ (flags :standard -open StdLabels)
  (libraries fix menhirLib menhirSdk))

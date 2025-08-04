@@ -184,11 +184,11 @@ struct
             | `Fail -> assert false
             | `Accept v -> raise (E.Result v)
             | `Recovered (_, env) -> env)
-          | Recovery.Sub actions -> List.fold_left eval env actions
+          | Recovery.Sub actions -> List.fold_left ~f:eval ~init:env actions
         in
         (match
            rev_scan_left [] ~f:eval ~init:env actions
-           |> List.map (fun env -> { candidate0 with env })
+           |> List.map ~f:(fun env -> { candidate0 with env })
          with
         | exception Not_found -> None, acc
         | exception E.Result v -> Some v, acc

@@ -105,14 +105,14 @@ module Recover
     in
     Lr1.tabulate (fun st ->
       List.fold_left
-        (fun acc (prod, pos) ->
-           if pos = 0
-           then acc
-           else
-             let cost, _actions = S.solve (S.Tail (st, prod, pos)) in
-             add_item cost (st, prod, pos) acc)
-        []
-        (Lr0.items (Lr1.lr0 st)))
+        (Lr0.items (Lr1.lr0 st))
+        ~init:[]
+        ~f:(fun acc (prod, pos) ->
+          if pos = 0
+          then acc
+          else
+            let cost, _actions = S.solve (S.Tail (st, prod, pos)) in
+            add_item cost (st, prod, pos) acc))
 
   let step st ntss =
     let seen = ref Bytes.empty in
@@ -140,7 +140,7 @@ module Recover
         let xs' = synthesize st' in
         let xs' = match xs' with [] -> [] | _ :: xs -> xs in
         let merge_trace (nt, tr') = nt, Trace.cat tr' tr in
-        let xs' = List.map (List.map merge_trace) xs' in
+        let xs' = List.map ~f:(List.map ~f:merge_trace) xs' in
         aux (State.merge xs' (x :: xs))
       | (_ :: x) :: xs -> aux (x :: xs)
       | [] :: xs -> xs
@@ -160,15 +160,15 @@ module Recover
       tbl1.(Lr1.to_int s2) <- s1 :: tbl1.(Lr1.to_int s2)
     in
     Lr1.iter (fun lr1 ->
-      List.iter (revert_transition lr1) (Lr1.transitions lr1));
+      List.iter ~f:(revert_transition lr1) (Lr1.transitions lr1));
     fun lr1 -> tbl1.(Lr1.to_int lr1)
 
   let expand stuck_states ((st, sts), nts) =
     List.map
-      (fun st' ->
-         let nts' = step st' nts in
-         if nts' = [] then stuck_states := st' :: !stuck_states;
-         (st', st' :: sts), nts')
+      ~f:(fun st' ->
+        let nts' = step st' nts in
+        if nts' = [] then stuck_states := st' :: !stuck_states;
+        (st', st' :: sts), nts')
       (pred st)
 
   let all_stuck_states : (Lr1.t, int ref) Hashtbl.t = Hashtbl.create 7
@@ -178,9 +178,9 @@ module Recover
     let known_prefix =
       let items = Lr0.items (Lr1.lr0 st) in
       List.fold_left
-        (fun pos (_, pos') -> max pos pos')
-        (snd (List.hd items))
         (List.tl items)
+        ~init:(snd (List.hd items))
+        ~f:(fun pos (_, pos') -> max pos pos')
     in
     (* Walk this prefix *)
     let stuck = ref false in
@@ -188,7 +188,7 @@ module Recover
     let traces =
       let acc = ref [ init st ] in
       for _i = 1 to known_prefix - 1 do
-        acc := List.concat (List.map (expand stuck_states) !acc)
+        acc := List.concat (List.map ~f:(expand stuck_states) !acc)
       done;
       !acc
     in
@@ -207,25 +207,23 @@ module Recover
           match List.flatten traces with
           | [] ->
             List.iter
-              (fun st ->
-                 let r =
-                   try Hashtbl.find all_stuck_states st with
-                   | Not_found ->
-                     let r = ref 0 in
-                     Hashtbl.add all_stuck_states st r;
-                     r
-                 in
-                 incr r)
+              ~f:(fun st ->
+                let r =
+                  try Hashtbl.find all_stuck_states st with
+                  | Not_found ->
+                    let r = ref 0 in
+                    Hashtbl.add all_stuck_states st r;
+                    r
+                in
+                incr r)
               !stuck_states;
             stuck := true;
             stuck_states := [];
             None
           | (_, trace) :: alternatives ->
             Some
-              (List.fold_left
-                 (fun tr1 (_, tr2) -> Trace.min tr1 tr2)
-                 trace
-                 alternatives)
+              (List.fold_left alternatives ~init:trace ~f:(fun tr1 (_, tr2) ->
+                 Trace.min tr1 tr2))
         in
         let select_expansion = function
           | _, [] ->
@@ -233,19 +231,19 @@ module Recover
             None, select_trace (snd trace)
           | (st, _sts), trace' -> Some st, select_trace trace'
         in
-        List.map select_expansion states
+        List.map ~f:select_expansion states
     in
     let cases =
       List.flatten
       @@ List.map
-           (fun trace ->
-              List.fold_right
-                (fun (st, tr') acc ->
-                   match tr' with
-                   | Some { items; _ } -> (st, items) :: acc
-                   | None -> acc)
-                (process_trace trace)
-                [])
+           ~f:(fun trace ->
+             List.fold_right
+               (process_trace trace)
+               ~init:[]
+               ~f:(fun (st, tr') acc ->
+                 match tr' with
+                 | Some { items; _ } -> (st, items) :: acc
+                 | None -> acc))
            traces
     in
     if !stuck
@@ -264,16 +262,16 @@ module Recover
       Hashtbl.fold (fun k v acc -> (k, !v) :: acc) all_stuck_states []
     in
     let all_stuck_states =
-      List.sort (fun (_, v1) (_, v2) -> compare v2 v1) all_stuck_states
+      List.sort ~cmp:(fun (_, v1) (_, v2) -> compare v2 v1) all_stuck_states
     in
     List.iter
-      (fun (st, count) ->
-         Format.printf
-           "# State %d is preventing recovery from %d states:\n%a\n\n%!"
-           (Lr1.to_int st)
-           count
-           Print.itemset
-           (Lr0.items (Lr1.lr0 st)))
+      ~f:(fun (st, count) ->
+        Format.printf
+          "# State %d is preventing recovery from %d states:\n%a\n\n%!"
+          (Lr1.to_int st)
+          count
+          Print.itemset
+          (Lr0.items (Lr1.lr0 st)))
       all_stuck_states
 
   let report _ppf = ()
