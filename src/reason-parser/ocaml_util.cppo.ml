@@ -5,12 +5,7 @@ let print_loc ppf loc =
 let print_error loc f ppf x =
 #if OCAML_VERSION >= (5,3,0)
   let error =
-    let f (fmt: Format_doc.formatter) err =
-      let doc_f =
-        Format_doc.deprecated_printer (fun fmt -> Format.fprintf fmt "%a" f err)
-      in
-      doc_f fmt
-    in
+    let f = Format_doc.deprecated f in
     Location.error_of_printer ~loc f x in
   Location.print_report ppf error
 #elif OCAML_VERSION >= (4,8,0)
