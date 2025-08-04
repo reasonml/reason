@@ -231,7 +231,7 @@ module String = struct
 
   module B = struct
     include Bytes
-    let for_all p s =
+    let for_all ~f:p s =
       let n = length s in
       let rec loop i =
         if i = n then true
@@ -242,8 +242,8 @@ module String = struct
 
   let bos = B.unsafe_of_string
 
-  let for_all f s =
-    B.for_all f (bos s)
+  let for_all ~f s =
+    B.for_all ~f (bos s)
 
   let get_utf_8_uchar s i = B.get_utf_8_uchar (bos s) i
   let is_valid_utf_8 s = B.is_valid_utf_8 (bos s)
