@@ -2,5 +2,16 @@
  (name refmt)
  (modes js)
  (js_of_ocaml
-   (flags --source-map --debug-info --pretty --linkall +weak.js +toplevel.js --opt 3 --disable strict))
+  (flags
+   --source-map
+   --debug-info
+   --pretty
+   --linkall
+   +weak.js
+   +toplevel.js
+   --opt
+   3
+   --disable
+   strict))
+ (flags :standard -open StdLabels)
  (libraries reason js_of_ocaml))
