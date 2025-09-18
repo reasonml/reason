@@ -75,7 +75,7 @@ Format uncurried
   
   type z = (. unit) => unit;
   
-  type tesla = {. drive: (. int, int) => int};
+  type tesla = {. drive: (. int, int) => int };
   
   class type _rect =
     [@bs]
@@ -153,13 +153,13 @@ Format uncurried
   let id =
     setTimeout(1000, (.) => Js.log("hello"));
   
-  foo([@bs] {val a = 1});
+  foo([@bs] { val a = 1 });
   
-  foo(. [@bs] {val a = 1});
+  foo(. [@bs] { val a = 1 });
   
-  foo(. [@bs] {val a = 1});
+  foo(. [@bs] { val a = 1 });
   
-  foo([@attr1] [@bs] [@attr2] {val a = 1});
+  foo([@attr1] [@bs] [@attr2] { val a = 1 });
   
   add([@attr] [@bs] [@attr] 1);
   

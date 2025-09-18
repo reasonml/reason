@@ -1,4 +1,4 @@
-module Easy_format = Vendored_easy_format
+module Easy_format = Reason_easy_format
 
 type break_criterion =
   | Never
@@ -63,7 +63,7 @@ and config =
   ; (* Break setting that becomes activated if a comment becomes interleaved into
      * this list. Typically, if not specified, the behavior from [break] will be
      * used.
-    *)
+     *)
     wrap : string * string
   ; inline : bool * bool
   ; sep : separator
@@ -114,7 +114,7 @@ let dump_easy ppf easy =
         closing
         sep
         break;
-      let _ = List.map (traverse (indent_more indent)) items in
+      let _ = List.map ~f:(traverse (indent_more indent)) items in
       ()
     | Easy_format.Label ((left, config), right) ->
       let break =
@@ -167,7 +167,7 @@ let dump ppf layout =
         sep
         (string_of_bool config.sepLeft)
         break;
-      List.iter (traverse (indent_more indent)) layout_list
+      List.iter ~f:(traverse (indent_more indent)) layout_list
     | Label (_, left, right) ->
       printf "%s Label: \n" indent;
       printf "  %s left \n" indent;
@@ -240,7 +240,7 @@ let easy_settings_from_config
 let to_easy_format layout =
   let rec traverse = function
     | Sequence (config, sublayouts) ->
-      let items = List.map traverse sublayouts in
+      let items = List.map ~f:traverse sublayouts in
       Easy_format.List (easy_settings_from_config config, items)
     | Label (labelFormatter, left, right) ->
       labelFormatter (traverse left) (traverse right)
@@ -262,8 +262,8 @@ let get_location layout =
   in
   let rec traverse = function
     | Sequence (_, subLayouts) ->
-      let locs = List.map traverse subLayouts in
-      List.fold_left union None locs
+      let locs = List.map ~f:traverse subLayouts in
+      List.fold_left ~f:union ~init:None locs
     | Label (_, left, right) -> union (traverse left) (traverse right)
     | SourceMap (loc, _) -> Some loc
     | Whitespace (_, sub) -> traverse sub

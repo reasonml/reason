@@ -6,6 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
+open Reason
+
 module ToploopBackup = struct
   let print_out_value = !Toploop.print_out_value
   let print_out_type = !Toploop.print_out_type
@@ -20,6 +22,17 @@ module ToploopBackup = struct
     Hashtbl.find Toploop.directive_table "show"
 end
 
+#if OCAML_VERSION >= (5,4,0)
+let rec lident_operator_map mapper li =
+  let open Longident in
+  match li with
+  | Lident s -> Lident (mapper s)
+  | Ldot (x, s) -> Ldot (x, { loc = s.loc; txt = mapper s.txt})
+  | Lapply (x, y) ->
+    Lapply
+      ( { loc = x.loc; txt = lident_operator_map mapper x.txt }
+      , { loc = y.loc; txt =  lident_operator_map mapper y.txt })
+#else
 let rec lident_operator_map mapper li =
   let open Longident in
   match li with
@@ -27,6 +40,7 @@ let rec lident_operator_map mapper li =
   | Ldot (x, s) -> Ldot (x, mapper s)
   | Lapply (x, y) ->
     Lapply (lident_operator_map mapper x, lident_operator_map mapper y)
+#endif
 
 type top_kind =
   | RTop
@@ -35,13 +49,13 @@ type top_kind =
 let current_top = ref RTop
 
 let init_reason () =
-  if List.exists (( = ) "camlp4o") !Topfind.predicates
-     || List.exists (( = ) "camlp4r") !Topfind.predicates
+  if List.exists ~f:(( = ) "camlp4o") !Topfind.predicates
+     || List.exists ~f:(( = ) "camlp4r") !Topfind.predicates
   then print_endline "Reason is incompatible with camlp4!"
   else
     let use_file x =
       List.map
-        Reason_toolchain.To_current.copy_toplevel_phrase
+        ~f:Reason_toolchain.To_current.copy_toplevel_phrase
         (Reason_toolchain.RE.use_file x)
     in
     current_top := RTop;
@@ -69,10 +83,7 @@ let init_reason () =
     in
 #if OCAML_VERSION >= (5,3,0)
     let wrap_doc f g fmt x =
-      let doc_f =
-        Format_doc.deprecated_printer (fun fmt -> Format.fprintf fmt "%a" g (f x))
-      in
-      doc_f fmt
+      wrap f (Format_doc.deprecated g) fmt x
 #else
     let wrap_doc = wrap
 #endif
@@ -88,7 +99,7 @@ let init_reason () =
     Toploop.print_out_sig_item :=
       wrap_doc copy_out_sig_item Reason_oprint.print_out_sig_item;
     Toploop.print_out_signature :=
-      wrap_doc (List.map copy_out_sig_item) Reason_oprint.print_out_signature;
+      wrap_doc (List.map ~f:copy_out_sig_item) Reason_oprint.print_out_signature;
     Toploop.print_out_phrase :=
       wrap copy_out_phrase Reason_oprint.print_out_phrase;
     let current_show_fn =

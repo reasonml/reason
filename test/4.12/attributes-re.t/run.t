@@ -144,7 +144,7 @@ Print the formatted file
   let x =
     [@onEverything] (- add(thisVal, thisVal));
   
-  let bothTrue = (x, y) => {contents: x && y};
+  let bothTrue = (x, y) => { contents: x && y };
   let something =
     [@onEverythingToRightOfEquals]
     (bothTrue(true, true))^;
@@ -158,7 +158,9 @@ Print the formatted file
   [@appliesToEntireFunctionApplication]
   add(2, 4);
   
-  let myObj = {pub p = () => {pub z = () => 10}};
+  let myObj = {
+    pub p = () => { pub z = () => 10 }
+  };
   
   let result =
     [@onSecondSend]
@@ -343,7 +345,7 @@ Print the formatted file
      let myFun = fun ((X(hello) | Y(hello)) [@onOrPattern]) => hello;
      */
   
-  /* Bucklescript FFI item attributes */
+  /* Melange FFI item attributes */
   
   [@bs.val]
   external imul: (int, int) => int = "Math.imul";
@@ -424,7 +426,7 @@ Print the formatted file
   external createCompositeElementInternalHack:
     (
       reactClass,
-      {.. "reasonProps": 'props},
+      {.. "reasonProps": 'props },
       array(reactElement)
     ) =>
     reactElement =
@@ -645,10 +647,10 @@ Print the formatted file
   };
   
   Fmt.([@foo] barBaz());
-  Fmt.([@foo] {x: 1});
+  Fmt.([@foo] { x: 1 });
   Fmt.([@foo] [1, 2, 3]);
   Fmt.([@foo] (1, 2, 3));
-  Fmt.([@foo] {val x = 10});
+  Fmt.([@foo] { val x = 10 });
   
   /**
    * Attributes are associate with the identifier, function call, constructor
@@ -833,8 +835,8 @@ Print the formatted file
 
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
-  File "formatted.re", line 505, characters 4-10:
-  505 |     concat;
+  File "formatted.re", line 507, characters 4-10:
+  507 |     concat;
             ^^^^^^
   Warning 10 [non-unit-statement]: this expression should have type unit.
 

@@ -1,0 +1,94 @@
+opam-version: "2.0"
+homepage: "https://github.com/ocaml/odoc"
+doc: "https://ocaml.github.io/odoc/"
+bug-reports: "https://github.com/ocaml/odoc/issues"
+license: "ISC"
+
+maintainer: [
+  "Daniel Bünzli <daniel.buenzli@erratique.ch>"
+  "Jon Ludlam <jon@recoil.org>"
+  "Jules Aguillon <juloo.dsi@gmail.com>"
+  "Paul-Elliot Anglès d'Auriac <paul-elliot@tarides.com>"
+]
+authors: [
+  "Anton Bachin <antonbachin@yahoo.com>"
+  "Daniel Bünzli <daniel.buenzli@erratique.ch>"
+  "David Sheets <sheets@alum.mit.edu>"
+  "Jon Ludlam <jon@recoil.org>"
+  "Jules Aguillon <juloo.dsi@gmail.com>"
+  "Leo White <leo@lpw25.net>"
+  "Lubega Simon <lubegasimon73@gmail.com>"
+  "Paul-Elliot Anglès d'Auriac <paul-elliot@tarides.com>"
+  "Thomas Refis <trefis@janestreet.com>"
+]
+dev-repo: "git+https://github.com/ocaml/odoc.git"
+
+synopsis: "OCaml Documentation Generator"
+description: """
+**odoc** is a powerful and flexible documentation generator for OCaml. It reads *doc comments*, demarcated by `(** ... *)`, and transforms them into a variety of output formats, including HTML, LaTeX, and man pages.
+
+- **Output Formats:** Odoc generates HTML for web browsing, LaTeX for PDF generation, and man pages for use on Unix-like systems.
+- **Cross-References:** odoc uses the `ocamldoc` markup, which allows to create links for functions, types, modules, and documentation pages.
+- **Link to Source Code:** Documentation generated includes links to the source code of functions, providing an easy way to navigate from the docs to the actual implementation.
+- **Code Highlighting:** odoc automatically highlights syntax in code snippets for different languages.
+
+odoc is part of the [OCaml Platform](https://ocaml.org/docs/platform), the recommended set of tools for OCaml.
+"""
+
+
+depends: [
+  "odoc-parser" {= version}
+  "astring"
+  "cmdliner" {>= "1.0.0" & < "2.0.0"}
+  "cppo" {build & >= "1.1.0"}
+  "dune" {>= "3.7.0"}
+  "fpath"
+  "ocaml" {>= "4.02.0" & < "5.4"}
+  "result"
+  "tyxml" {>= "4.4.0"}
+  "fmt"
+
+  "ocamlfind" {with-test}
+  "yojson" {>= "2.1.0"}
+  ("ocaml" {< "4.04.1" & with-test} | "sexplib0" {with-test})
+  "conf-jq" {with-test}
+
+  "ppx_expect" {with-test}
+  "bos" {with-test}
+  "crunch" {>= "1.4.1"}
+
+  ("ocaml" {< "4.07.0" & with-test} | "bisect_ppx" {with-test & > "2.5.0"})
+]
+
+conflicts: [ "ocaml-option-bytecode-only" ]
+
+x-extra-doc-deps: [
+  "odoc-driver" {= version}
+  "sherlodoc" {= version}
+  "odig"
+]
+
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+x-maintenance-intent: ["(latest)"]
+url {
+  src: "https://github.com/ocaml/odoc/releases/download/3.0.0/odoc-3.0.0.tbz"
+  checksum: [
+    "sha256=ce84fa7e0cc5f3e8a54e6adeb10826152798b602057b9e46c5ae7e5d5206812b"
+    "sha512=9febd413450ca2e3824c9ef7e1c9ae8d8094aa72ed71327a69d8d6b42f6f197b3f3f40d674de0d11fa1242ee0df95c693b5d74467d530704e1339f3a523452f6"
+  ]
+}
+x-commit-hash: "90e679061f68c5e5ee5915e280f63d842f41f300"
+

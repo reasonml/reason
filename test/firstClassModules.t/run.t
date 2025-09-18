@@ -40,15 +40,17 @@ Format first class modules
   
   module Three = (val three: X_int);
   
-  let thing: module Thing = (module MyModule);
-  let thing: module Foo.Bar.Thing =
+  let thing: (module Thing) = (module MyModule);
+  let thing: (module Foo.Bar.Thing) =
     (module MyModule);
   
-  let smallThing: module lowercase = (module Mod);
-  let smallThing: module lowercase = (module Mod);
-  let smallThing: module Foo.Bar.lowercase =
+  let smallThing: (module lowercase) =
     (module Mod);
-  let smallThing: module Foo.Bar.lowercase =
+  let smallThing: (module lowercase) =
+    (module Mod);
+  let smallThing: (module Foo.Bar.lowercase) =
+    (module Mod);
+  let smallThing: (module Foo.Bar.lowercase) =
     (module Mod);
   
   let f = (module Add: S.Z, x) => Add.add(x);

@@ -180,41 +180,43 @@ Format general implementation syntax
   /* This would also lend itself naturally to pattern matching - and avoid having
      to use `.` operator at all since you normally destructure. */
   type nameBlahType = {nameBlah: int};
-  let myRecord = {nameBlah: 20};
+  let myRecord = { nameBlah: 20 };
   let myRecordName = myRecord.nameBlah;
   
-  let {nameBlah}: nameBlahType = {nameBlah: 20};
+  let { nameBlah }: nameBlahType = {
+    nameBlah: 20,
+  };
   print_int(nameBlah);
-  let {nameBlah: aliasedToThisVar}: nameBlahType = {
+  let { nameBlah: aliasedToThisVar }: nameBlahType = {
     nameBlah: 20,
   };
   print_int(aliasedToThisVar);
   
-  let desiredFormattingForWrappedLambda:
-    (int, int, int) => nameBlahType =
-    /*
+  let desiredFormattingForWrappedLambda
+      : (int, int, int) => nameBlahType =
+      /*
   
-     fun is
-     pre-   /firstarg\
-     fix   /-coupled--\
-      |-\ /-to-prefix--\       */
-    (curriedArg, anotherArg, lastArg) => {
-      nameBlah: 10,
-    };
+       fun is
+       pre-   /firstarg\
+       fix   /-coupled--\
+        |-\ /-to-prefix--\       */
+      (curriedArg, anotherArg, lastArg) => {
+    nameBlah: 10,
+  };
   
   type longerInt = int;
-  let desiredFormattingForWrappedLambdaWrappedArrow:
-    (longerInt, longerInt, longerInt) =>
-    nameBlahType =
-    /*
+  let desiredFormattingForWrappedLambdaWrappedArrow
+      : (longerInt, longerInt, longerInt) =>
+        nameBlahType =
+      /*
   
-     fun is
-     pre-   /firstarg\
-     fix   /-coupled--\
-      |-\ /-to-prefix--\       */
-    (curriedArg, anotherArg, lastArg) => {
-      nameBlah: 10,
-    };
+       fun is
+       pre-   /firstarg\
+       fix   /-coupled--\
+        |-\ /-to-prefix--\       */
+      (curriedArg, anotherArg, lastArg) => {
+    nameBlah: 10,
+  };
   
   let desiredFormattingForWrappedLambdaReturnOnNewLine =
       /*
@@ -360,8 +362,8 @@ Format general implementation syntax
   
   /* More than one consecutive pattern must have a single case */
   type blah = {blahBlah: int};
-  let blah = (a, {blahBlah}) => a;
-  let blah = (a, {blahBlah}) => a;
+  let blah = (a, { blahBlah }) => a;
+  let blah = (a, { blahBlah }) => a;
   
   module TryToExportTwice = {
     let myVal = "hello";
@@ -531,7 +533,7 @@ Format general implementation syntax
   /* let blah a patt => 0 | anotherPatt => 1; */
   
   /*simple pattern  EQUALGREATER      expr */
-  let blah = (a, {blahBlah}) => a;
+  let blah = (a, { blahBlah }) => a;
   
   /*            match_case             */
   /*     pattern EQUALGREATER  expr */
@@ -1006,7 +1008,7 @@ Format general implementation syntax
    */
   external f: int => int = "foo";
   
-  let x = {contents: 0};
+  let x = { contents: 0 };
   
   let unitVal = x.contents = 210;
   
@@ -1039,8 +1041,8 @@ Format general implementation syntax
       ) => 1;
   
   /* #1320: record destrucuring + renaming */
-  let x = ({state as prevState}) => 1;
-  let x = ({ReasonReact.state as prevState}) => 1;
+  let x = ({ state as prevState }) => 1;
+  let x = ({ ReasonReact.state as prevState }) => 1;
   
   /* 1567: optional parens around expr constraint in constructor expression */
   Some(x: int);
@@ -1464,8 +1466,8 @@ Format general implementation syntax
       (foo: (~a: int, ~b: int=?) => int, a, b) =>
     foo(~a, ~b);
   
-  let Foo.{name} = bar;
-  let Foo.Bar.{name} = bar;
+  let Foo.{ name } = bar;
+  let Foo.Bar.{ name } = bar;
   
   let Foo.{
     destruct1,

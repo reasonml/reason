@@ -10,9 +10,9 @@ Format objects
     v: int,
   };
   
-  type t = {.. u: int};
+  type t = {.. u: int };
   
-  type t = {.. u: int};
+  type t = {.. u: int };
   
   type t = {..};
   
@@ -50,7 +50,7 @@ Format objects
     b: int,
   };
   
-  let obj = {as _; [@foo] val a = 1};
+  let obj = { as _; [@foo] val a = 1 };
   
   /* Oinherit (https://github.com/ocaml/ocaml/pull/1118) */
   type t1 = {
@@ -79,7 +79,7 @@ Format objects
     ...y,
   };
   
-  type m1 = {. ...M.t};
+  type m1 = {. ...M.t };
   type m2('a) = {
     .
     n: string,

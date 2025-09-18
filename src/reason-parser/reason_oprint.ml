@@ -68,19 +68,6 @@
    The rest of this file's logic is just pattern-matching on these tree node
    variants & using Format to pretty-print them nicely. *)
 
-(* This file's shared between the Reason repo and the BuckleScript repo. In
-   Reason, it's in src/reason-parser/. In BuckleScript, it's in
-   jscomp/outcome_printer/. We periodically copy this file from Reason (the
-   source of truth) to BuckleScript, then uncomment the #if #else #end cppo
-   macros you see in the file. That's because BuckleScript's on OCaml 4.02 while
-   Reason's on 4.04; so the #if macros surround the pieces of code that are
-   different between the two compilers.
-
-   When you modify this file, please make sure you're not dragging in too many
-   things. You don't necessarily have to test the file on both Reason and
-   BuckleScript; ping @chenglou and a few others and we'll keep them synced up
-   by patching the right parts, through the power of types(tm) *)
-
 open Format
 module Reason_ast = Reason_omp.Ast_414
 module Outcometree = Reason_ast.Outcometree
@@ -100,7 +87,7 @@ let rec print_ident ppf = function
     fprintf ppf "%a(%a)" print_ident id1 print_ident id2
 
 let parenthesized_ident name =
-  List.mem name [ "or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr" ]
+  List.mem name ~set:[ "or"; "mod"; "land"; "lor"; "lxor"; "lsl"; "lsr"; "asr" ]
   ||
   match name.[0] with
   | 'a' .. 'z' | 'A' .. 'Z' | '\223' .. '\246' | '\248' .. '\255' | '_' -> false
@@ -246,7 +233,7 @@ let get_label lbl =
   if lbl = ""
   then Reason_ast.Asttypes.Nolabel
   else if String.get lbl 0 = '?'
-  then Optional (String.sub lbl 1 @@ (String.length lbl - 1))
+  then Optional (String.sub lbl ~pos:1 ~len:(String.length lbl - 1))
   else Labelled lbl
 
 let get_arg_suffix ppf lab =
@@ -321,7 +308,7 @@ and print_simple_out_type ppf = function
       id
       print_typargs
       tyl
-  (* BuckleScript-specific external. See the manual for the usage of [@bs]. This
+  (* Melange-specific external. See the manual for the usage of [@bs]. This
      [@bs] is processed into a type that looks like `Js.Internal.fn ...`. This
      leaks during error reporting, where the type is printed. Here, we print it
      back from `Js.Internal.fn([ `Arity_2 ('c, 'd) ], 'e)` into `('a => 'b =>
@@ -345,7 +332,11 @@ and print_simple_out_type ppf = function
         | [ (Otyp_tuple tys as single) ] ->
           if variant = "Arity_1"
           then Otyp_arrow ("", single, result)
-          else List.fold_right (fun x acc -> Otyp_arrow ("", x, acc)) tys result
+          else
+            List.fold_right
+              ~f:(fun x acc -> Otyp_arrow ("", x, acc))
+              tys
+              ~init:result
         | [ single ] -> Otyp_arrow ("", single, result)
         | _ -> raise_notrace Not_found
     in
@@ -365,7 +356,7 @@ and print_simple_out_type ppf = function
           (print_out_type_1 ~uncurried:false)
           res
       | _ -> assert false))
-  (* also BuckleScript-specific. See the comment in the previous pattern *)
+  (* also Melange-specific. See the comment in the previous pattern *)
   | Otyp_constr
       ( (Oide_dot
            ( ( Oide_dot (Oide_ident { printed_name = "Js" }, "Internal")
@@ -378,7 +369,11 @@ and print_simple_out_type ppf = function
       | [ (Otyp_tuple tys as single) ] ->
         if variant = "Arity_1"
         then Otyp_arrow ("", single, result)
-        else List.fold_right (fun x acc -> Otyp_arrow ("", x, acc)) tys result
+        else
+          List.fold_right
+            ~f:(fun x acc -> Otyp_arrow ("", x, acc))
+            tys
+            ~init:result
       | [ single ] -> Otyp_arrow ("", single, result)
       | _ -> raise_notrace Not_found
     in
@@ -394,7 +389,7 @@ and print_simple_out_type ppf = function
         "@[<0>(%a)@ [@mel.this]@]"
         (print_out_type_1 ~uncurried:false)
         res)
-  (* also BuckleScript-specific. Turns Js.t({. foo: bar}) into {. "foo": bar} *)
+  (* also Melange-specific. Turns Js.t({. foo: bar}) into {. "foo": bar} *)
   | Otyp_constr
       ( Oide_dot (Oide_ident { printed_name = "Js" }, "t")
       , [ Otyp_object (fields, rest) ] ) ->
@@ -467,15 +462,15 @@ and print_simple_out_type ppf = function
     fprintf ppf "@[<1>(module %a" print_ident p;
     let first = ref true in
     List.iter
-      (fun (s, t) ->
-         let sep =
-           if !first
-           then (
-             first := false;
-             "with")
-           else "and"
-         in
-         fprintf ppf " %s type %s = %a" sep s print_out_type t)
+      ~f:(fun (s, t) ->
+        let sep =
+          if !first
+          then (
+            first := false;
+            "with")
+          else "and"
+        in
+        fprintf ppf " %s type %s = %a" sep s print_out_type t)
       ntyls;
     fprintf ppf ")@]"
   | Otyp_attribute (t, attr) ->
@@ -781,39 +776,39 @@ and print_out_sig_item ppf = function
   | Osig_ellipsis -> fprintf ppf "..."
   | Osig_value { oval_name; oval_type; oval_prims; oval_attributes } ->
     let printAttributes ppf =
-      List.iter (fun a -> fprintf ppf "[@@%s]" a.oattr_name)
+      List.iter ~f:(fun a -> fprintf ppf "[@@%s]" a.oattr_name)
     in
     let keyword = if oval_prims = [] then "let" else "external" in
-    let hackyBucklescriptExternalAnnotation, rhsValues =
+    let hackyMelangeExternalAnnotation, rhsValues =
       List.partition
-        (fun item ->
-           (* "BS:" is considered as a bucklescript external annotation,
-              `[@mel.module]` and the sort.
+        ~f:(fun item ->
+          (* "MEL:" is considered as a Melange external annotation,
+             `[@mel.module]` and the sort.
 
-              "What's going on here? Isn't [@mel.foo] supposed to be an
-              attribute in oval_attributes?" Usually yes. But here, we're
-              intercepting things a little too late. BuckleScript already
-              finished its pre/post-processing work before we get to print
-              anything. The original attribute is already gone, replaced by a
-              "BS:asdfasdfasd" thing here. *)
-           String.length item >= 4
-           && item.[0] = 'M'
-           && item.[1] = 'E'
-           && item.[1] = 'L'
-           && item.[3] = ':')
+             "What's going on here? Isn't [@mel.foo] supposed to be an attribute
+             in oval_attributes?" Usually yes. But here, we're intercepting
+             things a little too late. Melange already finished its
+             pre/post-processing work before we get to print anything. The
+             original attribute is already gone, replaced by a "BS:asdfasdfasd"
+             thing here. *)
+          String.length item >= 4
+          && item.[0] = 'M'
+          && item.[1] = 'E'
+          && item.[1] = 'L'
+          && item.[3] = ':')
         oval_prims
     in
     let print_right_hand_side ppf = function
       | [] -> ()
       | s :: sl ->
         fprintf ppf "@ = \"%s\"" s;
-        List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
+        List.iter ~f:(fun s -> fprintf ppf "@ \"%s\"" s) sl
     in
     fprintf
       ppf
       "@[<2>%a%a%s %a:@ %a%a@]"
-      (fun ppf -> List.iter (fun _ -> fprintf ppf "[@@mel...]@ "))
-      hackyBucklescriptExternalAnnotation
+      (fun ppf -> List.iter ~f:(fun _ -> fprintf ppf "[@@mel...]@ "))
+      hackyMelangeExternalAnnotation
       printAttributes
       oval_attributes
       keyword
@@ -827,14 +822,14 @@ and print_out_sig_item ppf = function
 and print_out_type_decl kwd ppf td =
   let print_constraints ppf =
     List.iter
-      (fun (ty1, ty2) ->
-         fprintf
-           ppf
-           "@ @[<2>constraint %a =@ %a@]"
-           print_out_type
-           ty1
-           print_out_type
-           ty2)
+      ~f:(fun (ty1, ty2) ->
+        fprintf
+          ppf
+          "@ @[<2>constraint %a =@ %a@]"
+          print_out_type
+          ty1
+          print_out_type
+          ty2)
       td.otype_cstrs
   in
   let type_defined ppf =
@@ -900,8 +895,8 @@ and print_out_type_decl kwd ppf td =
     print_constraints
 
 and print_out_constr
-    ppf
-    { ocstr_name = name; ocstr_args = tyl; ocstr_return_type = ret_type_opt }
+      ppf
+      { ocstr_name = name; ocstr_args = tyl; ocstr_return_type = ret_type_opt }
   =
   match ret_type_opt with
   | None ->

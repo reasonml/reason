@@ -750,16 +750,16 @@ Format basicStructures
   
   /* record value punning */
   
-  let props = {title: "hi"};
+  let props = { title: "hi" };
   /* no punning available for a single field. Can't tell the difference with a scope + expression */
-  let componentA = {props: props};
+  let componentA = { props: props };
   /* pun for real */
   let componentB = {
     props,
     state: (),
   };
   /* pun fields with module prefix too */
-  let foo = {Foo.foo: foo};
+  let foo = { Foo.foo: foo };
   let bar = {
     Foo.foo,
     bar: 1,
@@ -773,10 +773,10 @@ Format basicStructures
     Bar.bar,
   };
   
-  ({M.x, y}) => 1;
+  ({ M.x, y }) => 1;
   
   switch (foo) {
-  | {y: 1, M.x} => 2
+  | { y: 1, M.x } => 2
   };
   
   /* Requested in #566 */
@@ -790,7 +790,7 @@ Format basicStructures
   };
   
   /* # 1587: don't print fun keyword when printing Pexp_fun in a record expression  */
-  {contents: () => ((): unit)};
+  { contents: () => ((): unit) };
   
   /* #1556: Always break nested record/obj */
   let z = {

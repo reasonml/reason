@@ -21,9 +21,10 @@ jobs:
           - {ocaml-compiler: '4.12.x', os: ubuntu-latest}
           - {ocaml-compiler: '4.13.x', os: ubuntu-latest}
           - {ocaml-compiler: '4.14.x', os: ubuntu-latest}
-          - {ocaml-compiler: 'ocaml-base-compiler.5.3.0~beta2', os: ubuntu-latest}
-          - {ocaml-compiler: 'ocaml-base-compiler.5.3.0~beta2', os: macos-13}
-          - {ocaml-compiler: 'ocaml-base-compiler.5.3.0~beta2', os: macos-14}
+          - {ocaml-compiler: 'ocaml-base-compiler.5.3.0', os: ubuntu-latest}
+          - {ocaml-compiler: 'ocaml-base-compiler.5.4.0~beta2', os: ubuntu-latest}
+          - {ocaml-compiler: 'ocaml-base-compiler.5.4.0~beta2', os: macos-13}
+          - {ocaml-compiler: 'ocaml-base-compiler.5.4.0~beta2', os: macos-14}
             # looks like setup-ocaml@v3 can only run actions on windows for
             # OCaml >= 4.13
             # https://github.com/ocaml/setup-ocaml/issues/822#issuecomment-2215525942
@@ -39,7 +40,7 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.setup.ocaml-compiler }}
-          opam-pin: false
+          opam-pin: true
 
       - name: Load opam cache when not Windows
         if: runner.os != 'Windows'

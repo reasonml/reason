@@ -10,9 +10,8 @@
     "@opam/menhir": " >= 20180523.0.0",
     "@opam/merlin-extend": " >= 0.6.1",
     "@opam/ocamlfind": "*",
-    "@opam/ppx_derivers": "*",
-    "@opam/ppxlib": "> 0.28.x",
-    "@opam/utop": " >= 2.0",
+    "@opam/ppxlib": ">= 0.36.0",
+    "@opam/utop": ">= 2.0",
     "ocaml": " >= 4.3.0 < 4.15.0"
   },
   "devDependencies": {
@@ -84,7 +83,6 @@
         "@opam/mmap",
         "@opam/ocplib-endian",
         "@opam/ocamlfind",
-        "@opam/ppx_derivers",
         "@opam/react",
         "@opam/seq",
         "@opam/charInfo_width",

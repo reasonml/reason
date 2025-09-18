@@ -1,19 +1,3 @@
-(* Hello! Welcome to the Reason syntax util logic.
-
-  This file's shared between the Reason repo and the BuckleScript repo. In
-  Reason, it's in src/reason-parser. In BuckleScript, it's in
-  jscomp/outcome_printer. We periodically copy this file from Reason (the source
-  of truth) to BuckleScript, then uncomment the #if #else #end cppo macros you
-  see in the file. That's because BuckleScript's on OCaml 4.02 while Reason's on
-  4.04; so the #if macros surround the pieces of code that are different between
-  the two compilers.
-
-  When you modify this file, please make sure you're not dragging in too many
-  things. You don't necessarily have to test the file on both Reason and
-  BuckleScript; ping @chenglou and a few others and we'll keep them synced up by
-  patching the right parts, through the power of types(tm)
-*)
-
 open Ppxlib
 
 (* Rename labels in function definition/application and records *)
@@ -44,7 +28,7 @@ let potentially_conflicts_with ~keyword s =
 (** Add/remove an appropriate suffix when mangling potential keywords *)
 let string_add_suffix x = x ^ "_"
 
-let string_drop_suffix x = String.sub x 0 (String.length x - 1)
+let string_drop_suffix x = String.sub x ~pos:0 ~len:(String.length x - 1)
 
 (** What do these *_swap functions do? Here's an example: Reason code uses `!`
     for logical not, while ocaml uses `not`. So, for converting between reason
@@ -91,7 +75,7 @@ let reason_to_ml_swap = function
   | "==" -> "="
   (* ===\/ and !==\/ are not representable in OCaml but
    * representable in Reason
-  *)
+   *)
   | "\\!==" -> "!=="
   | "\\===" -> "==="
   | "!=" -> "<>"
@@ -117,7 +101,7 @@ let ml_to_reason_swap = function
   | "=" -> "=="
   (* ===\/ and !==\/ are not representable in OCaml but
    * representable in Reason
-  *)
+   *)
   | "!==" -> "\\!=="
   | "===" -> "\\==="
   | "<>" -> "!="
@@ -138,20 +122,17 @@ let ml_to_reason_swap = function
 let escape_string str =
   let buf = Buffer.create (String.length str) in
   String.iter
-    (fun c ->
-       match c with
-       | '\t' -> Buffer.add_string buf "\\t"
-       | '\r' -> Buffer.add_string buf "\\r"
-       | '\n' -> Buffer.add_string buf "\\n"
-       | '\\' -> Buffer.add_string buf "\\\\"
-       | '"' -> Buffer.add_string buf "\\\""
-       | c when c < ' ' -> Buffer.add_string buf (Char.escaped c)
-       | c -> Buffer.add_char buf c)
+    ~f:(fun c ->
+      match c with
+      | '\t' -> Buffer.add_string buf "\\t"
+      | '\r' -> Buffer.add_string buf "\\r"
+      | '\n' -> Buffer.add_string buf "\\n"
+      | '\\' -> Buffer.add_string buf "\\\\"
+      | '"' -> Buffer.add_string buf "\\\""
+      | c when c < ' ' -> Buffer.add_string buf (Char.escaped c)
+      | c -> Buffer.add_char buf c)
     str;
   Buffer.contents buf
-
-(* the stuff below contains side-effects and are not used by BuckleScript's
-  vendored version of reason_syntax_util.ml. So we can neglect it *)
 
 (*
     UTF-8 characters are encoded like this (most editors are UTF-8)
@@ -247,8 +228,9 @@ let replace_string old_str new_str str =
     loop 0 occurrence;
     Buffer.contents buffer
 
-(* This is lifted from https://github.com/bloomberg/bucklescript/blob/14d94bb9c7536b4c5f1208c8e8cc715ca002853d/jscomp/ext/ext_string.ml#L32
-  Thanks @bobzhang and @hhugo! *)
+(* This is lifted from
+   https://github.com/bloomberg/bucklescript/blob/14d94bb9c7536b4c5f1208c8e8cc715ca002853d/jscomp/ext/ext_string.ml#L32
+   Thanks @bobzhang and @hhugo! *)
 let split_by ?(keep_empty = false) is_delim str =
   let len = String.length str in
   let rec loop acc last_pos pos =
@@ -256,17 +238,15 @@ let split_by ?(keep_empty = false) is_delim str =
     then
       if last_pos = 0 && not keep_empty
       then
-        (*
-           {[ split " test_unsafe_obj_ffi_ppx.cmi" ~keep_empty:false ' ']}
-        *)
+        (* {[ split " test_unsafe_obj_ffi_ppx.cmi" ~keep_empty:false ' ']} *)
         acc
-      else String.sub str 0 last_pos :: acc
+      else String.sub str ~pos:0 ~len:last_pos :: acc
     else if is_delim str.[pos]
     then
       let new_len = last_pos - pos - 1 in
       if new_len <> 0 || keep_empty
       then
-        let v = String.sub str (pos + 1) new_len in
+        let v = String.sub str ~pos:(pos + 1) ~len:new_len in
         loop (v :: acc) pos (pos - 1)
       else loop acc pos (pos - 1)
     else loop acc last_pos (pos - 1)
@@ -291,7 +271,7 @@ let trim_right str =
     then ""
     else if index = length
     then str
-    else String.sub str 0 index
+    else String.sub str ~pos:0 ~len:index
 
 let processLine line =
   let rightTrimmed = trim_right line in
@@ -305,14 +285,14 @@ let processLine line =
         (fun c -> c = TrailingCommaMarker.char)
         rightTrimmed
     in
-    (* Now we concat the portions back together without any trailing comma markers
-      - except we detect if there was a final trailing comma marker which we know
-      must be before a newline so we insert a regular comma. This achieves
-      "intelligent" trailing commas. *)
+    (* Now we concat the portions back together without any trailing comma
+       markers - except we detect if there was a final trailing comma marker
+       which we know must be before a newline so we insert a regular comma. This
+       achieves "intelligent" trailing commas. *)
     let hadTrailingCommaMarkerBeforeNewline =
       String.get rightTrimmed (trimmedLen - 1) = TrailingCommaMarker.char
     in
-    let almostEverything = String.concat "" segments in
+    let almostEverything = String.concat ~sep:"" segments in
     let lineBuilder =
       if hadTrailingCommaMarkerBeforeNewline
       then almostEverything ^ ","
@@ -320,13 +300,13 @@ let processLine line =
     in
     (* Ensure EOLMarker.char is replaced by a newline *)
     split_by ~keep_empty:false (fun c -> c = EOLMarker.char) lineBuilder
-    |> List.map trim_right
-    |> String.concat "\n"
+    |> List.map ~f:trim_right
+    |> String.concat ~sep:"\n"
 
 let processLineEndingsAndStarts str =
   split_by ~keep_empty:true (fun x -> x = '\n') str
-  |> List.map processLine
-  |> String.concat "\n"
+  |> List.map ~f:processLine
+  |> String.concat ~sep:"\n"
   |> String.trim
 
 let isLineComment str =
@@ -384,18 +364,18 @@ let map_core_type f typ =
       | Ptyp_object (fields, closed_flag) when !rename_labels ->
         Ptyp_object
           ( List.map
-              (function
+              ~f:(function
                 | { pof_desc = Otag (s, typ); _ } as pof ->
                   { pof with pof_desc = Otag ({ s with txt = f s.txt }, typ) }
                 | other -> other)
               fields
           , closed_flag )
       | Ptyp_class (lid, typs) -> Ptyp_class (map_lident f lid, typs)
-      | Ptyp_alias (typ, s) -> Ptyp_alias (typ, f s)
+      | Ptyp_alias (typ, s) -> Ptyp_alias (typ, { s with txt = f s.txt })
       | Ptyp_variant (rfs, closed, lbls) ->
         Ptyp_variant
           ( List.map
-              (function
+              ~f:(function
                 | { prf_desc = Rtag (lbl, b, cts); _ } as prf ->
                   { prf with
                     prf_desc = Rtag ({ lbl with txt = f lbl.txt }, b, cts)
@@ -405,11 +385,11 @@ let map_core_type f typ =
           , closed
           , lbls )
       | Ptyp_poly (vars, typ) ->
-        Ptyp_poly (List.map (fun li -> { li with txt = f li.txt }) vars, typ)
+        Ptyp_poly (List.map ~f:(fun li -> { li with txt = f li.txt }) vars, typ)
       | Ptyp_package (lid, typs) ->
         Ptyp_package
           ( map_lident f lid
-          , List.map (fun (lid, typ) -> map_lident f lid, typ) typs )
+          , List.map ~f:(fun (lid, typ) -> map_lident f lid, typ) typs )
       | other -> other)
   }
 
@@ -422,7 +402,7 @@ let map_core_type f typ =
 
 class identifier_mapper f =
   let map_fields fields =
-    List.map (fun (lid, x) -> map_lident f lid, x) fields
+    List.map ~f:(fun (lid, x) -> map_lident f lid, x) fields
   in
   let map_name ({ txt; _ } as name) = { name with txt = f txt } in
   let map_lid lid = map_lident f lid in
@@ -436,13 +416,31 @@ class identifier_mapper f =
         match expr with
         | { pexp_desc = Pexp_ident lid; _ } ->
           { expr with pexp_desc = Pexp_ident (map_lid lid) }
-        | { pexp_desc = Pexp_fun (label, eo, pat, e); _ } when !rename_labels ->
-          { expr with pexp_desc = Pexp_fun (map_label label, eo, pat, e) }
+        | { pexp_desc = Pexp_function (params, constraint_, body); _ } ->
+          let new_params =
+            List.map
+              ~f:(fun param ->
+                match param with
+                | { pparam_desc = Pparam_val (lbl, eo, pat); _ }
+                  when !rename_labels ->
+                  { param with
+                    pparam_desc = Pparam_val (map_label lbl, eo, pat)
+                  }
+                | { pparam_desc = Pparam_newtype s; _ } ->
+                  { param with
+                    pparam_desc = Pparam_newtype { s with txt = f s.txt }
+                  }
+                | _ -> param)
+              params
+          in
+          { expr with
+            pexp_desc = Pexp_function (new_params, constraint_, body)
+          }
         | { pexp_desc = Pexp_apply (e, args); _ } when !rename_labels ->
           { expr with
             pexp_desc =
               Pexp_apply
-                (e, List.map (fun (label, e) -> map_label label, e) args)
+                (e, List.map ~f:(fun (label, e) -> map_label label, e) args)
           }
         | { pexp_desc = Pexp_variant (s, e); _ } ->
           { expr with pexp_desc = Pexp_variant (f s, e) }
@@ -460,7 +458,7 @@ class identifier_mapper f =
           { expr with pexp_desc = Pexp_setinstvar (map_name name, e) }
         | { pexp_desc = Pexp_override name_exp_list; _ } ->
           let name_exp_list =
-            List.map (fun (name, e) -> map_name name, e) name_exp_list
+            List.map ~f:(fun (name, e) -> map_name name, e) name_exp_list
           in
           { expr with pexp_desc = Pexp_override name_exp_list }
         | { pexp_desc = Pexp_newtype (s, e); _ } ->
@@ -501,7 +499,7 @@ class identifier_mapper f =
             ptype_kind =
               Ptype_record
                 (List.map
-                   (fun lbl -> { lbl with pld_name = map_name lbl.pld_name })
+                   ~f:(fun lbl -> { lbl with pld_name = map_name lbl.pld_name })
                    lst)
           }
         | _ -> type_decl'
@@ -629,14 +627,14 @@ let is_letop s =
   && s.[0] = 'l'
   && s.[1] = 'e'
   && s.[2] = 't'
-  && List.mem s.[3] let_monad_symbols
+  && List.mem s.[3] ~set:let_monad_symbols
 
 let is_andop s =
   String.length s > 3
   && s.[0] = 'a'
   && s.[1] = 'n'
   && s.[2] = 'd'
-  && List.mem s.[3] let_monad_symbols
+  && List.mem s.[3] ~set:let_monad_symbols
 
 (* Don't need to backport past 4.08 *)
 let backport_letopt_mapper = new Ast_traverse.map
@@ -649,41 +647,38 @@ class escape_stars_slashes_mapper =
     inherit identifier_mapper escape_stars_slashes
   end
 
-(* To be used in parser, transform a token into an ast node with different identifier
-*)
+(* To be used in parser, transform a token into an ast node with different
+   identifier *)
 class reason_to_ml_swap_operator_mapper =
   object
     inherit identifier_mapper reason_to_ml_swap
   end
 
-(* To be used in printer, transform an ast node into a token with different identifier
-*)
+(* To be used in printer, transform an ast node into a token with different
+   identifier *)
 class ml_to_reason_swap_operator_mapper =
   object
     inherit identifier_mapper ml_to_reason_swap
   end
 
-(* attribute_equals tests an attribute is txt
-*)
+(* attribute_equals tests an attribute is txt *)
 let attribute_equals to_compare = function
   | { attr_name = { txt; _ }; _ } -> txt = to_compare
 
-(* attribute_exists tests if an attribute exists in a list
-*)
+(* attribute_exists tests if an attribute exists in a list *)
 let attribute_exists txt attributes =
-  List.exists (attribute_equals txt) attributes
+  List.exists ~f:(attribute_equals txt) attributes
 
 (* conflicted_attributes tests if both attribute1 and attribute2
  * exist
-*)
+ *)
 let attributes_conflicted attribute1 attribute2 attributes =
   attribute_exists attribute1 attributes
   && attribute_exists attribute2 attributes
 
-(* normalized_attributes removes attribute from a list of attributes
-*)
+(* normalized_attributes removes attribute from a list of attributes *)
 let normalized_attributes attribute attributes =
-  List.filter (fun x -> not (attribute_equals attribute x)) attributes
+  List.filter ~f:(fun x -> not (attribute_equals attribute x)) attributes
 
 (* apply_mapper family applies an ast_mapper to an ast *)
 let apply_mapper_to_structure mapper s = mapper#structure s
@@ -698,7 +693,7 @@ let apply_mapper_to_toplevel_phrase mapper toplevel_phrase =
   | x -> x
 
 let apply_mapper_to_use_file mapper use_file =
-  List.map (fun x -> apply_mapper_to_toplevel_phrase mapper x) use_file
+  List.map ~f:(apply_mapper_to_toplevel_phrase mapper) use_file
 
 let map_first f = function
   | [] -> invalid_arg "Syntax_util.map_first: empty list"
@@ -732,9 +727,10 @@ let parse_lid s =
   let unflatten l =
     match l with
     | [] -> None
-    | hd :: tl -> Some (List.fold_left (fun p s -> Ldot (p, s)) (Lident hd) tl)
+    | hd :: tl ->
+      Some (List.fold_left ~f:(fun p s -> Ldot (p, s)) ~init:(Lident hd) tl)
   in
-  match unflatten (String.split_on_char '.' s) with
+  match unflatten (String.split_on_char ~sep:'.' s) with
   | Some lid -> lid
   | None ->
     failwith (Format.asprintf "parse_lid: unable to parse '%s' to longident" s)

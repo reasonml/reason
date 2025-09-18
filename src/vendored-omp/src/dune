@@ -1,12 +1,8 @@
 (library
  (name reason_omp)
  (public_name reason.ocaml-migrate-parsetree)
- ; Changed for reason to avoid conflicting modules at link time between
- ; omp and reason itself.
  (wrapped true)
- ; (wrapped
- ; (transition "Access modules via the Migrate_parsetree toplevel module"))
- (libraries ppxlib.astlib ppx_derivers)
+ (libraries ppxlib.astlib)
  (modules :standard \ migrate_parsetree_driver_main)
  (preprocess
   (action
@@ -32,8 +28,7 @@
 ;  (libraries reason_migrate_parsetree))
 
 (rule
- (copy#
-  compiler-functions/%{read:compiler-functions-file}
+ (copy# compiler-functions/%{read:compiler-functions-file}
   migrate_parsetree_compiler_functions.ml))
 
 (rule

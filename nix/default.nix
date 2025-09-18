@@ -23,11 +23,11 @@ rec {
 
     nativeBuildInputs = with ocamlPackages; [ cppo menhir ];
     propagatedBuildInputs = with ocamlPackages; [
+      cmdliner
       merlin-extend
       menhirSdk
       menhirLib
       fix
-      ppx_derivers
       ppxlib
       dune-build-info
     ];

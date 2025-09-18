@@ -32,14 +32,14 @@ module Range = struct
       match comments with
       | Some comments ->
         List.fold_left
-          (fun acc (curr : Reason_comment.t) ->
-             let cl = Reason_comment.location curr in
-             let startLnum = cl.loc_start.pos_lnum in
-             let endLnum = cl.loc_end.pos_lnum in
-             if containsLoc range cl
-             then acc + (endLnum - startLnum + 1)
-             else acc)
-          0
+          ~f:(fun acc (curr : Reason_comment.t) ->
+            let cl = Reason_comment.location curr in
+            let startLnum = cl.loc_start.pos_lnum in
+            let endLnum = cl.loc_end.pos_lnum in
+            if containsLoc range cl
+            then acc + (endLnum - startLnum + 1)
+            else acc)
+          ~init:0
           comments
       | None -> 0
     in

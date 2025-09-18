@@ -3,13 +3,15 @@
  (package reason)
  (modes exe byte)
  (modules refmt)
+ (flags :standard -open StdLabels)
  (libraries refmt_lib))
 
 (library
  (public_name reason.refmt-lib)
  (name refmt_lib)
  (modules :standard \ refmt)
- (libraries reason reason.cmdliner dune-build-info))
+ (flags :standard -open StdLabels)
+ (libraries reason cmdliner dune-build-info))
 
 (rule
  (with-stdout-to

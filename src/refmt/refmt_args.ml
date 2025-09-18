@@ -1,4 +1,4 @@
-open Vendored_cmdliner
+open Cmdliner
 
 let interface =
   let doc = "parse AST as an interface" in

@@ -7,7 +7,7 @@ Format features from OCaml 4.03
   let f =
     fun
     | B => 0
-    | A({a}) => a;
+    | A({ a }) => a;
   
   type nonrec u('a) =
     | Box('a);
@@ -27,20 +27,19 @@ Format features from OCaml 4.03
       })
       : expr('a);
   
-  let rec eval: type a. expr(a) => a =
-    e =>
-      switch (e) {
-      | Is0({test}) => eval(test) == 0
-      | Val({value}) => value
-      | Add({left, right}) =>
-        eval(left) + eval(right)
-      | If({pred, true_branch, false_branch}) =>
-        if (eval(pred)) {
-          eval(true_branch);
-        } else {
-          eval(false_branch);
-        }
-      };
+  let rec eval: type a. expr(a) => a = e =>
+    switch (e) {
+    | Is0({ test }) => eval(test) == 0
+    | Val({ value }) => value
+    | Add({ left, right }) =>
+      eval(left) + eval(right)
+    | If({ pred, true_branch, false_branch }) =>
+      if (eval(pred)) {
+        eval(true_branch);
+      } else {
+        eval(false_branch);
+      }
+    };
   
   type hlist =
     | []: hlist;

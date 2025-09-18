@@ -435,3 +435,8 @@ type apiKeyError = [|`Dev |`Prod];
 type apiKeyError = [ | `Dev |`Prod];
 type apiKeyError = [ `Dev |`Prod];
 
+/* Coercion without ground */
+let x :> [> `A | `B ] = `A;
+
+/* Coercion with ground */
+let x : foo :> [> `A | `B ] = `A;

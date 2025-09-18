@@ -30,7 +30,7 @@ let dump ppf t =
     (string_of_category t.category)
     t.text
 
-let dump_list ppf list = List.iter (Format.fprintf ppf "%a\n" dump) list
+let dump_list ppf list = List.iter ~f:(Format.fprintf ppf "%a\n" dump) list
 
 let wrap t =
   match t.text with
@@ -38,7 +38,7 @@ let wrap t =
   | txt when Reason_syntax_util.isLineComment txt ->
     "//"
     (* single line comments of the form `// comment` have a `\n` at the end *)
-    ^ String.sub txt 0 (String.length txt - 1)
+    ^ String.sub txt ~pos:0 ~len:(String.length txt - 1)
     ^ Reason_syntax_util.EOLMarker.string
   | txt when txt.[0] = '*' && txt.[1] <> '*' ->
     (* CHECK: this comment printing seems fishy.
@@ -50,7 +50,7 @@ let wrap t =
      *       /***
      *        * bla */
      *  I think this case should be removed.
-    *)
+     *)
     "/**" ^ txt ^ "*/"
   | txt -> "/*" ^ txt ^ "*/"
 

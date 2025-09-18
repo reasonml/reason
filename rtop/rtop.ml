@@ -18,16 +18,15 @@ let start_utop () =
     let xdg_fn =
       LTerm_resources.xdgbd_file ~loc:LTerm_resources.Config "rtop/init.re"
     in
-    (* NOTE(anmonteiro): in the future, we could try checking for
-       `~/.ocamlinit` and `~/.config/utop/init.ml` and convert those to Reason
-    *)
+    (* NOTE(anmonteiro): in the future, we could try checking for `~/.ocamlinit`
+       and `~/.config/utop/init.ml` and convert those to Reason *)
     Clflags.init_file :=
       (match Sys.file_exists xdg_fn with
         | true -> Some xdg_fn
         | false ->
           (* If `~/.config/rtop/init.re` isn't found, we can't be loading a
-             user's `init.ml` because it'll be full of syntax errors for
-             `rtop`. Create an empty temp file instead. *)
+             user's `init.ml` because it'll be full of syntax errors for `rtop`.
+             Create an empty temp file instead. *)
           Some (Filename.temp_file "rtop" ".re")));
   UTop_main.main ()
 
@@ -38,8 +37,8 @@ let main () =
   | Not_found -> ());
 
   UTop.require [ "reason.easy_format"; "reason" ];
-  Reason_toploop.main ();
-  Reason_utop.init_reason ();
+  Rtoplib.Reason_toploop.main ();
+  Rtoplib.Reason_utop.init_reason ();
   print_init_message ();
   start_utop ()
 

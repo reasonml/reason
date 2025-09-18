@@ -13,14 +13,14 @@ Print the formatted file
   type myRecord = {myRecordField: int};
   
   let operateOnLazyValue =
-      (lazy({myRecordField})) => {
+      (lazy({ myRecordField })) => {
     let tmp = myRecordField;
     tmp + tmp;
   };
   
   let result =
     operateOnLazyValue(
-      lazy({myRecordField: 100}),
+      lazy({ myRecordField: 100 }),
     );
   
   type box('a) =

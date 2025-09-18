@@ -2,9 +2,9 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*)
+ *)
 
-module Cmdliner = Vendored_cmdliner
+open Reason
 open Cmdliner
 open Refmt_lib
 
@@ -38,8 +38,8 @@ let refmt
     in
     let eol =
       match use_stdin, input_file with
-      | true, _ -> Eol_detect.default_eol
-      | false, name -> Eol_detect.get_eol_for_file name
+      | true, _ -> End_of_line.Detect.default
+      | false, name -> End_of_line.Detect.get_eol_for_file name
     in
     let parse_ast =
       match parse_ast, use_stdin with
@@ -83,7 +83,7 @@ let refmt
     (* If you run into trouble with this (or need to use std_formatter by itself
        at the same time for some reason), try breaking this out so that it's not
        possible to call Format.formatter_of_out_channel on stdout. *)
-    let output_formatter = Eol_convert.get_formatter output_chan eol in
+    let output_formatter = End_of_line.Convert.get_formatter output_chan eol in
     Printer.print print input_file parsedAsML output_chan output_formatter ast;
     (* Also closes all open boxes. *)
     Format.pp_print_flush output_formatter ();
@@ -93,7 +93,7 @@ let refmt
   try
     match input_files with
     | [] -> `Ok (refmt_single None)
-    | _ -> `Ok (List.iter (fun file -> refmt_single (Some file)) input_files)
+    | _ -> `Ok (List.iter ~f:(fun file -> refmt_single (Some file)) input_files)
   with
   | Printer_maker.Invalid_config msg -> `Error (true, msg)
   | Reason_errors.Reason_error (error, loc) ->
@@ -113,7 +113,7 @@ let () =
           let acc =
             if j = i || (j = i + 1 && last_is_cr)
             then acc
-            else String.sub s i (j - i) :: acc
+            else String.sub s ~pos:i ~len:(j - i) :: acc
           in
           List.rev acc
         else
@@ -122,7 +122,7 @@ let () =
           | '\n' ->
             let line =
               let len = if last_is_cr then j - i - 1 else j - i in
-              String.sub s i len
+              String.sub s ~pos:i ~len
             in
             loop ~acc:(line :: acc) (j + 1) (j + 1) ~last_is_cr:false
           | _ -> loop ~acc i (j + 1) ~last_is_cr:false
@@ -153,7 +153,7 @@ let () =
         in
         `Blocks (prose :: code_lines)
       in
-      let example_blocks = examples |> List.mapi block_of_example in
+      let example_blocks = List.mapi examples ~f:block_of_example in
       `Blocks (`S "EXAMPLES" :: example_blocks)
   in
   let refmt_t =

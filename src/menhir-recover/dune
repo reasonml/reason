@@ -1,4 +1,4 @@
 (executable
  (name main)
- (libraries fix menhirLib menhirSdk)
- (flags :standard -w -67))
+ (flags :standard -open StdLabels)
+ (libraries fix menhirLib menhirSdk))

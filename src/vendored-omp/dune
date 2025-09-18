@@ -1,4 +1,0 @@
-; (install
-;  (section doc)
-;  (package reason)
-;  (files MANUAL.md))

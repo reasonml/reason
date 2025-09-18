@@ -1,7 +1,20 @@
 ## Unreleased
 
+- Support OCaml 5.4 (@anmonteiro,
+  [#2844](https://github.com/reasonml/reason/pull/2844))
+- build: use `(wrapped true)` for internal libraries (@anmonteiro,
+  [#2842](https://github.com/reasonml/reason/pull/2842))
+- BREAKING: remove `refmttype` binary (@anmonteiro,
+  [#2855](https://github.com/reasonml/reason/pull/2855))
+- printer: pad record braces with spaces (@anmonteiro,
+  [#2859](https://github.com/reasonml/reason/pull/2859))
+
+## 3.16.0
+
 - require OCaml >= 4.08 (@anmonteiro,
   [#2840](https://github.com/reasonml/reason/pull/2840))
+- support ppxlib with OCaml 5.2 AST (and require ppxlib >= 0.36) (@anmonteiro,
+  [#2835](https://github.com/reasonml/reason/pull/2835))
 
 ## 3.15.0
 

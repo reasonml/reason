@@ -1,25 +1,7 @@
-(* Hello! Welcome to the Reason syntax util logic.
-
-  This file's shared between the Reason repo and the BuckleScript repo. In
-  Reason, it's in src/reason-parser. In BuckleScript, it's in
-  jscomp/outcome_printer. We periodically copy this file from Reason (the source
-  of truth) to BuckleScript, then uncomment the #if #else #end cppo macros you
-  see in the file. That's because BuckleScript's on OCaml 4.02 while Reason's on
-  4.04; so the #if macros surround the pieces of code that are different between
-  the two compilers.
-
-  When you modify this file, please make sure you're not dragging in too many
-  things. You don't necessarily have to test the file on both Reason and
-  BuckleScript; ping @chenglou and a few others and we'll keep them synced up by
-  patching the right parts, through the power of types(tm)
-*)
 open Ppxlib
 
 val ml_to_reason_swap : string -> string
 val escape_string : string -> string
-
-(* Everything below is used by reason repo but not the BuckleScript repo *)
-
 val reason_to_ml_swap : string -> string
 
 module TrailingCommaMarker : sig

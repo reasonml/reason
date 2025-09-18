@@ -50,7 +50,6 @@
 %{
 module Ast_helper = Ppxlib.Ast_helper
 module Location = Ppxlib.Location
-module Longident = Ppxlib.Longident
 
 open Ppxlib.Asttypes
 
@@ -239,7 +238,7 @@ let may_tuple startp endp = function
   type component = {props, state};
 *)
 let mkct { Location.txt; loc } =
-  let lident = Longident.Lident txt in
+  let lident = Ppxlib.Longident.Lident txt in
   let ttype = Ppxlib.Ptyp_constr({txt = lident; loc = loc}, []) in
   { Ppxlib.ptyp_desc = ttype
   ; ptyp_loc = loc
@@ -283,7 +282,7 @@ let is_pattern_list_single_any = function
   | _ -> None
 
 let mkoperator { Location.txt; loc } =
-  Ast_helper.Exp.mk ~loc (Pexp_ident(mkloc (Longident.Lident txt) loc))
+  Ast_helper.Exp.mk ~loc (Pexp_ident(mkloc (Ppxlib.Longident.Lident txt) loc))
 
 (*
   Ghost expressions and patterns:
@@ -310,7 +309,7 @@ let mkoperator { Location.txt; loc } =
 
 
 let ghunit ?(loc=dummy_loc ()) () =
-  mkexp ~ghost:true ~loc (Pexp_construct (mknoloc (Longident.Lident "()"), None))
+  mkexp ~ghost:true ~loc (Pexp_construct (mknoloc (Ppxlib.Longident.Lident "()"), None))
 
 let mkinfixop arg1 op arg2 =
   mkexp(Pexp_apply(op, [Nolabel, arg1; Nolabel, arg2]))
@@ -320,7 +319,7 @@ let mkinfix arg1 name arg2 =
 
 let neg_string f =
   if String.length f > 0 && f.[0] = '-'
-  then String.sub f 1 (String.length f - 1)
+  then String.sub f ~pos:1 ~len:(String.length f - 1)
   else "-" ^ f
 
 let mkuminus name ({ Ppxlib.pexp_desc; _ } as arg) =
@@ -337,13 +336,13 @@ let mk_functor_mod args body =
   let folder { Location.txt; loc } acc =
     mkmod ~loc (Pmod_functor(txt, acc))
   in
-  List.fold_right folder args body
+  List.fold_right args ~init:body ~f:folder 
 
 let mk_functor_mty args body =
   let folder { Location.txt; loc } acc =
     mkmty ~loc (Pmty_functor(txt, acc))
   in
-  List.fold_right folder args body
+  List.fold_right args ~init:body ~f:folder 
 
 let mkuplus name ({ Ppxlib.pexp_desc; _ } as arg) =
   match name.Location.txt, pexp_desc with
@@ -355,23 +354,23 @@ let mkuplus name ({ Ppxlib.pexp_desc; _ } as arg) =
       mkexp(Pexp_apply(mkoperator name, [Nolabel, arg]))
 
 let mkexp_cons consloc args loc =
-  mkexp ~loc (Pexp_construct(mkloc (Longident.Lident "::") consloc, Some args))
+  mkexp ~loc (Pexp_construct(mkloc (Ppxlib.Longident.Lident "::") consloc, Some args))
 
 let mkexp_constructor_unit ?(uncurried=false) consloc loc =
   let attrs = if uncurried then [uncurry_payload ~name:"uncurry" loc] else [] in
-  mkexp ~attrs ~loc (Pexp_construct(mkloc (Longident.Lident "()") consloc, None))
+  mkexp ~attrs ~loc (Pexp_construct(mkloc (Ppxlib.Longident.Lident "()") consloc, None))
 
 let ghexp_cons args loc =
-  mkexp ~ghost:true ~loc (Pexp_construct(mkloc (Longident.Lident "::") loc, Some args))
+  mkexp ~ghost:true ~loc (Pexp_construct(mkloc (Ppxlib.Longident.Lident "::") loc, Some args))
 
 let mkpat_cons args loc =
-  mkpat ~loc (Ppat_construct(mkloc (Longident.Lident "::") loc, Some ([], args)))
+  mkpat ~loc (Ppat_construct(mkloc (Ppxlib.Longident.Lident "::") loc, Some ([], args)))
 
 let ghpat_cons args loc =
-  mkpat ~ghost:true ~loc (Ppat_construct(mkloc (Longident.Lident "::") loc, Some ([], args)))
+  mkpat ~ghost:true ~loc (Ppat_construct(mkloc (Ppxlib.Longident.Lident "::") loc, Some ([], args)))
 
 let mkpat_constructor_unit consloc loc =
-  mkpat ~loc (Ppat_construct(mkloc (Longident.Lident "()") consloc, None))
+  mkpat ~loc (Ppat_construct(mkloc (Ppxlib.Longident.Lident "()") consloc, None))
 
 let simple_pattern_list_to_tuple ?(loc=dummy_loc ()) = function
   | [] -> assert false
@@ -385,7 +384,7 @@ let mktailexp_extension loc seq ext_opt =
             ext
           | None ->
             let loc = make_ghost_loc loc in
-            let nil = { Location.txt = Longident.Lident "[]"; loc } in
+            let nil = { Location.txt = Ppxlib.Longident.Lident "[]"; loc } in
             Ast_helper.Exp.mk ~loc (Pexp_construct (nil, None)) in
         base_case
     | (e1: Ppxlib.expression) :: el ->
@@ -404,7 +403,7 @@ let mktailpat_extension loc (seq, ext_opt) =
           ext
         | None ->
           let loc = make_ghost_loc loc in
-          let nil = { Location.txt = Longident.Lident "[]"; loc } in
+          let nil = { Location.txt = Ppxlib.Longident.Lident "[]"; loc } in
           mkpat ~loc (Ppat_construct (nil, None)) in
       base_case
   | (p1: Ppxlib.pattern) :: pl ->
@@ -443,7 +442,7 @@ let mk_record_expr ?loc (exten, fields) =
   | _ -> mkexp ?loc (Pexp_record (fields, exten))
 
 let array_function ?(loc=dummy_loc()) str name =
-  ghloc ~loc (Longident.Ldot(Lident str, (if !Clflags.unsafe then "unsafe_" ^ name else name)))
+  ghloc ~loc (Ppxlib.Longident.Ldot(Lident str, (if !Clflags.unsafe then "unsafe_" ^ name else name)))
 
 let syntax_error loc s =
   raise_error (Other_syntax_error s) loc
@@ -522,13 +521,13 @@ let process_underscore_application args =
   let check_arg ((lab, exp) as arg) =
     match exp.Ppxlib.pexp_desc with
     | Pexp_ident ({ txt = Lident "_"; _} as id) ->
-        let new_id = mkloc (Longident.Lident hidden_var) id.loc in
+        let new_id = mkloc (Ppxlib.Longident.Lident hidden_var) id.loc in
         let new_exp = mkexp (Pexp_ident new_id) ~loc:exp.pexp_loc in
         exp_question := Some new_exp;
         (lab, new_exp)
     | _ ->
         arg in
-  let args = List.map check_arg args in
+  let args = List.map ~f:check_arg args in
   let wrap exp_apply = match !exp_question with
     | Some {pexp_loc=loc;_} ->
         let pattern = mkpat (Ppat_var (mkloc hidden_var loc)) ~loc in
@@ -540,7 +539,7 @@ let process_underscore_application args =
          *)
         | Pexp_apply(
           {pexp_desc= Pexp_apply(
-            {pexp_desc = Pexp_ident({txt = Longident.Lident "|."; _}); _} as pipeExp,
+            {pexp_desc = Pexp_ident({txt = Ppxlib.Longident.Lident "|."; _}); _} as pipeExp,
             [Nolabel, arg1; Nolabel, ({pexp_desc = Pexp_ident _; _} as arg2)]
             (*         5                            doStuff                   *)
           ); _},
@@ -549,15 +548,21 @@ let process_underscore_application args =
             (* build `doStuff(3, __x, 7)` *)
             let innerApply = {arg2 with pexp_desc = Pexp_apply(arg2, args)} in
             (* build `__x => doStuff(3, __x, 7)` *)
+            let param : Ppxlib.function_param =
+              { pparam_desc = Pparam_val (Nolabel, None, pattern); pparam_loc = loc }
+            in
             let innerFun =
-              mkexp (Pexp_fun (Nolabel, None, pattern, innerApply)) ~loc
+              mkexp (Pexp_function ([param], None, Pfunction_body innerApply)) ~loc
             in
             (* build `5 |. (__x => doStuff(3, __x, 7))` *)
             {exp_apply with pexp_desc =
               Pexp_apply(pipeExp, [Nolabel, arg1; Nolabel, innerFun])
             }
         | _ ->
-          mkexp (Pexp_fun (Nolabel, None, pattern, exp_apply)) ~loc
+          let param : Ppxlib.function_param =
+            { pparam_desc = Pparam_val (Nolabel, None, pattern); pparam_loc = loc }
+          in
+          mkexp (Pexp_function ([param], None, Pfunction_body exp_apply)) ~loc
         end
     | None ->
         exp_apply in
@@ -596,7 +601,7 @@ let mkexp_app_rev startp endp (body, args) =
     | (lbl, e)::es ->
         let attrs = e.Ppxlib.pexp_attributes in
         let hasUncurryAttr = ref false in
-        let newAttrs = List.filter (function
+        let newAttrs = List.filter ~f:(function
           | { Ppxlib.attr_name = {txt = "uncurry"; _}; attr_payload = PStr []; _} ->
               hasUncurryAttr := true;
               false
@@ -657,12 +662,15 @@ let mkexp_app_rev startp endp (body, args) =
     let groups = group (false, []) [] processed_args in
     make_appl body groups
 
+let mkmod_app_unit ~loc (mexp: Ppxlib.module_expr) =
+  mkmod ~loc (Pmod_apply_unit mexp)
+
 let mkmod_app (mexp: Ppxlib.module_expr) (marg: Ppxlib.module_expr) =
   mkmod ~loc:(mklocation mexp.pmod_loc.loc_start marg.pmod_loc.loc_end)
     (Pmod_apply (mexp, marg))
 
 let bigarray_function ?(loc=dummy_loc()) str name =
-  ghloc ~loc (Longident.Ldot(Ldot(Lident "Bigarray", str), name))
+  ghloc ~loc (Ppxlib.Longident.Ldot(Ldot(Lident "Bigarray", str), name))
 
 let bigarray_get ?(loc=dummy_loc()) arr arg =
   let get = if !Clflags.unsafe then "unsafe_get" else "get" in
@@ -699,13 +707,13 @@ let bigarray_set ?(loc=dummy_loc()) arr arg newval =
                         Nolabel, newval]))
 
 let exp_of_label label =
-  mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Longident.last_exn label.txt)})
+  mkexp ~loc:label.loc (Pexp_ident {label with txt=Lident(Ppxlib.Longident.last_exn label.txt)})
 
 let pat_of_label label =
-  mkpat ~loc:label.loc (Ppat_var {label with txt=(Longident.last_exn label.txt)})
+  mkpat ~loc:label.loc (Ppat_var {label with txt=(Ppxlib.Longident.last_exn label.txt)})
 
 let check_variable vl loc v =
-  if List.mem v vl then
+  if List.mem v ~set:vl then
     raise_error (Variable_in_scope (loc,v)) loc
 
 let varify_constructors var_names t =
@@ -718,33 +726,34 @@ let varify_constructors var_names t =
           Ptyp_var x
       | Ptyp_arrow (label,core_type,core_type') ->
           Ptyp_arrow(label, loop core_type, loop core_type')
-      | Ptyp_tuple lst -> Ptyp_tuple (List.map loop lst)
-      | Ptyp_constr( { txt = Lident s; _ }, []) when List.mem s var_names ->
+      | Ptyp_tuple lst -> Ptyp_tuple (List.map ~f:loop lst)
+      | Ptyp_constr( { txt = Lident s; _ }, []) when List.mem s ~set:var_names ->
           Ptyp_var s
       | Ptyp_constr(longident, lst) ->
-          Ptyp_constr(longident, List.map loop lst)
+          Ptyp_constr(longident, List.map ~f:loop lst)
       | Ptyp_object (lst, o) ->
           Ptyp_object
             (List.map
-               (fun ({ Ppxlib.pof_desc; _ } as obj) ->
+               ~f:(fun ({ Ppxlib.pof_desc; _ } as obj) ->
                  let pof_desc' = match pof_desc with
                    | Otag (s, t) -> Ppxlib.Otag (s, loop t)
                    | Oinherit t -> Oinherit (loop t)
                  in
                  { obj with pof_desc = pof_desc' }) lst, o)
       | Ptyp_class (longident, lst) ->
-          Ptyp_class (longident, List.map loop lst)
-      | Ptyp_alias(core_type, string) ->
-          check_variable var_names t.ptyp_loc string;
-          Ptyp_alias(loop core_type, string)
+          Ptyp_class (longident, List.map ~f:loop lst)
+      | Ptyp_alias(core_type, label) ->
+          check_variable var_names t.ptyp_loc label.txt;
+          Ptyp_alias(loop core_type, label)
       | Ptyp_variant(row_field_list, flag, lbl_lst_option) ->
-          Ptyp_variant(List.map loop_row_field row_field_list,
+          Ptyp_variant(List.map ~f:loop_row_field row_field_list,
                        flag, lbl_lst_option)
       | Ptyp_poly(string_lst, core_type) ->
-          List.iter (fun x -> check_variable var_names t.ptyp_loc x.txt) string_lst;
+          List.iter ~f:(fun x -> check_variable var_names t.ptyp_loc x.txt) string_lst;
           Ptyp_poly(string_lst, loop core_type)
       | Ptyp_package(longident,lst) ->
-          Ptyp_package(longident,List.map (fun (n,typ) -> (n,loop typ) ) lst)
+          Ptyp_package(longident, List.map ~f:(fun (n,typ) -> (n,loop typ) ) lst)
+      | Ptyp_open (m, c) -> Ptyp_open (m, c)
       | Ptyp_extension (s, arg) ->
           Ptyp_extension (s, arg)
     in
@@ -753,7 +762,7 @@ let varify_constructors var_names t =
     fun ({ prf_desc; _} as rf) ->
       let prf_desc' = match prf_desc with
         | Rtag(label, flag, lst) ->
-          Ppxlib.Rtag(label, flag, List.map loop lst)
+          Ppxlib.Rtag(label, flag, List.map ~f:loop lst)
         | Rinherit t ->
           Rinherit (loop t)
       in
@@ -762,8 +771,8 @@ let varify_constructors var_names t =
   loop t
 
 let pexp_newtypes ?loc newtypes exp =
-  List.fold_right (fun newtype exp -> mkexp ?loc (Pexp_newtype (newtype, exp)))
-    newtypes exp
+  List.fold_right ~f:(fun newtype exp -> mkexp ?loc (Pexp_newtype (newtype, exp)))
+    newtypes ~init:exp
 
 (**
   I believe that wrap_type_annotation will automatically generate the type
@@ -773,7 +782,7 @@ let pexp_newtypes ?loc newtypes exp =
 let wrap_type_annotation newtypes core_type body =
   let exp = mkexp(Pexp_constraint(body,core_type)) in
   let exp = pexp_newtypes newtypes exp in
-  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors (List.map (fun {txt; _} -> txt) newtypes) core_type)) in
+  let typ = mktyp ~ghost:true (Ptyp_poly(newtypes,varify_constructors (List.map ~f:(fun {txt; _} -> txt) newtypes) core_type)) in
   (exp, typ)
 
 
@@ -928,15 +937,15 @@ let reason_mapper f a =
 
 let rewriteFunctorApp module_name elt loc =
   let rec applies = function
-    | Longident.Lident _ -> false
+    | Ppxlib.Longident.Lident _ -> false
     | Ldot (m, _) -> applies m
     | Lapply (_, _) -> true in
   let rec flattenModName = function
-    | Longident.Lident id -> id
+    | Ppxlib.Longident.Lident id -> id
     | Ldot (m, id) -> flattenModName m ^ "." ^ id
     | Lapply (m1, m2) -> flattenModName m1 ^ "(" ^ flattenModName m2 ^ ")" in
   let rec mkModExp = function
-    | Longident.Lident id -> mkmod ~loc (Pmod_ident {txt=Lident id; loc})
+    | Ppxlib.Longident.Lident id -> mkmod ~loc (Pmod_ident {txt=Lident id; loc})
     | Ldot (m, id) -> mkmod ~loc (Pmod_ident {txt=Ldot (m, id); loc})
     | Lapply (m1, m2) -> mkmod ~loc (Pmod_apply (mkModExp m1, mkModExp m2)) in
   if applies module_name then
@@ -949,7 +958,7 @@ let rewriteFunctorApp module_name elt loc =
 
 let jsx_component lid attrs children loc =
   let is_module_name = function
-    | Longident.Lident s
+    | Ppxlib.Longident.Lident s
     | Ldot (_, s) ->
       (* s will be non-empty so the 0th access is fine. Modules can't start with underscore *)
        String.get s 0 != '_' && s = String.capitalize_ascii s
@@ -970,21 +979,21 @@ let jsx_component lid attrs children loc =
   { body with pexp_attributes = attribute :: body.pexp_attributes }
 
 let rec ignoreLapply = function
-  | Longident.Lident id -> Longident.Lident id
+  | Ppxlib.Longident.Lident id -> Ppxlib.Longident.Lident id
   | Ldot (lid, id) -> Ldot (ignoreLapply lid, id)
   | Lapply (m1, _) -> ignoreLapply m1
 
-(* Like Longident.flatten, but ignores `Lapply`s. Useful because 1) we don't want to require `Lapply` in
-   closing tags, and 2) Longident.flatten doesn't support `Lapply`. *)
+(* Like Ppxlib.Longident.flatten, but ignores `Lapply`s. Useful because 1) we don't want to require `Lapply` in
+   closing tags, and 2) Ppxlib.Longident.flatten doesn't support `Lapply`. *)
 let rec flattenWithoutLapply = function
-  | Longident.Lident id -> [id]
+  | Ppxlib.Longident.Lident id -> [id]
   | Ldot (lid, id) -> flattenWithoutLapply lid @ [id]
   | Lapply (m1, _) -> flattenWithoutLapply m1
 
 let ensureTagsAreEqual startTag endTag loc =
   if ignoreLapply startTag <> endTag then
-    let startTag = String.concat "" (flattenWithoutLapply startTag) in
-    let endTag = String.concat "" (flattenWithoutLapply endTag) in
+    let startTag = String.concat ~sep:"" (flattenWithoutLapply startTag) in
+    let endTag = String.concat ~sep:"" (flattenWithoutLapply endTag) in
     if endTag <> "" then
     Printf.ksprintf (syntax_error loc)
       "Start tag <%s> does not match end tag </%s>" startTag endTag
@@ -992,7 +1001,7 @@ let ensureTagsAreEqual startTag endTag loc =
 (* `{. "foo": bar}` -> `Js.t {. foo: bar}` and {.. "foo": bar} -> `Js.t {.. foo: bar} *)
 let mkBsObjTypeSugar ~loc ~closed rows =
   let obj = mktyp ~loc (Ptyp_object (rows, closed)) in
-  let jsDotTCtor = { txt = Longident.Ldot (Longident.Lident "Js", "t"); loc } in
+  let jsDotTCtor = { txt = Ppxlib.Longident.Ldot (Ppxlib.Longident.Lident "Js", "t"); loc } in
   mktyp(Ptyp_constr(jsDotTCtor, [obj]))
 
 let doc_loc loc = {txt = "ocaml.doc"; loc = loc}
@@ -1044,7 +1053,7 @@ let lowercase_module_msg =
  * The grammar allows a spread operator at every position, when
  * generating the parsetree we raise a helpful error message. *)
 let filter_raise_spread_syntax msg nodes =
-  List.map (fun (dotdotdot, node) ->
+  List.map ~f:(fun (dotdotdot, node) ->
       begin match dotdotdot with
         | Some dotdotdotLoc -> syntax_error dotdotdotLoc msg
         | None -> ()
@@ -1084,7 +1093,7 @@ let package_type_of_module_type (pmty: Ppxlib.module_type) =
   match pmty with
   | {pmty_desc = Pmty_ident lid; _} -> Some (lid, [])
   | {pmty_desc = Pmty_with({pmty_desc = Pmty_ident lid; _}, cstrs); _} ->
-    Some (lid, List.flatten (List.map map_cstr cstrs))
+    Some (lid, List.flatten (List.map ~f:map_cstr cstrs))
   | _ -> None
 
 let add_brace_attr (expr: Ppxlib.expression) =
@@ -1558,10 +1567,7 @@ module_arguments_comma_list:
 module_arguments:
   | module_expr_structure { [$1] }
   | parenthesized(module_arguments_comma_list)
-    { match $1 with
-      | [] -> [mkmod ~loc:(mklocation $startpos $endpos) (Pmod_structure [])]
-      | xs -> xs
-    }
+    { $1 }
 ;
 
 module_expr_body: preceded(EQUAL,module_expr) | module_expr_structure { $1 };
@@ -1598,7 +1604,10 @@ mark_position_mod
       mk_functor_mod $2 me
     }
   | module_expr module_arguments
-    { List.fold_left mkmod_app $1 $2 }
+    { match $2 with
+      | [] -> mkmod_app_unit ~loc:(mklocation $symbolstartpos $endpos) $1
+      | xs -> List.fold_left ~f:mkmod_app ~init:$1 xs
+    }
   | attribute module_expr %prec attribute_precedence
     { {$2 with pmod_attributes = $1 :: $2.pmod_attributes} }
   ) {$1};
@@ -1784,7 +1793,7 @@ structure_item:
    | located_attributes
      {
        List.map
-        (fun x -> mkstr ~loc:x.loc (Pstr_attribute (make_floating_doc x.txt)))
+        ~f:(fun x -> mkstr ~loc:x.loc (Pstr_attribute (make_floating_doc x.txt)))
         $1
      }
 ;
@@ -2040,7 +2049,7 @@ signature_items:
   | as_loc(signature_item) { [mksig ~loc:$1.loc $1.txt] }
   | located_attributes
     { List.map
-      (fun x -> mksig ~loc:x.loc (Psig_attribute (make_floating_doc x.txt)))
+      ~f:(fun x -> mksig ~loc:x.loc (Psig_attribute (make_floating_doc x.txt)))
       $1 }
 ;
 
@@ -2102,7 +2111,7 @@ class_declaration_details:
     | None -> []
     | Some (lpl, _uncurried) -> lpl
     in
-    let body = List.fold_right mkclass_fun tree $5 in
+    let body = List.fold_right ~f:mkclass_fun tree ~init:$5 in
     let params = match $3 with None -> [] | Some x -> x in
     ($2, body, $1, params)
   }
@@ -2135,12 +2144,12 @@ object_body_class_fields:
 object_body:
   | loption(located_attributes)
     mark_position_pat(class_self_expr)
-    { let attrs = List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
+    { let attrs = List.map ~f:(fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
       Ast_helper.Cstr.mk $2 attrs }
   | loption(located_attributes)
     mark_position_pat(class_self_expr) SEMI
     object_body_class_fields
-    { let attrs = List.map (fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
+    { let attrs = List.map ~f:(fun x -> mkcf ~loc:x.loc (Pcf_attribute x.txt)) $1 in
       Ast_helper.Cstr.mk $2 (attrs @ $4) }
   | object_body_class_fields
     { let loc = mklocation $symbolstartpos $symbolstartpos in
@@ -2156,7 +2165,7 @@ mark_position_cl
     { $1 }
   | either(ES6_FUN,FUN) labeled_pattern_list EQUALGREATER class_expr
     { let (lp, _) = $2 in
-      List.fold_right mkclass_fun lp $4 }
+      List.fold_right ~f:mkclass_fun lp ~init:$4 }
   | class_simple_expr labeled_arguments
       (**
        * This is an interesting way to "partially apply" class construction:
@@ -2217,7 +2226,7 @@ class_field:
     ) { [$1] }
   | located_attributes
     { List.map
-      (fun x -> mkcf ~loc:x.loc (Pcf_attribute (make_floating_doc x.txt)))
+      ~f:(fun x -> mkcf ~loc:x.loc (Pcf_attribute (make_floating_doc x.txt)))
       $1 }
 ;
 
@@ -2409,7 +2418,7 @@ method_:
 class_constructor_type:
   | class_instance_type { $1 }
   | arrow_type_parameters EQUALGREATER class_constructor_type
-    { List.fold_right mkcty_arrow $1 $3 }
+    { List.fold_right ~f:mkcty_arrow $1 ~init:$3 }
 ;
 
 class_type_arguments_comma_list:
@@ -2483,7 +2492,7 @@ class_sig_field:
     ) { [$1] }
   | located_attributes
     { List.map
-      (fun x -> mkctf ~loc:x.loc (Pctf_attribute (make_floating_doc x.txt)))
+      ~f:(fun x -> mkctf ~loc:x.loc (Pctf_attribute (make_floating_doc x.txt)))
       $1 }
 ;
 
@@ -2857,7 +2866,7 @@ jsx_start_tag_and_args_without_leading_less:
     as_loc(mod_ext_longident) jsx_arguments
     { (jsx_component $1 $2, $1.txt) }
   | as_loc(LIDENT) jsx_arguments
-    { let lident = Longident.Lident $1.txt in
+    { let lident = Ppxlib.Longident.Lident $1.txt in
       (jsx_component {$1 with txt = lident } $2, lident)
     }
 ;
@@ -2978,7 +2987,7 @@ mark_position_exp
       $2 ~loc $3 }
   | ES6_FUN es6_parameters EQUALGREATER expr
     { let (ps, uncurried) = $2 in
-      let exp = List.fold_right mkexp_fun ps $4 in
+      let exp = List.fold_right ~f:mkexp_fun ps ~init:$4 in
       if uncurried then
         let loc = mklocation $startpos $endpos in
         {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
@@ -2986,8 +2995,8 @@ mark_position_exp
     }
   | ES6_FUN es6_parameters COLON non_arrowed_core_type EQUALGREATER expr
     { let (ps, uncurried) = $2 in
-    let exp = List.fold_right mkexp_fun ps
-        (ghexp_constraint (mklocation $startpos($4) $endpos) $6 (Some $4, None))  in
+    let exp = List.fold_right ~f:mkexp_fun ps
+        ~init:(ghexp_constraint (mklocation $startpos($4) $endpos) $6 (Some $4, None))  in
     if uncurried then
       let loc = mklocation $startpos $endpos in
       {exp with pexp_attributes = (uncurry_payload loc)::exp.pexp_attributes}
@@ -2999,7 +3008,7 @@ mark_position_exp
    *)
   | FUN optional_expr_extension match_cases(expr) %prec below_BAR
     { let loc = mklocation $startpos $endpos in
-      $2 ~loc (mkexp (Pexp_function $3)) }
+      $2 ~loc (mkexp (Pexp_function ([], None, (Pfunction_cases ($3, loc, []))))) }
   | SWITCH optional_expr_extension simple_expr_no_constructor
     LBRACE match_cases(seq_expr(SEMI?)) RBRACE
     { let loc = mklocation $startpos $endpos in
@@ -3415,12 +3424,12 @@ labeled_expr:
       | Some typ ->
           ghexp_constraint $2.loc exp typ
       in
-      (Labelled (Longident.last_exn lident_loc.txt), labeled_exp)
+      (Labelled (Ppxlib.Longident.last_exn lident_loc.txt), labeled_exp)
     }
   | TILDE as_loc(val_longident) QUESTION
     { (* foo(~a?)  -> parses ~a? *)
       let exp = mkexp (Pexp_ident $2) ~loc:$2.loc in
-      (Optional (Longident.last_exn $2.txt), exp)
+      (Optional (Ppxlib.Longident.last_exn $2.txt), exp)
     }
   | TILDE as_loc(LIDENT) EQUAL optional labeled_expr_constraint
     { (* foo(~bar=?Some(1)) or add(~x=1, ~y=2) -> parses ~bar=?Some(1) & ~x=1 & ~y=1 *)
@@ -3429,13 +3438,13 @@ labeled_expr:
   | TILDE as_loc(LIDENT) EQUAL optional as_loc(UNDERSCORE)
     { (* foo(~l =_) *)
       let loc = $5.loc in
-      let exp = mkexp (Pexp_ident (mkloc (Longident.Lident "_") loc)) ~loc in
+      let exp = mkexp (Pexp_ident (mkloc (Ppxlib.Longident.Lident "_") loc)) ~loc in
       ($4 $2.txt, exp)
     }
   | as_loc(UNDERSCORE)
     { (* foo(_) *)
       let loc = $1.loc in
-      let exp = mkexp (Pexp_ident (mkloc (Longident.Lident "_") loc)) ~loc in
+      let exp = mkexp (Pexp_ident (mkloc (Ppxlib.Longident.Lident "_") loc)) ~loc in
       (Nolabel, exp)
     }
 ;
@@ -3447,8 +3456,8 @@ labeled_expr:
    * attribute* on the structure item for the "and" binding.
    *)
   item_attributes AND let_binding_body
-  { let pat, expr = $3 in
-    Ast_helper.Vb.mk ~loc:(mklocation $symbolstartpos $endpos) ~attrs:$1 pat expr }
+  { let pat, expr, ct = $3 in
+    Ast_helper.Vb.mk ?value_constraint:ct ~loc:(mklocation $symbolstartpos $endpos) ~attrs:$1 pat expr }
 ;
 
 let_bindings: let_binding and_let_binding* { addlbs $1 $2 };
@@ -3457,21 +3466,26 @@ let_binding:
   (* Form with item extension sugar *)
   item_attributes LET item_extension_sugar? rec_flag let_binding_body
   { let loc = mklocation $symbolstartpos $endpos in
-    let pat, expr = $5 in
-    mklbs $3 $4 (Ast_helper.Vb.mk ~loc ~attrs:$1 pat expr) loc }
+    let pat, expr, ct = $5 in
+    mklbs $3 $4 (Ast_helper.Vb.mk ~loc ~attrs:$1 ?value_constraint:ct pat expr) loc }
 ;
 
 let_binding_body:
   | simple_pattern_ident type_constraint EQUAL expr
-    { let loc = mklocation $symbolstartpos $endpos in
-      ($1, ghexp_constraint loc $4 $2) }
+    { let t =
+        match $2 with
+          Some t, None ->
+           Ppxlib.Pvc_constraint { locally_abstract_univars = []; typ=t }
+        | ground, Some coercion -> Pvc_coercion { ground; coercion}
+        | _ -> assert false
+      in
+      ($1, $4, Some t) }
   | simple_pattern_ident fun_def(EQUAL,core_type)
-    { ($1, $2) }
+    { ($1, $2, None) }
   | simple_pattern_ident COLON as_loc(preceded(QUOTE,ident))+ DOT core_type
       EQUAL mark_position_exp(expr)
     { let typ = mktyp ~ghost:true (Ptyp_poly($3, $5)) in
-      let loc = mklocation $symbolstartpos $endpos in
-      (mkpat ~ghost:true ~loc (Ppat_constraint($1, typ)), $7)
+      ($1, $7, Some (Ppxlib.Pvc_constraint { locally_abstract_univars = []; typ }))
     }
   | simple_pattern_ident COLON TYPE as_loc(LIDENT)+ DOT core_type
       EQUAL mark_position_exp(expr)
@@ -3522,10 +3536,7 @@ let_binding_body:
    *     And in the later case
    *
    *)
-   { let exp, poly = wrap_type_annotation $4 $6 $8 in
-     let loc = mklocation $symbolstartpos $endpos in
-     (mkpat ~ghost:true ~loc (Ppat_constraint($1, poly)), exp)
-   }
+   { ($1, $8, Some (Pvc_constraint { locally_abstract_univars = $4; typ=$6 })) }
 
   (* The combination of the following two rules encompass every type of
    * pattern *except* val_identifier. The fact that we want handle the
@@ -3538,10 +3549,12 @@ let_binding_body:
    * Unfortunately, it means we cannot do: let (myCurriedFunc: int -> int) a -> a;
    *)
   | pattern EQUAL expr
-    { ($1, $3) }
+    { ($1, $3, None) }
   | simple_pattern_not_ident COLON core_type EQUAL expr
-    { let loc = mklocation $symbolstartpos $endpos in
-      (mkpat ~loc (Ppat_constraint($1, $3)), $5)
+    { let t =
+         Ppxlib.Pvc_constraint { locally_abstract_univars = []; typ=$3 }
+      in
+      ($1, $5, Some t)
     }
 ;
 
@@ -3559,7 +3572,7 @@ letop_bindings:
     body = letop_binding_body
       { let let_pat, let_exp = body in
         let_pat, let_exp, [] }
-  | bindings = letop_bindings pbop_op = as_loc(ANDOP) body = let_binding_body
+  | bindings = letop_bindings pbop_op = as_loc(ANDOP) body = letop_binding_body
       { let let_pat, let_exp, rev_ands = bindings in
         let pbop_pat, pbop_exp = body in
         let pbop_loc = mklocation $symbolstartpos $endpos in
@@ -3611,8 +3624,8 @@ fun_def(DELIM, typ):
   either(preceded(DELIM, expr), braced_expr)
   { let loc = mklocation $startpos $endpos in
     let (pl, uncurried) = $1 in
-    let exp = List.fold_right mkexp_fun pl
-        (match $2 with
+    let exp = List.fold_right ~f:mkexp_fun pl
+        ~init:(match $2 with
         | None -> $3
         | Some ct -> Ast_helper.Exp.constraint_ ~loc $3 ct)
     in
@@ -3706,7 +3719,7 @@ record_expr_with_string_keys:
   | STRING COLON expr COMMA?
     { let loc = mklocation $symbolstartpos $endpos in
       let (s, _, _) = $1 in
-      let lident_lident_loc = mkloc (Longident.Lident s) loc in
+      let lident_lident_loc = mkloc (Ppxlib.Longident.Lident s) loc in
       (None, [(lident_lident_loc, $3)])
     }
   | string_literal_expr_maybe_punned_with_comma string_literal_exprs_maybe_punned {
@@ -3722,14 +3735,14 @@ string_literal_expr_maybe_punned_with_comma:
   | STRING COMMA
   { let loc = mklocation $startpos $endpos in
     let (s, _, _) = $1 in
-    let lident_lident_loc = mkloc (Longident.Lident s) loc in
+    let lident_lident_loc = mkloc (Ppxlib.Longident.Lident s) loc in
     let exp = mkexp ~loc (Pexp_ident lident_lident_loc) in
     (lident_lident_loc, exp)
   }
   | STRING COLON expr COMMA
   { let loc = mklocation $startpos $endpos in
     let (s, _, _) = $1 in
-    let lident_lident_loc = mkloc (Longident.Lident s) loc in
+    let lident_lident_loc = mkloc (Ppxlib.Longident.Lident s) loc in
     let exp = $3 in
     (lident_lident_loc, exp)
   }
@@ -3738,7 +3751,7 @@ string_literal_expr_maybe_punned:
   STRING preceded(COLON, expr)?
   { let loc = mklocation $startpos $endpos in
     let (s, _, _) = $1 in
-    let lident_lident_loc = mkloc (Longident.Lident s) loc in
+    let lident_lident_loc = mkloc (Ppxlib.Longident.Lident s) loc in
     let exp = match $2 with
       | Some x -> x
       | None -> mkexp ~loc (Pexp_ident lident_lident_loc)
@@ -3764,7 +3777,7 @@ field_expr:
  | LIDENT
    { let loc = mklocation $symbolstartpos $endpos in
      let lident_loc = mkloc $1 loc in
-     let lident_lident_loc = mkloc (Longident.Lident $1) loc in
+     let lident_lident_loc = mkloc (Ppxlib.Longident.Lident $1) loc in
      (lident_loc, mkexp (Pexp_ident lident_lident_loc))
    }
 ;
@@ -3951,10 +3964,10 @@ simple_pattern_not_ident_:
   | as_loc(mod_longident) DOT LPAREN pattern RPAREN
     { let loc = mklocation $symbolstartpos $endpos in
       mkpat ~loc (Ppat_open ($1, $4)) }
-  | as_loc(mod_longident) DOT as_loc(LBRACKET RBRACKET {Longident.Lident "[]"})
+  | as_loc(mod_longident) DOT as_loc(LBRACKET RBRACKET {Ppxlib.Longident.Lident "[]"})
     { let loc = mklocation $symbolstartpos $endpos in
       mkpat ~loc (Ppat_open($1, mkpat ~loc:$3.loc (Ppat_construct($3, None)))) }
-  | as_loc(mod_longident) DOT as_loc(LPAREN RPAREN {Longident.Lident "()"})
+  | as_loc(mod_longident) DOT as_loc(LPAREN RPAREN {Ppxlib.Longident.Lident "()"})
     { let loc = mklocation $symbolstartpos $endpos in
       mkpat ~loc (Ppat_open($1, mkpat ~loc:$3.loc (Ppat_construct($3, None)))) }
 
@@ -4440,7 +4453,7 @@ with_constraint:
   | TYPE as_loc(label_longident) type_variables_with_variance
       EQUAL embedded(private_flag) core_type constraints
     { let loc = mklocation $symbolstartpos $endpos in
-      let typ = Ast_helper.Type.mk {$2 with txt=Longident.last_exn $2.txt}
+      let typ = Ast_helper.Type.mk {$2 with txt=Ppxlib.Longident.last_exn $2.txt}
                   ~params:$3 ~cstrs:$7 ~manifest:$6 ~priv:$5 ~loc in
       Pwith_type ($2, typ)
     }
@@ -4449,11 +4462,11 @@ with_constraint:
   | TYPE as_loc(label_longident) type_variables_with_variance
       COLONEQUAL core_type
     { let last = match $2.txt with
-        | Longident.Lident s -> s
+        | Ppxlib.Longident.Lident s -> s
         | other ->
           not_expecting $startpos($2) $endpos($2) "Long type identifier";
           let rec fallback = function
-            | Longident.Lident s -> s
+            | Ppxlib.Longident.Lident s -> s
             | Ldot (_, s) -> s
             | Lapply (l, _) -> fallback l
           in
@@ -4465,7 +4478,7 @@ with_constraint:
   | MODULE as_loc(mod_longident) EQUAL as_loc(mod_ext_longident)
       { Pwith_module ($2, $4) }
   | MODULE as_loc(UIDENT) COLONEQUAL as_loc(mod_ext_longident)
-      { let lident = {$2 with txt=Longident.Lident $2.txt} in
+      { let lident = {$2 with txt=Ppxlib.Longident.Lident $2.txt} in
         Pwith_modsubst (lident, $4) }
   | MODULE TYPE as_loc(mty_longident) EQUAL module_type
       { Ppxlib.Pwith_modtype ($3, $5) }
@@ -4595,7 +4608,7 @@ mark_position_typ
   (
     core_type2
     { $1 }
-  | core_type2 AS QUOTE ident
+  | core_type2 AS QUOTE as_loc(ident)
     { mktyp(Ptyp_alias($1, $4)) }
   ) {$1};
 
@@ -4629,7 +4642,7 @@ unattributed_core_type:
  * simple: it doesn't need to be wrapped in parens *)
 arrowed_simple_core_type:
   | ES6_FUN arrow_type_parameters EQUALGREATER core_type2
-    { List.fold_right mktyp_arrow $2 $4 }
+    { List.fold_right ~f:mktyp_arrow $2 ~init:$4 }
   | as_loc(labelled_arrow_type_parameter_optional) EQUALGREATER core_type2
     { mktyp_arrow ($1, false) $3 }
   | basic_core_type EQUALGREATER core_type2
@@ -4696,7 +4709,7 @@ non_arrowed_core_type:
 ;
 
 %inline first_less_than_type_ident:
-  LESSIDENT { Longident.Lident $1 }
+  LESSIDENT { Ppxlib.Longident.Lident $1 }
 
 (* Since the <xyz token is parsed as a single token we need to catch that case here *)
 %inline first_less_than_type_param:
@@ -4947,32 +4960,32 @@ operator:
 
 val_longident:
   | val_ident                     { Lident $1 }
-  | mod_longident DOT val_ident   { Longident.Ldot($1, $3) }
+  | mod_longident DOT val_ident   { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 constr_longident:
   | mod_longident %prec below_DOT { $1 }
-  | LBRACKET RBRACKET             { Longident.Lident "[]" }
-  | LPAREN RPAREN                 { Longident.Lident "()" }
-  | FALSE                         { Longident.Lident "false" }
-  | TRUE                          { Longident.Lident "true" }
+  | LBRACKET RBRACKET             { Ppxlib.Longident.Lident "[]" }
+  | LPAREN RPAREN                 { Ppxlib.Longident.Lident "()" }
+  | FALSE                         { Ppxlib.Longident.Lident "false" }
+  | TRUE                          { Ppxlib.Longident.Lident "true" }
 ;
 
 label_longident:
-  | LIDENT                        { Longident.Lident $1 }
-  | mod_longident DOT LIDENT      { Longident.Ldot($1, $3) }
+  | LIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_longident DOT LIDENT      { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 type_longident: as_loc(itype_longident) { $1 };
 
 %inline itype_longident:
-  | LIDENT                        { Longident.Lident $1 }
-  | mod_ext_longident DOT LIDENT  { Longident.Ldot($1, $3) }
+  | LIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_ext_longident DOT LIDENT  { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 mod_longident:
-  | UIDENT                        { Longident.Lident $1 }
-  | mod_longident DOT UIDENT      { Longident.Ldot($1, $3) }
+  | UIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_longident DOT UIDENT      { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 /*
@@ -4981,16 +4994,16 @@ mod_less_uident_ext_longident:
 ;
 
 %inline imod_less_uident_ext_longident:
-  | LESSUIDENT                    { Longident.Lident $1 }
-  | mod_ext_longident DOT UIDENT  { Longident.Ldot($1, $3) }
+  | LESSUIDENT                    { Ppxlib.Longident.Lident $1 }
+  | mod_ext_longident DOT UIDENT  { Ppxlib.Longident.Ldot($1, $3) }
 ;
 */
 
 mod_ext_longident: imod_ext_longident { $1 }
 
 %inline imod_ext_longident:
-  | UIDENT                        { Longident.Lident $1 }
-  | mod_ext_longident DOT UIDENT  { Longident.Ldot($1, $3) }
+  | UIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_ext_longident DOT UIDENT  { Ppxlib.Longident.Ldot($1, $3) }
   | mod_ext_apply                 { $1 }
 ;
 
@@ -5001,15 +5014,15 @@ mod_ext_apply:
       let loc = mklocation $startpos $endpos in
       raise_error (Applicative_path loc) loc
     );
-    List.fold_left (fun p1 p2 -> Longident.Lapply (p1, p2)) $1 $2
+    List.fold_left ~f:(fun p1 p2 -> Ppxlib.Longident.Lapply (p1, p2)) ~init:$1 $2
   }
 ;
 
 mod_ext_lesslongident: imod_ext_lesslongident { $1 }
 
 %inline imod_ext_lesslongident:
-  | LESSUIDENT                        { Longident.Lident $1 }
-  | mod_ext_lesslongident DOT UIDENT  { Longident.Ldot($1, $3) }
+  | LESSUIDENT                        { Ppxlib.Longident.Lident $1 }
+  | mod_ext_lesslongident DOT UIDENT  { Ppxlib.Longident.Ldot($1, $3) }
   | mod_ext_less_apply                 { $1 }
 ;
 
@@ -5020,7 +5033,7 @@ mod_ext_less_apply:
       let loc = mklocation $startpos $endpos in
       raise_error (Applicative_path loc) loc
     );
-    List.fold_left (fun p1 p2 -> Longident.Lapply (p1, p2)) $1 $2
+    List.fold_left ~f:(fun p1 p2 -> Ppxlib.Longident.Lapply (p1, p2)) ~init:$1 $2
   }
 ;
 
@@ -5033,17 +5046,17 @@ mod_ext_less_apply:
 
 mty_longident:
   | ident                        { Lident $1 }
-  | mod_ext_longident DOT ident  { Longident.Ldot($1, $3) }
+  | mod_ext_longident DOT ident  { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 clty_longident:
   | LIDENT                       { Lident $1 }
-  | mod_ext_longident DOT LIDENT { Longident.Ldot($1, $3) }
+  | mod_ext_longident DOT LIDENT { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 class_longident:
   | LIDENT                       { Lident $1 }
-  | mod_longident DOT LIDENT     { Longident.Ldot($1, $3) }
+  | mod_longident DOT LIDENT     { Ppxlib.Longident.Ldot($1, $3) }
 ;
 
 (* Toplevel directives *)
@@ -5215,7 +5228,7 @@ attribute:
 (* Inlined to avoid having to deal with buggy $symbolstartpos *)
 %inline item_attributes:
   | { [] }
-  | located_attributes { List.map (fun x -> x.txt) $1 }
+  | located_attributes { List.map ~f:(fun x -> x.txt) $1 }
 ;
 
 item_extension_sugar:

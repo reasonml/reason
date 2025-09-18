@@ -1,0 +1,11 @@
+--- ./Makefile
++++ ./Makefile
+@@ -56,7 +56,7 @@
+ 	export USE_CYGPATH; \
+ 	cat findlib.conf.in | \
+ 	    $(SH) tools/patch '@SITELIB@' '$(FINDLIB_OCAML_SITELIB)' | \
+-			$(SH) tools/patch '@FINDLIB_PATH@' '$(FINDLIB_PATH)' -p >findlib.conf
++			$(SH) tools/patch '@FINDLIB_PATH@' '$(FINDLIB_PATH)' >findlib.conf
+ 	if ./tools/cmd_from_same_dir ocamlc; then \
+ 		echo 'ocamlc="ocamlc.opt"' >>findlib.conf; \
+ 	fi

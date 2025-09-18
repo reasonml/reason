@@ -1,5 +1,5 @@
 Format extensions
-  $ refmt ./input.re
+  $ refmt ./input.re | tee formatted.re
   /* Extension sugar */
   
   [%extend open M];
@@ -386,9 +386,9 @@ Format extensions
   
   [%%randomExtension "with string payload"];
   
-  [%%randomExtension {with_obj: 33}];
+  [%%randomExtension { with_obj: 33 }];
   
-  [%randomExtension {with_obj: 33}];
+  [%randomExtension { with_obj: 33 }];
   
   /** with a comment on top */
   [%%raw "console.log(42)"];
@@ -434,3 +434,9 @@ Format extensions
   let z1 = {%raw j|"raw j"|j};
   
   {%%raw |"just raw"|};
+
+Format the formatted file back
+  $ refmt --print re ./formatted.re > ./formatted_back.re
+
+Ensure idempotency: first format and second format are the same
+  $ diff formatted.re formatted_back.re

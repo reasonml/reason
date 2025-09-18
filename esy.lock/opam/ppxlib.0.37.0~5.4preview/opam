@@ -1,0 +1,64 @@
+opam-version: "2.0"
+synopsis: "Standard infrastructure for ppx rewriters"
+description: """
+Ppxlib is the standard infrastructure for ppx rewriters
+and other programs that manipulate the in-memory representation of
+OCaml programs, a.k.a the "Parsetree".
+
+It also comes bundled with two ppx rewriters that are commonly used to
+write tools that manipulate and/or generate Parsetree values;
+`ppxlib.metaquot` which allows to construct Parsetree values using the
+OCaml syntax directly and `ppxlib.traverse` which provides various
+ways of automatically traversing values of a given type, in particular
+allowing to inject a complex structured value into generated code.
+"""
+maintainer: ["opensource@janestreet.com"]
+authors: ["Jane Street Group, LLC <opensource@janestreet.com>"]
+license: "MIT"
+homepage: "https://github.com/ocaml-ppx/ppxlib"
+doc: "https://ocaml-ppx.github.io/ppxlib/"
+bug-reports: "https://github.com/ocaml-ppx/ppxlib/issues"
+depends: [
+  "dune" {>= "3.8"}
+  "ocaml" {>= "4.08.0" & < "5.5.0"}
+  "ocaml-compiler-libs" {>= "v0.11.0"}
+  "ppx_derivers" {>= "1.0"}
+  "sexplib0" {>= "v0.12"}
+  "sexplib0" {with-test & >= "v0.15"}
+  "stdlib-shims"
+  "ocamlfind" {with-test}
+  "re" {with-test & >= "1.9.0"}
+  "cinaps" {with-test & >= "v0.12.1"}
+  "ocamlformat" {with-dev-setup & = "0.26.2"}
+  "odoc" {with-doc}
+]
+conflicts: [
+  "ocaml-migrate-parsetree" {< "2.0.0"}
+  "ocaml-base-compiler" {= "5.1.0~alpha1"}
+  "ocaml-variants" {= "5.1.0~alpha1+options"}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-ppx/ppxlib.git"
+x-maintenance-intent: ["(latest)"]
+flags: avoid-version
+available: opam-version >= "2.1.0"
+url {
+  src: "https://github.com/ocaml-ppx/ppxlib/archive/757f6c284b1fe748d5027eef3bbef924b6bbd7ce.tar.gz"
+  checksum: [
+    "sha256=89a98c95ddd0bfbac17b5a936f6811af7097be3258c482d5859b73e9de9b4552"
+    "sha512=b19306473d867252d382e58e9b697531c5edccdc9283b5eaf72f524803c2fca2a58a5e8f25bee198b00de82cf8ef805b43f7488791c3ac5beb0ffba938ded826"
+  ]
+}

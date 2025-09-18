@@ -1,0 +1,46 @@
+opam-version: "2.0"
+synopsis:
+  "Yojson is an optimized parsing and printing library for the JSON format"
+description: """
+Yojson is an optimized parsing and printing library for the JSON format.
+
+ydump is a pretty-printing command-line program provided with the
+yojson package."""
+maintainer: [
+  "paul-elliot@tarides.com" "nathan@tarides.com" "marek@tarides.com"
+]
+authors: ["Martin Jambon"]
+license: "BSD-3-Clause"
+homepage: "https://github.com/ocaml-community/yojson"
+doc: "https://ocaml.org/p/yojson/latest"
+bug-reports: "https://github.com/ocaml-community/yojson/issues"
+depends: [
+  "dune" {>= "2.7"}
+  "ocaml" {>= "4.08"}
+  "alcotest" {with-test & >= "0.8.5"}
+  "odoc" {with-doc}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-community/yojson.git"
+url {
+  src:
+    "https://github.com/ocaml-community/yojson/releases/download/3.0.0/yojson-3.0.0.tbz"
+  checksum: [
+    "sha256=99414da7609b92a02474ef4b49ecda15edc8cbba5229341b124e7e4695c39610"
+    "sha512=896d0ea829a36ccadba6628800369c1a3ab9e7c64dbda8b76331889c9db481cd64e137f467481ae80a8dd5fca45d748bfa71f58641806cc1bb1a007f8291789f"
+  ]
+}
+x-commit-hash: "b2193e8e0c88c6501710d08b836b3219673383f3"

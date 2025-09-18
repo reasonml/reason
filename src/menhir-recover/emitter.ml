@@ -1,7 +1,3 @@
-open MenhirSdk.Cmly_api
-open Utils
-open Attributes
-open Synthesis
 open Recovery_intf
 
 let menhir = "MenhirInterpreter"
@@ -12,8 +8,8 @@ let safe = false
 type var = int
 
 module Codesharing
-    (G : GRAMMAR)
-    (S : SYNTHESIZER with module G := G)
+    (G : MenhirSdk.Cmly_api.GRAMMAR)
+    (S : Synthesis.SYNTHESIZER with module G := G)
     (R : RECOVERY with module G := G) : sig
   type instr =
     | IRef of var
@@ -36,10 +32,9 @@ end = struct
     | (Abort | Reduce _ | Shift _) as a -> a
     | Seq [ v ] -> normalize_action v
     | Seq v -> (match normalize_actions v with [ x ] -> x | xs -> Seq xs)
-    
-  (* Find sharing opportunities.
-     If the same sequence of actions occurs multiple times, the function
-     will associate a unique identifier to the sequence.
+
+  (* Find sharing opportunities. If the same sequence of actions occurs multiple
+     times, the function will associate a unique identifier to the sequence.
      [share actions] returns a pair [(bindings, lookup) : action list array *
      (action list -> int option)]
 
@@ -66,18 +61,18 @@ end = struct
        | Abort | Reduce _ | Shift _ -> ()
        | Seq xs -> iter_list xs
      in
-     List.iter iter_list actions);
+     List.iter ~f:iter_list actions);
     let bindings =
       let register actions (occurrences, index) to_share =
         if !occurrences > 1 then (!index, actions) :: to_share else to_share
       in
       let to_share = Hashtbl.fold register occurrence_table [] in
       let order_actions (o1, _) (o2, _) = compare o1 (o2 : int) in
-      List.map snd (List.sort order_actions to_share)
+      List.map ~f:snd (List.sort ~cmp:order_actions to_share)
     in
     let binding_table = Hashtbl.create 113 in
     List.iteri
-      (fun idx actions -> Hashtbl.add binding_table actions idx)
+      ~f:(fun idx actions -> Hashtbl.add binding_table actions idx)
       bindings;
     let lookup actions =
       match Hashtbl.find binding_table actions with
@@ -114,17 +109,17 @@ end = struct
       x' @ xs'
 
   let compile items =
-    let actions = List.map item_to_actions items in
+    let actions = List.map ~f:item_to_actions items in
     let bindings, sharing = share actions in
-    let bindings = List.map (compile_seq ~sharing) bindings in
+    let bindings = List.map ~f:(compile_seq ~sharing) bindings in
     let compile_item item = share_seq ~sharing (item_to_actions item) in
     bindings, compile_item
 end
 
 module Make
-    (G : GRAMMAR)
-    (A : ATTRIBUTES with module G := G)
-    (S : SYNTHESIZER with module G := G)
+    (G : MenhirSdk.Cmly_api.GRAMMAR)
+    (A : Attributes.ATTRIBUTES with module G := G)
+    (S : Synthesis.SYNTHESIZER with module G := G)
     (R : RECOVERY with module G := G) : sig
   val emit : Format.formatter -> unit
 end = struct
@@ -187,8 +182,8 @@ end = struct
     fprintf ppf "let depth =\n  [|";
     Lr1.iter (fun st ->
       let items = G.Lr0.items (G.Lr1.lr0 st) in
-      let positions = List.map snd items in
-      let depth = List.fold_left max 0 positions in
+      let positions = List.map ~f:snd items in
+      let depth = List.fold_left positions ~init:0 ~f:max in
       fprintf ppf "%d;" depth);
     fprintf ppf "|]\n\n"
 
@@ -201,94 +196,102 @@ end = struct
 
   module C = Codesharing (G) (S) (R)
 
-  let emit_recoveries ppf =
-    let all_cases =
-      Lr1.fold
-        (fun st acc ->
-           try
-             let { R.cases; _ } = R.recover st in
-             let cases =
-               List.map
-                 (fun (st', items) ->
-                    ( list_last items
-                    , match st' with None -> -1 | Some st' -> Lr1.to_int st' ))
-                 cases
-             in
-             let cases =
-               match group_assoc cases with
-               | [] -> `Nothing
-               | [ (instr, _) ] -> `One instr
-               | xs -> `Select xs
-             in
-             (cases, Lr1.to_int st) :: acc
-           with
-           | _ -> acc)
-        []
+  let emit_recoveries =
+    let rec list_last = function
+      | [ x ] -> x
+      | _ :: xs -> list_last xs
+      | [] -> invalid_arg "list_last"
     in
-    let all_cases = group_assoc all_cases in
-    let all_items =
-      let items_in_case (case, _states) =
-        match case with
-        | `Nothing -> []
-        | `One item -> [ item ]
-        | `Select items -> List.map fst items
-      in
-      List.flatten (List.map items_in_case all_cases)
-    in
-    let globals, get_instr = C.compile all_items in
-    let open Format in
-    fprintf ppf "let recover =\n";
-    let emit_instr ppf = function
-      | C.IAbort -> fprintf ppf "Abort"
-      | C.IReduce prod -> fprintf ppf "R %d" (Production.to_int prod)
-      | C.IShift (T t) -> fprintf ppf "S (T T_%s)" (Terminal.name t)
-      | C.IShift (N n) -> fprintf ppf "S (N N_%s)" (Nonterminal.mangled_name n)
-      | C.IRef r -> fprintf ppf "r%d" r
-    in
-    let emit_instrs ppf = Utils.pp_list emit_instr ppf in
-    let emit_shared index instrs =
-      fprintf ppf "  let r%d = Sub %a in\n" index emit_instrs instrs
-    in
-    List.iteri emit_shared globals;
-    let emit_item ppf item = emit_instrs ppf (get_instr item) in
-    fprintf ppf "  function\n";
-    List.iter
-      (fun (cases, states) ->
-         fprintf ppf "  ";
-         List.iter (fprintf ppf "| %d ") states;
-         fprintf ppf "-> ";
-         match cases with
-         | `Nothing -> fprintf ppf "Nothing\n"
-         | `One item -> fprintf ppf "One %a\n" emit_item item
-         | `Select xs ->
-           fprintf ppf "Select (function\n";
-           if safe
-           then (
-             List.iter
-               (fun (item, cases) ->
-                  fprintf ppf "    ";
-                  List.iter (fprintf ppf "| %d ") cases;
-                  fprintf ppf "-> %a\n" emit_item item)
-               xs;
-             fprintf ppf "    | _ -> raise Not_found)\n")
-           else (
-             match
-               List.sort
-                 (fun (_, a) (_, b) -> compare (List.length b) (List.length a))
-                 xs
+    fun ppf ->
+      let all_cases =
+        Lr1.fold
+          (fun st acc ->
+             try
+               let { R.cases; _ } = R.recover st in
+               let cases =
+                 List.map
+                   ~f:(fun (st', items) ->
+                     ( list_last items
+                     , match st' with None -> -1 | Some st' -> Lr1.to_int st' ))
+                   cases
+               in
+               let cases =
+                 match Synthesis.group_assoc cases with
+                 | [] -> `Nothing
+                 | [ (instr, _) ] -> `One instr
+                 | xs -> `Select xs
+               in
+               (cases, Lr1.to_int st) :: acc
              with
-             | (item, _) :: xs ->
-               List.iter
-                 (fun (item, cases) ->
+             | _ -> acc)
+          []
+      in
+      let all_cases = Synthesis.group_assoc all_cases in
+      let all_items =
+        let items_in_case (case, _states) =
+          match case with
+          | `Nothing -> []
+          | `One item -> [ item ]
+          | `Select items -> List.map ~f:fst items
+        in
+        List.flatten (List.map ~f:items_in_case all_cases)
+      in
+      let globals, get_instr = C.compile all_items in
+      let open Format in
+      fprintf ppf "let recover =\n";
+      let emit_instr ppf = function
+        | C.IAbort -> fprintf ppf "Abort"
+        | C.IReduce prod -> fprintf ppf "R %d" (Production.to_int prod)
+        | C.IShift (T t) -> fprintf ppf "S (T T_%s)" (Terminal.name t)
+        | C.IShift (N n) ->
+          fprintf ppf "S (N N_%s)" (Nonterminal.mangled_name n)
+        | C.IRef r -> fprintf ppf "r%d" r
+      in
+      let emit_instrs ppf = Synthesis.pp_list emit_instr ppf in
+      let emit_shared index instrs =
+        fprintf ppf "  let r%d = Sub %a in\n" index emit_instrs instrs
+      in
+      List.iteri ~f:emit_shared globals;
+      let emit_item ppf item = emit_instrs ppf (get_instr item) in
+      fprintf ppf "  function\n";
+      List.iter
+        ~f:(fun (cases, states) ->
+          fprintf ppf "  ";
+          List.iter ~f:(fprintf ppf "| %d ") states;
+          fprintf ppf "-> ";
+          match cases with
+          | `Nothing -> fprintf ppf "Nothing\n"
+          | `One item -> fprintf ppf "One %a\n" emit_item item
+          | `Select xs ->
+            fprintf ppf "Select (function\n";
+            if safe
+            then (
+              List.iter
+                ~f:(fun (item, cases) ->
+                  fprintf ppf "    ";
+                  List.iter ~f:(fprintf ppf "| %d ") cases;
+                  fprintf ppf "-> %a\n" emit_item item)
+                xs;
+              fprintf ppf "    | _ -> raise Not_found)\n")
+            else (
+              match
+                List.sort
+                  ~cmp:(fun (_, a) (_, b) ->
+                    compare (List.length b) (List.length a))
+                  xs
+              with
+              | (item, _) :: xs ->
+                List.iter
+                  ~f:(fun (item, cases) ->
                     fprintf ppf "    ";
-                    List.iter (fprintf ppf "| %d ") cases;
+                    List.iter ~f:(fprintf ppf "| %d ") cases;
                     fprintf ppf "-> %a\n" emit_item item)
-                 xs;
-               fprintf ppf "    | _ -> %a)\n" emit_item item
-             | [] -> assert false))
-      all_cases;
+                  xs;
+                fprintf ppf "    | _ -> %a)\n" emit_item item
+              | [] -> assert false))
+        all_cases;
 
-    fprintf ppf "  | _ -> raise Not_found\n"
+      fprintf ppf "  | _ -> raise Not_found\n"
 
   let emit_token_of_terminal ppf =
     let case t =

@@ -17,26 +17,7 @@ let rec rev_scan_left acc ~f ~init = function
 
 module Make
     (Parser : MenhirLib.IncrementalEngine.EVERYTHING)
-    (Recovery : sig
-       val default_value : Location.t -> 'a Parser.symbol -> 'a
-
-       type action =
-         | Abort
-         | R of int
-         | S : 'a Parser.symbol -> action
-         | Sub of action list
-
-       type decision =
-         | Nothing
-         | One of action list
-         | Select of (int -> action list)
-
-       val depth : int array
-       val recover : int -> decision
-       val guide : 'a Parser.symbol -> bool
-       val token_of_terminal : 'a Parser.terminal -> 'a -> Parser.token
-       val nullable : 'a Parser.nonterminal -> bool
-     end) =
+    (Recovery : Merlin_recovery_intf.RECOVERY with module Parser := Parser) =
 struct
   type 'a candidate =
     { line : int
@@ -203,11 +184,11 @@ struct
             | `Fail -> assert false
             | `Accept v -> raise (E.Result v)
             | `Recovered (_, env) -> env)
-          | Recovery.Sub actions -> List.fold_left eval env actions
+          | Recovery.Sub actions -> List.fold_left ~f:eval ~init:env actions
         in
         (match
            rev_scan_left [] ~f:eval ~init:env actions
-           |> List.map (fun env -> { candidate0 with env })
+           |> List.map ~f:(fun env -> { candidate0 with env })
          with
         | exception Not_found -> None, acc
         | exception E.Result v -> Some v, acc
