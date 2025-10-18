@@ -330,8 +330,8 @@ Format basicStructures
    */;
   let x: int = 10;
   let x: int = 10;
-  let x: int = 10;
-  let x: int = (10: int);
+  let (x: int) = 10;
+  let (x: int) = (10: int);
   /* let (x:int) = (10:string); */
   /* let (x:string) = ("hello":int); */
   
@@ -341,7 +341,7 @@ Format basicStructures
   
   /* In Reason, types look like the data they model! Tuples are no exception. */
   type pairOfInts = (int, int);
-  let letBindingWithTypeConstraint: int = 10;
+  let (letBindingWithTypeConstraint: int) = 10;
   let (tupleItem: int, withTypeConstraint: int) = (
     10,
     20,

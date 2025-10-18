@@ -643,7 +643,7 @@ Format general implementation syntax
   /* We could even force that consistency with let bindings - it's allowed
         currently but not forced.
      */
-  let myAnnotatedValBinding: int = 10;
+  let (myAnnotatedValBinding: int) = 10;
   
   /* Class functions (constructors) and methods are unified in the same way */
   
