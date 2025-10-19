@@ -2022,6 +2022,10 @@ let createFormatter () =
       let txt =
         if Reason_syntax_util.is_andop txt || Reason_syntax_util.is_letop txt
         then Reason_syntax_util.compress_letop_identifier txt
+        (* Don't add \# prefix if we're adding parens - parens already protect
+           keywords like (mod) from being parsed as keywords *)
+        else if needs_parens
+        then txt
         else txt |> add_raw_identifier_prefix
       in
       if not needs_parens
