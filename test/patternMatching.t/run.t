@@ -290,8 +290,8 @@ Print the formatted file
   type aOrB =
     | A(int)
     | B(int);
-  let (nestedAnnotation: int): int = 0;
-  let (A(i) | B(i)): aOrB = A(0);
+  let ((nestedAnnotation: int): int) = 0;
+  let ((A(i) | B(i)): aOrB) = A(0);
   
   type test_foo =
     | VariantType1

@@ -2217,12 +2217,12 @@ Format wrapping in .re files
     someVar3,
   );
   
-  let theTupleTypeAnnotationShouldWrap: (
+  let (theTupleTypeAnnotationShouldWrap: (
     string,
     string,
     string,
     string,
-  ) = (
+  )) = (
     "now these tuple values should wrap",
     "now these tuple values should wrap",
     "now these tuple values should wrap",

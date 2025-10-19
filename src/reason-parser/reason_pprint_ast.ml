@@ -5571,17 +5571,24 @@ let createFormatter () =
            sixteenTuple = echoTuple ( * 0, * 0, * 0 * ); *)
 
         method formatSimplePatternBinding
+          ?(wrap=false)
           labelOpener
           layoutPattern
           typeConstraint
           appTerms =
           let letPattern =
+            let layoutPattern =
+              match typeConstraint, wrap with
+              | (Some (_, `Constraint), true) -> makeList ~wrap:("(","") [layoutPattern]
+              | (Some _ | None), _ -> layoutPattern
+            in
             label ~break:`Never ~space:true (atom labelOpener) layoutPattern
           in
           let upUntilEqual =
             match typeConstraint with
             | None -> letPattern
-            | Some (tc, `Constraint) -> formatTypeConstraint letPattern tc
+            | Some (tc, `Constraint) ->
+              makeList ~wrap:(("", if wrap then ")" else "")) [ formatTypeConstraint letPattern tc ]
             | Some (tc, `Coercion ground) -> formatCoerce letPattern ground tc
           in
           let includingEqual =
@@ -6223,6 +6230,7 @@ let createFormatter () =
                 in
                 let appTerms = self#unparseExprApplicationItems expr in
                 self#formatSimplePatternBinding
+                  ~wrap:true
                   prefixText
                   layoutPattern
                   typeLayout
