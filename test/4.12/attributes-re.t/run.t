@@ -774,7 +774,7 @@ Print the formatted file
     )
     This will get sugared to `let ([@attr] x2) : int = xInt`
   */
-  let ([@attr] x2): int = xInt;
+  let (([@attr] x2): int) = xInt;
   /**
     Attribute on the pattern holding the constraint:
     pattern(

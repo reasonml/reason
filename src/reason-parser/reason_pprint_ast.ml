@@ -2022,6 +2022,10 @@ let createFormatter () =
       let txt =
         if Reason_syntax_util.is_andop txt || Reason_syntax_util.is_letop txt
         then Reason_syntax_util.compress_letop_identifier txt
+        (* Don't add \# prefix if we're adding parens - parens already protect
+           keywords like (mod) from being parsed as keywords *)
+        else if needs_parens
+        then txt
         else txt |> add_raw_identifier_prefix
       in
       if not needs_parens
@@ -5567,17 +5571,24 @@ let createFormatter () =
            sixteenTuple = echoTuple ( * 0, * 0, * 0 * ); *)
 
         method formatSimplePatternBinding
+          ?(wrap=false)
           labelOpener
           layoutPattern
           typeConstraint
           appTerms =
           let letPattern =
+            let layoutPattern =
+              match typeConstraint, wrap with
+              | (Some (_, `Constraint), true) -> makeList ~wrap:("(","") [layoutPattern]
+              | (Some _ | None), _ -> layoutPattern
+            in
             label ~break:`Never ~space:true (atom labelOpener) layoutPattern
           in
           let upUntilEqual =
             match typeConstraint with
             | None -> letPattern
-            | Some (tc, `Constraint) -> formatTypeConstraint letPattern tc
+            | Some (tc, `Constraint) ->
+              makeList ~wrap:(("", if wrap then ")" else "")) [ formatTypeConstraint letPattern tc ]
             | Some (tc, `Coercion ground) -> formatCoerce letPattern ground tc
           in
           let includingEqual =
@@ -6219,6 +6230,7 @@ let createFormatter () =
                 in
                 let appTerms = self#unparseExprApplicationItems expr in
                 self#formatSimplePatternBinding
+                  ~wrap:true
                   prefixText
                   layoutPattern
                   typeLayout

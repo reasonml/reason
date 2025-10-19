@@ -23,11 +23,20 @@ end
 
 module Convert = struct
   let lf_to_crlf =
+    let crlf = "\r\n" in
     let rec loop sz =
       match String.index sz '\n' with
       | exception Not_found -> sz
       | idx ->
-        let l = String.sub sz ~pos:0 ~len:idx ^ "\r\n" in
+        let buf = Bytes.create (idx + 2) in
+        Bytes.unsafe_blit_string ~src:sz ~src_pos:0 ~dst:buf ~dst_pos:0 ~len:idx;
+        Bytes.unsafe_blit_string
+          ~src:crlf
+          ~src_pos:0
+          ~dst:buf
+          ~dst_pos:idx
+          ~len:2;
+        let l = Bytes.unsafe_to_string buf in
         let length = String.length sz in
         l ^ loop (String.sub sz ~pos:(idx + 1) ~len:(length - idx - 1))
     in
