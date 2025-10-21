@@ -140,8 +140,41 @@ let (!==) = 0;
 
 type foobar(_) = | Foo('a): foobar(unit);
 
+type expr(_) =
+  | Int(int): expr(int)
+  | String(string): expr(string)
+  | Pair('a, 'b): expr(('a, 'b));
+
+let eval = (type a, e: expr(a)): a =>
+  switch (e) {
+  | Int(n) => n
+  | String(s) => s
+  | Pair(x, y) => (x, y)
+  };
+
 type point = | Point({x: int, y: int});
 type person = | Person({name: string, age: int}) | Anonymous;
 
+type covariant(+'a) = list('a);
+type contravariant(-'a) = 'a => unit;
+type mixed(+'a, -'b) = 'a => 'b => unit;
+
+type open_variant = [> `A | `B(int)];
+type open_with_values = [> `Red | `Blue(string) | `Green(int, int)];
+
+exception GenericError('a);
+
+exception ParseError('a, 'b): exn;
+
+type exn +=
+  | CustomError('a): exn;
+
+let with_extension = [%test "payload"];
+let with_complex = [%derive.show { x: 1 }];
+[%%toplevel_ext "payload"];
+
+let%foo x = 1;
+
 let rec foo = (a, b) => a + b
 and bar = (a, b) => foo(a - b);
+

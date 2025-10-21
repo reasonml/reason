@@ -59,6 +59,17 @@
   let (<>) = 0
   let (!=) = 0
   type foobar(_)  = | Foo('a): foobar(unit)
+  type expr(_)  = | Int(int): expr(int) | String(string): expr(string) | Pair('a, 'b): expr(('a, 'b))
   type point = | Point({ x: int, y: int })
   type person = | Person({ name: string, age: int }) | Anonymous
+  type covariant(+'a)  = list('a)
+  type contravariant(-'a)  = 'a => unit
+  type mixed(+'a, -'b)  = 'a => 'b => unit
+  type open_variant = [ > | `A | `B(int) ]
+  type open_with_values = [ > | `Red | `Blue(string) | `Green((int, int)) ]
+  exception GenericError('a)
+  let with_extension = [%test ...]
+  let with_complex = [%derive.show ...]
+  [%%toplevel_ext ...]
+  [%%foo ...]
   let rec foo = (a) => (b) => (+)(a, b) and bar = (a) => (b) => foo((-)(a, b))

@@ -26,6 +26,11 @@ let separate sep docs =
   | [ x ] -> x
   | x :: xs -> List.fold_left ~f:(fun acc d -> acc ^^ sep ^^ d) ~init:x xs
 
+let variance_to_text = function
+  | NoVariance -> empty
+  | Covariant -> text "+"
+  | Contravariant -> text "-"
+
 let rec longident = function
   | Lident s -> text s
   | Ldot (path, s) -> longident path ^^ text "." ^^ text s
@@ -352,7 +357,6 @@ and pattern_to_doc pat =
   match pat.ppat_desc with
   | Ppat_any -> text "_"
   | Ppat_var { txt; loc = _ } ->
-    (* Handle operators in parentheses *)
     if
       String.length txt > 0
       &&
@@ -374,7 +378,7 @@ and pattern_to_doc pat =
   | Ppat_construct ({ txt = Lident "false"; loc = _ }, None) -> text "false"
   | Ppat_construct ({ txt = Lident "[]"; loc = _ }, None) -> text "[]"
   | Ppat_construct (li, None) -> longident_loc li
-  | Ppat_construct (li, Some (_var, pat)) ->
+  | Ppat_construct (li, Some (_existential_vars, pat)) ->
     longident_loc li ^^ text "(" ^^ pattern_to_doc pat ^^ text ")"
   | Ppat_variant (tag, None) -> text ("`" ^ tag)
   | Ppat_variant (tag, Some pat) ->
@@ -489,7 +493,7 @@ and core_type_to_doc typ =
       separate (text " ") (List.map ~f:(fun t -> text ("`" ^ t)) tags)
     in
     text "[ " ^^ rows_doc ^^ text " > " ^^ tags_doc ^^ text " ]"
-  | Ptyp_variant (rows, Open, _tags) ->
+  | Ptyp_variant (rows, Open, _lower_bound_tags) ->
     let rows_doc = separate (text " ") (List.map ~f:row_field_to_doc rows) in
     text "[ > " ^^ rows_doc ^^ text " ]"
   | Ptyp_poly ([], typ) -> core_type_to_doc typ
@@ -609,7 +613,13 @@ and structure_item_to_doc item =
                ^^ separate
                     (text ", ")
                     (List.map
-                       ~f:(fun (typ, _variance) -> core_type_to_doc typ)
+                       ~f:
+                         (fun
+                           ( typ
+                           , ( variance
+                             , _injectivity
+                               (* The parser hardcodes NoInjectivity *) ) ) ->
+                         variance_to_text variance ^^ core_type_to_doc typ)
                        params)
                ^^ text ") ")
            ^^ text " = "
@@ -629,7 +639,13 @@ and structure_item_to_doc item =
                ^^ separate
                     (text ", ")
                     (List.map
-                       ~f:(fun (typ, _variance) -> core_type_to_doc typ)
+                       ~f:
+                         (fun
+                           ( typ
+                           , ( variance
+                             , _injectivity
+                               (* The parser hardcodes NoInjectivity *) ) ) ->
+                         variance_to_text variance ^^ core_type_to_doc typ)
                        params)
                ^^ text ") ")
            ^^ text " = "
@@ -700,7 +716,8 @@ and signature_item_to_doc item =
                ^^ separate
                     (text ", ")
                     (List.map
-                       ~f:(fun (typ, _variance) -> core_type_to_doc typ)
+                       ~f:(fun (typ, (variance, _injectivity)) ->
+                         variance_to_text variance ^^ core_type_to_doc typ)
                        params)
                ^^ text ") ")
            ^^ text ": "
@@ -720,7 +737,8 @@ and signature_item_to_doc item =
                ^^ separate
                     (text ", ")
                     (List.map
-                       ~f:(fun (typ, _variance) -> core_type_to_doc typ)
+                       ~f:(fun (typ, (variance, _injectivity)) ->
+                         variance_to_text variance ^^ core_type_to_doc typ)
                        params)
                ^^ text ") ")
            ^^ text " = "
@@ -756,7 +774,10 @@ and type_declaration_to_doc td =
       text "("
       ^^ separate
            (text ", ")
-           (List.map ~f:(fun (typ, _variance) -> core_type_to_doc typ) ps)
+           (List.map
+              ~f:(fun (typ, (variance, _injectivity)) ->
+                variance_to_text variance ^^ core_type_to_doc typ)
+              ps)
       ^^ text ") "
   in
   let name = text td.ptype_name.txt in
@@ -814,7 +835,6 @@ and type_declaration_to_doc td =
       ^^ text " }"
     | Ptype_open -> text " = .."
   in
-  (* Type parameters come after the name in Reason syntax *)
   name
   ^^ (match td.ptype_params with [] -> empty | _ -> params)
   ^^ manifest
@@ -823,8 +843,8 @@ and type_declaration_to_doc td =
 and extension_constructor_to_doc ec =
   let name = text ec.pext_name.txt in
   match ec.pext_kind with
-  | Pext_decl (_, Pcstr_tuple [], None) -> name
-  | Pext_decl (_, Pcstr_tuple args, ret_type) ->
+  | Pext_decl (_type_params, Pcstr_tuple [], None) -> name
+  | Pext_decl (_type_params, Pcstr_tuple args, ret_type) ->
     (match ret_type with
     | None ->
       name
@@ -837,7 +857,7 @@ and extension_constructor_to_doc ec =
       ^^ separate (text ", ") (List.map ~f:core_type_to_doc args)
       ^^ text "): "
       ^^ core_type_to_doc typ)
-  | Pext_decl (_, Pcstr_record fields, ret_type) ->
+  | Pext_decl (_type_params, Pcstr_record fields, ret_type) ->
     let fields_doc =
       text "({ "
       ^^ separate
@@ -922,7 +942,6 @@ and with_constraint_to_doc = function
     ^^ text " = "
     ^^ module_type_to_doc mt
   | Pwith_typesubst (li, td) ->
-    (* For destructive substitution, we need to include the type parameters *)
     let params_and_name =
       match td.ptype_params with
       | [] -> longident_loc li
@@ -931,7 +950,10 @@ and with_constraint_to_doc = function
           text "("
           ^^ separate
                (text ", ")
-               (List.map ~f:(fun (typ, _variance) -> core_type_to_doc typ) ps)
+               (List.map
+                  ~f:(fun (typ, (variance, _injectivity)) ->
+                    variance_to_text variance ^^ core_type_to_doc typ)
+                  ps)
           ^^ text ") "
         in
         params_doc ^^ longident_loc li
