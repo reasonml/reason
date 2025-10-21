@@ -140,5 +140,8 @@ let (!==) = 0;
 
 type foobar(_) = | Foo('a): foobar(unit);
 
+type point = | Point({x: int, y: int});
+type person = | Person({name: string, age: int}) | Anonymous;
+
 let rec foo = (a, b) => a + b
 and bar = (a, b) => foo(a - b);

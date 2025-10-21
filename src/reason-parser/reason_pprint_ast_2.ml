@@ -36,8 +36,8 @@ and longident_loc li = longident li.txt
 and constant = function
   | Pconst_integer (i, None) -> text i
   | Pconst_integer (i, Some m) -> text i ^^ text (String.make 1 m)
-  | Pconst_string (s, _, None) -> text ("\"" ^ String.escaped s ^ "\"")
-  | Pconst_string (s, _, Some delim) ->
+  | Pconst_string (s, _loc, None) -> text ("\"" ^ String.escaped s ^ "\"")
+  | Pconst_string (s, _loc, Some delim) ->
     text ("{" ^ delim ^ "|" ^ s ^ "|" ^ delim ^ "}")
   | Pconst_char c -> text ("'" ^ Char.escaped c ^ "'")
   | Pconst_float (f, None) -> text f
@@ -45,7 +45,7 @@ and constant = function
 
 and expression_to_doc expr =
   match expr.pexp_desc with
-  | Pexp_ident { txt; _ } ->
+  | Pexp_ident { txt; loc = _ } ->
     (match txt with
     | Lident name
       when String.length name > 0
@@ -82,7 +82,7 @@ and expression_to_doc expr =
            vbs)
     in
     bindings ^^ text "; " ^^ expression_to_doc e
-  | Pexp_function (params, _, body) ->
+  | Pexp_function (params, constraint_opt, body) ->
     let params_doc =
       separate
         (text ", ")
@@ -101,13 +101,24 @@ and expression_to_doc expr =
                | Labelled s -> text ("~" ^ s ^ "=") ^^ expression_to_doc default
                | Optional s ->
                  text ("~" ^ s ^ "=?") ^^ expression_to_doc default)
-             | Pparam_newtype { txt; _ } -> text ("type " ^ txt))
+             | Pparam_newtype { txt; loc = _ } -> text ("type " ^ txt))
            params)
+    in
+    let constraint_doc =
+      match constraint_opt with
+      | None -> empty
+      | Some (Pconstraint typ) -> text ": " ^^ core_type_to_doc typ
+      | Some (Pcoerce (None, typ)) -> text " :> " ^^ core_type_to_doc typ
+      | Some (Pcoerce (Some typ1, typ2)) ->
+        text ": "
+        ^^ core_type_to_doc typ1
+        ^^ text " :> "
+        ^^ core_type_to_doc typ2
     in
     let body_doc =
       match body with
       | Pfunction_body e -> expression_to_doc e
-      | Pfunction_cases (cases, _, _) ->
+      | Pfunction_cases (cases, _loc, _attrs) ->
         separate
           (text " ")
           (List.map
@@ -118,7 +129,12 @@ and expression_to_doc expr =
                ^^ expression_to_doc case.pc_rhs)
              cases)
     in
-    text "(" ^^ params_doc ^^ text ") => " ^^ body_doc
+    text "("
+    ^^ params_doc
+    ^^ text ")"
+    ^^ constraint_doc
+    ^^ text " => "
+    ^^ body_doc
   | Pexp_apply (func, args) ->
     let func_doc = expression_to_doc func in
     let arg_texts =
@@ -177,10 +193,10 @@ and expression_to_doc expr =
     text "("
     ^^ separate (text ", ") (List.map ~f:expression_to_doc exprs)
     ^^ text ")"
-  | Pexp_construct ({ txt = Lident "()"; _ }, None) -> text "()"
-  | Pexp_construct ({ txt = Lident "true"; _ }, None) -> text "true"
-  | Pexp_construct ({ txt = Lident "false"; _ }, None) -> text "false"
-  | Pexp_construct ({ txt = Lident "[]"; _ }, None) -> text "[]"
+  | Pexp_construct ({ txt = Lident "()"; loc = _ }, None) -> text "()"
+  | Pexp_construct ({ txt = Lident "true"; loc = _ }, None) -> text "true"
+  | Pexp_construct ({ txt = Lident "false"; loc = _ }, None) -> text "false"
+  | Pexp_construct ({ txt = Lident "[]"; loc = _ }, None) -> text "[]"
   | Pexp_construct (li, None) -> longident_loc li
   | Pexp_construct (li, Some expr) ->
     longident_loc li ^^ text "(" ^^ expression_to_doc expr ^^ text ")"
@@ -275,28 +291,29 @@ and expression_to_doc expr =
     ^^ text " :> "
     ^^ core_type_to_doc typ2
     ^^ text ")"
-  | Pexp_send (e, { txt; _ }) -> expression_to_doc e ^^ text "#" ^^ text txt
+  | Pexp_send (e, { txt; loc = _ }) ->
+    expression_to_doc e ^^ text "#" ^^ text txt
   | Pexp_new li -> text "new " ^^ longident_loc li
-  | Pexp_setinstvar ({ txt; _ }, e) ->
+  | Pexp_setinstvar ({ txt; loc = _ }, e) ->
     text txt ^^ text " = " ^^ expression_to_doc e
   | Pexp_override fields ->
     let fields_doc =
       separate
         (text ", ")
         (List.map
-           ~f:(fun ({ txt; _ }, e) ->
+           ~f:(fun ({ txt; loc = _ }, e) ->
              text txt ^^ text ": " ^^ expression_to_doc e)
            fields)
     in
     text "{< " ^^ fields_doc ^^ text " >}"
-  | Pexp_letmodule ({ txt = Some name; _ }, me, e) ->
+  | Pexp_letmodule ({ txt = Some name; loc = _ }, me, e) ->
     text "let module "
     ^^ text name
     ^^ text " = "
     ^^ module_expr_to_doc me
     ^^ text "; "
     ^^ expression_to_doc e
-  | Pexp_letmodule ({ txt = None; _ }, me, e) ->
+  | Pexp_letmodule ({ txt = None; loc = _ }, me, e) ->
     text "let module _ = "
     ^^ module_expr_to_doc me
     ^^ text "; "
@@ -316,7 +333,7 @@ and expression_to_doc expr =
     ^^ core_type_to_doc typ
     ^^ text ")"
   | Pexp_object cs -> class_structure_to_doc cs
-  | Pexp_newtype ({ txt; _ }, e) ->
+  | Pexp_newtype ({ txt; loc = _ }, e) ->
     text "(type " ^^ text txt ^^ text ") => " ^^ expression_to_doc e
   | Pexp_pack me -> text "(module " ^^ module_expr_to_doc me ^^ text ")"
   | Pexp_open (od, e) ->
@@ -334,7 +351,7 @@ and expression_to_doc expr =
 and pattern_to_doc pat =
   match pat.ppat_desc with
   | Ppat_any -> text "_"
-  | Ppat_var { txt; _ } ->
+  | Ppat_var { txt; loc = _ } ->
     (* Handle operators in parentheses *)
     if
       String.length txt > 0
@@ -344,19 +361,20 @@ and pattern_to_doc pat =
       | _ -> true
     then text ("(" ^ txt ^ ")")
     else text txt
-  | Ppat_alias (p, { txt; _ }) -> pattern_to_doc p ^^ text " as " ^^ text txt
+  | Ppat_alias (p, { txt; loc = _ }) ->
+    pattern_to_doc p ^^ text " as " ^^ text txt
   | Ppat_constant c -> constant c
   | Ppat_interval (c1, c2) -> constant c1 ^^ text " .. " ^^ constant c2
   | Ppat_tuple pats ->
     text "("
     ^^ separate (text ", ") (List.map ~f:pattern_to_doc pats)
     ^^ text ")"
-  | Ppat_construct ({ txt = Lident "()"; _ }, None) -> text "()"
-  | Ppat_construct ({ txt = Lident "true"; _ }, None) -> text "true"
-  | Ppat_construct ({ txt = Lident "false"; _ }, None) -> text "false"
-  | Ppat_construct ({ txt = Lident "[]"; _ }, None) -> text "[]"
+  | Ppat_construct ({ txt = Lident "()"; loc = _ }, None) -> text "()"
+  | Ppat_construct ({ txt = Lident "true"; loc = _ }, None) -> text "true"
+  | Ppat_construct ({ txt = Lident "false"; loc = _ }, None) -> text "false"
+  | Ppat_construct ({ txt = Lident "[]"; loc = _ }, None) -> text "[]"
   | Ppat_construct (li, None) -> longident_loc li
-  | Ppat_construct (li, Some (_, pat)) ->
+  | Ppat_construct (li, Some (_var, pat)) ->
     longident_loc li ^^ text "(" ^^ pattern_to_doc pat ^^ text ")"
   | Ppat_variant (tag, None) -> text ("`" ^ tag)
   | Ppat_variant (tag, Some pat) ->
@@ -394,8 +412,8 @@ and pattern_to_doc pat =
     ^^ text ")"
   | Ppat_type li -> text "#" ^^ longident_loc li
   | Ppat_lazy p -> text "lazy(" ^^ pattern_to_doc p ^^ text ")"
-  | Ppat_unpack { txt = Some name; _ } -> text ("(module " ^ name ^ ")")
-  | Ppat_unpack { txt = None; _ } -> text "(module _)"
+  | Ppat_unpack { txt = Some name; loc = _ } -> text ("(module " ^ name ^ ")")
+  | Ppat_unpack { txt = None; loc = _ } -> text "(module _)"
   | Ppat_exception p -> text "exception " ^^ pattern_to_doc p
   | Ppat_extension ext -> extension_to_doc ext
   | Ppat_open (li, p) ->
@@ -434,7 +452,7 @@ and core_type_to_doc typ =
         (List.map
            ~f:(fun field ->
              match field.pof_desc with
-             | Otag ({ txt; _ }, typ) ->
+             | Otag ({ txt; loc = _ }, typ) ->
                text ("\"" ^ txt ^ "\": ") ^^ core_type_to_doc typ
              | Oinherit typ -> text "..." ^^ core_type_to_doc typ)
            fields)
@@ -447,7 +465,7 @@ and core_type_to_doc typ =
         (List.map
            ~f:(fun field ->
              match field.pof_desc with
-             | Otag ({ txt; _ }, typ) ->
+             | Otag ({ txt; loc = _ }, typ) ->
                text ("\"" ^ txt ^ "\": ") ^^ core_type_to_doc typ
              | Oinherit typ -> text "..." ^^ core_type_to_doc typ)
            fields)
@@ -460,7 +478,8 @@ and core_type_to_doc typ =
     ^^ text "("
     ^^ separate (text ", ") (List.map ~f:core_type_to_doc args)
     ^^ text ")"
-  | Ptyp_alias (typ, { txt; _ }) -> core_type_to_doc typ ^^ text (" as '" ^ txt)
+  | Ptyp_alias (typ, { txt; loc = _ }) ->
+    core_type_to_doc typ ^^ text (" as '" ^ txt)
   | Ptyp_variant (rows, Closed, None) ->
     let rows_doc = separate (text " ") (List.map ~f:row_field_to_doc rows) in
     text "[ " ^^ rows_doc ^^ text " ]"
@@ -470,12 +489,14 @@ and core_type_to_doc typ =
       separate (text " ") (List.map ~f:(fun t -> text ("`" ^ t)) tags)
     in
     text "[ " ^^ rows_doc ^^ text " > " ^^ tags_doc ^^ text " ]"
-  | Ptyp_variant (rows, Open, _) ->
+  | Ptyp_variant (rows, Open, _tags) ->
     let rows_doc = separate (text " ") (List.map ~f:row_field_to_doc rows) in
     text "[ > " ^^ rows_doc ^^ text " ]"
   | Ptyp_poly ([], typ) -> core_type_to_doc typ
   | Ptyp_poly (vars, typ) ->
-    separate (text " ") (List.map ~f:(fun { txt; _ } -> text ("'" ^ txt)) vars)
+    separate
+      (text " ")
+      (List.map ~f:(fun { txt; loc = _ } -> text ("'" ^ txt)) vars)
     ^^ text ". "
     ^^ core_type_to_doc typ
   | Ptyp_package (li, []) -> text "module " ^^ longident_loc li
@@ -498,8 +519,8 @@ and core_type_to_doc typ =
 
 and row_field_to_doc field =
   match field.prf_desc with
-  | Rtag ({ txt; _ }, _, []) -> text ("| `" ^ txt)
-  | Rtag ({ txt; _ }, _, typs) ->
+  | Rtag ({ txt; loc = _ }, _attrs, []) -> text ("| `" ^ txt)
+  | Rtag ({ txt; loc = _ }, _attrs, typs) ->
     text ("| `" ^ txt ^ "(")
     ^^ separate (text ", ") (List.map ~f:core_type_to_doc typs)
     ^^ text ")"
@@ -507,7 +528,7 @@ and row_field_to_doc field =
 
 and structure_item_to_doc item =
   match item.pstr_desc with
-  | Pstr_eval (e, _) -> expression_to_doc e
+  | Pstr_eval (e, _attrs) -> expression_to_doc e
   | Pstr_value (Nonrecursive, vbs) ->
     separate
       (text "; ")
@@ -553,7 +574,7 @@ and structure_item_to_doc item =
          (List.map ~f:extension_constructor_to_doc te.ptyext_constructors)
   | Pstr_exception ec ->
     text "exception " ^^ extension_constructor_to_doc ec.ptyexn_constructor
-  | Pstr_module { pmb_name; pmb_expr; _ } ->
+  | Pstr_module { pmb_name; pmb_expr; pmb_attributes = _; pmb_loc = _ } ->
     let name = match pmb_name.txt with Some n -> n | None -> "_" in
     text "module " ^^ text name ^^ text " = " ^^ module_expr_to_doc pmb_expr
   | Pstr_recmodule mbs ->
@@ -567,9 +588,11 @@ and structure_item_to_doc item =
            ^^ text " = "
            ^^ module_expr_to_doc mb.pmb_expr)
          mbs)
-  | Pstr_modtype { pmtd_name; pmtd_type = None; _ } ->
+  | Pstr_modtype
+      { pmtd_name; pmtd_type = None; pmtd_attributes = _; pmtd_loc = _ } ->
     text ("module type " ^ pmtd_name.txt)
-  | Pstr_modtype { pmtd_name; pmtd_type = Some mt; _ } ->
+  | Pstr_modtype
+      { pmtd_name; pmtd_type = Some mt; pmtd_attributes = _; pmtd_loc = _ } ->
     text ("module type " ^ pmtd_name.txt) ^^ text " = " ^^ module_type_to_doc mt
   | Pstr_open od -> text "open " ^^ module_expr_to_doc od.popen_expr
   | Pstr_class cds ->
@@ -585,7 +608,9 @@ and structure_item_to_doc item =
                text "("
                ^^ separate
                     (text ", ")
-                    (List.map ~f:(fun (typ, _) -> core_type_to_doc typ) params)
+                    (List.map
+                       ~f:(fun (typ, _variance) -> core_type_to_doc typ)
+                       params)
                ^^ text ") ")
            ^^ text " = "
            ^^ class_expr_to_doc cd.pci_expr)
@@ -603,15 +628,17 @@ and structure_item_to_doc item =
                text "("
                ^^ separate
                     (text ", ")
-                    (List.map ~f:(fun (typ, _) -> core_type_to_doc typ) params)
+                    (List.map
+                       ~f:(fun (typ, _variance) -> core_type_to_doc typ)
+                       params)
                ^^ text ") ")
            ^^ text " = "
            ^^ class_type_to_doc ctd.pci_expr)
          ctds)
-  | Pstr_include { pincl_mod; _ } ->
+  | Pstr_include { pincl_mod; pincl_attributes = _; pincl_loc = _ } ->
     text "include " ^^ module_expr_to_doc pincl_mod
   | Pstr_attribute attr -> attribute_to_doc attr
-  | Pstr_extension (ext, _) -> item_extension_to_doc ext
+  | Pstr_extension (ext, _attrs) -> item_extension_to_doc ext
 
 and signature_item_to_doc item =
   match item.psig_desc with
@@ -636,7 +663,7 @@ and signature_item_to_doc item =
          (List.map ~f:extension_constructor_to_doc te.ptyext_constructors)
   | Psig_exception ec ->
     text "exception " ^^ extension_constructor_to_doc ec.ptyexn_constructor
-  | Psig_module { pmd_name; pmd_type; _ } ->
+  | Psig_module { pmd_name; pmd_type; pmd_attributes = _; pmd_loc = _ } ->
     let name = match pmd_name.txt with Some n -> n | None -> "_" in
     text "module " ^^ text name ^^ text ": " ^^ module_type_to_doc pmd_type
   | Psig_recmodule mds ->
@@ -650,12 +677,14 @@ and signature_item_to_doc item =
            ^^ text ": "
            ^^ module_type_to_doc md.pmd_type)
          mds)
-  | Psig_modtype { pmtd_name; pmtd_type = None; _ } ->
+  | Psig_modtype
+      { pmtd_name; pmtd_type = None; pmtd_attributes = _; pmtd_loc = _ } ->
     text ("module type " ^ pmtd_name.txt)
-  | Psig_modtype { pmtd_name; pmtd_type = Some mt; _ } ->
+  | Psig_modtype
+      { pmtd_name; pmtd_type = Some mt; pmtd_attributes = _; pmtd_loc = _ } ->
     text ("module type " ^ pmtd_name.txt) ^^ text " = " ^^ module_type_to_doc mt
   | Psig_open od -> text "open " ^^ longident_loc od.popen_expr
-  | Psig_include { pincl_mod; _ } ->
+  | Psig_include { pincl_mod; pincl_attributes = _; pincl_loc = _ } ->
     text "include " ^^ module_type_to_doc pincl_mod
   | Psig_class cds ->
     separate
@@ -670,7 +699,9 @@ and signature_item_to_doc item =
                text "("
                ^^ separate
                     (text ", ")
-                    (List.map ~f:(fun (typ, _) -> core_type_to_doc typ) params)
+                    (List.map
+                       ~f:(fun (typ, _variance) -> core_type_to_doc typ)
+                       params)
                ^^ text ") ")
            ^^ text ": "
            ^^ class_type_to_doc cd.pci_expr)
@@ -688,14 +719,16 @@ and signature_item_to_doc item =
                text "("
                ^^ separate
                     (text ", ")
-                    (List.map ~f:(fun (typ, _) -> core_type_to_doc typ) params)
+                    (List.map
+                       ~f:(fun (typ, _variance) -> core_type_to_doc typ)
+                       params)
                ^^ text ") ")
            ^^ text " = "
            ^^ class_type_to_doc ctd.pci_expr)
          ctds)
   | Psig_attribute attr -> attribute_to_doc attr
-  | Psig_extension (ext, _) -> item_extension_to_doc ext
-  | Psig_modsubst { pms_name; pms_manifest; _ } ->
+  | Psig_extension (ext, _attrs) -> item_extension_to_doc ext
+  | Psig_modsubst { pms_name; pms_manifest; pms_attributes = _; pms_loc = _ } ->
     text ("module " ^ pms_name.txt) ^^ text " := " ^^ longident_loc pms_manifest
   | Psig_typesubst tds ->
     separate
@@ -706,11 +739,13 @@ and signature_item_to_doc item =
            ^^ type_declaration_to_doc td
            ^^ text " := ...")
          tds)
-  | Psig_modtypesubst { pmtd_name; pmtd_type = Some mt; _ } ->
+  | Psig_modtypesubst
+      { pmtd_name; pmtd_type = Some mt; pmtd_attributes = _; pmtd_loc = _ } ->
     text ("module type " ^ pmtd_name.txt)
     ^^ text " := "
     ^^ module_type_to_doc mt
-  | Psig_modtypesubst { pmtd_name; pmtd_type = None; _ } ->
+  | Psig_modtypesubst
+      { pmtd_name; pmtd_type = None; pmtd_attributes = _; pmtd_loc = _ } ->
     text ("module type " ^ pmtd_name.txt ^ " := ...")
 
 and type_declaration_to_doc td =
@@ -721,7 +756,7 @@ and type_declaration_to_doc td =
       text "("
       ^^ separate
            (text ", ")
-           (List.map ~f:(fun (typ, _) -> core_type_to_doc typ) ps)
+           (List.map ~f:(fun (typ, _variance) -> core_type_to_doc typ) ps)
       ^^ text ") "
   in
   let name = text td.ptype_name.txt in
@@ -747,7 +782,17 @@ and type_declaration_to_doc td =
                     text "("
                     ^^ separate (text ", ") (List.map ~f:core_type_to_doc args)
                     ^^ text ")"
-                  | Pcstr_record _ -> text "({ ... })"
+                  | Pcstr_record fields ->
+                    text "({ "
+                    ^^ separate
+                         (text ", ")
+                         (List.map
+                            ~f:(fun ld ->
+                              text ld.pld_name.txt
+                              ^^ text ": "
+                              ^^ core_type_to_doc ld.pld_type)
+                            fields)
+                    ^^ text " })"
                 in
                 let res_doc =
                   match cd.pcd_res with
@@ -792,10 +837,22 @@ and extension_constructor_to_doc ec =
       ^^ separate (text ", ") (List.map ~f:core_type_to_doc args)
       ^^ text "): "
       ^^ core_type_to_doc typ)
-  | Pext_decl (_, Pcstr_record _, ret_type) ->
+  | Pext_decl (_, Pcstr_record fields, ret_type) ->
+    let fields_doc =
+      text "({ "
+      ^^ separate
+           (text ", ")
+           (List.map
+              ~f:(fun ld ->
+                text ld.pld_name.txt
+                ^^ text ": "
+                ^^ core_type_to_doc ld.pld_type)
+              fields)
+      ^^ text " })"
+    in
     (match ret_type with
-    | None -> name ^^ text "({ ... })"
-    | Some typ -> name ^^ text "({ ... }): " ^^ core_type_to_doc typ)
+    | None -> name ^^ fields_doc
+    | Some typ -> name ^^ fields_doc ^^ text ": " ^^ core_type_to_doc typ)
   | Pext_rebind li -> name ^^ text " = " ^^ longident_loc li
 
 and module_expr_to_doc me =
@@ -806,12 +863,12 @@ and module_expr_to_doc me =
     ^^ separate (text "; ") (List.map ~f:structure_item_to_doc items)
     ^^ text " }"
   | Pmod_functor (Unit, body) -> text "() => " ^^ module_expr_to_doc body
-  | Pmod_functor (Named ({ txt = Some name; _ }, mt), body) ->
+  | Pmod_functor (Named ({ txt = Some name; loc = _ }, mt), body) ->
     text ("(" ^ name ^ ": ")
     ^^ module_type_to_doc mt
     ^^ text ") => "
     ^^ module_expr_to_doc body
-  | Pmod_functor (Named ({ txt = None; _ }, mt), body) ->
+  | Pmod_functor (Named ({ txt = None; loc = _ }, mt), body) ->
     text "(_: "
     ^^ module_type_to_doc mt
     ^^ text ") => "
@@ -836,12 +893,12 @@ and module_type_to_doc mt =
     ^^ separate (text "; ") (List.map ~f:signature_item_to_doc items)
     ^^ text " }"
   | Pmty_functor (Unit, body) -> text "() => " ^^ module_type_to_doc body
-  | Pmty_functor (Named ({ txt = Some name; _ }, mt1), mt2) ->
+  | Pmty_functor (Named ({ txt = Some name; loc = _ }, mt1), mt2) ->
     text ("(" ^ name ^ ": ")
     ^^ module_type_to_doc mt1
     ^^ text ") => "
     ^^ module_type_to_doc mt2
-  | Pmty_functor (Named ({ txt = None; _ }, mt1), mt2) ->
+  | Pmty_functor (Named ({ txt = None; loc = _ }, mt1), mt2) ->
     text "(_: "
     ^^ module_type_to_doc mt1
     ^^ text ") => "
@@ -874,7 +931,7 @@ and with_constraint_to_doc = function
           text "("
           ^^ separate
                (text ", ")
-               (List.map ~f:(fun (typ, _) -> core_type_to_doc typ) ps)
+               (List.map ~f:(fun (typ, _variance) -> core_type_to_doc typ) ps)
           ^^ text ") "
         in
         params_doc ^^ longident_loc li
@@ -968,7 +1025,7 @@ and class_expr_to_doc ce =
 and class_structure_to_doc cs =
   let self_pat =
     match cs.pcstr_self.ppat_desc with
-    | Ppat_var { txt = "this"; _ } -> empty
+    | Ppat_var { txt = "this"; loc = _ } -> empty
     | _ -> text " as " ^^ pattern_to_doc cs.pcstr_self
   in
   text "{ "
@@ -980,23 +1037,23 @@ and class_structure_to_doc cs =
 and class_field_to_doc cf =
   match cf.pcf_desc with
   | Pcf_inherit (_, ce, None) -> text "inherit " ^^ class_expr_to_doc ce
-  | Pcf_inherit (_, ce, Some { txt; _ }) ->
+  | Pcf_inherit (_, ce, Some { txt; loc = _ }) ->
     text "inherit " ^^ class_expr_to_doc ce ^^ text (" as " ^ txt)
-  | Pcf_val ({ txt; _ }, Mutable, Cfk_concrete (_, e)) ->
+  | Pcf_val ({ txt; loc = _ }, Mutable, Cfk_concrete (_, e)) ->
     text ("val mutable " ^ txt ^ " = ") ^^ expression_to_doc e
-  | Pcf_val ({ txt; _ }, Immutable, Cfk_concrete (_, e)) ->
+  | Pcf_val ({ txt; loc = _ }, Immutable, Cfk_concrete (_, e)) ->
     text ("val " ^ txt ^ " = ") ^^ expression_to_doc e
-  | Pcf_val ({ txt; _ }, Mutable, Cfk_virtual typ) ->
+  | Pcf_val ({ txt; loc = _ }, Mutable, Cfk_virtual typ) ->
     text ("val mutable virtual " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pcf_val ({ txt; _ }, Immutable, Cfk_virtual typ) ->
+  | Pcf_val ({ txt; loc = _ }, Immutable, Cfk_virtual typ) ->
     text ("val virtual " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pcf_method ({ txt; _ }, Private, Cfk_concrete (_, e)) ->
+  | Pcf_method ({ txt; loc = _ }, Private, Cfk_concrete (_, e)) ->
     text ("pri " ^ txt ^ " = ") ^^ expression_to_doc e
-  | Pcf_method ({ txt; _ }, Public, Cfk_concrete (_, e)) ->
+  | Pcf_method ({ txt; loc = _ }, Public, Cfk_concrete (_, e)) ->
     text ("pub " ^ txt ^ " = ") ^^ expression_to_doc e
-  | Pcf_method ({ txt; _ }, Private, Cfk_virtual typ) ->
+  | Pcf_method ({ txt; loc = _ }, Private, Cfk_virtual typ) ->
     text ("pri virtual " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pcf_method ({ txt; _ }, Public, Cfk_virtual typ) ->
+  | Pcf_method ({ txt; loc = _ }, Public, Cfk_virtual typ) ->
     text ("pub virtual " ^ txt ^ ": ") ^^ core_type_to_doc typ
   | Pcf_constraint (typ1, typ2) ->
     text "constraint "
@@ -1039,21 +1096,21 @@ and class_type_to_doc ct =
 and class_type_field_to_doc ctf =
   match ctf.pctf_desc with
   | Pctf_inherit ct -> text "inherit " ^^ class_type_to_doc ct
-  | Pctf_val ({ txt; _ }, Mutable, Virtual, typ) ->
+  | Pctf_val ({ txt; loc = _ }, Mutable, Virtual, typ) ->
     text ("val mutable virtual " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pctf_val ({ txt; _ }, Immutable, Virtual, typ) ->
+  | Pctf_val ({ txt; loc = _ }, Immutable, Virtual, typ) ->
     text ("val virtual " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pctf_val ({ txt; _ }, Mutable, Concrete, typ) ->
+  | Pctf_val ({ txt; loc = _ }, Mutable, Concrete, typ) ->
     text ("val mutable " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pctf_val ({ txt; _ }, Immutable, Concrete, typ) ->
+  | Pctf_val ({ txt; loc = _ }, Immutable, Concrete, typ) ->
     text ("val " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pctf_method ({ txt; _ }, Private, Virtual, typ) ->
+  | Pctf_method ({ txt; loc = _ }, Private, Virtual, typ) ->
     text ("pri virtual " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pctf_method ({ txt; _ }, Public, Virtual, typ) ->
+  | Pctf_method ({ txt; loc = _ }, Public, Virtual, typ) ->
     text ("pub virtual " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pctf_method ({ txt; _ }, Private, Concrete, typ) ->
+  | Pctf_method ({ txt; loc = _ }, Private, Concrete, typ) ->
     text ("pri " ^ txt ^ ": ") ^^ core_type_to_doc typ
-  | Pctf_method ({ txt; _ }, Public, Concrete, typ) ->
+  | Pctf_method ({ txt; loc = _ }, Public, Concrete, typ) ->
     text ("pub " ^ txt ^ ": ") ^^ core_type_to_doc typ
   | Pctf_constraint (typ1, typ2) ->
     text "constraint "
