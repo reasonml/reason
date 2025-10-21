@@ -187,6 +187,90 @@ let dump ppf layout =
   in
   traverse "" layout
 
+(** Pretty tree visualization with box-drawing characters *)
+let dump_tree ppf layout =
+  let printf fmt = Format.fprintf ppf fmt in
+  
+  let rec traverse prefix last = function
+    | SourceMap (loc, sublayout) ->
+      let connector = if last then "└─ " else "├─ " in
+      printf
+        "%s%sSourceMap [%d:%d-%d:%d]\n"
+        prefix
+        connector
+        loc.loc_start.Lexing.pos_lnum
+        (loc.loc_start.Lexing.pos_cnum - loc.loc_start.Lexing.pos_bol)
+        loc.loc_end.Lexing.pos_lnum
+        (loc.loc_end.Lexing.pos_cnum - loc.loc_end.Lexing.pos_bol);
+      let child_prefix = prefix ^ (if last then "   " else "│  ") in
+      traverse child_prefix true sublayout
+      
+    | Sequence (config, items) ->
+      let connector = if last then "└─ " else "├─ " in
+      let break_str =
+        match config.break with
+        | Never -> "Never"
+        | IfNeed -> "IfNeed"
+        | Always -> "Always"
+        | Always_rec -> "Always_rec"
+      in
+      let sep_str =
+        match config.sep with
+        | NoSep -> "NoSep"
+        | Sep s -> "Sep '" ^ s ^ "'"
+        | SepFinal (s, f) -> "SepFinal ('" ^ s ^ "', '" ^ f ^ "')"
+      in
+      let wrap_str =
+        let opn, cls = config.wrap in
+        if opn = "" && cls = "" then ""
+        else " wrap=(\"" ^ opn ^ "\", \"" ^ cls ^ "\")"
+      in
+      printf
+        "%s%sSequence [%s, %s%s]\n"
+        prefix
+        connector
+        break_str
+        sep_str
+        wrap_str;
+      let child_prefix = prefix ^ (if last then "   " else "│  ") in
+      traverse_list child_prefix items
+      
+    | Label (_, left, right) ->
+      let connector = if last then "└─ " else "├─ " in
+      printf "%s%sLabel\n" prefix connector;
+      let child_prefix = prefix ^ (if last then "   " else "│  ") in
+      printf "%s├─ left:\n" child_prefix;
+      traverse (child_prefix ^ "│  ") false left;
+      printf "%s└─ right:\n" child_prefix;
+      traverse (child_prefix ^ "   ") true right
+      
+    | Easy e ->
+      let connector = if last then "└─ " else "├─ " in
+      printf "%s%sEasy: %s\n" prefix connector (string_of_easy e)
+      
+    | Whitespace (region, sublayout) ->
+      let connector = if last then "└─ " else "├─ " in
+      printf
+        "%s%sWhitespace [newlines=%d, lines %d-%d, comments=%d]\n"
+        prefix
+        connector
+        region.newlines
+        region.range.lnum_start
+        region.range.lnum_end
+        (List.length region.comments);
+      let child_prefix = prefix ^ (if last then "   " else "│  ") in
+      traverse child_prefix true sublayout
+      
+  and traverse_list prefix = function
+    | [] -> ()
+    | [ item ] -> traverse prefix true item
+    | item :: rest ->
+      traverse prefix false item;
+      traverse_list prefix rest
+  in
+  traverse "" true layout;
+  Format.pp_print_flush ppf ()
+
 let source_map ?(loc = Location.none) layout =
   if loc = Location.none then layout else SourceMap (loc, layout)
 

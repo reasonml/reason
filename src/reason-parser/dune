@@ -28,7 +28,8 @@
  (action
   (with-stdout-to
    %{targets}
-   (run ../menhir-error-processor/menhir_error_processor.exe
+   (run
+    ../menhir-error-processor/menhir_error_processor.exe
     reason_parser.cmly))))
 
 (rule
@@ -50,4 +51,6 @@
   reason.ocaml-migrate-parsetree
   menhirLib
   reason.easy_format
+  pprint
+  pretty_expressive
   ppxlib))

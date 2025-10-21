@@ -1,5 +1,3 @@
-/* Copyright (c) 2015-present, Facebook, Inc. All rights reserved. */
-
 let x1 = () => 1;
 let x2 = (a) => 1;
 let x3 = (a: int, b) => 1;

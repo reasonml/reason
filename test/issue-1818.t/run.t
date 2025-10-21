@@ -1,8 +1,8 @@
 Format issue #1818 - Bad formatting for callback
   $ refmt ./input.re | tee formatted.re
   Fooooooooooooooooooo.baaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa(
-    baaaz, quuuuux =>
-    something(here)
+    baaaz,
+    quuuuux => something(here),
   );
 
 Format the formatted file back

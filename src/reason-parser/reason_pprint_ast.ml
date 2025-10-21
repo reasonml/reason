@@ -9832,9 +9832,9 @@ let createFormatter () =
                     (makeList
                        ~pad:(uncurriedApplication, false)
                        ~wrap:("", " ")
-                       ~break:IfNeed
+                       ~break:Always_rec
                        ~inline:(true, true)
-                       ~sep:(Sep ",")
+                       ~sep:commaTrail
                        ~postSpace:true
                        argsWithCallbackArgs)
                 in

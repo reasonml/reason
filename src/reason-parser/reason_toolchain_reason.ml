@@ -1,23 +1,15 @@
 module P = Reason_recover_parser
 module Lexer = Reason_lexer
 
-(* From Reason source text to OCaml AST
- *
- * 1. Make a lexbuf from source text
- * 2. Reason_lexer:
- *    a. Using OCamllex:
- *       extract one token from stream of characters
- *    b. post-process token:
- *       - store comments separately
- *       - insert ES6_FUN token
- *       - insert completion identifier
- * 3. Reason_parser, using Menhir:
- *    A parser with explicit continuations, which take a new token and return:
- *    - an AST when parse succeeded
- *    - a new continuation if more tokens are needed
- *    - nothing, if the parser got stuck (token is invalid in current state)
- * 4. Reason_toolchain connect lexer and parser:
- *)
+(* From Reason source text to OCaml AST * * 1. Make a lexbuf from source text *
+   2. Reason_lexer: * a. Using OCamllex: * extract one token from stream of
+   characters * b. post-process token: * - store comments separately * - insert
+   ES6_FUN token * - insert completion identifier * 3. Reason_parser, using
+   Menhir: * A parser with explicit continuations, which take a new token and
+   return: * - an AST when parse succeeded * - a new continuation if more tokens
+   are needed * - nothing, if the parser got stuck (token is invalid in current
+   state) * 4. Reason_toolchain connect lexer and parser:
+*)
 
 type token = Reason_parser.token
 type invalid_docstrings = Reason_lexer.invalid_docstrings
@@ -78,9 +70,9 @@ let safeguard_parsing lexbuf fn =
     else raise x
 
 let format_interface_with_comments (signature, comments) formatter =
-  let reason_formatter = Reason_pprint_ast.createFormatter () in
+  let reason_formatter = Reason_pprint_ast_2.make () in
   reason_formatter#signature comments formatter signature
 
 let format_implementation_with_comments (implementation, comments) formatter =
-  let reason_formatter = Reason_pprint_ast.createFormatter () in
+  let reason_formatter = Reason_pprint_ast_2.make () in
   reason_formatter#structure comments formatter implementation
