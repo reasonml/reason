@@ -22,13 +22,15 @@ Format issue #2843 - Record formatting improvements
     ~toString=Params.Search.toString,
     ~fromString=Params.Search.fromString,
     ~get=state => state.search,
-    ~set=(value, state) => {
-      ...state,
-      filter: {
-        ...state.filter,
-        search: value,
-      },
-    },
+    ~set=
+      (value, state) =>
+        {
+          ...state,
+          filter: {
+            ...state.filter,
+            search: value,
+          },
+        },
   );
 
 Format the formatted file back
