@@ -22,7 +22,6 @@ type tNested2 = ((int => int)) => string;
 type tNested3 = ((int => int) => int) => string;
 type tNested4 = (int, int) => string;
 type tNested5 = ((int, int)) => string;
-type tNested7 = array(list(int) => string);
 
 type t6 = int;
 type t7('a) = list('a);

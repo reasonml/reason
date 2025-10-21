@@ -139,3 +139,6 @@ let (!=) = 0;
 let (!==) = 0;
 
 type foobar(_) = | Foo('a): foobar(unit);
+
+let rec foo = (a, b) => a + b
+and bar = (a, b) => foo(a - b);
