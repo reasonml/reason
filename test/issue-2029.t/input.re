@@ -1,0 +1,5 @@
+{
+  /* foo */
+  <div className />;
+}
+

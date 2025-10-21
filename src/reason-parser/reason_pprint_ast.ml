@@ -9193,6 +9193,37 @@ let createFormatter () =
                 ~comments:self#comments
                 structureItems
             in
+            let sep =
+              match structureItems with
+              | [ { pstr_desc = Pstr_eval ({ pexp_desc; pexp_attributes; _ }, attrs); _ } ] ->
+                (* Only simple value expressions without special operators should not have a trailing semicolon *)
+                let { Reason_attributes.jsxAttrs; _ } =
+                  Reason_attributes.partitionAttributes pexp_attributes
+                in
+                let is_simple_value =
+                  attrs = [] && 
+                  (match pexp_desc with
+                  (* Only very simple literal expressions should not have trailing semicolon *)
+                  | Pexp_tuple _ | Pexp_construct _ | Pexp_ident _
+                  | Pexp_constant _ when pexp_attributes = [] ->
+                    true
+                  (* Simple function applications (like make(module I1)) - exclude operators *)
+                  | Pexp_apply ({ pexp_desc = Pexp_ident { txt = Lident name; _ }; _ }, _)
+                    when pexp_attributes = [] ->
+                    (* Exclude operators (they typically contain special chars or start with lowercase) *)
+                    not (String.contains name '|' || String.contains name '#' 
+                         || String.contains name '>' || String.contains name '<'
+                         || String.contains name '=' || String.contains name '+'
+                         || String.contains name '-' || String.contains name '*'
+                         || String.contains name '/' || String.contains name '@')
+                  (* JSX elements (which have JSX attribute) also should not have trailing semicolon *)
+                  | Pexp_apply _ when jsxAttrs != [] ->
+                    true
+                  | _ -> false)
+                in
+                if is_simple_value then Layout.Sep ";" else Layout.SepFinal (";", ";")
+              | _ -> Layout.SepFinal (";", ";")
+            in
             source_map
               ~loc:{ loc_start; loc_end; loc_ghost = false }
               (makeList
@@ -9201,7 +9232,7 @@ let createFormatter () =
                  ?wrap
                  ?indent
                  ~inline:(true, false)
-                 ~sep:(SepFinal (";", ";"))
+                 ~sep
                  items)
 
         (* How do modules become parsed? * let module (X: sig) = blah; * Will
