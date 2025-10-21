@@ -82,4 +82,6 @@
   let x = [%platform switch (()) { | Server => 1 | Client => 2 }]
   [@custom_attr ]
   [@custom_attr ] include SomeModule
+  let baseRecord = { x: 1, y: 2 }
+  let extendedRecord = { baseRecord, z: 3 }
   let rec foo = (a) => (b) => (+)(a, b) and bar = (a) => (b) => foo((-)(a, b))

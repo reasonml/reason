@@ -228,11 +228,7 @@ and expression_to_doc expr =
              longident_loc li ^^ text ": " ^^ expression_to_doc e)
            fields)
     in
-    text "{ ..."
-    ^^ expression_to_doc base
-    ^^ text ", "
-    ^^ fields_doc
-    ^^ text " }"
+    text "{ " ^^ expression_to_doc base ^^ text ", " ^^ fields_doc ^^ text " }"
   | Pexp_field (e, li) -> expression_to_doc e ^^ text "." ^^ longident_loc li
   | Pexp_setfield (e1, li, e2) ->
     expression_to_doc e1
@@ -779,7 +775,11 @@ and signature_item_to_doc item =
          ~f:(fun i td ->
            text (if i = 0 then "type " else "and ")
            ^^ type_declaration_to_doc td
-           ^^ text " := ...")
+           ^^ text " := "
+           ^^
+           match td.ptype_manifest with
+           | Some typ -> core_type_to_doc typ
+           | None -> assert false)
          tds)
   | Psig_modtypesubst
       { pmtd_name; pmtd_type = Some mt; pmtd_attributes; pmtd_loc = _ } ->
@@ -789,8 +789,7 @@ and signature_item_to_doc item =
     ^^ module_type_to_doc mt
   | Psig_modtypesubst
       { pmtd_name; pmtd_type = None; pmtd_attributes; pmtd_loc = _ } ->
-    attributes_to_doc pmtd_attributes
-    ^^ text ("module type " ^ pmtd_name.txt ^ " := ...")
+    attributes_to_doc pmtd_attributes ^^ text ("module type " ^ pmtd_name.txt)
 
 and type_declaration_to_doc td =
   let params =
