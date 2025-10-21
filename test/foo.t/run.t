@@ -60,6 +60,7 @@
   let (!=) = 0
   type foobar(_)  = | Foo('a): foobar(unit)
   type expr(_)  = | Int(int): expr(int) | String(string): expr(string) | Pair('a, 'b): expr(('a, 'b))
+  let eval = (type a) => ((e: expr(a))) => (switch (e) { | Int((n)) => n | String((s)) => s | Pair((x, y)) => (x, y) }: a)
   type point = | Point({ x: int, y: int })
   type person = | Person({ name: string, age: int }) | Anonymous
   type covariant(+'a)  = list('a)
@@ -68,8 +69,17 @@
   type open_variant = [ > | `A | `B(int) ]
   type open_with_values = [ > | `Red | `Blue(string) | `Green((int, int)) ]
   exception GenericError('a)
-  let with_extension = [%test ...]
-  let with_complex = [%derive.show ...]
-  [%%toplevel_ext ...]
-  [%%foo ...]
+  exception ParseError('a, 'b): exn
+  type exn += CustomError('a): exn
+  let with_extension = [%test "payload"]
+  let with_complex = [%derive.show { x: 1 }]
+  [%%toplevel_ext "payload"]
+  [%%foo let x = 1]
+  [@deprecated "Use new_module instead"] module OldModule = { let x = 1 }
+  let inline_func = (x) => (+)(x, 1)
+  [@warning "-27"] module type IgnoreUnused = { let unused: int }
+  [%%lwt let x = 1]
+  let x = [%platform switch (()) { | Server => 1 | Client => 2 }]
+  [@custom_attr ]
+  [@custom_attr ] include SomeModule
   let rec foo = (a) => (b) => (+)(a, b) and bar = (a) => (b) => foo((-)(a, b))

@@ -123,16 +123,17 @@ and expression_to_doc expr =
     let body_doc =
       match body with
       | Pfunction_body e -> expression_to_doc e
-      | Pfunction_cases (cases, _loc, _attrs) ->
-        separate
-          (text " ")
-          (List.map
-             ~f:(fun case ->
-               text "| "
-               ^^ pattern_to_doc case.pc_lhs
-               ^^ text " => "
-               ^^ expression_to_doc case.pc_rhs)
-             cases)
+      | Pfunction_cases (cases, _loc, attrs) ->
+        attributes_to_doc attrs
+        ^^ separate
+             (text " ")
+             (List.map
+                ~f:(fun case ->
+                  text "| "
+                  ^^ pattern_to_doc case.pc_lhs
+                  ^^ text " => "
+                  ^^ expression_to_doc case.pc_rhs)
+                cases)
     in
     text "("
     ^^ params_doc
@@ -523,8 +524,8 @@ and core_type_to_doc typ =
 
 and row_field_to_doc field =
   match field.prf_desc with
-  | Rtag ({ txt; loc = _ }, _attrs, []) -> text ("| `" ^ txt)
-  | Rtag ({ txt; loc = _ }, _attrs, typs) ->
+  | Rtag ({ txt; loc = _ }, _constant_constructor, []) -> text ("| `" ^ txt)
+  | Rtag ({ txt; loc = _ }, _constant_constructor, typs) ->
     text ("| `" ^ txt ^ "(")
     ^^ separate (text ", ") (List.map ~f:core_type_to_doc typs)
     ^^ text ")"
@@ -532,7 +533,7 @@ and row_field_to_doc field =
 
 and structure_item_to_doc item =
   match item.pstr_desc with
-  | Pstr_eval (e, _attrs) -> expression_to_doc e
+  | Pstr_eval (e, attrs) -> attributes_to_doc attrs ^^ expression_to_doc e
   | Pstr_value (Nonrecursive, vbs) ->
     separate
       (text "; ")
@@ -578,9 +579,13 @@ and structure_item_to_doc item =
          (List.map ~f:extension_constructor_to_doc te.ptyext_constructors)
   | Pstr_exception ec ->
     text "exception " ^^ extension_constructor_to_doc ec.ptyexn_constructor
-  | Pstr_module { pmb_name; pmb_expr; pmb_attributes = _; pmb_loc = _ } ->
+  | Pstr_module { pmb_name; pmb_expr; pmb_attributes; pmb_loc = _ } ->
     let name = match pmb_name.txt with Some n -> n | None -> "_" in
-    text "module " ^^ text name ^^ text " = " ^^ module_expr_to_doc pmb_expr
+    attributes_to_doc pmb_attributes
+    ^^ text "module "
+    ^^ text name
+    ^^ text " = "
+    ^^ module_expr_to_doc pmb_expr
   | Pstr_recmodule mbs ->
     separate
       (text " and ")
@@ -592,12 +597,15 @@ and structure_item_to_doc item =
            ^^ text " = "
            ^^ module_expr_to_doc mb.pmb_expr)
          mbs)
+  | Pstr_modtype { pmtd_name; pmtd_type = None; pmtd_attributes; pmtd_loc = _ }
+    ->
+    attributes_to_doc pmtd_attributes ^^ text ("module type " ^ pmtd_name.txt)
   | Pstr_modtype
-      { pmtd_name; pmtd_type = None; pmtd_attributes = _; pmtd_loc = _ } ->
-    text ("module type " ^ pmtd_name.txt)
-  | Pstr_modtype
-      { pmtd_name; pmtd_type = Some mt; pmtd_attributes = _; pmtd_loc = _ } ->
-    text ("module type " ^ pmtd_name.txt) ^^ text " = " ^^ module_type_to_doc mt
+      { pmtd_name; pmtd_type = Some mt; pmtd_attributes; pmtd_loc = _ } ->
+    attributes_to_doc pmtd_attributes
+    ^^ text ("module type " ^ pmtd_name.txt)
+    ^^ text " = "
+    ^^ module_type_to_doc mt
   | Pstr_open od -> text "open " ^^ module_expr_to_doc od.popen_expr
   | Pstr_class cds ->
     separate
@@ -651,10 +659,13 @@ and structure_item_to_doc item =
            ^^ text " = "
            ^^ class_type_to_doc ctd.pci_expr)
          ctds)
-  | Pstr_include { pincl_mod; pincl_attributes = _; pincl_loc = _ } ->
-    text "include " ^^ module_expr_to_doc pincl_mod
+  | Pstr_include { pincl_mod; pincl_attributes; pincl_loc = _ } ->
+    attributes_to_doc pincl_attributes
+    ^^ text "include "
+    ^^ module_expr_to_doc pincl_mod
   | Pstr_attribute attr -> attribute_to_doc attr
-  | Pstr_extension (ext, _attrs) -> item_extension_to_doc ext
+  | Pstr_extension (ext, attrs) ->
+    attributes_to_doc attrs ^^ item_extension_to_doc ext
 
 and signature_item_to_doc item =
   match item.psig_desc with
@@ -679,9 +690,13 @@ and signature_item_to_doc item =
          (List.map ~f:extension_constructor_to_doc te.ptyext_constructors)
   | Psig_exception ec ->
     text "exception " ^^ extension_constructor_to_doc ec.ptyexn_constructor
-  | Psig_module { pmd_name; pmd_type; pmd_attributes = _; pmd_loc = _ } ->
+  | Psig_module { pmd_name; pmd_type; pmd_attributes; pmd_loc = _ } ->
     let name = match pmd_name.txt with Some n -> n | None -> "_" in
-    text "module " ^^ text name ^^ text ": " ^^ module_type_to_doc pmd_type
+    attributes_to_doc pmd_attributes
+    ^^ text "module "
+    ^^ text name
+    ^^ text ": "
+    ^^ module_type_to_doc pmd_type
   | Psig_recmodule mds ->
     separate
       (text " and ")
@@ -693,15 +708,20 @@ and signature_item_to_doc item =
            ^^ text ": "
            ^^ module_type_to_doc md.pmd_type)
          mds)
+  | Psig_modtype { pmtd_name; pmtd_type = None; pmtd_attributes; pmtd_loc = _ }
+    ->
+    attributes_to_doc pmtd_attributes ^^ text ("module type " ^ pmtd_name.txt)
   | Psig_modtype
-      { pmtd_name; pmtd_type = None; pmtd_attributes = _; pmtd_loc = _ } ->
-    text ("module type " ^ pmtd_name.txt)
-  | Psig_modtype
-      { pmtd_name; pmtd_type = Some mt; pmtd_attributes = _; pmtd_loc = _ } ->
-    text ("module type " ^ pmtd_name.txt) ^^ text " = " ^^ module_type_to_doc mt
+      { pmtd_name; pmtd_type = Some mt; pmtd_attributes; pmtd_loc = _ } ->
+    attributes_to_doc pmtd_attributes
+    ^^ text ("module type " ^ pmtd_name.txt)
+    ^^ text " = "
+    ^^ module_type_to_doc mt
   | Psig_open od -> text "open " ^^ longident_loc od.popen_expr
-  | Psig_include { pincl_mod; pincl_attributes = _; pincl_loc = _ } ->
-    text "include " ^^ module_type_to_doc pincl_mod
+  | Psig_include { pincl_mod; pincl_attributes; pincl_loc = _ } ->
+    attributes_to_doc pincl_attributes
+    ^^ text "include "
+    ^^ module_type_to_doc pincl_mod
   | Psig_class cds ->
     separate
       (text " and ")
@@ -745,9 +765,13 @@ and signature_item_to_doc item =
            ^^ class_type_to_doc ctd.pci_expr)
          ctds)
   | Psig_attribute attr -> attribute_to_doc attr
-  | Psig_extension (ext, _attrs) -> item_extension_to_doc ext
-  | Psig_modsubst { pms_name; pms_manifest; pms_attributes = _; pms_loc = _ } ->
-    text ("module " ^ pms_name.txt) ^^ text " := " ^^ longident_loc pms_manifest
+  | Psig_extension (ext, attrs) ->
+    attributes_to_doc attrs ^^ item_extension_to_doc ext
+  | Psig_modsubst { pms_name; pms_manifest; pms_attributes; pms_loc = _ } ->
+    attributes_to_doc pms_attributes
+    ^^ text ("module " ^ pms_name.txt)
+    ^^ text " := "
+    ^^ longident_loc pms_manifest
   | Psig_typesubst tds ->
     separate
       (text " and ")
@@ -758,13 +782,15 @@ and signature_item_to_doc item =
            ^^ text " := ...")
          tds)
   | Psig_modtypesubst
-      { pmtd_name; pmtd_type = Some mt; pmtd_attributes = _; pmtd_loc = _ } ->
-    text ("module type " ^ pmtd_name.txt)
+      { pmtd_name; pmtd_type = Some mt; pmtd_attributes; pmtd_loc = _ } ->
+    attributes_to_doc pmtd_attributes
+    ^^ text ("module type " ^ pmtd_name.txt)
     ^^ text " := "
     ^^ module_type_to_doc mt
   | Psig_modtypesubst
-      { pmtd_name; pmtd_type = None; pmtd_attributes = _; pmtd_loc = _ } ->
-    text ("module type " ^ pmtd_name.txt ^ " := ...")
+      { pmtd_name; pmtd_type = None; pmtd_attributes; pmtd_loc = _ } ->
+    attributes_to_doc pmtd_attributes
+    ^^ text ("module type " ^ pmtd_name.txt ^ " := ...")
 
 and type_declaration_to_doc td =
   let params =
@@ -1142,9 +1168,35 @@ and class_type_field_to_doc ctf =
   | Pctf_attribute attr -> attribute_to_doc attr
   | Pctf_extension ext -> extension_to_doc ext
 
-and attribute_to_doc attr = text ("[@" ^ attr.attr_name.txt ^ " ...]")
-and extension_to_doc (name, _payload) = text ("[%" ^ name.txt ^ " ...]")
-and item_extension_to_doc (name, _payload) = text ("[%%" ^ name.txt ^ " ...]")
+and attribute_to_doc attr =
+  text "[@"
+  ^^ text attr.attr_name.txt
+  ^^ text " "
+  ^^ payload_to_doc attr.attr_payload
+  ^^ text "]"
+
+and payload_to_doc payload =
+  match payload with
+  | PStr [] -> empty
+  | PStr [ item ] -> structure_item_to_doc item
+  | PStr items -> separate (text "; ") (List.map ~f:structure_item_to_doc items)
+  | PTyp typ -> core_type_to_doc typ
+  | PSig [] -> empty
+  | PSig [ item ] -> signature_item_to_doc item
+  | PSig items -> separate (text "; ") (List.map ~f:signature_item_to_doc items)
+  | PPat (pat, _expr) -> pattern_to_doc pat
+
+and attributes_to_doc attrs =
+  match attrs with
+  | [] -> empty
+  | attrs ->
+    separate (text " ") (List.map ~f:attribute_to_doc attrs) ^^ text " "
+
+and extension_to_doc (name, payload) =
+  text "[%" ^^ text name.txt ^^ text " " ^^ payload_to_doc payload ^^ text "]"
+
+and item_extension_to_doc (name, payload) =
+  text "[%%" ^^ text name.txt ^^ text " " ^^ payload_to_doc payload ^^ text "]"
 
 and binding_op_to_doc bop =
   text bop.pbop_op.txt

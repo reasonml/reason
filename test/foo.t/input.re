@@ -175,6 +175,27 @@ let with_complex = [%derive.show { x: 1 }];
 
 let%foo x = 1;
 
+/* Test attributes rendering */
+[@deprecated "Use new_module instead"]
+module OldModule = { let x = 1; };
+
+[@inline]
+let inline_func = (x) => x + 1;
+
+[@warning "-27"]
+module type IgnoreUnused = { let unused: int; };
+
+let%lwt x = 1;
+
+let x = switch%platform () {
+  | Server => 1
+  | Client => 2
+};
+
+[@custom_attr];
+
+[@custom_attr]
+include SomeModule;
+
 let rec foo = (a, b) => a + b
 and bar = (a, b) => foo(a - b);
-
