@@ -20,6 +20,8 @@ let current_settings = ref default_settings
 let configure ~width ~assumeExplicitArity ~constructorLists =
   current_settings := { width; assumeExplicitArity; constructorLists }
 
+exception Invalid_parsetree of string
+
 let separate sep docs =
   match docs with
   | [] -> empty
@@ -142,31 +144,10 @@ and expression_to_doc expr =
     ^^ text " => "
     ^^ body_doc
   | Pexp_apply (func, args) ->
-    let func_doc = expression_to_doc func in
-    let arg_texts =
-      List.map
-        ~f:(fun (lbl, arg) ->
-          let arg_doc = expression_to_doc arg in
-          let labeled_doc =
-            match lbl with
-            | Nolabel -> arg_doc
-            | Labelled s -> text ("~" ^ s ^ "=") ^^ arg_doc
-            | Optional s -> text ("~" ^ s ^ "=?") ^^ arg_doc
-          in
-          labeled_doc)
-        args
-    in
-    let args_doc =
-      match arg_texts with
-      | [] -> empty
-      | [ single ] -> single
-      | first :: rest ->
-        List.fold_left
-          ~f:(fun acc arg -> acc ^^ text ", " ^^ arg)
-          ~init:first
-          rest
-    in
-    func_doc ^^ text "(" ^^ args_doc ^^ text ")"
+    (match expr.pexp_attributes with
+    | [ { attr_name = { txt = "JSX"; loc = _ }; attr_payload = PStr []; _ } ] ->
+      jsx_pexp_apply_to_doc func args
+    | _ -> pexp_apply_to_doc func args)
   | Pexp_match (e, cases) ->
     text "switch ("
     ^^ expression_to_doc e
@@ -349,6 +330,116 @@ and expression_to_doc expr =
     let_doc ^^ text " " ^^ ands_doc ^^ text " in " ^^ expression_to_doc body
   | Pexp_extension ext -> extension_to_doc ext
   | Pexp_unreachable -> text "."
+
+and pexp_apply_to_doc func args =
+  let func_doc = expression_to_doc func in
+  let arg_texts =
+    List.map
+      ~f:(fun (lbl, arg) ->
+        let arg_doc = expression_to_doc arg in
+        let labeled_doc =
+          match lbl with
+          | Nolabel -> arg_doc
+          | Labelled s -> text ("~" ^ s ^ "=") ^^ arg_doc
+          | Optional s -> text ("~" ^ s ^ "=?") ^^ arg_doc
+        in
+        labeled_doc)
+      args
+  in
+  let args_doc =
+    match arg_texts with
+    | [] -> empty
+    | [ single ] -> single
+    | first :: rest ->
+      List.fold_left
+        ~f:(fun acc arg -> acc ^^ text ", " ^^ arg)
+        ~init:first
+        rest
+  in
+  func_doc ^^ text "(" ^^ args_doc ^^ text ")"
+
+and jsx_pexp_apply_to_doc func args =
+  let rec extract_children_list expr =
+    match expr.pexp_desc with
+    | Pexp_construct ({ txt = Lident "[]"; _ }, None) -> []
+    | Pexp_construct
+        ({ txt = Lident "::"; _ }, Some { pexp_desc = Pexp_tuple [ hd; tl ]; _ })
+      ->
+      hd :: extract_children_list tl
+    | _ -> [ expr ]
+  in
+  let children = ref None in
+  let props =
+    List.filter_map args ~f:(fun arg ->
+      match arg with
+      | ( Labelled "children"
+        , ({ pexp_desc = Pexp_construct (_, None); _ } as expr) ) ->
+        children := Some (extract_children_list expr);
+        None
+      | Labelled "children", expr ->
+        children := Some (extract_children_list expr);
+        None
+      | Nolabel, { pexp_desc = Pexp_construct ({ txt = Lident "()"; _ }, _); _ }
+        ->
+        None
+      | prop -> Some prop)
+  in
+
+  let tag_name =
+    match func.pexp_desc with
+    | Pexp_ident { txt = Lident name; _ } -> name
+    | Pexp_ident { txt = Ldot (id, name); _ } ->
+      let rec flatten = function
+        | Lident s -> [ s ]
+        | Ldot (path, s) -> flatten path @ [ s ]
+        | Lapply _ -> []
+      in
+      let path = flatten id in
+      (match name with
+      | "createElement" -> String.concat ~sep:"." path
+      | name -> Printf.sprintf "%s.%s" (String.concat ~sep:"." path) name)
+    | _ -> raise (Invalid_parsetree "JSX element tag is not Longident.t")
+  in
+
+  let fmt_prop (lbl, expr) =
+    match lbl with
+    | Nolabel -> text "{" ^^ expression_to_doc expr ^^ text "}"
+    | Labelled label ->
+      (* punning: <Foo bar /> where bar is an identifier *)
+      (match expr.pexp_desc with
+      | Pexp_ident { txt = Lident id; _ } when String.equal id label ->
+        text label
+      | _ -> text label ^^ text "={" ^^ expression_to_doc expr ^^ text "}")
+    | Optional label ->
+      (* punning with optional: <Foo ?bar /> *)
+      (match expr.pexp_desc with
+      | Pexp_ident { txt = Lident id; _ } when String.equal id label ->
+        text "?" ^^ text label
+      | _ -> text (label ^ "=?{") ^^ expression_to_doc expr ^^ text "}")
+  in
+
+  let props_doc =
+    match props with
+    | [] -> empty
+    | _ ->
+      let prop_docs = List.map ~f:fmt_prop props in
+      space ^^ separate (nl ^^ space) prop_docs
+  in
+
+  let start_tag = text ("<" ^ tag_name) in
+
+  match !children with
+  | None | Some [] -> group (nest 2 (start_tag ^^ props_doc ^^ nl) ^^ text "/>")
+  | Some children ->
+    let end_tag = text ("</" ^ tag_name ^ ">") in
+    let children_docs = List.map ~f:expression_to_doc children in
+    let children_doc = separate nl children_docs in
+    group
+      (nest 2 (start_tag ^^ props_doc ^^ text ">")
+      ^^ nl
+      ^^ nest 2 children_doc
+      ^^ nl
+      ^^ end_tag)
 
 and pattern_to_doc pat =
   match pat.ppat_desc with

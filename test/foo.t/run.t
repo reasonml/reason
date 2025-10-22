@@ -85,3 +85,5 @@
   let baseRecord = { x: 1, y: 2 }
   let extendedRecord = { baseRecord, z: 3 }
   let rec foo = (a) => (b) => (+)(a, b) and bar = (a) => (b) => foo((-)(a, b))
+  external foo: type_ = "%caml_something_or_other"
+  let html = <div className={"foo"}> <span /> </div>
