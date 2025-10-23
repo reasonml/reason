@@ -206,3 +206,17 @@ and bar = (a, b) => foo(a - b);
 external foo : type_ = "%caml_something_or_other";
 
 let html = <div className="foo"> <span /> </div>;
+
+let a = 1;
+
+// This is a comment about b
+let b = 2;
+
+/* Multi-line comment
+   about c */
+let c = 3;
+
+let d = 4; // inline comment
+
+/* Test */ let /* asdfasdf */ rec /* wwww */ foo = (a, b) => a + b
+and bar = (a, b) => foo(a - b);
