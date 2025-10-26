@@ -1,6 +1,3 @@
-let print_loc ppf loc =
-  Location.print_loc ppf loc
-
 let print_error ~loc ~f ppf x =
 #if OCAML_VERSION >= (5,3,0)
   let error =
