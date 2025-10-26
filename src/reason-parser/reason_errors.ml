@@ -60,7 +60,7 @@ let format_lexing_error ppf = function
       ppf
       "This comment contains an unterminated string literal@.%aString literal \
        begins here"
-      Ocaml_util.print_loc
+      Ocaml_common.Location.print_loc
       loc
   | Keyword_as_label kwd ->
     Format.fprintf ppf "`%s' is a keyword, it cannot be used as label name" kwd
@@ -94,7 +94,7 @@ let format_ast_error ppf = function
     Format.fprintf
       ppf
       "Syntax error: %a%s not expected."
-      Ocaml_util.print_loc
+      Ocaml_common.Location.print_loc
       loc
       nonterm
   | Applicative_path loc ->
@@ -102,13 +102,13 @@ let format_ast_error ppf = function
       ppf
       "Syntax error: %aapplicative paths of the form F(X).t are not supported \
        when the option -no-app-func is set."
-      Ocaml_util.print_loc
+      Ocaml_common.Location.print_loc
       loc
   | Variable_in_scope (loc, var) ->
     Format.fprintf
       ppf
       "%aIn this scoped type, variable '%s is reserved for the local type %s."
-      Ocaml_util.print_loc
+      Ocaml_common.Location.print_loc
       loc
       var
       var

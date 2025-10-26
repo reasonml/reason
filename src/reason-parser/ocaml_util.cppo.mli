@@ -1,5 +1,3 @@
-val print_loc : Format.formatter -> Location.t -> unit
-
 val print_error :
    loc:Location.t
   -> f:(Format.formatter -> 'a -> unit)
