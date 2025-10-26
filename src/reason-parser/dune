@@ -37,7 +37,7 @@
  (action
   (with-stdout-to
    %{targets}
-   (run ../menhir-recover/main.exe reason_parser.cmly))))
+   (run ../menhir-recover/menhir_recover.exe reason_parser.cmly))))
 
 (library
  (name reason)
