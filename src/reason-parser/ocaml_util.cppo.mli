@@ -2,7 +2,7 @@ val print_loc : Format.formatter -> Location.t -> unit
 
 val print_error :
    loc:Location.t
-  -> f:'a Format_doc.format_printer
+  -> f:(Format.formatter -> 'a -> unit)
   -> Format.formatter
   -> 'a
   -> unit
