@@ -22,9 +22,7 @@ module Utf8_lexeme : sig
     | Invalid_beginning of Uchar.t   (** Character not allowed as first char *)
 
   val validate_identifier : ?with_dot:bool -> t -> validation_result
-
   val is_valid_identifier : t -> bool
-
   val is_lowercase : t -> bool
 end
 #endif

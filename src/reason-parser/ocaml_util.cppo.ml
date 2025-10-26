@@ -384,36 +384,6 @@ module Utf8_lexeme = struct
       | Some(Upper _) -> true
       | _ -> false
 
-  let uchar_lowercase u =
-    let c = Uchar.to_int u in
-    if c < 0x80 then
-      if c >= 65 && c <= 90 then Uchar.of_int (c + 32) else u
-    else
-      match Hashtbl.find_opt known_chars u with
-      | Some(Upper u') -> u'
-      | _ -> u
-
-  let uchar_uppercase u =
-    let c = Uchar.to_int u in
-    if c < 0x80 then
-      if c >= 97 && c <= 122 then Uchar.of_int (c - 32) else u
-    else
-      match Hashtbl.find_opt known_chars u with
-      | Some(Lower u') -> u'
-      | _ -> u
-
-  let capitalize s =
-    let first = ref true in
-    normalize_generic ~keep_ascii:false
-      (fun u -> if !first then (first := false; uchar_uppercase u) else u)
-      s
-
-  let uncapitalize s =
-    let first = ref true in
-    normalize_generic ~keep_ascii:false
-      (fun u -> if !first then (first := false; uchar_lowercase u) else u)
-      s
-
   let is_capitalized s =
     s <> "" &&
     uchar_is_uppercase (Uchar.utf_decode_uchar (String.get_utf_8_uchar s 0))
@@ -466,12 +436,6 @@ module Utf8_lexeme = struct
 
   let is_valid_identifier s =
     validate_identifier s = Valid
-
-  let starts_like_a_valid_identifier s =
-    s <> "" &&
-    (let u = Uchar.utf_decode_uchar (String.get_utf_8_uchar s 0) in
-     uchar_valid_in_identifier ~with_dot:false u
-     && not (uchar_not_identifier_start u))
 
   let is_lowercase s =
     let rec is_lowercase_at len s n =
