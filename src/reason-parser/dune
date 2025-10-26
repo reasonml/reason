@@ -7,6 +7,12 @@
  (action
   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
 
+(rule
+ (targets ocaml_util.mli)
+ (deps ocaml_util.cppo.mli)
+ (action
+  (run %{bin:cppo} -V OCAML:%{ocaml_version} %{deps} -o %{targets})))
+
 (menhir
  (flags --strict --inspection --unused-tokens --table --cmly)
  (modules reason_parser))

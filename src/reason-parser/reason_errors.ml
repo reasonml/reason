@@ -120,7 +120,11 @@ let format_error ppf = function
   | Ast_error err -> format_ast_error ppf err
 
 let report_error ppf ~loc err =
-  Format.fprintf ppf "@[%a@]@." (Ocaml_util.print_error loc format_error) err
+  Format.fprintf
+    ppf
+    "@[%a@]@."
+    (Ocaml_util.print_error ~loc ~f:format_error)
+    err
 
 let recover_parser_error f loc msg =
   if !Reason_config.recoverable
