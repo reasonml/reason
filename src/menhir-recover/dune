@@ -1,4 +1,4 @@
 (executable
- (name main)
+ (name menhir_recover)
  (flags :standard -open StdLabels)
  (libraries fix menhirLib menhirSdk))
