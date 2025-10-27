@@ -2,9 +2,6 @@ type t =
   | LF
   | CRLF
 
-let pp fmt eol =
-  Format.pp_print_string fmt (match eol with LF -> "lf" | CRLF -> "crlf")
-
 module Detect = struct
   let default = match Sys.win32 with true -> CRLF | _ -> LF
 
