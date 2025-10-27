@@ -13,7 +13,7 @@ let group_assoc l =
   | [] -> []
   | (k, v) :: xs -> aux k v [] [] xs
 
-let pp_list f ppf = function
+let pp_list ~f ppf = function
   | [] -> Format.fprintf ppf "[]"
   | x :: xs ->
     Format.fprintf ppf "[%a" f x;
@@ -283,7 +283,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
       | Shift (T t) -> fprintf ppf "Shift (T %s)" (Terminal.name t)
       | Shift (N n) -> fprintf ppf "Shift (N %s)" (Nonterminal.mangled_name n)
       | Seq actions -> fprintf ppf "Seq %a" print_actions actions
-    and print_actions ppf = pp_list print_action ppf in
+    and print_actions ppf = pp_list ~f:print_action ppf in
     List.iter
       ~f:(fun (item, states) ->
         fprintf ppf "# Item (%d,%d)\n" (Production.to_int (fst item)) (snd item);
@@ -295,7 +295,7 @@ module Synthesizer (G : GRAMMAR) (A : ATTRIBUTES with module G = G) :
               "at cost %a from states %a:\n%a\n\n"
               Cost.pp
               cost
-              (pp_list (fun ppf st -> fprintf ppf "#%d" (Lr1.to_int st)))
+              (pp_list ~f:(fun ppf st -> fprintf ppf "#%d" (Lr1.to_int st)))
               states
               print_actions
               actions)

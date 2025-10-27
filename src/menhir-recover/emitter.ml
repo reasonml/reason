@@ -247,7 +247,7 @@ end = struct
           fprintf ppf "S (N N_%s)" (Nonterminal.mangled_name n)
         | C.IRef r -> fprintf ppf "r%d" r
       in
-      let emit_instrs ppf = Synthesis.pp_list emit_instr ppf in
+      let emit_instrs ppf = Synthesis.pp_list ~f:emit_instr ppf in
       let emit_shared index instrs =
         fprintf ppf "  let r%d = Sub %a in\n" index emit_instrs instrs
       in
