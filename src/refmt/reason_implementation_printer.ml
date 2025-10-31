@@ -19,10 +19,20 @@ let defaultImplementationParserFor use_stdin filename =
         ^ filename
         ^ "'.")
   in
-  theParser (setup_lexbuf use_stdin filename), parsedAsML, false
+  let ast, comments = theParser (setup_lexbuf use_stdin filename) in
+  { Printer_maker.ast
+  ; comments
+  ; parsed_as_ml = parsedAsML
+  ; parsed_as_intf = false
+  }
 
 let parse ~use_stdin filetype filename =
-  let (ast, comments), parsedAsML, parsedAsInterface =
+  let { Printer_maker.ast
+      ; comments
+      ; parsed_as_ml = parsedAsML
+      ; parsed_as_intf = parsedAsInterface
+      }
+    =
     match filetype with
     | `Auto -> defaultImplementationParserFor use_stdin filename
     | `BinaryReason -> Printer_maker.reasonBinaryParser use_stdin filename
@@ -30,11 +40,13 @@ let parse ~use_stdin filetype filename =
     | `ML ->
       let lexbuf = Reason_toolchain.setup_lexbuf use_stdin filename in
       let impl = Reason_toolchain.ML.implementation_with_comments in
-      impl lexbuf, true, false
+      let ast, comments = impl lexbuf in
+      { ast; comments; parsed_as_ml = true; parsed_as_intf = false }
     | `Reason ->
       let lexbuf = Reason_toolchain.setup_lexbuf use_stdin filename in
       let impl = Reason_toolchain.RE.implementation_with_comments in
-      impl lexbuf, false, false
+      let ast, comments = impl lexbuf in
+      { ast; comments; parsed_as_ml = false; parsed_as_intf = false }
   in
   if parsedAsInterface
   then err "The file parsed does not appear to be an implementation file."
