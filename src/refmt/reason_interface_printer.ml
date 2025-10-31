@@ -19,10 +19,20 @@ let defaultInterfaceParserFor use_stdin filename =
         ^ filename
         ^ "'.")
   in
-  theParser (setup_lexbuf use_stdin filename), parsedAsML, true
+  let ast, comments = theParser (setup_lexbuf use_stdin filename) in
+  { Printer_maker.ast
+  ; comments
+  ; parsed_as_ml = parsedAsML
+  ; parsed_as_intf = true
+  }
 
 let parse ~use_stdin filetype filename =
-  let (ast, comments), parsedAsML, parsedAsInterface =
+  let { Printer_maker.ast
+      ; comments
+      ; parsed_as_ml = parsedAsML
+      ; parsed_as_intf = parsedAsInterface
+      }
+    =
     match filetype with
     | `Auto -> defaultInterfaceParserFor use_stdin filename
     | `BinaryReason -> Printer_maker.reasonBinaryParser use_stdin filename
@@ -30,11 +40,13 @@ let parse ~use_stdin filetype filename =
     | `ML ->
       let lexbuf = Reason_toolchain.setup_lexbuf use_stdin filename in
       let intf = Reason_toolchain.ML.interface_with_comments in
-      intf lexbuf, true, true
+      let ast, comments = intf lexbuf in
+      { ast; comments; parsed_as_ml = true; parsed_as_intf = true }
     | `Reason ->
       let lexbuf = Reason_toolchain.setup_lexbuf use_stdin filename in
       let intf = Reason_toolchain.RE.interface_with_comments in
-      intf lexbuf, false, true
+      let ast, comments = intf lexbuf in
+      { ast; comments; parsed_as_ml = false; parsed_as_intf = true }
   in
   if not parsedAsInterface
   then err "The file parsed does not appear to be an interface file."

@@ -1,5 +1,12 @@
 open Reason
 
+type 'a parser_result =
+  { ast : 'a
+  ; comments : Reason_comment.t list
+  ; parsed_as_ml : bool
+  ; parsed_as_intf : bool
+  }
+
 type parse_itype =
   [ `ML
   | `Reason
@@ -40,8 +47,7 @@ end
 
 let err s = raise (Invalid_config s)
 
-let prepare_output_file name =
-  match name with
+let prepare_output_file = function
   | Some name -> open_out_bin name
   | None ->
     set_binary_mode_out stdout true;
@@ -57,8 +63,18 @@ let ocamlBinaryParser use_stdin filename =
   in
   match Ast_io.read input_source ~input_kind:Necessarily_binary with
   | Error _ -> assert false
-  | Ok { ast = Impl ast; _ } -> (Obj.magic ast, []), true, false
-  | Ok { ast = Intf ast; _ } -> (Obj.magic ast, []), true, true
+  | Ok { ast = Impl ast; _ } ->
+    { ast = Obj.magic ast
+    ; comments = []
+    ; parsed_as_ml = true
+    ; parsed_as_intf = false
+    }
+  | Ok { ast = Intf ast; _ } ->
+    { ast = Obj.magic ast
+    ; comments = []
+    ; parsed_as_ml = true
+    ; parsed_as_intf = true
+    }
 
 let reasonBinaryParser use_stdin filename =
   let chan =
@@ -69,5 +85,5 @@ let reasonBinaryParser use_stdin filename =
       seek_in file_chan 0;
       file_chan
   in
-  let _, _, ast, comments, parsedAsML, parsedAsInterface = input_value chan in
-  (ast, comments), parsedAsML, parsedAsInterface
+  let _, _, ast, comments, parsed_as_ml, parsed_as_intf = input_value chan in
+  { ast; comments; parsed_as_ml; parsed_as_intf }
