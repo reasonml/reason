@@ -3,11 +3,6 @@ type category =
   | SingleLine
   | Regular
 
-let string_of_category = function
-  | Regular -> "Regular"
-  | EndOfLine -> "End of Line"
-  | SingleLine -> "SingleLine"
-
 type t =
   { location : Location.t
   ; category : category
@@ -16,21 +11,6 @@ type t =
 
 let category t = t.category
 let location t = t.location
-
-let dump ppf t =
-  Format.fprintf
-    ppf
-    "%d (%d:%d)-%d (%d:%d) -- %s:||%s||"
-    t.location.loc_start.pos_cnum
-    t.location.loc_start.pos_lnum
-    (t.location.loc_start.pos_cnum - t.location.loc_start.pos_bol)
-    t.location.loc_end.pos_cnum
-    t.location.loc_end.pos_lnum
-    (t.location.loc_end.pos_cnum - t.location.loc_end.pos_bol)
-    (string_of_category t.category)
-    t.text
-
-let dump_list ppf list = List.iter ~f:(Format.fprintf ppf "%a\n" dump) list
 
 let wrap t =
   match t.text with
@@ -54,7 +34,6 @@ let wrap t =
     "/**" ^ txt ^ "*/"
   | txt -> "/*" ^ txt ^ "*/"
 
-let is_doc t = String.length t.text > 0 && t.text.[0] == '*'
 let make ~location category text = { text; category; location }
 
 let isLineComment { category; text; _ } =
