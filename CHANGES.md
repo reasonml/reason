@@ -1,4 +1,4 @@
-## Unreleased
+## 3.17.1
 
 - printer: don't escape infix keywords (@syaiful6,
   [#2872](https://github.com/reasonml/reason/pull/2874))
