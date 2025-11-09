@@ -1,5 +1,12 @@
 ## Unreleased
 
+- printer: don't escape infix keywords (@syaiful6,
+  [#2872](https://github.com/reasonml/reason/pull/2874))
+- fix(printer): wrap `Ppat_constraint` in parentheses (@anmonteiro,
+  [#2874](https://github.com/reasonml/reason/pull/2874))
+
+## 3.17.0
+
 - Support OCaml 5.4 (@anmonteiro,
   [#2844](https://github.com/reasonml/reason/pull/2844))
 - build: use `(wrapped true)` for internal libraries (@anmonteiro,
@@ -8,10 +15,6 @@
   [#2855](https://github.com/reasonml/reason/pull/2855))
 - printer: pad record braces with spaces (@anmonteiro,
   [#2859](https://github.com/reasonml/reason/pull/2859))
-- printer: don't escape infix keywords (@syaiful6,
-  [#2872](https://github.com/reasonml/reason/pull/2874))
-- fix(printer): wrap `Ppat_constraint` in parentheses (@anmonteiro,
-  [#2874](https://github.com/reasonml/reason/pull/2874))
 
 ## 3.16.0
 
