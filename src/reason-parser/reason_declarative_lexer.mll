@@ -72,7 +72,7 @@ open Reason_errors
 
 (* The table of keywords *)
 
-let keyword_table, reverse_keyword_table =
+let keyword_table, _reverse_keyword_table =
   let create_hashtable n l =
     let t = Hashtbl.create n in
     let rev_t = Hashtbl.create n in
@@ -330,39 +330,6 @@ let lax_delim raw_name =
   | Ok name ->
      if Ocaml_util.Utf8_lexeme.is_lowercase name then Some name
      else None
-
-let is_keyword name = Hashtbl.mem keyword_table name
-
-let check_label_name ?(raw_escape=false) lexbuf name =
-  if Ocaml_util.Utf8_lexeme.is_capitalized name then
-    raise_error (Location.curr lexbuf) (Capitalized_label name);
-  if not raw_escape && is_keyword name then
-    raise_error (Location.curr lexbuf) (Keyword_as_label name)
-
-(* To convert integer literals, allowing max_int + 1 (PR#4210) *)
-
-let cvt_int_literal s =
-  - int_of_string ("-" ^ s)
-let cvt_int32_literal s =
-  Int32.neg (Int32.of_string ("-" ^ String.sub s ~pos:0 ~len:(String.length s - 1)))
-let cvt_int64_literal s =
-  Int64.neg (Int64.of_string ("-" ^ String.sub s ~pos:0 ~len:(String.length s - 1)))
-let cvt_nativeint_literal s =
-  Nativeint.neg (Nativeint.of_string ("-" ^ String.sub s ~pos:0 ~len:(String.length s - 1)))
-
-(* Remove underscores from float literals *)
-
-let remove_underscores s =
-  let l = String.length s in
-  let b = Bytes.create l in
-  let rec remove src dst =
-    if src >= l then
-      if dst >= l then s else Bytes.sub_string b ~pos:0 ~len:dst
-    else
-      match s.[src] with
-        '_' -> remove (src + 1) dst
-      |  c  -> Bytes.set b dst c; remove (src + 1) (dst + 1)
-  in remove 0 0
 
 (* Update the current location with file name and line number. *)
 
@@ -1054,9 +1021,3 @@ and quoted_string buffer delim = parse
       quoted_string buffer delim lexbuf
     }
 
-and skip_sharp_bang = parse
-  | "#!" [^ '\n']* '\n' [^ '\n']* "\n!#\n"
-       { update_loc lexbuf None 3 false 0 }
-  | "#!" [^ '\n']* '\n'
-       { update_loc lexbuf None 1 false 0 }
-  | "" { () }
