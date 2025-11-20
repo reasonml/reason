@@ -2,5 +2,5 @@
     licensed under the MIT license found in the * LICENSE file in the root
     directory of this source tree. *)
 
-let recoverable = ref false
-let configure ~recoverable:r = recoverable := r
+val recoverable : bool ref
+val configure : recoverable:bool -> unit

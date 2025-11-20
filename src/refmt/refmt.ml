@@ -70,7 +70,7 @@ let refmt
       then (module Reason_interface_printer)
       else (module Reason_implementation_printer)
     in
-    Reason_config.configure ~r:is_recoverable;
+    Reason_config.configure ~recoverable:is_recoverable;
     Location.input_name := input_file;
     let _ =
       Reason_pprint_ast.configure
