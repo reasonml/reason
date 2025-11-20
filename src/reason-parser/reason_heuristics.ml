@@ -76,7 +76,7 @@ let singleTokenPatternOmmitTrail txt = String.length txt < 4
    add(2, 3); -> add(. 2, 3); (* Pexp_apply *) * setTimeout([@bs] () =>
    Js.log("hola"), 1000); (* Pexp_fun *) * -> setTimeout((.) => Js.log("hola"),
    1000); *)
-let bsExprCanBeUncurried expr =
+let melExprCanBeUncurried expr =
   match Parsetree.(expr.pexp_desc) with
   | Pexp_function _ | Pexp_apply _ -> true
   | _ -> false
