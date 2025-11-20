@@ -4449,7 +4449,7 @@ let createFormatter () =
               }
             =
             Reason_attributes.partitionAttributes
-              ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried x)
+              ~allowUncurry:(Reason_heuristics.melExprCanBeUncurried x)
               x.pexp_attributes
           in
           let stylisticAttrs =
@@ -7635,7 +7635,7 @@ let createFormatter () =
                       let { Reason_attributes.stylisticAttrs; _ } =
                         Reason_attributes.partitionAttributes
                           ~allowUncurry:
-                            (Reason_heuristics.bsExprCanBeUncurried x')
+                            (Reason_heuristics.melExprCanBeUncurried x')
                           x'.pexp_attributes
                       in
                       if
@@ -9161,7 +9161,7 @@ let createFormatter () =
                   , _ ) ->
                 let { Reason_attributes.stylisticAttrs; _ } =
                   Reason_attributes.partitionAttributes
-                    ~allowUncurry:(Reason_heuristics.bsExprCanBeUncurried expr)
+                    ~allowUncurry:(Reason_heuristics.melExprCanBeUncurried expr)
                     pexp_attributes
                 in
                 if Reason_attributes.has_quoted_extension_attrs stylisticAttrs
