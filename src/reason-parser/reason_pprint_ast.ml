@@ -2411,7 +2411,7 @@ let createFormatter () =
                  *  interleaving between the comments.
                  *)
                 let newlines = if i > 0 then 1 else 0 in
-                let region = WhitespaceRegion.make ~range ~newlines () in
+                let region = WhitespaceRegion.make ~range ~newlines in
                 let firstLayout = Layout.Whitespace (region, x) in
                 (* the first layout node of every group taks care of the *
                    whitespace above a group*)
@@ -6031,7 +6031,7 @@ let createFormatter () =
                 let layout =
                   if Range.containsWhitespace ~range ~comments:self#comments ()
                   then
-                    let region = WhitespaceRegion.make ~range ~newlines:1 () in
+                    let region = WhitespaceRegion.make ~range ~newlines:1 in
                     Layout.Whitespace (region, layout)
                   else layout
                 in

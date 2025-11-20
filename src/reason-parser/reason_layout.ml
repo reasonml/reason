@@ -32,7 +32,7 @@ module WhitespaceRegion = struct
       newlines : int
     }
 
-  let make ~range ~newlines () = { range; comments = []; newlines }
+  let make ~range ~newlines = { range; comments = []; newlines }
   let newlines t = t.newlines
   let range t = t.range
   let comments t = t.comments
@@ -84,108 +84,6 @@ and config =
        appended *)
     listConfigIfEolCommentsInterleaved : (config -> config) option
   }
-
-let string_of_easy = function
-  | Easy_format.Atom (s, _) -> s
-  | Easy_format.List (_, _) -> "list"
-  | Easy_format.Label (_, _) -> "label"
-  | Easy_format.Custom _ -> "custom"
-
-let indent_more indent = "  " ^ indent
-
-let dump_easy ppf easy =
-  let printf fmt = Format.fprintf ppf fmt in
-  let rec traverse indent = function
-    | Easy_format.Atom (s, _) -> printf "%s Atom:'%s'\n" indent s
-    | Easy_format.List ((opening, sep, closing, config), items) ->
-      let break =
-        match config.wrap_body with
-        | `No_breaks -> "No_breaks"
-        | `Wrap_atoms -> "Wrap_atoms"
-        | `Never_wrap -> "Never_wrap"
-        | `Force_breaks -> "Force_breaks"
-        | `Force_breaks_rec -> "Force_breaks_rec"
-        | `Always_wrap -> "Always_wrap"
-      in
-      printf
-        "%s List: open %s close %s sep %s break %s \n"
-        indent
-        opening
-        closing
-        sep
-        break;
-      let _ = List.map ~f:(traverse (indent_more indent)) items in
-      ()
-    | Easy_format.Label ((left, config), right) ->
-      let break =
-        match config.label_break with
-        | `Never -> "Never"
-        | `Always_rec -> "Always_rec"
-        | `Auto -> "Auto"
-        | `Always -> "Always"
-      in
-      printf "%s Label (break = %s): \n" indent break;
-      printf "  %s left \n" indent;
-      let indent' = indent_more indent in
-      traverse indent' left;
-      printf "  %s right \n" indent;
-      traverse indent' right
-    | Easy_format.Custom _ -> printf "custom \n"
-  in
-  traverse "" easy
-
-let dump ppf layout =
-  let printf fmt = Format.fprintf ppf fmt in
-  let rec traverse indent = function
-    | SourceMap (loc, layout) ->
-      printf
-        "%s SourceMap [(%d:%d)-(%d:%d)]\n"
-        indent
-        loc.loc_start.Lexing.pos_lnum
-        (loc.loc_start.Lexing.pos_cnum - loc.loc_start.Lexing.pos_bol)
-        loc.loc_end.Lexing.pos_lnum
-        (loc.loc_end.Lexing.pos_cnum - loc.loc_end.Lexing.pos_bol);
-      traverse (indent_more indent) layout
-    | Sequence (config, layout_list) ->
-      let break =
-        match config.break with
-        | Never -> "Never"
-        | IfNeed -> "if need"
-        | Always -> "Always"
-        | Always_rec -> "Always_rec"
-      in
-      let sep =
-        match config.sep with
-        | NoSep -> "NoSep"
-        | Sep s -> "Sep '" ^ s ^ "'"
-        | SepFinal (s, finalSep) -> "SepFinal ('" ^ s ^ "', '" ^ finalSep ^ "')"
-      in
-      printf
-        "%s Sequence of %d, sep: %s, stick_to_left: %s break: %s\n"
-        indent
-        (List.length layout_list)
-        sep
-        (string_of_bool config.sepLeft)
-        break;
-      List.iter ~f:(traverse (indent_more indent)) layout_list
-    | Label (_, left, right) ->
-      printf "%s Label: \n" indent;
-      printf "  %s left \n" indent;
-      let indent' = indent_more (indent_more indent) in
-      traverse indent' left;
-      printf "  %s right \n" indent;
-      traverse indent' right
-    | Easy e -> printf "%s Easy: '%s' \n" indent (string_of_easy e)
-    | Whitespace (region, sublayout) ->
-      printf
-        " %s Whitespace (%d) [%d %d]:\n"
-        indent
-        region.newlines
-        region.range.lnum_start
-        region.range.lnum_end;
-      traverse (indent_more indent) sublayout
-  in
-  traverse "" layout
 
 let source_map ?(loc = Location.none) layout =
   if loc = Location.none then layout else SourceMap (loc, layout)
