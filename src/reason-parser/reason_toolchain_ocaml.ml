@@ -43,7 +43,6 @@ module Lexer_impl = struct
     Lexer.init ();
     lexbuf
 
-  let token = Lexer.token
   let filtered_comments = ref []
 
   let filter_comments filter =

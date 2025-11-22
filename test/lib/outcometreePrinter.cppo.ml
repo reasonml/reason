@@ -26,7 +26,7 @@ let main () =
   let filename = "./TestTest.ml" in
   let modulename = "TestTest" in
 
-  let lexbuf = Reason_toolchain.setup_lexbuf true filename in
+  let lexbuf = Reason_toolchain.setup_lexbuf ~use_stdin:true filename in
   let impl = Reason_toolchain.RE.implementation in
 
 #if OCAML_VERSION >= (4,9,0)
