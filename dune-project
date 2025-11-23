@@ -1,4 +1,6 @@
-(lang dune 3.8)
+(lang dune 3.18)
+
+(maintenance_intent "(latest)")
 
 (name reason)
 

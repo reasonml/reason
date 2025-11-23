@@ -13,7 +13,7 @@ license: "MIT"
 homepage: "https://reasonml.github.io/"
 bug-reports: "https://github.com/reasonml/reason/issues"
 depends: [
-  "dune" {>= "3.8"}
+  "dune" {>= "3.18"}
   "ocaml" {>= "4.08" & < "5.5"}
   "reason" {= version}
   "utop" {>= "2.0"}
@@ -35,3 +35,4 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/reasonml/reason.git"
+x-maintenance-intent: ["(latest)"]
