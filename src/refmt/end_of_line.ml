@@ -20,24 +20,35 @@ end
 
 module Convert = struct
   let lf_to_crlf =
-    let crlf = "\r\n" in
-    let rec loop sz =
-      match String.index sz '\n' with
-      | exception Not_found -> sz
-      | idx ->
-        let buf = Bytes.create (idx + 2) in
-        Bytes.unsafe_blit_string ~src:sz ~src_pos:0 ~dst:buf ~dst_pos:0 ~len:idx;
-        Bytes.unsafe_blit_string
-          ~src:crlf
-          ~src_pos:0
-          ~dst:buf
-          ~dst_pos:idx
-          ~len:2;
-        let l = Bytes.unsafe_to_string buf in
-        let length = String.length sz in
-        l ^ loop (String.sub sz ~pos:(idx + 1) ~len:(length - idx - 1))
+    let rec loop ~src i j ~dst ~len =
+      if i >= len
+      then ()
+      else
+        match String.unsafe_get src i with
+        | '\n' ->
+          Bytes.unsafe_set dst j '\r';
+          Bytes.unsafe_set dst (j + 1) '\n';
+          loop (i + 1) (j + 2) ~src ~dst ~len
+        | c ->
+          Bytes.unsafe_set dst j c;
+          loop (i + 1) (j + 1) ~src ~dst ~len
     in
-    fun s -> loop s
+    let rec count_newlines ~src ~src_len i acc =
+      if i >= src_len
+      then acc
+      else
+        match String.index_from src i '\n' with
+        | exception Not_found -> acc
+        | j -> count_newlines ~src ~src_len (j + 1) (acc + 1)
+    in
+    fun s ->
+      let len = String.length s in
+      match count_newlines ~src:s ~src_len:len 0 0 with
+      | 0 -> s
+      | nl_count ->
+        let dst = Bytes.create (len + nl_count) in
+        loop 0 0 ~src:s ~dst ~len;
+        Bytes.unsafe_to_string dst
 
   let get_formatter =
     let out_string (out_functions : Format.formatter_out_functions) eol =
