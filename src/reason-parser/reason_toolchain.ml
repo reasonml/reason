@@ -78,7 +78,7 @@
 
 open Ppxlib
 
-let setup_lexbuf use_stdin filename =
+let setup_lexbuf ~use_stdin filename =
   (* Use custom method of lexing from the channel to keep track of the input so
      that we can reformat tokens in the toolchain*)
   let lexbuf =
