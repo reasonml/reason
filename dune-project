@@ -8,7 +8,7 @@
 
 (cram enable)
 
-(version 3.17.1)
+(version 3.17.2)
 
 (generate_opam_files true)
 

@@ -1,3 +1,8 @@
+## 3.17.2
+
+- fix: make `End_of_line.Convert.lf_to_crlf` compatible with OCaml 4.08
+  (@anmonteiro, [#2898](https://github.com/reasonml/reason/pull/2898))
+
 ## 3.17.1
 
 - printer: don't escape infix keywords (@syaiful6,
