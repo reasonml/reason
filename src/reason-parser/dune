@@ -52,5 +52,5 @@
   menhirLib
   reason.easy_format
   pprint
-  pretty_expressive
+  reason.pretty_expressive ; vendored in vendor/pretty_expressive
   ppxlib))

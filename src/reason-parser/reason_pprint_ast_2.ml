@@ -1,11 +1,5 @@
 open Ppxlib
 
-let cost_factory =
-  Pretty_expressive.Printer.default_cost_factory ~page_width:80 ()
-
-module P = Pretty_expressive.Printer.Make ((val cost_factory))
-open P
-
 type settings =
   { width : int
   ; assumeExplicitArity : bool
@@ -19,6 +13,14 @@ let current_settings = ref default_settings
 
 let configure ~width ~assumeExplicitArity ~constructorLists =
   current_settings := { width; assumeExplicitArity; constructorLists }
+
+let cost_factory =
+  Pretty_expressive.Printer.default_cost_factory
+    ~page_width:(fun () -> !current_settings.width)
+    ()
+
+module P = Pretty_expressive.Printer.Make ((val cost_factory))
+open P
 
 exception Invalid_parsetree of string
 
