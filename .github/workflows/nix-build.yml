@@ -43,10 +43,10 @@ jobs:
     strategy:
       matrix:
         setup:
-          - {ocaml-version: '5_3', os: macos-13}
-          - {ocaml-version: '4_14', os: macos-14}
-          - {ocaml-version: '5_3', os: macos-14}
-          - {ocaml-version: '5_4', os: macos-14}
+          - {ocaml-version: '5_3', os: macos-15-intel}
+          - {ocaml-version: '4_14', os: macos-latest}
+          - {ocaml-version: '5_3', os: macos-latest}
+          - {ocaml-version: '5_4', os: macos-latest}
     runs-on: ${{ matrix.setup.os }}
     steps:
     - uses: actions/checkout@v4
