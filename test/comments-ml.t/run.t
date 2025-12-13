@@ -1,8 +1,7 @@
 Format basic
   $ refmt --print re ./input.re > ./formatted.re
-  refmt: FILENAMES… arguments: no './input.re' file
-  Usage: refmt [OPTION]… [FILENAMES]…
-  Try 'refmt --help' for more information.
+  Usage: refmt [--help] [OPTION]… [FILENAMES]…
+  refmt: FILENAMES… arguments: no ./input.re file
   [1]
 
 Type-check basics
