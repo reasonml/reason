@@ -76,3 +76,7 @@ let input =
   let docv = "FILENAMES" in
   let doc = "input files; if empty, assume stdin" in
   Arg.(value & pos_all non_dir_file [] & info [] ~docv ~doc)
+
+let use_new_printer =
+  let doc = "use the new experimental pretty printer" in
+  Arg.(value & flag & info [ "enable-new-printer" ] ~doc)

@@ -70,9 +70,19 @@ let safeguard_parsing lexbuf fn =
     else raise x
 
 let format_interface_with_comments (signature, comments) formatter =
-  let reason_formatter = Reason_pprint_ast_2.make () in
-  reason_formatter#signature comments formatter signature
+  if Reason_pprint_ast_2.is_new_printer_enabled ()
+  then
+    let reason_formatter = Reason_pprint_ast_2.make () in
+    reason_formatter#signature comments formatter signature
+  else
+    let reason_formatter = Reason_pprint_ast.createFormatter () in
+    reason_formatter#signature comments formatter signature
 
 let format_implementation_with_comments (implementation, comments) formatter =
-  let reason_formatter = Reason_pprint_ast_2.make () in
-  reason_formatter#structure comments formatter implementation
+  if Reason_pprint_ast_2.is_new_printer_enabled ()
+  then
+    let reason_formatter = Reason_pprint_ast_2.make () in
+    reason_formatter#structure comments formatter implementation
+  else
+    let reason_formatter = Reason_pprint_ast.createFormatter () in
+    reason_formatter#structure comments formatter implementation

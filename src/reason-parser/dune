@@ -51,6 +51,6 @@
   reason.ocaml-migrate-parsetree
   menhirLib
   reason.easy_format
-  pprint
   reason.pretty_expressive ; vendored in vendor/pretty_expressive
+  pprint
   ppxlib))

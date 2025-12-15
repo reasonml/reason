@@ -2,7 +2,7 @@
  (name reason_omp)
  (public_name reason.ocaml-migrate-parsetree)
  (wrapped true)
- (libraries ppxlib.astlib)
+ (libraries ppxlib.astlib compiler-libs.common)
  (modules :standard \ migrate_parsetree_driver_main)
  (preprocess
   (action

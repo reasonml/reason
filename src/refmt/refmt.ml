@@ -30,6 +30,7 @@ let refmt
       heuristics_file
       in_place
       input_files
+      use_new_printer
   =
   let refmt_single input_file =
     let use_stdin, input_file =
@@ -71,8 +72,15 @@ let refmt
     in
     Reason_config.configure ~r:is_recoverable;
     Location.input_name := input_file;
+    if use_new_printer then Reason_pprint_ast_2.enable_new_printer ();
     let _ =
       Reason_pprint_ast.configure
+        ~width:print_width
+        ~assumeExplicitArity:explicit_arity
+        ~constructorLists
+    in
+    let _ =
+      Reason_pprint_ast_2.configure
         ~width:print_width
         ~assumeExplicitArity:explicit_arity
         ~constructorLists
@@ -194,6 +202,7 @@ let () =
       $ heuristics_file
       $ in_place
       $ input
+      $ use_new_printer
     in
     Cmd.v top_level_info (Term.ret term)
   in

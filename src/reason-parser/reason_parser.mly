@@ -257,6 +257,24 @@ let simple_ghost_text_attr ?(loc=dummy_loc ()) txt =
      attr_loc = loc;
   }]
 
+let comment_loc_attr loc =
+  { Ppxlib.attr_name = {txt = "reason.comment_loc"; loc = loc};
+    attr_payload = PStr [];
+    attr_loc = loc;
+  }
+
+let with_comment_loc_typ typ loc =
+  { typ with Ppxlib.ptyp_attributes = comment_loc_attr loc :: typ.Ppxlib.ptyp_attributes }
+
+let jsx_prop_loc_attr prop_name_loc =
+  { Ppxlib.attr_name = {txt = "reason.jsx_prop_loc"; loc = prop_name_loc};
+    attr_payload = PStr [];
+    attr_loc = prop_name_loc;
+  }
+
+let with_jsx_prop_loc expr prop_name_loc =
+  { expr with Ppxlib.pexp_attributes = jsx_prop_loc_attr prop_name_loc :: expr.Ppxlib.pexp_attributes }
+
 let mkExplicitArityTuplePat ?(loc=dummy_loc ()) pat =
   (* Tell OCaml type system that what this tuple construction represents is
      not actually a tuple, and should represent several constructor
@@ -2799,26 +2817,33 @@ es6_parameters:
     { ([mkloc (Reason_parser_def.Term (Nolabel, None, $1)) $1.ppat_loc], false) }
 ;
 
-(* TODO: properly fix JSX labelled/optional stuff *)
 jsx_arguments:
   (* empty *) { [] }
   | LIDENT EQUAL QUESTION simple_expr jsx_arguments
     { (* a=?b *)
-      [(Optional $1, $4)] @ $5
+      let prop_name_loc = mklocation $startpos($1) $endpos($1) in
+      let expr_with_loc = with_jsx_prop_loc $4 prop_name_loc in
+      [(Optional $1, expr_with_loc)] @ $5
     }
   | QUESTION LIDENT jsx_arguments
     { (* <Foo ?bar /> punning with explicitly passed optional *)
       let loc_lident = mklocation $startpos($2) $endpos($2) in
-      [(Optional $2, mkexp (Pexp_ident {txt = Lident $2; loc = loc_lident}) ~loc:loc_lident)] @ $3
+      let expr = mkexp (Pexp_ident {txt = Lident $2; loc = loc_lident}) ~loc:loc_lident in
+      let expr_with_loc = with_jsx_prop_loc expr loc_lident in
+      [(Optional $2, expr_with_loc)] @ $3
     }
   | LIDENT EQUAL simple_expr jsx_arguments
     { (* a=b *)
-      [(Labelled $1, $3)] @ $4
+      let prop_name_loc = mklocation $startpos($1) $endpos($1) in
+      let expr_with_loc = with_jsx_prop_loc $3 prop_name_loc in
+      [(Labelled $1, expr_with_loc)] @ $4
     }
   | LIDENT jsx_arguments
     { (* a (punning) *)
       let loc_lident = mklocation $startpos($1) $endpos($1) in
-      [(Labelled $1, mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}) ~loc:loc_lident)] @ $2
+      let expr = mkexp (Pexp_ident {txt = Lident $1; loc = loc_lident}) ~loc:loc_lident in
+      let expr_with_loc = with_jsx_prop_loc expr loc_lident in
+      [(Labelled $1, expr_with_loc)] @ $2
     }
   | as_loc(INFIXOP3)
     (* extra rule to provide nice error messages in the case someone
@@ -4322,7 +4347,10 @@ generalized_constructor_arguments:
 ;
 
 constructor_arguments_comma_list:
-  lseparated_nonempty_list(COMMA, core_type) COMMA? {$1}
+  | core_type COMMA? { [$1] }
+  | core_type COMMA constructor_arguments_comma_list
+    { let comma_loc = mklocation $endpos($2) $endpos($2) in
+      $1 :: (with_comment_loc_typ (List.hd $3) comma_loc :: List.tl $3) }
 ;
 
 constructor_arguments:

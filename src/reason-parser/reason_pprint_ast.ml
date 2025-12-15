@@ -2120,6 +2120,23 @@ let createFormatter () =
       && Longident.last_exn ident.txt = lbl
       && attr = []
 
+    (* Extract JSX prop name location from [@reason.jsx_prop_loc] attribute *)
+    let get_jsx_prop_loc expr =
+      List.find_map ~f:(fun attr ->
+        if attr.Ppxlib.attr_name.txt = "reason.jsx_prop_loc"
+        then Some attr.Ppxlib.attr_name.loc
+        else None
+      ) expr.pexp_attributes
+
+    (* Wrap a layout in SourceMap with full prop span (name start to value end) *)
+    let with_jsx_prop_source_map expr layout =
+      match get_jsx_prop_loc expr with
+      | Some name_loc ->
+        (* Construct full prop span to match what the comment walker uses *)
+        let prop_loc = { name_loc with Location.loc_end = expr.pexp_loc.Location.loc_end } in
+        Layout.SourceMap (prop_loc, layout)
+      | None -> layout
+
     let is_unit_pattern x =
       match x.ppat_desc with
       | Ppat_construct ({ txt = Lident "()"; _ }, None) -> true
@@ -5257,6 +5274,8 @@ let createFormatter () =
                        ~wrap:("{", "}")
                        expression)
               in
+              (* Wrap with prop name location for comment attachment *)
+              let nextAttr = with_jsx_prop_source_map expression nextAttr in
               processArguments tail (nextAttr :: processedAttrs) children
             | (Labelled lbl, expression) :: tail ->
               let { Reason_attributes.jsxAttrs; stdAttrs; _ } =
@@ -5346,6 +5365,8 @@ let createFormatter () =
                         expression
                     ]
               in
+              (* Wrap with prop name location for comment attachment *)
+              let nextAttr = with_jsx_prop_source_map expression nextAttr in
               processArguments tail (nextAttr :: processedAttrs) children
             | [] -> processedAttrs, children
             | _ :: tail -> processArguments tail processedAttrs children

@@ -59,6 +59,12 @@ let rec partitionAttributes ?(partDoc = false) ?(allowUncurry = true) attrs :
     ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     { partition with stylisticAttrs = attr :: partition.stylisticAttrs }
+  | ({ attr_name = { txt = "reason.jsx_prop_loc"; _ }; _ } as attr) :: atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    { partition with stylisticAttrs = attr :: partition.stylisticAttrs }
+  | ({ attr_name = { txt = "reason.comment_loc"; _ }; _ } as attr) :: atTl ->
+    let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
+    { partition with stylisticAttrs = attr :: partition.stylisticAttrs }
   | atHd :: atTl ->
     let partition = partitionAttributes ~partDoc ~allowUncurry atTl in
     { partition with stdAttrs = atHd :: partition.stdAttrs }
