@@ -1,4 +1,8 @@
-{ lib, ocamlPackages, doCheck ? false }:
+{
+  lib,
+  ocamlPackages,
+  doCheck ? false,
+}:
 
 rec {
   reason = ocamlPackages.buildDunePackage {
@@ -6,7 +10,9 @@ rec {
     version = "0.0.1-dev";
 
     src =
-      let fs = lib.fileset; in
+      let
+        fs = lib.fileset;
+      in
       fs.toSource {
         root = ./..;
         fileset = fs.unions [
@@ -21,14 +27,17 @@ rec {
 
     inherit doCheck;
 
-    nativeBuildInputs = with ocamlPackages; [ cppo menhir ];
+    nativeBuildInputs = with ocamlPackages; [
+      cppo
+      menhir
+    ];
     propagatedBuildInputs = with ocamlPackages; [
       cmdliner
       merlin-extend
       menhirSdk
       menhirLib
       fix
-      ppxlib
+      ppxlib_gt_0_37
       dune-build-info
     ];
 
@@ -39,7 +48,9 @@ rec {
     version = "0.0.1-dev";
 
     src =
-      let fs = lib.fileset; in
+      let
+        fs = lib.fileset;
+      in
       fs.toSource {
         root = ./..;
         fileset = fs.unions [
@@ -55,6 +66,9 @@ rec {
     inherit doCheck;
 
     nativeBuildInputs = with ocamlPackages; [ cppo ];
-    propagatedBuildInputs = [ reason ocamlPackages.utop ];
+    propagatedBuildInputs = [
+      reason
+      ocamlPackages.utop
+    ];
   };
 }
