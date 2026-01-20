@@ -2,11 +2,11 @@ name: opam CI
 
 on:
   pull_request:
-  tags:
-      - '*'
   push:
-   branches:
-     - master
+    branches:
+      - master
+    tags:
+      - '*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
