@@ -28,7 +28,7 @@ rec {
       menhirSdk
       menhirLib
       fix
-      ppxlib
+      ppxlib_gt_0_37
       dune-build-info
     ];
 
