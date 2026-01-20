@@ -1,10 +1,11 @@
-{ mkShell
-, ocamlPackages
-, reason
-, cacert
-, curl
-, git
-, release-mode ? false
+{
+  mkShell,
+  ocamlPackages,
+  reason,
+  cacert,
+  curl,
+  git,
+  release-mode ? false,
 }:
 
 mkShell {
@@ -16,5 +17,16 @@ mkShell {
     ocamlformat
   ];
   buildInputs =
-    with ocamlPackages; (if release-mode then [ cacert curl dune-release git ] else [ ]);
+    with ocamlPackages;
+    (
+      if release-mode then
+        [
+          cacert
+          curl
+          dune-release
+          git
+        ]
+      else
+        [ ]
+    );
 }
