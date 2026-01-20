@@ -21,10 +21,10 @@
 
       devShells = forAllSystems (pkgs: {
         default = pkgs.callPackage ./nix/shell.nix {
-          reason = self.packages.${pkgs.system}.default;
+          reason = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
         };
         release = pkgs.callPackage ./nix/shell.nix {
-          reason = self.packages.${pkgs.system}.default;
+          reason = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
           release-mode = true;
         };
       });
