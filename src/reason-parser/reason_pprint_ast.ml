@@ -5751,15 +5751,18 @@ let createFormatter () =
                 match xx.pexp_desc with
                 | Pexp_function (params, constraint_, body) ->
                   let vs = List.map ~f:extract_from_params params in
-                  (match constraint_ with
-                  | Some _ -> vs, xx
-                  | None ->
-                    (match body with
-                    | Pfunction_cases _ as c ->
-                      vs, { xx with pexp_desc = Pexp_function ([], None, c) }
-                    | Pfunction_body e ->
-                      let args, ret = extract_args e in
-                      vs @ args, ret))
+                  (match constraint_, body with
+                  | Some (Pconstraint ct), Pfunction_body e ->
+                    vs, { e with pexp_desc = Pexp_constraint (e, ct) }
+                  | Some (Pcoerce (ground, coercion)), Pfunction_body e ->
+                    vs, { e with pexp_desc = Pexp_coerce (e, ground, coercion) }
+                  | Some _, (Pfunction_cases _ as c) ->
+                    vs, { xx with pexp_desc = Pexp_function ([], constraint_, c) }
+                  | None, (Pfunction_cases _ as c) ->
+                    vs, { xx with pexp_desc = Pexp_function ([], None, c) }
+                  | None, Pfunction_body e ->
+                    let args, ret = extract_args e in
+                    vs @ args, ret)
                 | Pexp_newtype (newtype, e) ->
                   let args, ret = extract_args e in
                   `Type newtype :: args, ret

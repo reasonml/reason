@@ -1,3 +1,7 @@
+## 3.17.3
+
+- fix: Stack overflow on Pconstraint (@davesnx, [#2906](https://github.com/reasonml/reason/pull/2906))
+
 ## 3.17.2
 
 - fix: make `End_of_line.Convert.lf_to_crlf` compatible with OCaml 4.08
