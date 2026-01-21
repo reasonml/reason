@@ -368,7 +368,10 @@ Print the formatted file
   /**
    * Test no conflict with polymorphic variant types.
    */
-  type thisType = [ | `Foo | `Bar];
+  type thisType = [
+    | `Foo
+    | `Bar
+  ];
   type t('a) = [< thisType] as 'a;
   
   let asd =
