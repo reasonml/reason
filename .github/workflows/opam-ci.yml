@@ -19,6 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         setup:
+          - {ocaml-compiler: '4.08.x', os: ubuntu-latest}
           - {ocaml-compiler: '4.10.x', os: ubuntu-latest}
           - {ocaml-compiler: '4.12.x', os: ubuntu-latest}
           - {ocaml-compiler: '4.13.x', os: ubuntu-latest}
