@@ -1,6 +1,8 @@
 ## 3.17.3
 
 - fix: Stack overflow on Pconstraint (@davesnx, [#2906](https://github.com/reasonml/reason/pull/2906))
+- ci: Run 4.08 in CI (@davesnx, [#2910](https://github.com/reasonml/reason/pull/2910))
+- test: Remove 4.06 cram tests (@davesnx, [#2910](https://github.com/reasonml/reason/pull/2910))
 
 ## 3.17.2
 
