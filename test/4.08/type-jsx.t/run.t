@@ -109,8 +109,8 @@ Print the formatted file
   module Optional1 = {
     let createElement = (~required, ~children, ()) => {
       switch (required) {
-      | Some(a) => {displayName: a}
-      | None => {displayName: "nope"}
+      | Some(a) => { displayName: a }
+      | None => { displayName: "nope" }
       };
     };
   };
@@ -119,8 +119,8 @@ Print the formatted file
     let createElement =
         (~optional=?, ~children, ()) => {
       switch (optional) {
-      | Some(a) => {displayName: a}
-      | None => {displayName: "nope"}
+      | Some(a) => { displayName: a }
+      | None => { displayName: "nope" }
       };
     };
   };
@@ -129,8 +129,8 @@ Print the formatted file
     let createElement =
         (~default=Some("foo"), ~children, ()) => {
       switch (default) {
-      | Some(a) => {displayName: a}
-      | None => {displayName: "nope"}
+      | Some(a) => { displayName: a }
+      | None => { displayName: "nope" }
       };
     };
   };
@@ -590,8 +590,8 @@ Print the formatted file
 
 Type-check basics
   $ ocamlc -c -pp 'refmt --print binary' -intf-suffix .rei -impl formatted.re
-  File "formatted.re", line 460, characters 23-26:
-  460 |   <Optional1 required=?zzz />;
+  File "formatted.re", line 463, characters 23-26:
+  463 |   <Optional1 required=?zzz />;
                                ^^^
   Warning 43: the label required is not optional.
 
