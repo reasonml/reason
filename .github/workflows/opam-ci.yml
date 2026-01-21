@@ -70,12 +70,12 @@ jobs:
         run: opam exec -- dune runtest -p reason,rtop
 
       - name: Install dune-release
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == 'ocaml-base-compiler.5.4.0'
+        if: startsWith(github.ref, 'refs/tags/') && matrix.setup.os == 'ubuntu-latest' && matrix.setup.ocaml-compiler == 'ocaml-base-compiler.5.4.0'
         run: opam install dune-release -y
 
       - name: Release to opam
         uses: davesnx/dune-release-action@v0.2.14
-        if: startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest' && matrix.ocaml-compiler == 'ocaml-base-compiler.5.4.0'
+        if: startsWith(github.ref, 'refs/tags/') && matrix.setup.os == 'ubuntu-latest' && matrix.setup.ocaml-compiler == 'ocaml-base-compiler.5.4.0'
         with:
           packages: 'reason,rtop'
           changelog: './CHANGES.md'
