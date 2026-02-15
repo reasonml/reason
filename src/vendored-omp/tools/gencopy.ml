@@ -216,6 +216,9 @@ module Main : sig end = struct
           concrete (func (List.map case l))
       | Type_abstract _, Some t -> concrete (tyexpr_fun env t)
       | Type_abstract _, None -> failwith ("Abstract type " ^ ty)
+      | Type_external _, _ ->
+          Format.eprintf "** External types are not yet supported %s@." ty;
+          ()
       | Type_open, _ ->
           Format.eprintf "** Open types are not yet supported %s@." ty;
           ()
@@ -248,7 +251,7 @@ module Main : sig end = struct
     | Tconstr (path, [ t ], _) when Path.same path Predef.path_array ->
         app (evar "Array.map") [ tyexpr_fun env t; x ]
     | Tconstr (path, [ ], _) when Path.same path Predef.path_floatarray ->
-        app (evar "Array.Floatarray.map") [ tyexpr_ffun "float"; x ]
+        app (evar "Float.Array.map") [ tyexpr_ffun "float"; x ]
     | Tconstr (path, [ t ], _) when Path.same path Predef.path_option ->
         app (evar "Option.map") [ tyexpr_fun env t; x ]
     | Tconstr (path, [], _)
