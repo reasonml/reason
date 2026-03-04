@@ -5,7 +5,6 @@ on:
   push:
    branches:
      - master
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -78,17 +77,8 @@ jobs:
       - name: Build
         run: esy build
 
-      - name: Test when not Windows
-        if: runner.os != 'Windows'
+      - name: Test
         run: esy dune runtest
-
-      - name: Setup tmate session (Windows debug)
-        if: runner.os == 'Windows' && github.event_name == 'workflow_dispatch'
-        uses: mxschmitt/action-tmate@v3
-
-      - name: Test when Windows
-        if: runner.os == 'Windows'
-        run: esy b dune runtest -p "reason,rtop"
 
       - name: Export dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
