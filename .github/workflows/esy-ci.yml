@@ -38,9 +38,10 @@ jobs:
 
       - name: Set up MinGW (Windows)
         if: runner.os == 'Windows'
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x64
+        shell: pwsh
+        run: |
+          choco upgrade mingw -y --no-progress
+          echo "C:\ProgramData\mingw64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Install esy
         run: npm install -g esy@0.9.0-beta.1
