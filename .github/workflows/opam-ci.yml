@@ -33,6 +33,7 @@ jobs:
             # OCaml >= 4.13
             # https://github.com/ocaml/setup-ocaml/issues/822#issuecomment-2215525942
           - {ocaml-compiler: '4.14.x', os: windows-latest}
+          - {ocaml-compiler: 'ocaml-base-compiler.5.4.0', os: windows-latest}
 
     runs-on: ${{ matrix.setup.os }}
 
