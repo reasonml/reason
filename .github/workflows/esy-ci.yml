@@ -44,7 +44,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ~/.esy/source
-          key: esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+          key: v0.0.1-esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
 
       - name: Print esy cache
         id: print_esy_cache
@@ -57,8 +57,8 @@ jobs:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
             _export
-          key: esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
-          restore-keys: esy-build-${{ matrix.os }}-
+          key: v0.0.1-esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+          restore-keys: v0.0.1-esy-build-${{ matrix.os }}-
 
       - name: Install dependencies
         run: esy install
@@ -89,7 +89,7 @@ jobs:
         if: steps.global-cache.outputs.cache-hit != 'true'
         with:
           path: ~/.esy/source
-          key: esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+          key: v0.0.1-esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
 
       - name: Save dependencies cache
         if: steps.deps-cache.outputs.cache-hit != 'true'
@@ -98,7 +98,7 @@ jobs:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
             _export
-          key: esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+          key: v0.0.1-esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
 
       # Cleanup build cache in case dependencies have changed
       - name: Cleanup
