@@ -15,4 +15,10 @@
 (cram
  (applies_to rtopIntegration)
  (package rtop)
+ (enabled_if
+  (or
+   (= %{os_type} Unix)
+   (and
+    (= %{os_type} Win32)
+    (>= %{ocaml_version} 5.0.0))))
  (deps %{bin:ocamlc} %{bin:rtop}))
