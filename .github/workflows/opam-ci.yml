@@ -64,7 +64,8 @@ jobs:
 
       - name: Pin lambda-term to fix Windows segfault
         if: runner.os == 'Windows'
-        run: opam pin lambda-term https://github.com/davesnx/lambda-term.git#fix-windows-console-segfault --no-action
+        run: |
+          opam pin add lambda-term git+https://github.com/davesnx/lambda-term.git#fix-windows-console-segfault -y
 
       - name: Install dependencies
         run: opam install . --deps-only
