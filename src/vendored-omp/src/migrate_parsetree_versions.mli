@@ -133,18 +133,6 @@ type 'types ocaml_version =
       suffix suffix;
     printf "val ocaml_%s : OCaml_%s.types ocaml_version\n" suffix suffix;
   )*)
-module OCaml_402 : OCaml_version with module Ast = Ast_402
-val ocaml_402 : OCaml_402.types ocaml_version
-module OCaml_403 : OCaml_version with module Ast = Ast_403
-val ocaml_403 : OCaml_403.types ocaml_version
-module OCaml_404 : OCaml_version with module Ast = Ast_404
-val ocaml_404 : OCaml_404.types ocaml_version
-module OCaml_405 : OCaml_version with module Ast = Ast_405
-val ocaml_405 : OCaml_405.types ocaml_version
-module OCaml_406 : OCaml_version with module Ast = Ast_406
-val ocaml_406 : OCaml_406.types ocaml_version
-module OCaml_407 : OCaml_version with module Ast = Ast_407
-val ocaml_407 : OCaml_407.types ocaml_version
 module OCaml_408 : OCaml_version with module Ast = Ast_408
 val ocaml_408 : OCaml_408.types ocaml_version
 module OCaml_409 : OCaml_version with module Ast = Ast_409
@@ -169,6 +157,8 @@ module OCaml_53 : OCaml_version with module Ast = Ast_53
 val ocaml_53 : OCaml_53.types ocaml_version
 module OCaml_54 : OCaml_version with module Ast = Ast_54
 val ocaml_54 : OCaml_54.types ocaml_version
+module OCaml_55 : OCaml_version with module Ast = Ast_55
+val ocaml_55 : OCaml_55.types ocaml_version
 (*$*)
 
 (* An alias to the current compiler version *)

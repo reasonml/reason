@@ -395,48 +395,6 @@ end
       suffix suffix suffix;
   )
 *)
-module OCaml_402 = struct
-  module Ast = Ast_402
-  include Make_witness(Ast_402)
-  let version = 402
-  let string_version = "4.02"
-end
-let ocaml_402 : OCaml_402.types ocaml_version = (module OCaml_402)
-module OCaml_403 = struct
-  module Ast = Ast_403
-  include Make_witness(Ast_403)
-  let version = 403
-  let string_version = "4.03"
-end
-let ocaml_403 : OCaml_403.types ocaml_version = (module OCaml_403)
-module OCaml_404 = struct
-  module Ast = Ast_404
-  include Make_witness(Ast_404)
-  let version = 404
-  let string_version = "4.04"
-end
-let ocaml_404 : OCaml_404.types ocaml_version = (module OCaml_404)
-module OCaml_405 = struct
-  module Ast = Ast_405
-  include Make_witness(Ast_405)
-  let version = 405
-  let string_version = "4.05"
-end
-let ocaml_405 : OCaml_405.types ocaml_version = (module OCaml_405)
-module OCaml_406 = struct
-  module Ast = Ast_406
-  include Make_witness(Ast_406)
-  let version = 406
-  let string_version = "4.06"
-end
-let ocaml_406 : OCaml_406.types ocaml_version = (module OCaml_406)
-module OCaml_407 = struct
-  module Ast = Ast_407
-  include Make_witness(Ast_407)
-  let version = 407
-  let string_version = "4.07"
-end
-let ocaml_407 : OCaml_407.types ocaml_version = (module OCaml_407)
 module OCaml_408 = struct
   module Ast = Ast_408
   include Make_witness(Ast_408)
@@ -521,17 +479,18 @@ module OCaml_54 = struct
   let string_version = "5.4"
 end
 let ocaml_54 : OCaml_54.types ocaml_version = (module OCaml_54)
+module OCaml_55 = struct
+  module Ast = Ast_55
+  include Make_witness(Ast_55)
+  let version = 550
+  let string_version = "5.5"
+end
+let ocaml_55 : OCaml_55.types ocaml_version = (module OCaml_55)
 (*$*)
 
 let all_versions : (module OCaml_version) list = [
   (*$foreach_version (fun suffix _ ->
       printf "(module OCaml_%s : OCaml_version);\n" suffix)*)
-  (module OCaml_402 : OCaml_version);
-  (module OCaml_403 : OCaml_version);
-  (module OCaml_404 : OCaml_version);
-  (module OCaml_405 : OCaml_version);
-  (module OCaml_406 : OCaml_version);
-  (module OCaml_407 : OCaml_version);
   (module OCaml_408 : OCaml_version);
   (module OCaml_409 : OCaml_version);
   (module OCaml_410 : OCaml_version);
@@ -544,6 +503,7 @@ let all_versions : (module OCaml_version) list = [
   (module OCaml_52 : OCaml_version);
   (module OCaml_53 : OCaml_version);
   (module OCaml_54 : OCaml_version);
+  (module OCaml_55 : OCaml_version);
   (*$*)
 ]
 
@@ -552,18 +512,6 @@ let all_versions : (module OCaml_version) list = [
     printf "  (Migrate_parsetree_%s_%s)(Migrate_parsetree_%s_%s)\n" a b b a
   )
 *)
-include Register_migration(OCaml_402)(OCaml_403)
-    (Migrate_parsetree_402_403)(Migrate_parsetree_403_402)
-include Register_migration(OCaml_403)(OCaml_404)
-    (Migrate_parsetree_403_404)(Migrate_parsetree_404_403)
-include Register_migration(OCaml_404)(OCaml_405)
-    (Migrate_parsetree_404_405)(Migrate_parsetree_405_404)
-include Register_migration(OCaml_405)(OCaml_406)
-    (Migrate_parsetree_405_406)(Migrate_parsetree_406_405)
-include Register_migration(OCaml_406)(OCaml_407)
-    (Migrate_parsetree_406_407)(Migrate_parsetree_407_406)
-include Register_migration(OCaml_407)(OCaml_408)
-    (Migrate_parsetree_407_408)(Migrate_parsetree_408_407)
 include Register_migration(OCaml_408)(OCaml_409)
     (Migrate_parsetree_408_409)(Migrate_parsetree_409_408)
 include Register_migration(OCaml_409)(OCaml_410)
@@ -586,6 +534,8 @@ include Register_migration(OCaml_52)(OCaml_53)
     (Migrate_parsetree_52_53)(Migrate_parsetree_53_52)
 include Register_migration(OCaml_53)(OCaml_54)
     (Migrate_parsetree_53_54)(Migrate_parsetree_54_53)
+include Register_migration(OCaml_54)(OCaml_55)
+    (Migrate_parsetree_54_55)(Migrate_parsetree_55_54)
 (*$*)
 
 module OCaml_current = OCaml_OCAML_VERSION

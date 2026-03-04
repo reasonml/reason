@@ -1,42 +1,15 @@
-(**************************************************************************)
-(*                                                                        *)
-(*                         OCaml Migrate Parsetree                        *)
-(*                                                                        *)
-(*                         Frédéric Bour, Facebook                        *)
-(*            Jérémie Dimino and Leo White, Jane Street Europe            *)
-(*            Xavier Leroy, projet Cristal, INRIA Rocquencourt            *)
-(*                         Alain Frisch, LexiFi                           *)
-(*       Daniel de Rauglaudre, projet Cristal, INRIA Rocquencourt         *)
-(*                                                                        *)
-(*   Copyright 2018 Institut National de Recherche en Informatique et     *)
-(*     en Automatique (INRIA).                                            *)
-(*                                                                        *)
-(*   All rights reserved.  This file is distributed under the terms of    *)
-(*   the GNU Lesser General Public License version 2.1, with the          *)
-(*   special exception on linking described in the file LICENSE.          *)
-(*                                                                        *)
-(**************************************************************************)
-
-(* Ast ported on Wed Apr 18 10:33:29 BST 2018
-   OCaml trunk was:
-     commit c0bd6a27e138911560f43dc75d5fde2ade4d6cfe (HEAD, tag: 4.07.0+beta2)
-     Author: Damien Doligez <damien.doligez@inria.fr>
-     Date:   Tue Apr 10 14:50:48 2018 +0200
-
-         change VERSION for 4.07.0+beta2
-*)
-
-module Location = Location
-module Longident = Longident
-
-
 module Asttypes = struct
-  (** Auxiliary AST types used by parsetree and typedtree. *)
+  (** Auxiliary AST types used by parsetree and typedtree.
+
+    {b Warning:} this module is unstable and part of
+    {{!Compiler_libs}compiler-libs}.
+
+  *)
 
   type constant (*IF_CURRENT = Asttypes.constant *) =
       Const_int of int
     | Const_char of char
-    | Const_string of string * string option
+    | Const_string of string * Location.t * string option
     | Const_float of string
     | Const_int32 of int32
     | Const_int64 of int64
@@ -51,6 +24,8 @@ module Asttypes = struct
 
   type mutable_flag (*IF_CURRENT = Asttypes.mutable_flag *) = Immutable | Mutable
 
+  type atomic_flag (*IF_CURRENT = Asttypes.atomic_flag *) = Nonatomic | Atomic
+
   type virtual_flag (*IF_CURRENT = Asttypes.virtual_flag *) = Virtual | Concrete
 
   type override_flag (*IF_CURRENT = Asttypes.override_flag *) = Override | Fresh
@@ -61,19 +36,30 @@ module Asttypes = struct
 
   type arg_label (*IF_CURRENT = Asttypes.arg_label *) =
       Nolabel
-    | Labelled of string (*  label:T -> ... *)
-    | Optional of string (* ?label:T -> ... *)
+    | Labelled of string (** [label:T -> ...] *)
+    | Optional of string (** [?label:T -> ...] *)
 
   type 'a loc = 'a Location.loc = {
     txt : 'a;
     loc : Location.t;
   }
 
-
   type variance (*IF_CURRENT = Asttypes.variance *) =
     | Covariant
     | Contravariant
-    | Invariant
+    | NoVariance
+    | Bivariant
+
+  type injectivity (*IF_CURRENT = Asttypes.injectivity *) =
+    | Injective
+    | NoInjectivity
+end
+
+module Type_immediacy = struct
+  type t (*IF_CURRENT = Type_immediacy.t *) =
+    | Unknown
+    | Always
+    | Always_on_64bits
 end
 
 module Outcometree = struct
@@ -86,10 +72,14 @@ module Outcometree = struct
         [Toploop.print_out_sig_item]
         [Toploop.print_out_phrase] *)
 
+  (** An [out_name] is a string representation of an identifier which can be
+      rewritten on the fly to avoid name collisions *)
+  type out_name (*IF_CURRENT = Outcometree.out_name *) = { mutable printed_name: string }
+
   type out_ident (*IF_CURRENT = Outcometree.out_ident *) =
     | Oide_apply of out_ident * out_ident
     | Oide_dot of out_ident * string
-    | Oide_ident of string
+    | Oide_ident of out_name
 
   type out_string (*IF_CURRENT = Outcometree.out_string *) =
     | Ostr_string
@@ -99,7 +89,7 @@ module Outcometree = struct
     { oattr_name: string }
 
   type out_value (*IF_CURRENT = Outcometree.out_value *) =
-    | Oval_array of out_value list
+    | Oval_array of out_value list * Asttypes.mutable_flag
     | Oval_char of char
     | Oval_constr of out_ident * out_value list
     | Oval_ellipsis
@@ -109,32 +99,64 @@ module Outcometree = struct
     | Oval_int64 of int64
     | Oval_nativeint of nativeint
     | Oval_list of out_value list
-    | Oval_printer of (Format.formatter -> unit)
+    | Oval_printer of (Caml_format_doc.formatter -> unit)
     | Oval_record of (out_ident * out_value) list
     | Oval_string of string * int * out_string (* string, size-to-print, kind *)
     | Oval_stuff of string
-    | Oval_tuple of out_value list
+    | Oval_tuple of (string option * out_value) list
     | Oval_variant of string * out_value option
+    | Oval_lazy of out_value
+    | Oval_floatarray of floatarray
+
+  type out_type_param (*IF_CURRENT = Outcometree.out_type_param *) = {
+      ot_non_gen: bool;
+      ot_name: string;
+      ot_variance: Asttypes.variance * Asttypes.injectivity
+  }
 
   type out_type (*IF_CURRENT = Outcometree.out_type *) =
     | Otyp_abstract
     | Otyp_open
-    | Otyp_alias of out_type * string
-    | Otyp_arrow of string * out_type * out_type
-    | Otyp_class of bool * out_ident * out_type list
+    | Otyp_alias of {non_gen:bool; aliased:out_type; alias:string}
+    | Otyp_arrow of Asttypes.arg_label * out_type * out_type
+    | Otyp_class of out_ident * out_type list
     | Otyp_constr of out_ident * out_type list
     | Otyp_manifest of out_type * out_type
-    | Otyp_object of (string * out_type) list * bool option
-    | Otyp_record of (string * bool * out_type) list
+    | Otyp_object of { fields: (string * out_type) list; row: out_row}
+    | Otyp_record of out_label list
     | Otyp_stuff of string
-    | Otyp_sum of (string * out_type list * out_type option) list
-    | Otyp_tuple of out_type list
+    | Otyp_sum of out_constructor list
+    | Otyp_tuple of (string option * out_type) list
     | Otyp_var of bool * string
-    | Otyp_variant of
-        bool * out_variant * bool * (string list) option
+    | Otyp_variant of out_variant * bool * (string list) option
     | Otyp_poly of string list * out_type
-    | Otyp_module of string * string list * out_type list
+    | Otyp_module of out_package
     | Otyp_attribute of out_type * out_attribute
+    | Otyp_external of string
+    | Otyp_functor of Asttypes.arg_label * out_ident * out_package * out_type
+
+  and out_row (*IF_CURRENT = Outcometree.out_row *) =
+    | Orow_closed
+    | Orow_open_anonymous
+    | Orow_open of out_type
+
+  and out_label (*IF_CURRENT = Outcometree.out_label *) = {
+    olab_name: string;
+    olab_mut: Asttypes.mutable_flag;
+    olab_atomic: Asttypes.atomic_flag;
+    olab_type: out_type;
+  }
+
+  and out_constructor (*IF_CURRENT = Outcometree.out_constructor *) = {
+    ocstr_name: string;
+    ocstr_args: out_type list;
+    ocstr_return_type: out_type option;
+  }
+
+  and out_package (*IF_CURRENT = Outcometree.out_package *) = {
+    opack_path: out_ident;
+    opack_constraints: (string * out_type) list;
+  }
 
   and out_variant (*IF_CURRENT = Outcometree.out_variant *) =
     | Ovar_fields of (string * bool * out_type list) list
@@ -142,7 +164,7 @@ module Outcometree = struct
 
   type out_class_type (*IF_CURRENT = Outcometree.out_class_type *) =
     | Octy_constr of out_ident * out_type list
-    | Octy_arrow of string * out_type * out_class_type
+    | Octy_arrow of Asttypes.arg_label * out_type * out_class_type
     | Octy_signature of out_type option * out_class_sig_item list
   and out_class_sig_item (*IF_CURRENT = Outcometree.out_class_sig_item *) =
     | Ocsg_constraint of out_type * out_type
@@ -151,16 +173,16 @@ module Outcometree = struct
 
   type out_module_type (*IF_CURRENT = Outcometree.out_module_type *) =
     | Omty_abstract
-    | Omty_functor of string * out_module_type option * out_module_type
+    | Omty_functor of (string option * out_module_type) option * out_module_type
     | Omty_ident of out_ident
     | Omty_signature of out_sig_item list
     | Omty_alias of out_ident
   and out_sig_item (*IF_CURRENT = Outcometree.out_sig_item *) =
     | Osig_class of
-        bool * string * (string * (bool * bool)) list * out_class_type *
+        bool * string * out_type_param list * out_class_type *
           out_rec_status
     | Osig_class_type of
-        bool * string * (string * (bool * bool)) list * out_class_type *
+        bool * string * out_type_param list * out_class_type *
           out_rec_status
     | Osig_typext of out_extension_constructor * out_ext_status
     | Osig_modtype of string * out_module_type
@@ -170,23 +192,23 @@ module Outcometree = struct
     | Osig_ellipsis
   and out_type_decl (*IF_CURRENT = Outcometree.out_type_decl *) =
     { otype_name: string;
-      otype_params: (string * (bool * bool)) list;
+      otype_params: out_type_param list;
       otype_type: out_type;
       otype_private: Asttypes.private_flag;
-      otype_immediate: bool;
+      otype_immediate: Type_immediacy.t;
       otype_unboxed: bool;
-      otype_cstrs: (out_type * out_type) list }
+      otype_constraints: (out_type * out_type) list }
   and out_extension_constructor (*IF_CURRENT = Outcometree.out_extension_constructor *) =
     { oext_name: string;
       oext_type_name: string;
-      oext_type_params: string list;
+      oext_type_params: out_type_param list;
       oext_args: out_type list;
       oext_ret_type: out_type option;
       oext_private: Asttypes.private_flag }
   and out_type_extension (*IF_CURRENT = Outcometree.out_type_extension *) =
     { otyext_name: string;
-      otyext_params: string list;
-      otyext_constructors: (string * out_type list * out_type option) list;
+      otyext_params: out_type_param list;
+      otyext_constructors: out_constructor list;
       otyext_private: Asttypes.private_flag }
   and out_val_decl (*IF_CURRENT = Outcometree.out_val_decl *) =
     { oval_name: string;
@@ -206,5 +228,4 @@ module Outcometree = struct
     | Ophr_eval of out_value * out_type
     | Ophr_signature of (out_sig_item * out_value option) list
     | Ophr_exception of (exn * out_value)
-
 end
