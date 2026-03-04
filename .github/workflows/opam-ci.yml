@@ -52,7 +52,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ~/.opam
-          key: v0.0.1-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('*.opam') }}
+          key: v0.0.2-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('*.opam') }}
 
       - name: Load opam cache when Windows
         if: runner.os == 'Windows'
@@ -60,7 +60,11 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: _opam
-          key: v0.0.1-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+          key: v0.0.2-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+
+      - name: Pin lambda-term to fix Windows segfault
+        if: runner.os == 'Windows'
+        run: opam pin lambda-term https://github.com/davesnx/lambda-term.git#fix-windows-console-segfault --no-action
 
       - name: Install dependencies
         run: opam install . --deps-only
@@ -88,12 +92,12 @@ jobs:
         if: steps.opam-cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
         with:
           path: ~/.opam
-          key: v0.0.1-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+          key: v0.0.2-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
       - name: Save cache when Windows
         uses: actions/cache/save@v4
         if: steps.opam-cache-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'
         with:
           path: _opam
-          key: v0.0.1-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
+          key: v0.0.2-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
