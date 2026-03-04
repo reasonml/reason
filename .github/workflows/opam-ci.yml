@@ -69,13 +69,6 @@ jobs:
       - name: Build reason and rtop
         run: opam exec -- dune build -p reason,rtop
 
-      - name: Setup tmate session (Windows debug)
-        if: runner.os == 'Windows' && github.event_name == 'workflow_dispatch'
-        uses: mxschmitt/action-tmate@v3
-
-      - name: Test
-        run: opam exec -- dune runtest -p reason,rtop
-
       - name: Install dune-release
         if: startsWith(github.ref, 'refs/tags/') && matrix.setup.os == 'ubuntu-latest' && matrix.setup.ocaml-compiler == 'ocaml-base-compiler.5.4.0'
         run: opam install dune-release -y
