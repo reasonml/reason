@@ -5913,8 +5913,7 @@ let createFormatter () =
                 (pattern :: patternAux)
           in
           match argsList, return.pexp_desc with
-          | [], Pexp_constraint (e, ct) ->
-            assert (vbct = None);
+          | [], Pexp_constraint (e, ct) when vbct = None ->
             let typeLayout =
               source_map
                 ~loc:ct.ptyp_loc
