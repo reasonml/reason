@@ -36,6 +36,13 @@ jobs:
         with:
           node-version: 20
 
+      - name: Set up MinGW (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco upgrade mingw -y --no-progress
+          echo "C:\ProgramData\mingw64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
       - name: Install esy
         run: npm install -g esy@0.9.0-beta.1
 
@@ -44,7 +51,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ~/.esy/source
-          key: esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+          key: v0.0.2-esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
 
       - name: Print esy cache
         id: print_esy_cache
@@ -57,8 +64,8 @@ jobs:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
             _export
-          key: esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
-          restore-keys: esy-build-${{ matrix.os }}-
+          key: v0.0.2-esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+          restore-keys: v0.0.2-esy-build-${{ matrix.os }}-
 
       - name: Install dependencies
         run: esy install
@@ -94,7 +101,7 @@ jobs:
         if: steps.global-cache.outputs.cache-hit != 'true'
         with:
           path: ~/.esy/source
-          key: esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+          key: v0.0.2-esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
 
       - name: Save dependencies cache
         if: steps.deps-cache.outputs.cache-hit != 'true'
@@ -103,7 +110,7 @@ jobs:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
             _export
-          key: esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
+          key: v0.0.2-esy-build-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
 
       # Cleanup build cache in case dependencies have changed
       - name: Cleanup
