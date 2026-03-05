@@ -12,10 +12,6 @@
   ./lib/outcometreePrinter.exe
   ./lib/fdLeak.exe))
 
-; rtopIntegration is disabled on Windows due to a segfault in lambda-term's
-; Windows C stubs when stdout is not a real console handle (ConPTY issue).
-; See: https://github.com/ocaml-community/lambda-term/pull/125
-; Re-enable on Windows once lambda-term ships the fix.
 (cram
  (applies_to rtopIntegration)
  (package rtop)
