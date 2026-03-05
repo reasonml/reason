@@ -84,8 +84,13 @@ jobs:
       - name: Build
         run: esy build
 
-      - name: Test
-        run: esy dune runtest -p reason,rtop
+      - name: Test when not Windows
+        if: runner.os != 'Windows'
+        run: esy dune runtest
+
+      - name: Test when Windows
+        if: runner.os == 'Windows'
+        run: esy b dune runtest -p "reason,rtop"
 
       - name: Export dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
