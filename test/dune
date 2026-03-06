@@ -15,4 +15,5 @@
 (cram
  (applies_to rtopIntegration)
  (package rtop)
+ (enabled_if (= %{os_type} Unix))
  (deps %{bin:ocamlc} %{bin:rtop}))

@@ -5913,8 +5913,7 @@ let createFormatter () =
                 (pattern :: patternAux)
           in
           match argsList, return.pexp_desc with
-          | [], Pexp_constraint (e, ct) ->
-            assert (vbct = None);
+          | [], Pexp_constraint (e, ct) when vbct = None ->
             let typeLayout =
               source_map
                 ~loc:ct.ptyp_loc
@@ -6244,7 +6243,18 @@ let createFormatter () =
                   ~loc:pat.ppat_loc
                   (match vbct with
                   | Some _ ->
-                    self#pattern_with_precedence ~attrs:pat.ppat_attributes pat
+                    (match pat.ppat_desc with
+                    | Ppat_alias _ ->
+                      makeList
+                        ~wrap:("(", ")")
+                        [ self#pattern_with_precedence
+                            ~attrs:pat.ppat_attributes
+                            pat
+                        ]
+                    | _ ->
+                      self#pattern_with_precedence
+                        ~attrs:pat.ppat_attributes
+                        pat)
                   | None -> self#pattern pat)
               in
               let appTerms = self#unparseExprApplicationItems expr in
