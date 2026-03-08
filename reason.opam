@@ -45,6 +45,5 @@ dev-repo: "git+https://github.com/reasonml/reason.git"
 x-maintenance-intent: ["(latest)"]
 pin-depends: [
   [ "ppxlib.dev" "https://github.com/NathanReb/ppxlib/archive/547c6cfd69671e147767e0937d069c5b9eb2aa4a.tar.gz" ]
-  [ "utop.dev" "git+https://github.com/ocaml-community/utop.git#ce32aa476c40ffe442844c05d570901126bfa5f4" ]
 ]
 
