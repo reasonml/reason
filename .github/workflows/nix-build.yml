@@ -26,10 +26,10 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-    - uses: cachix/install-nix-action@v29
+    - uses: cachix/install-nix-action@v31
       with:
         extra_nix_config: |
           extra-substituters = https://anmonteiro.nix-cache.workers.dev
@@ -49,10 +49,10 @@ jobs:
           - {ocaml-version: '5_4', os: macos-latest}
     runs-on: ${{ matrix.setup.os }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: 'recursive'
-    - uses: cachix/install-nix-action@v29
+    - uses: cachix/install-nix-action@v31
       with:
         extra_nix_config: |
           extra-substituters = https://anmonteiro.nix-cache.workers.dev

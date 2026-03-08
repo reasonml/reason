@@ -31,10 +31,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Set up MinGW (Windows)
         if: runner.os == 'Windows'
@@ -48,7 +48,7 @@ jobs:
 
       - name: Restore global cache (~/.esy/source)
         id: global-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ~/.esy/source
           key: v0.0.2-esy-source-${{ matrix.os }}-${{ matrix.ocaml-compiler }}-${{ hashFiles('esy.lock.json') }}
@@ -59,7 +59,7 @@ jobs:
 
       - name: Load dependencies cache
         id: deps-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
@@ -97,7 +97,7 @@ jobs:
         run: esy export-dependencies
 
       - name: Save global cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         if: steps.global-cache.outputs.cache-hit != 'true'
         with:
           path: ~/.esy/source
@@ -105,7 +105,7 @@ jobs:
 
       - name: Save dependencies cache
         if: steps.deps-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: |
             ${{ steps.print_esy_cache.outputs.ESY_CACHE }}
