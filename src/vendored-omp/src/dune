@@ -28,7 +28,8 @@
 ;  (libraries reason_migrate_parsetree))
 
 (rule
- (copy# compiler-functions/%{read:compiler-functions-file}
+ (copy#
+  compiler-functions/%{read:compiler-functions-file}
   migrate_parsetree_compiler_functions.ml))
 
 (rule

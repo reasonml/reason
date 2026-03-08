@@ -34,7 +34,8 @@
  (action
   (with-stdout-to
    %{targets}
-   (run ../menhir-error-processor/menhir_error_processor.exe
+   (run
+    ../menhir-error-processor/menhir_error_processor.exe
     reason_parser.cmly))))
 
 (rule

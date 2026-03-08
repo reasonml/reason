@@ -36,9 +36,10 @@
   (ocaml
    (and
     (>= "4.08")
-    (< "5.5")))
+    (< "5.6")))
   (ocamlfind :build)
-  (cmdliner (>= "1.1.0"))
+  (cmdliner
+   (>= "1.1.0"))
   (dune-build-info
    (>= 2.9.3))
   (menhir
@@ -59,7 +60,7 @@
   (ocaml
    (and
     (>= "4.08")
-    (< "5.5")))
+    (< "5.6")))
   (reason
    (= :version))
   (utop
