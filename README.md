@@ -33,7 +33,7 @@ Docs links for new users:
 
 ```sh
 npm install -g esy@next
-git clone https://github.com/facebook/reason.git
+git clone https://github.com/reasonml/reason.git
 cd reason
 esy
 esy test # Run the tests
