@@ -23,6 +23,7 @@ jobs:
           - 5_2
           - 5_3
           - 5_4
+          - 5_5
 
     runs-on: ubuntu-latest
     steps:
@@ -43,10 +44,10 @@ jobs:
     strategy:
       matrix:
         setup:
-          - {ocaml-version: '5_3', os: macos-15-intel}
           - {ocaml-version: '4_14', os: macos-latest}
           - {ocaml-version: '5_3', os: macos-latest}
           - {ocaml-version: '5_4', os: macos-latest}
+          - {ocaml-version: '5_5', os: macos-latest}
     runs-on: ${{ matrix.setup.os }}
     steps:
     - uses: actions/checkout@v6
