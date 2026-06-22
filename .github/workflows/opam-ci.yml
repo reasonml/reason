@@ -19,8 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         setup:
-          - {ocaml-compiler: '4.08.1', os: ubuntu-latest}
-          - {ocaml-compiler: '4.10.2', os: ubuntu-latest}
+          - {ocaml-compiler: 'ocaml-base-compiler.4.08.1', os: ubuntu-latest, opam-repositories: 'default: git+https://github.com/ocaml/opam-repository.git#622e2cd03db68197f7299596fa614b2f91aa9260'}
+          - {ocaml-compiler: 'ocaml-base-compiler.4.10.2', os: ubuntu-latest, opam-repositories: 'default: git+https://github.com/ocaml/opam-repository.git#622e2cd03db68197f7299596fa614b2f91aa9260'}
           - {ocaml-compiler: '4.12.x', os: ubuntu-latest}
           - {ocaml-compiler: '4.13.x', os: ubuntu-latest}
           - {ocaml-compiler: '4.14.x', os: ubuntu-latest}
@@ -46,6 +46,7 @@ jobs:
         uses: ocaml/setup-ocaml@v3
         with:
           ocaml-compiler: ${{ matrix.setup.ocaml-compiler }}
+          opam-repositories: "${{ matrix.setup.opam-repositories || 'default: git+https://github.com/ocaml/opam-repository.git' }}"
           opam-pin: true
 
       - name: Load opam cache when not Windows
@@ -98,4 +99,3 @@ jobs:
         with:
           path: _opam
           key: v0.0.1-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
-
