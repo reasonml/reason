@@ -1,3 +1,12 @@
+## 3.18.0
+
+- build: remove unused AST migrations (@anmonteiro,
+  [#2911](https://github.com/reasonml/reason/pull/2911))
+- Support OCaml 5.5 (@anmonteiro,
+  [#2912](https://github.com/reasonml/reason/pull/2912))
+- fix(printer): add parens around value constraint aliases (@davesnx,
+  [#2913](https://github.com/reasonml/reason/pull/2913))
+
 ## 3.17.3
 
 - fix: Stack overflow on Pconstraint (@davesnx, [#2906](https://github.com/reasonml/reason/pull/2906))
