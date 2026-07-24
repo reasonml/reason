@@ -1,3 +1,15 @@
+## Unreleased
+
+- fix(parser): prefer the arrow-function reading for `(args): t => body` in
+  expression position, so e.g. `f((x: int): int => x)` parses as a function
+  with a return-type annotation instead of an expression constrained to the
+  arrow type `int => x`. This also makes the printer's output for functions
+  whose body carries a type constraint (e.g. first-class-module coercions like
+  `(module M: SIG) => (module M: SUB)`) re-parse as the same program instead
+  of becoming ill-typed. Constraining an expression against an arrow type is
+  still expressible by parenthesizing the type: `(e: ((a, b) => t))`.
+  (@seprov, [#2925](https://github.com/reasonml/reason/issues/2925))
+
 ## 3.18.0
 
 - build: remove unused AST migrations (@anmonteiro,

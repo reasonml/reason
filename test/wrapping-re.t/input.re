@@ -1382,6 +1382,11 @@ let df_locallyAbstractFuncAnnotated: type a b. (a, b) => (inputEchoRecord(a), in
  * is not so trivial. We have to take the last Pexp_constraint type, varify the
  * constructors, then check if the result is equal to the first
  * Ppat_constraint. In this case, they're not equal!
+ *
+ * The constraint's arrow type is parenthesized: a bare
+ * `expr: (a, b) => ...` where the body of `expr` is itself valid type syntax
+ * is read as an ES6 arrow with a return-type annotation (see #2925), which is
+ * not what this fixture is about.
  */
 let df_locallyAbstractFuncAnnotated:
   'figureMeOut
@@ -1391,7 +1396,7 @@ let df_locallyAbstractFuncAnnotated:
       {inputIs: input},
       {inputIs: input2}
     ):
-    (a, b) => (inputEchoRecord(a), inputEchoRecord(b))
+    ((a, b) => (inputEchoRecord(a), inputEchoRecord(b)))
   );
 
 
