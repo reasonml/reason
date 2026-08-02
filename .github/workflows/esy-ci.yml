@@ -22,7 +22,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-15-intel
+          - macos-26-intel
           - windows-latest
 
         ocaml-compiler:

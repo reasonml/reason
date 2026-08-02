@@ -27,7 +27,7 @@ jobs:
           - {ocaml-compiler: 'ocaml-base-compiler.5.3.0', os: ubuntu-latest}
           - {ocaml-compiler: 'ocaml-base-compiler.5.4.0', os: ubuntu-latest}
           - {ocaml-compiler: 'ocaml-base-compiler.5.5.0', os: ubuntu-latest}
-          - {ocaml-compiler: 'ocaml-base-compiler.5.4.0', os: macos-15-intel}
+          - {ocaml-compiler: 'ocaml-base-compiler.5.4.0', os: macos-26-intel}
           - {ocaml-compiler: 'ocaml-base-compiler.5.4.0', os: macos-latest}
           - {ocaml-compiler: 'ocaml-base-compiler.5.5.0', os: macos-latest}
             # looks like setup-ocaml@v3 can only run actions on windows for
