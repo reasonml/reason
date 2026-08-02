@@ -94,6 +94,15 @@ module Main : sig end = struct
       (lid ?loc s)
       (Option.map (fun x -> ([], x)) (may_ptuple ?loc Pat.tuple args))
 
+  let constr_record ?loc ?attrs s fields =
+    Exp.construct ?loc ?attrs (lid ?loc s) (Some (Exp.record fields None))
+
+  let pconstr_record ?loc ?attrs s fields =
+    Pat.construct
+      ?loc ?attrs
+      (lid ?loc s)
+      (Some ([], Pat.record fields Closed))
+
   let selfcall m args = app (evar m) args
 
   (*************************************************************************)
@@ -196,6 +205,10 @@ module Main : sig end = struct
         ( (lid (prefix ^ s), pvar s),
           (lid (target_prefix ^ s), tyexpr env ld.ld_type (evar s)) )
       in
+      let inline_field ld =
+        let s = Ident.name ld.ld_id in
+        ((lid s, pvar s), (lid s, tyexpr env ld.ld_type (evar s)))
+      in
       match (td.type_kind, td.type_manifest) with
       | Type_record (l, _), _ ->
           let l = List.map field l in
@@ -210,8 +223,10 @@ module Main : sig end = struct
             | Cstr_tuple tys ->
                 let p, args = gentuple env tys in
                 (pconstr (prefix ^ c) p, constr (target_prefix ^ c) args)
-            | Cstr_record _l ->
-                failwith "Inline records are not yet supported."
+            | Cstr_record l ->
+                let l = List.map inline_field l in
+                ( pconstr_record (prefix ^ c) (List.map fst l),
+                  constr_record (target_prefix ^ c) (List.map snd l) )
           in
           concrete (func (List.map case l))
       | Type_abstract _, Some t -> concrete (tyexpr_fun env t)
