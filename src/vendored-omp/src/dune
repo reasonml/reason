@@ -3,7 +3,7 @@
  (public_name reason.ocaml-migrate-parsetree)
  (wrapped true)
  (libraries ppxlib.astlib)
- (modules :standard \ migrate_parsetree_driver_main)
+ (modules :standard \ cinaps_helpers migrate_parsetree_driver_main)
  (preprocess
   (action
    (run %{exe:../tools/pp.exe} %{read:ast-version} %{input-file})))
@@ -36,3 +36,32 @@
  (targets ast-version compiler-functions-file)
  (action
   (run %{ocaml} %{dep:config/gen.ml} %{ocaml_version})))
+
+(library
+ (name reason_omp_cinaps_helpers)
+ (wrapped false)
+ (modules cinaps_helpers))
+
+(cinaps
+ (alias cinaps)
+ (files migrate_parsetree_versions.ml*)
+ (libraries reason_omp_cinaps_helpers)
+ (preprocess
+  (action
+   (progn
+    (echo
+     "let () = let current = ref 0 in Arg.parse_argv ~current [| Sys.argv.(0); \"-styler\"; \"ocp-indent\" |] (Arg.align Cinaps_runtime.args) ignore \"\"\n")
+    (cat %{input-file}))))
+ (runtime_deps %{bin:ocp-indent}))
+
+(cinaps
+ (alias cinaps)
+ (files reason_omp.ml)
+ (libraries reason_omp_cinaps_helpers)
+ (preprocess
+  (action
+   (progn
+    (echo
+     "let () = let current = ref 0 in Arg.parse_argv ~current [| Sys.argv.(0); \"-styler\"; \"ocp-indent\" |] (Arg.align Cinaps_runtime.args) ignore \"\"\n")
+    (cat %{input-file}))))
+ (runtime_deps %{bin:ocp-indent}))

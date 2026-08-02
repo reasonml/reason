@@ -3,14 +3,14 @@ Convert OCaml parsetrees between different major versions
 
 This library converts between parsetrees of different OCaml versions.
 
-Supported versions are 4.02, 4.03, 4.04, 4.05, 4.06, 4.07, 4.08 and 4.09.
+Supported versions are OCaml 4.08 through 4.14 and OCaml 5.0 through 5.5.
 For each version, there is a snapshot of the parsetree and conversion functions
 to the next and/or previous version.
 
 ## Asts
 
 ```ocaml
-module Ast_402, Ast_403, Ast_404, Ast_405, Ast_406, Ast_407, Ast_408, Ast_409 : sig
+module Ast_VERSION : sig
 
   (* These two modules didn't change between compiler versions.
      Just share the ones from compiler-libs. *)
@@ -44,7 +44,7 @@ These embed copies of AST definitions for each supported OCaml major version.
 
 The AST matching the version of the OCaml toolchain will contain equalities
 relating the copy of types to the definitions from compiler-libs.  For
-instance, when installed with OCaml 4.04.x, `Ast_404.Parsetree` looks
+instance, when installed with OCaml 4.14.x, `Ast_414.Parsetree` looks
 like.
 
 ## Migration modules
@@ -59,7 +59,7 @@ failure case.
 
 `Migrate_parsetree_versions` abstract versions of the compiler. Each version is
 represented as a module with `OCaml_version` signature.  Instances are named
-`OCaml_402`, `OCaml_403`, ... `OCaml_current` is an alias to the version of the
+`OCaml_408`, `OCaml_409`, ... `OCaml_current` is an alias to the version of the
 current compiler.
 The `Convert` functor takes two versions of OCaml and produce conversion
 functions.
@@ -118,10 +118,10 @@ The library is distributed under LGPL 2.1 and is copyright INRIA.
 ## Adding a new OCaml version
 
 We use [Cinaps](https://github.com/janestreet/cinaps) to generate boilerplate.
-You can install it via opam: `opam install cinaps`.
+You can install it via opam: `opam install cinaps ocp-indent`.
 
 Add the new version in
-[src/cinaps_helpers](https://github.com/ocaml-ppx/ocaml-migrate-parsetree/blob/master/src/cinaps_helpers)
+[src/cinaps_helpers.ml](src/cinaps_helpers.ml)
 `supported_versions`.
 
 Copy the last `src/ast_xxx.ml` file to `src/ast_<new_version>.ml`,

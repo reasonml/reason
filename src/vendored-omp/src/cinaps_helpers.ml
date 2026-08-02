@@ -6,12 +6,6 @@ open Printf
 let nl () = printf "\n"
 
 let supported_versions = [
-  ("402", "4.02");
-  ("403", "4.03");
-  ("404", "4.04");
-  ("405", "4.05");
-  ("406", "4.06");
-  ("407", "4.07");
   ("408", "4.08");
   ("409", "4.09");
   ("410", "4.10");
@@ -24,6 +18,7 @@ let supported_versions = [
   ("52", "5.2");
   ("53", "5.3");
   ("54", "5.4");
+  ("55", "5.5");
 ]
 
 let qualified_types = [
@@ -50,6 +45,10 @@ let foreach_type f =
 let foreach_version f =
   nl ();
   List.iter supported_versions ~f:(fun (suffix, version) -> f suffix version)
+
+let version_number suffix =
+  let version = int_of_string suffix in
+  if version < 100 then version * 10 else version
 
 let foreach_version_pair f =
   nl ();

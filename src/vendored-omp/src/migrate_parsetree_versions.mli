@@ -14,7 +14,7 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(*$ #use "src/cinaps_helpers" $*)
+(*$ open StdLabels;; open Printf;; open Cinaps_helpers $*)
 
 (** {1 Abstracting an OCaml frontend} *)
 

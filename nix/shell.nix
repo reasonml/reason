@@ -11,6 +11,8 @@
 mkShell {
   inputsFrom = [ reason ];
   nativeBuildInputs = with ocamlPackages; [
+    cinaps
+    ocp-indent
     utop
     merlin
     # odoc
