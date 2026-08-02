@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Use OCaml ${{ matrix.setup.ocaml-compiler }}
         uses: ocaml/setup-ocaml@v3
@@ -52,7 +52,7 @@ jobs:
       - name: Load opam cache when not Windows
         if: runner.os != 'Windows'
         id: opam-cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: ~/.opam
           key: v0.0.1-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('*.opam') }}
@@ -60,7 +60,7 @@ jobs:
       - name: Load opam cache when Windows
         if: runner.os == 'Windows'
         id: opam-cache-windows
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: _opam
           key: v0.0.1-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
@@ -79,7 +79,7 @@ jobs:
         run: opam install dune-release -y
 
       - name: Release to opam
-        uses: davesnx/dune-release-action@v0.2.14
+        uses: davesnx/dune-release-action@v0.3.0
         if: startsWith(github.ref, 'refs/tags/') && matrix.setup.os == 'ubuntu-latest' && matrix.setup.ocaml-compiler == 'ocaml-base-compiler.5.4.0'
         with:
           packages: 'reason,rtop'
@@ -87,14 +87,14 @@ jobs:
           github-token: ${{ secrets.GH_TOKEN }}
 
       - name: Save cache when not Windows
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         if: steps.opam-cache.outputs.cache-hit != 'true' && runner.os != 'Windows'
         with:
           path: ~/.opam
           key: v0.0.1-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
       - name: Save cache when Windows
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         if: steps.opam-cache-windows.outputs.cache-hit != 'true' && runner.os == 'Windows'
         with:
           path: _opam
