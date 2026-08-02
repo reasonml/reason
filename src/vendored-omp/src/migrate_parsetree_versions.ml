@@ -15,7 +15,7 @@
 (**************************************************************************)
 
 (* BEGIN of BLACK MAGIC *)
-(*$ #use "src/cinaps_helpers" $*)
+(*$ open StdLabels;; open Printf;; open Cinaps_helpers $*)
 
 type _ witnesses = ..
 
@@ -388,7 +388,7 @@ end
     printf "module OCaml_%s = struct\n" suffix;
     printf "  module Ast = Ast_%s\n" suffix;
     printf "  include Make_witness(Ast_%s)\n" suffix;
-    printf "  let version = %s\n" suffix;
+    printf "  let version = %d\n" (version_number suffix);
     printf "  let string_version = %S\n" version;
     printf "end\n";
     printf "let ocaml_%s : OCaml_%s.types ocaml_version = (module OCaml_%s)\n"

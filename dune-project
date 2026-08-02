@@ -6,6 +6,8 @@
 
 (using menhir 2.0)
 
+(using cinaps 1.3)
+
 (cram enable)
 
 (version 3.17.3)
