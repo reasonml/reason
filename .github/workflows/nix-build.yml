@@ -12,10 +12,12 @@ concurrency:
 
 jobs:
   ubuntu-tests:
-    name: Build and test (Ubuntu) (${{ matrix.ocaml-version }})
+    name: Build and test (${{ matrix.os }}) (${{ matrix.ocaml-version }})
 
     strategy:
       matrix:
+        os:
+          - ubuntu-latest
         ocaml-version:
           - 4_14
           - 5_0
@@ -24,8 +26,10 @@ jobs:
           - 5_3
           - 5_4
           - 5_5
+        include:
+          - {ocaml-version: 5_5, os: ubuntu-26.04-arm}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v6
       with:
