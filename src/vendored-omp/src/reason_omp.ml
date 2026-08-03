@@ -14,10 +14,13 @@
 (*                                                                        *)
 (**************************************************************************)
 
-(*$ open StdLabels;; open Printf;; open Cinaps_helpers $*)
+(*$
+  open StdLabels
+  open Printf
+  open Cinaps_helpers
+$*)
 
-(* Shared definitions.
-   Mostly errors about features missing in older versions. *)
+(* Shared definitions. Mostly errors about features missing in older versions. *)
 module Def = Migrate_parsetree_def
 
 (* Copy of OCaml parsetrees *)
@@ -92,6 +95,7 @@ module OCaml_52 = Versions.OCaml_52
 module OCaml_53 = Versions.OCaml_53
 module OCaml_54 = Versions.OCaml_54
 module OCaml_55 = Versions.OCaml_55
+
 (*$*)
 module OCaml_current = Versions.OCaml_current
 
@@ -104,12 +108,17 @@ module Compiler_libs = struct
   module Location = Location
   module Longident = Longident
 
-  module type Asttypes = module type of struct include Asttypes end
+  module type Asttypes = module type of struct
+    include Asttypes
+  end
+
   module rec Asttypes : Asttypes = Asttypes
 
-  module type Parsetree = module type of struct include Parsetree end
-  module rec Parsetree : Parsetree = Parsetree
+  module type Parsetree = module type of struct
+    include Parsetree
+  end
 
+  module rec Parsetree : Parsetree = Parsetree
   module Docstrings = Docstrings
   module Ast_helper = Ast_helper
   module Ast_mapper = Ast_mapper

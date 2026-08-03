@@ -118,7 +118,7 @@ The library is distributed under LGPL 2.1 and is copyright INRIA.
 ## Adding a new OCaml version
 
 We use [Cinaps](https://github.com/janestreet/cinaps) to generate boilerplate.
-You can install it via opam: `opam install cinaps ocp-indent`.
+You can install it via opam: `opam install cinaps ocamlformat`.
 
 Add the new version in
 [src/cinaps_helpers.ml](src/cinaps_helpers.ml)

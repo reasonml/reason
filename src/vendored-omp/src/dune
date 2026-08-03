@@ -50,9 +50,11 @@
   (action
    (progn
     (echo
-     "let () = let current = ref 0 in Arg.parse_argv ~current [| Sys.argv.(0); \"-styler\"; \"ocp-indent\" |] (Arg.align Cinaps_runtime.args) ignore \"\"\n")
+     "let () = let current = ref 0 in Arg.parse_argv ~current [| Sys.argv.(0); \"-styler\"; \"ocamlformat --doc-comments=before --name %i\" |] (Arg.align Cinaps_runtime.args) ignore \"\"\n")
     (cat %{input-file}))))
- (runtime_deps %{bin:ocp-indent}))
+ (runtime_deps
+  %{bin:ocamlformat}
+  ../../../.ocamlformat))
 
 (cinaps
  (alias cinaps)
@@ -62,6 +64,8 @@
   (action
    (progn
     (echo
-     "let () = let current = ref 0 in Arg.parse_argv ~current [| Sys.argv.(0); \"-styler\"; \"ocp-indent\" |] (Arg.align Cinaps_runtime.args) ignore \"\"\n")
+     "let () = let current = ref 0 in Arg.parse_argv ~current [| Sys.argv.(0); \"-styler\"; \"ocamlformat --doc-comments=before --name %i\" |] (Arg.align Cinaps_runtime.args) ignore \"\"\n")
     (cat %{input-file}))))
- (runtime_deps %{bin:ocp-indent}))
+ (runtime_deps
+  %{bin:ocamlformat}
+  ../../../.ocamlformat))
