@@ -199,6 +199,10 @@ val ocaml_54 : OCaml_54.types ocaml_version
 module OCaml_55 : OCaml_version with module Ast = Ast_55
 
 val ocaml_55 : OCaml_55.types ocaml_version
+
+module OCaml_56 : OCaml_version with module Ast = Ast_56
+
+val ocaml_56 : OCaml_56.types ocaml_version
 (*$*)
 
 (* An alias to the current compiler version *)
