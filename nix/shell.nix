@@ -5,7 +5,6 @@
   cacert,
   curl,
   git,
-  dune-release ? ocamlPackages.dune-release,
   release-mode ? false,
 }:
 
