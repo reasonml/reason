@@ -13,7 +13,7 @@
           let
             pkgs = nixpkgs.legacyPackages.${system}.extend (
               self: super: {
-                ocamlPackages = super.ocaml-ng.ocamlPackages_5_5;
+                ocamlPackages = super.ocaml-ng.ocamlPackages_5_6;
               }
             );
           in
@@ -38,6 +38,7 @@
         };
         release = pkgs.callPackage ./nix/shell.nix {
           reason = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+          dune-release = pkgs.ocaml-ng.ocamlPackages_5_5.dune-release;
           release-mode = true;
         };
       });

@@ -26,6 +26,7 @@ jobs:
           - 5_3
           - 5_4
           - 5_5
+          - 5_6
         include:
           - {ocaml-version: 5_5, os: ubuntu-26.04-arm}
 
@@ -52,6 +53,7 @@ jobs:
           - {ocaml-version: '5_3', os: macos-latest}
           - {ocaml-version: '5_4', os: macos-latest}
           - {ocaml-version: '5_5', os: macos-latest}
+          - {ocaml-version: '5_6', os: macos-latest}
     runs-on: ${{ matrix.setup.os }}
     steps:
     - uses: actions/checkout@v7
