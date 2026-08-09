@@ -38,7 +38,7 @@
   (ocaml
    (and
     (>= "4.08")
-    (< "5.6")))
+    (< "5.7")))
   (ocamlfind :build)
   (cmdliner
    (>= "1.1.0"))
@@ -62,7 +62,7 @@
   (ocaml
    (and
     (>= "4.08")
-    (< "5.6")))
+    (< "5.7")))
   (reason
    (= :version))
   (utop

@@ -9,8 +9,13 @@ let
         inherit (lock.nodes.nixpkgs.locked) rev;
         allRefs = true;
       };
+      basePkgs = import src { };
     in
-    import src { };
+    basePkgs.extend (
+      _self: super: {
+        ocamlPackages = super.ocaml-ng."ocamlPackages_${ocamlVersion}";
+      }
+    );
 in
 
 pkgs.callPackage ./. { doCheck = true; }
