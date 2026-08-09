@@ -40,6 +40,7 @@ module Ast_52 = Ast_52
 module Ast_53 = Ast_53
 module Ast_54 = Ast_54
 module Ast_55 = Ast_55
+module Ast_56 = Ast_56
 (*$*)
 
 (* Manual migration between versions *)
@@ -71,6 +72,8 @@ module Migrate_53_54 = Migrate_parsetree_53_54
 module Migrate_54_53 = Migrate_parsetree_54_53
 module Migrate_54_55 = Migrate_parsetree_54_55
 module Migrate_55_54 = Migrate_parsetree_55_54
+module Migrate_55_56 = Migrate_parsetree_55_56
+module Migrate_56_55 = Migrate_parsetree_56_55
 (*$*)
 
 (* An abstraction of OCaml compiler versions *)
@@ -95,6 +98,7 @@ module OCaml_52 = Versions.OCaml_52
 module OCaml_53 = Versions.OCaml_53
 module OCaml_54 = Versions.OCaml_54
 module OCaml_55 = Versions.OCaml_55
+module OCaml_56 = Versions.OCaml_56
 
 (*$*)
 module OCaml_current = Versions.OCaml_current

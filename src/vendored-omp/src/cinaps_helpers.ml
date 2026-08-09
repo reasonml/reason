@@ -19,6 +19,7 @@ let supported_versions = [
   ("53", "5.3");
   ("54", "5.4");
   ("55", "5.5");
+  ("56", "5.6");
 ]
 
 let qualified_types = [

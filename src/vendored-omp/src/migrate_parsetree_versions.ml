@@ -577,6 +577,16 @@ module OCaml_55 = struct
 end
 
 let ocaml_55 : OCaml_55.types ocaml_version = (module OCaml_55)
+
+module OCaml_56 = struct
+  module Ast = Ast_56
+  include Make_witness (Ast_56)
+
+  let version = 560
+  let string_version = "5.6"
+end
+
+let ocaml_56 : OCaml_56.types ocaml_version = (module OCaml_56)
 (*$*)
 
 let all_versions : (module OCaml_version) list =
@@ -594,7 +604,8 @@ let all_versions : (module OCaml_version) list =
   ; (module OCaml_52 : OCaml_version)
   ; (module OCaml_53 : OCaml_version)
   ; (module OCaml_54 : OCaml_version)
-  ; (module OCaml_55 : OCaml_version) (*$*)
+  ; (module OCaml_55 : OCaml_version)
+  ; (module OCaml_56 : OCaml_version) (*$*)
   ]
 
 (*$foreach_version_pair (fun a b ->
@@ -649,6 +660,10 @@ include
 include
   Register_migration (OCaml_54) (OCaml_55) (Migrate_parsetree_54_55)
     (Migrate_parsetree_55_54)
+
+include
+  Register_migration (OCaml_55) (OCaml_56) (Migrate_parsetree_55_56)
+    (Migrate_parsetree_56_55)
 (*$*)
 
 module OCaml_current = OCaml_OCAML_VERSION
