@@ -38,7 +38,6 @@
         };
         release = pkgs.callPackage ./nix/shell.nix {
           reason = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
-          dune-release = pkgs.ocaml-ng.ocamlPackages_5_5.dune-release;
           release-mode = true;
         };
       });
