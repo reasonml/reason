@@ -4758,6 +4758,13 @@ basic_core_type:
 mark_position_typ
   ( type_longident type_parameters
     { mktyp(Ptyp_constr($1, $2)) }
+  | as_loc(mod_ext_longident) DOT LPAREN type_parameter_comma_list RPAREN
+    { let opened_type =
+        match $4 with
+        | [one] -> one
+        | many -> mktyp(Ptyp_tuple many)
+      in
+      mktyp(Ptyp_open($1, opened_type)) }
   | SHARP as_loc(class_longident) type_parameters
     { mktyp(Ptyp_class($2, $3)) }
   | QUOTE ident
