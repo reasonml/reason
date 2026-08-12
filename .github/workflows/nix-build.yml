@@ -28,6 +28,7 @@ jobs:
           - 5_5
           - 5_6
         include:
+          - {ocaml-version: 5_5, os: ubuntu-26.04-arm}
           - {ocaml-version: 5_6, os: ubuntu-26.04-arm}
 
     runs-on: ${{ matrix.os }}
