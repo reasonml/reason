@@ -68,6 +68,10 @@ jobs:
           path: _opam
           key: v0.0.1-opam-${{ matrix.setup.os }}-${{ matrix.setup.ocaml-compiler }}-${{ hashFiles('**.opam') }}
 
+      - name: Pin utop for OCaml 5.6
+        if: ${{ matrix.setup.ocaml-compiler == 'ocaml-variants.5.6.0+trunk' }}
+        run: opam pin add utop https://github.com/ocaml-community/utop/archive/64f4486318c128f531f95fddd1f19fa5b0c95191.tar.gz
+
       - name: Install dependencies
         run: opam install . --deps-only
 
