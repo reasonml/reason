@@ -29,6 +29,7 @@ jobs:
           - 5_6
         include:
           - {ocaml-version: 5_5, os: ubuntu-26.04-arm}
+          - {ocaml-version: 5_6, os: ubuntu-26.04-arm}
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -66,4 +67,3 @@ jobs:
           extra-trusted-public-keys = ocaml.nix-cache.com-1:/xI2h2+56rwFfKyyFVbkJSeGqSIYMC/Je+7XXqGKDIY=
     - name: "Run nix-build"
       run: nix-build ./nix/ci.nix --argstr ocamlVersion ${{ matrix.setup.ocaml-version }}
-
