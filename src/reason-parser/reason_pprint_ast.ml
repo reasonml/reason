@@ -737,6 +737,9 @@ let is_simple_construct : construct -> bool = function
   | `nil | `tuple | `list _ | `simple _ | `btrue | `bfalse | `cons _ -> true
   | `normal -> false
 
+let is_package_typ ct =
+  match ct.ptyp_desc with Ptyp_package _ -> true | _ -> false
+
 let uncurriedTable = Hashtbl.create 42
 
 (* Determines if a list of expressions contains a single unit construct * e.g.
@@ -5452,7 +5455,8 @@ let createFormatter () =
              here *)
           let return, optConstr =
             match ret.pexp_desc with
-            | Pexp_constraint (e, ct) -> e, Some (self#non_arrowed_core_type ct)
+            | Pexp_constraint (e, ct) when not (is_package_typ ct) ->
+              e, Some (self#non_arrowed_core_type ct)
             | _ -> ret, None
           in
           let returnExpr, leftWrap =
@@ -9753,7 +9757,7 @@ let createFormatter () =
             in
             let retCb, cbArgs =
               match retCb.pexp_desc with
-              | Pexp_constraint (a, t) ->
+              | Pexp_constraint (a, t) when not (is_package_typ t) ->
                 a, makeList [ cbArgs; atom ": "; self#core_type t ]
               | _ -> retCb, cbArgs
             in
