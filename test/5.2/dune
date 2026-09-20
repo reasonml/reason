@@ -1,0 +1,7 @@
+(cram
+ (package reason)
+ (enabled_if
+  (>= %{ocaml_version} 5.2))
+ (deps
+  %{bin:ocamlc}
+  %{bin:refmt}))
