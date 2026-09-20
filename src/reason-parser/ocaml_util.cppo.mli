@@ -5,7 +5,9 @@ val print_error :
   -> 'a
   -> unit
 
-#if OCAML_VERSION >= (5,3,0)
+#if OCAML_VERSION >= (5,6,0)
+module Utf8_lexeme = Utf8_lexeme
+#elif OCAML_VERSION >= (5,3,0)
 module Utf8_lexeme = Misc.Utf8_lexeme
 #else
 module Utf8_lexeme : sig
