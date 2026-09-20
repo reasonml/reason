@@ -250,7 +250,9 @@ module String = struct
 end
 #endif
 
-#if OCAML_VERSION >= (5,3,0)
+#if OCAML_VERSION >= (5,6,0)
+module Utf8_lexeme = Utf8_lexeme
+#elif OCAML_VERSION >= (5,3,0)
 module Utf8_lexeme = Misc.Utf8_lexeme
 #else
 (** {1 Minimal support for Unicode characters in identifiers} *)
