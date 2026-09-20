@@ -70,7 +70,7 @@ jobs:
 
       - name: Pin utop for OCaml 5.6
         if: ${{ matrix.setup.ocaml-compiler == 'ocaml-variants.5.6.0+trunk' }}
-        run: opam pin add utop https://github.com/ocaml-community/utop/archive/64f4486318c128f531f95fddd1f19fa5b0c95191.tar.gz
+        run: opam pin add utop https://github.com/anmonteiro/utop/archive/4c1559fd702fedc315fa9d8fb972411a12d93f7c.tar.gz
 
       - name: Install dependencies
         run: opam install . --deps-only
