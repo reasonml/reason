@@ -15,3 +15,9 @@
  (modules fdLeak)
  (flags :standard -open StdLabels)
  (libraries reason.refmt-lib))
+
+(test
+ (name packageConstraints)
+ (modules packageConstraints)
+ (package reason)
+ (libraries reason.ocaml-migrate-parsetree))
