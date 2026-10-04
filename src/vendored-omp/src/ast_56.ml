@@ -155,7 +155,7 @@ module Outcometree = struct
 
   and out_package (*IF_CURRENT = Outcometree.out_package *) = {
     opack_path: out_ident;
-    opack_constraints: (string * out_type) list;
+    opack_constraints: (string list * out_type) list;
   }
 
   and out_variant (*IF_CURRENT = Outcometree.out_variant *) =

@@ -304,7 +304,7 @@ and (copy_out_package :
     {
       Ast_56.Outcometree.opack_path = (copy_out_ident opack_path);
       Ast_56.Outcometree.opack_constraints =
-        (List.map (fun x -> let (x0, x1) = x in (x0, (copy_out_type x1)))
+        (List.map (fun (x0, x1) -> (String.split_on_char '.' x0, copy_out_type x1))
            opack_constraints)
     }
 and (copy_out_variant :
