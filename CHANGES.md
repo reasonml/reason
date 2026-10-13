@@ -1,3 +1,10 @@
+## Unreleased
+
+- fix(printer): keep a package constraint on the lambda body instead of
+  moving it to a return annotation, where it re-parses as an arrow type and
+  changes the meaning of the program (@MavenRain,
+  [#2925](https://github.com/reasonml/reason/issues/2925))
+
 ## 3.18.0
 
 - build: remove unused AST migrations (@anmonteiro,
