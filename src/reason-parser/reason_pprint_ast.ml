@@ -3374,9 +3374,23 @@ let createFormatter () =
               | Ptyp_arrow (_, _, _) | Ptyp_alias (_, _) | Ptyp_poly (_, _) ->
                 makeList ~wrap:("(", ")") ~break:IfNeed [ self#core_type x ]
               | Ptyp_open (m, ct) ->
+                let opened_type =
+                  match ct.ptyp_desc with
+                  | Ptyp_tuple _
+                  | Ptyp_package _
+                  | Ptyp_arrow _
+                  | Ptyp_alias _
+                  | Ptyp_poly _
+                  | Ptyp_open _ -> self#core_type ct
+                  | _ ->
+                    makeList
+                      ~wrap:("(", ")")
+                      ~break:IfNeed
+                      [ self#core_type ct ]
+                in
                 label
                   (label (self#longident m.txt) (atom "."))
-                  (self#core_type ct)
+                  opened_type
             in
             source_map ~loc:x.ptyp_loc result
         (* TODO: ensure that we have a form of desugaring that protects *)
